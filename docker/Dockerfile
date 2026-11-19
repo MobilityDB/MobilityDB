@@ -12,13 +12,16 @@ RUN apt-get update \
         libproj-dev \
         libjson-c-dev \
         postgresql-server-dev-${PG_MAJOR} \
-        libh3-dev \
-        libh3-1 \
+        git \
+        ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy local MobilityDB source instead of downloading
 WORKDIR /usr/local/src/MobilityDB
 COPY . .
+
+# The one H3 release MobilityDB supports, built from its tag
+RUN .github/scripts/install-h3.sh /usr/local
 
 # Build MobilityDB
 RUN mkdir -p build \
@@ -45,10 +48,13 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         postgresql-${PG_MAJOR}-h3 \
         postgresql-${PG_MAJOR}-pointcloud \
-        libh3-1 \
         libproj-dev \
         libjson-c-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# The H3 release the build linked
+COPY --from=builder /usr/local/lib/libh3.so* /usr/local/lib/
+RUN ldconfig
 
 # Copy MobilityDB installed files from builder
 COPY --from=builder /usr/share/postgresql/${PG_MAJOR}/extension/mobilitydb* /usr/share/postgresql/${PG_MAJOR}/extension/

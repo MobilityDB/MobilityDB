@@ -420,14 +420,13 @@ with values in two and three dimensions has one test per dimension
 (`<nnn>_<fam>_indexes_tbl` and `<nnn>_<fam>_indexes3d_tbl`), and a family of several types one
 test per type at the number of the family (`044_tbool`, `044_ttext`, `044_tint`, `044_tfloat`,
 as `074_tgeo` and `074_tpoint`). Generated: tcbuffer, tpose (2D and 3D), trgeometry (2D and 3D),
-tnpoint, tquadbin, ts2cell, tposechain, tjsonb, tbool, ttext, tint and tfloat; tbigint has no
-fixtures but its table of many values. Written by hand: the tests of the temporal geometries and
-points (`074_tgeo`, `074_tpoint`), which test the structure of the trees; `044_temporal`, which
-keeps the B-tree comparisons of the base types, the function forms of `ttext` (`overlaps`,
-`contains`, `before`, ...) and the structure of the trees; and that of th3index
-(`272_th3index`), since the box of an H3 cell is read on the vertices the linked H3 library
-states, which differ by version, so the counts of the scan over the fixture differ by build until
-MEOS reads vertices of its own.
+tnpoint, th3index, tquadbin, ts2cell, tposechain, tjsonb, tbool, ttext, tint and tfloat; tbigint
+has no fixtures but its table of many values. The counts of th3index hold because every build
+reads the one H3 release MobilityDB supports (`H3_REQUIRED_VERSION`), on whose vertices the box
+of a cell is read. Written by hand: the tests of the temporal geometries and points (`074_tgeo`,
+`074_tpoint`), which test the structure of the trees; and `044_temporal`, which keeps the B-tree
+comparisons of the base types, the function forms of `ttext` (`overlaps`, `contains`, `before`,
+...) and the structure of the trees.
 
 **`topops.sql.tmpl`/`posops.sql.tmpl` serve two independent manifest tracks** that
 happen to share a template name: the `topop_families`/`posop_families` axes (§9,

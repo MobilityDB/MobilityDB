@@ -1377,6 +1377,22 @@ SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' * tfloat '[3@2001-01-01, 1@2001-01-
  [3@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+-- The extremum is dated at its nearest microsecond: at 3.7 microseconds, so
+-- at 4, and a fraction 5e-7 of a day after its start, at 43200 microseconds
+SELECT timestamps(tfloat '[0@2001-01-01 00:00:00, 10@2001-01-01 00:00:00.00001]' *
+  tfloat '[7.4@2001-01-01 00:00:00, -2.6@2001-01-01 00:00:00.00001]');
+                                                 timestamps                                                  
+-------------------------------------------------------------------------------------------------------------
+ {"Mon Jan 01 00:00:00 2001 PST","Mon Jan 01 00:00:00.000004 2001 PST","Mon Jan 01 00:00:00.00001 2001 PST"}
+(1 row)
+
+SELECT timestamps(tfloat '[0@2001-01-01, 1@2001-01-02]' *
+  tfloat '[0.0864@2001-01-01, -86399.9136@2001-01-02]');
+                                             timestamps                                              
+-----------------------------------------------------------------------------------------------------
+ {"Mon Jan 01 00:00:00 2001 PST","Mon Jan 01 00:00:00.0432 2001 PST","Tue Jan 02 00:00:00 2001 PST"}
+(1 row)
+
 -- A temporal float with step interpolation keeps its jumps when combined with
 -- one with linear interpolation, whichever of the two is the first operand, so
 -- addition and multiplication commute across the two interpolations

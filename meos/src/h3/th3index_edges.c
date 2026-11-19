@@ -53,6 +53,7 @@
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
+#include "h3/h3index.h"
 
 /*****************************************************************************
  * Static adapter — directed edge → polygon boundary
@@ -65,11 +66,8 @@ GSERIALIZED *
 h3_directed_edge_to_gs_boundary(H3Index edge)
 {
   CellBoundary bnd;
-  if (directedEdgeToBoundary(edge, &bnd) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(directedEdgeToBoundary(edge, &bnd)))
     return NULL;
-  }
   /* h3-pg emits a closed POLYGON for directed edges (same container
    * as cells), swapping lat/lng in the process — a known upstream
    * quirk. We emit a closed POLYGON too so consumers see a uniform
@@ -218,7 +216,7 @@ th3index_get_directed_edge_destination(const Temporal *edge)
 }
 
 /*****************************************************************************
- * th3DirectedEdgeToBoundary — needs h3_adapter.c body
+ * th3DirectedEdgeToBoundary
  *****************************************************************************/
 
 /**

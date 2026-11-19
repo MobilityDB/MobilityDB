@@ -1191,6 +1191,8 @@ tpcbox_round(const TPCBox *box, int maxdd)
  * refused. A pcid of 0 names no schema and a schema may state none, and there
  * the box itself is the only level there is. Coordinates are not transformed
  * either way; to reproject, project the underlying tpcpoint and take its box.
+ * The invalid SRID is refused and any other SRID is clamped as #geo_set_srid
+ * clamps it.
  * @csqlfn #Tpcbox_set_srid()
  */
 TPCBox *
@@ -1198,6 +1200,8 @@ tpcbox_set_srid(const TPCBox *box, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, NULL);
+  if (! ensure_srid_valid(srid))
+    return NULL;
   if (box->pcid != 0)
   {
     int32_t schema_srid = meos_pc_schema_srid(box->pcid);
@@ -1210,7 +1214,7 @@ tpcbox_set_srid(const TPCBox *box, int32_t srid)
     }
   }
   TPCBox *result = tpcbox_copy(box);
-  result->srid = srid;
+  result->srid = clamp_srid(srid);
   return result;
 }
 

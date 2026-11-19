@@ -11,13 +11,13 @@ SELECT DISTINCT SRID(temp) FROM tbl_tgeography;
  7844
 (1 row)
 
-SELECT DISTINCT SRID(temp) FROM tbl_tgeometry3D;
+SELECT DISTINCT SRID(temp) FROM tbl_tgeometry3d;
  srid 
 ------
  3812
 (1 row)
 
-SELECT DISTINCT SRID(temp) FROM tbl_tgeography3D;
+SELECT DISTINCT SRID(temp) FROM tbl_tgeography3d;
  srid 
 ------
  7844
@@ -26,8 +26,8 @@ SELECT DISTINCT SRID(temp) FROM tbl_tgeography3D;
 /*
 SELECT setSRID(temp,3812) FROM tbl_tgeometry;
 SELECT setSRID(temp,4326) FROM tbl_tgeography;
-SELECT setSRID(temp,3812) FROM tbl_tgeometry3D;
-SELECT setSRID(temp,4326) FROM tbl_tgeography3D;
+SELECT setSRID(temp,3812) FROM tbl_tgeometry3d;
+SELECT setSRID(temp,4326) FROM tbl_tgeography3d;
 */
 SELECT COUNT(*) FROM tbl_tgeometry WHERE startValue(transform(setSRID(temp, 3812), 4326)) = ST_Transform(ST_SetSRID(startValue(temp), 3812), 4326);
  count 
@@ -35,7 +35,7 @@ SELECT COUNT(*) FROM tbl_tgeometry WHERE startValue(transform(setSRID(temp, 3812
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D WHERE startValue(transform(setSRID(temp, 3812), 4326)) = ST_Transform(ST_SetSRID(startValue(temp), 3812), 4326);
+SELECT COUNT(*) FROM tbl_tgeometry3d WHERE startValue(transform(setSRID(temp, 3812), 4326)) = ST_Transform(ST_SetSRID(startValue(temp), 3812), 4326);
  count 
 -------
    100
@@ -72,7 +72,7 @@ SELECT tgeometry(temp) FROM tbl_tgeography LIMIT 10;
  0104000020A41E0000020000000101000000D438F52D26915C40DC9DFC98FCCE524001010000000C41FC01FDCC5B40C0064C353A8A5240@Wed Apr 18 12:49:00 2001 PDT
 (10 rows)
 
-SELECT tgeography(setSRID(temp,7844)) FROM tbl_tgeometry3D LIMIT 10;
+SELECT tgeography(setSRID(temp,7844)) FROM tbl_tgeometry3d LIMIT 10;
                                                                                  tgeography                                                                                  
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  01020000A0A41E0000020000006C7918CD800E424048BE2CF35474524018170EA915074540EE881DF4036740406B7B4DD0F47F51401640EF2CAC504640@Fri Mar 23 15:23:00 2001 PST
@@ -87,7 +87,7 @@ SELECT tgeography(setSRID(temp,7844)) FROM tbl_tgeometry3D LIMIT 10;
  01040000A0A41E0000020000000101000080DD92D444C78A58C0184FEABBB69848409A7CCD2ED31456C00101000080985D16C42A6157C037A320DAB8F34540343F8882140B58C0@Mon Dec 24 16:25:00 2001 PST
 (10 rows)
 
-SELECT tgeometry(temp) FROM tbl_tgeography3D LIMIT 10;
+SELECT tgeometry(temp) FROM tbl_tgeography3d LIMIT 10;
                                                                                   tgeometry                                                                                  
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  01010000A0A41E00008C9ABF9D18FF6240A3456605824748C06B1188E313B55840@Wed Jan 31 00:54:00 2001 PST
@@ -132,7 +132,7 @@ SELECT temp::tgeometry FROM tbl_tgeography LIMIT 10;
  0104000020A41E0000020000000101000000D438F52D26915C40DC9DFC98FCCE524001010000000C41FC01FDCC5B40C0064C353A8A5240@Wed Apr 18 12:49:00 2001 PDT
 (10 rows)
 
-SELECT setSRID(temp,4326)::tgeography FROM tbl_tgeometry3D LIMIT 10;
+SELECT setSRID(temp,4326)::tgeography FROM tbl_tgeometry3d LIMIT 10;
                                                                                    setsrid                                                                                   
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  01020000A0E6100000020000006C7918CD800E424048BE2CF35474524018170EA915074540EE881DF4036740406B7B4DD0F47F51401640EF2CAC504640@Fri Mar 23 15:23:00 2001 PST
@@ -147,7 +147,7 @@ SELECT setSRID(temp,4326)::tgeography FROM tbl_tgeometry3D LIMIT 10;
  01040000A0E6100000020000000101000080DD92D444C78A58C0184FEABBB69848409A7CCD2ED31456C00101000080985D16C42A6157C037A320DAB8F34540343F8882140B58C0@Mon Dec 24 16:25:00 2001 PST
 (10 rows)
 
-SELECT temp::tgeometry FROM tbl_tgeography3D LIMIT 10;
+SELECT temp::tgeometry FROM tbl_tgeography3d LIMIT 10;
                                                                                     temp                                                                                     
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  01010000A0A41E00008C9ABF9D18FF6240A3456605824748C06B1188E313B55840@Wed Jan 31 00:54:00 2001 PST
@@ -192,7 +192,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeography LIMIT 10;
  MULTIPOINT((114.27 75.23),(111.2 74.16))@Wed Apr 18 12:49:00 2001 PDT
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeometry3d LIMIT 10;
                                           astext                                          
 ------------------------------------------------------------------------------------------
  LINESTRING Z (36.11 73.82 42.06,32.8 70 44.63)@Fri Mar 23 15:23:00 2001 PST
@@ -207,7 +207,7 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
  MULTIPOINT Z ((-98.17 49.19 -88.33),(-93.52 43.9 -96.17))@Mon Dec 24 16:25:00 2001 PST
 (10 rows)
 
-SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeography3d LIMIT 10;
                                        astext                                        
 -------------------------------------------------------------------------------------
  POINT Z (151.97 -48.56 98.83)@Wed Jan 31 00:54:00 2001 PST
@@ -247,13 +247,13 @@ SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography;
  100
 (1 row)
 
-SELECT MAX(ST_NPoints(traversedArea(temp))) FROM tbl_tgeometry3D;
+SELECT MAX(ST_NPoints(traversedArea(temp))) FROM tbl_tgeometry3d;
  max 
 -----
   91
 (1 row)
 
-SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography3D;
+SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography3d;
  max 
 -----
  103

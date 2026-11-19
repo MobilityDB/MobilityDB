@@ -59,6 +59,7 @@
 #include <inttypes.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/memutils.h>  /* MaxAllocSize */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -551,10 +552,15 @@ quadbin_cell_to_parent(Quadbin cell, uint32_t parent_resolution)
 /**
  * @ingroup meos_quadbin
  * @brief Return the (exactly four-per-level) children of a quadbin cell
+ * @details The children of a cell number 4 to the power of the levels
+ * between the two resolutions, and an array of more than the largest
+ * allocation PostgreSQL makes, 14 levels finer or more, is refused
  * @param[in] cell Quadbin cell
- * @param[in] children_resolution Target resolution (> resolution of @p cell)
+ * @param[in] children_resolution Target resolution, finer than the resolution
+ * of @p cell and at most 26
  * @param[out] count Number of children returned
- * @return A palloc'd array of children cells, or NULL on invalid resolution
+ * @return A palloc'd array of children cells
+ * @errval NULL
  */
 Quadbin *
 quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
@@ -564,17 +570,29 @@ quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
   VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
-
   uint32_t resolution = (cell >> 52) & 0x1F;
   if (children_resolution > QUADBIN_MAX_RESOLUTION ||
       children_resolution <= resolution)
   {
-    *count = 0;
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The children resolution must be finer than the cell resolution %u and "
+      "at most %d: %u", resolution, QUADBIN_MAX_RESOLUTION,
+      children_resolution);
     return NULL;
   }
-
+  /* The children are 4 to the power of the levels between the resolutions,
+   * an array refused, as #skiplist_make bounds its capacity, beyond the
+   * largest allocation PostgreSQL makes */
   uint32_t resolution_diff = children_resolution - resolution;
   uint64_t block_range = UINT64_C(1) << (resolution_diff << 1);
+  if (block_range > MaxAllocSize / sizeof(Quadbin))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The %" PRIu64 " children of a cell of resolution %u at resolution %u "
+      "exceed the largest array MEOS allocates", block_range, resolution,
+      children_resolution);
+    return NULL;
+  }
   uint32_t block_shift = 52 - (children_resolution << 1);
 
   uint64_t child_base = (cell & ~(UINT64_C(0x1F) << 52)) |
@@ -638,10 +656,13 @@ quadbin_cell_sibling(Quadbin cell, const char *direction)
  * row does not cross a pole, so the ring of a cell within @p k of an edge is
  * clipped to the grid, the columns and rows kept in it as #quadbin_tile_index
  * keeps a tile
+ * @note A ring of more cells than the largest allocation PostgreSQL makes
+ * holds, a radius of 5793 or more away from the edges, is refused
  * @param[in] cell Quadbin cell
  * @param[in] k Ring radius (Chebyshev distance, >= 0)
  * @param[out] count Number of cells returned, at most (2k+1)^2
  * @return A palloc'd array of cells
+ * @errval NULL
  */
 Quadbin *
 quadbin_k_ring(Quadbin cell, int k, int *count)
@@ -650,6 +671,8 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
   VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
+  if (! ensure_not_negative(k))
+    return NULL;
 
   uint32_t x, y, z;
   quadbin_cell_tile(cell, &x, &y, &z);
@@ -659,7 +682,19 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
   long last = (1L << z) - 1, col = x, row = y, r = Min(k, last);
   long xmin = Max(col - r, 0), xmax = Min(col + r, last);
   long ymin = Max(row - r, 0), ymax = Min(row + r, last);
-  int n = (int) ((xmax - xmin + 1) * (ymax - ymin + 1));
+  /* The cells of the ring, in 64 bits as the children of
+   * #quadbin_cell_to_children are counted, and an array refused as that
+   * function refuses one beyond the largest allocation PostgreSQL makes */
+  int64 width = xmax - xmin + 1, height = ymax - ymin + 1;
+  int64 cells = width * height, max_cells = MaxAllocSize / sizeof(Quadbin);
+  if (cells > max_cells)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The %" PRId64 " cells within %d of a cell of resolution %u exceed the "
+      "largest array MEOS allocates", cells, k, z);
+    return NULL;
+  }
+  int n = cells;
   Quadbin *result = palloc(sizeof(Quadbin) * n);
   int idx = 0;
   for (long yy = ymin; yy <= ymax; yy++)

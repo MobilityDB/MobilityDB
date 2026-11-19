@@ -1,9 +1,9 @@
 -- §1.4 Hierarchy — six lifts.
 --
--- All six depend on `cellToParent[_next]_meos` /
--- `th3CellToCenterChild[_next]_meos` (h3_adapter.c) for the four
--- parent / center_child entries; the two child_pos entries are
--- backed by h3_generated.c and work without any adapter.
+-- The four parent / center_child entries call
+-- `h3_cell_to_parent[_next]_meos` and `h3_cell_to_center_child[_next]_meos`,
+-- the two child_pos entries `h3_cell_to_child_pos_meos` and
+-- `h3_child_pos_to_cell_meos` of h3_generated.c.
 --
 -- Test cells:
 --   590464338553208831 = res 3 hexagon (parent at res 2 = 0x821c0ffffffffff)

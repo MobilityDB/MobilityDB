@@ -101,11 +101,8 @@ GSERIALIZED *
 h3index_cell_to_point(H3Index cell)
 {
   LatLng ll;
-  if (cellToLatLng(cell, &ll) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(cellToLatLng(cell, &ll)))
     return NULL;
-  }
   /* Planar (non-geodetic) lon/lat point, as the geometry it is */
   return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
     false, false, SRID_DEFAULT);
@@ -159,11 +156,8 @@ GSERIALIZED *
 h3index_cell_to_boundary(H3Index cell)
 {
   CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(cellToBoundary(cell, &bnd)))
     return NULL;
-  }
   return cell_boundary_to_gs(&bnd, false);
 }
 
@@ -175,11 +169,8 @@ GSERIALIZED *
 h3index_cell_to_geogpoint(H3Index cell)
 {
   LatLng ll;
-  if (cellToLatLng(cell, &ll) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(cellToLatLng(cell, &ll)))
     return NULL;
-  }
   return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
     false, true, SRID_DEFAULT);
 }
@@ -192,11 +183,8 @@ GSERIALIZED *
 h3index_cell_to_geog(H3Index cell)
 {
   CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(cellToBoundary(cell, &bnd)))
     return NULL;
-  }
   return cell_boundary_to_gs(&bnd, true);
 }
 

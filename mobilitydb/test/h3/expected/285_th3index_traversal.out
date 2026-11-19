@@ -1,9 +1,9 @@
 -- §1.3 Grid traversal — three lifts, plus the new `<->` operator
 -- (resolved §6.1).
 --
--- All three temporal lifts depend on adapters in h3_adapter.c
--- (h3_grid_distance_meos, h3_cell_to_local_ij_meos,
--- h3_local_ij_to_cell_meos). Tests are still meaningful: they
+-- The three temporal lifts call h3_grid_distance_meos of
+-- h3_generated.c and h3_cell_to_local_ij_meos and
+-- h3_local_ij_to_cell_meos of th3index_traversal.c. The tests
 -- assert the output type and a few invariants.
 --
 -- Test cells:

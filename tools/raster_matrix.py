@@ -33,7 +33,10 @@ MEOS-API catalog (`meos-idl.json`) that carry the SQL name they answer to
 (`sqlfn`).  A binding carries a function when its object layer names the
 function, by its SQL name, by the name another engine gives it
 (`altSqlName`, as `sameAlignmentAgg` for `sameAlignment`) or by its C name,
-each in any casing a language takes (#normal), AND carries every raster type
+each in any casing a language takes (#normal), or names it in the class the
+catalog's object model assigns it to by the method name the model gives it
+(`ooName` of `objectModel.classes.<C>.methods` and `.operators`: `add` of
+`Raster` for `add_raster_float`), AND carries every raster type
 the function's SQL signatures name.  The type test keeps a name the binding
 defines for another family from crediting a raster function: a binding
 carries the type `raster` or `raquet` when its object layer declares a class
@@ -84,10 +87,12 @@ def signature_types(sigs):
 
 
 def read_functions(catalog):
-  """Return [(sqlname, names, types)] of the raster functions of a catalog.
+  """Return [(sqlname, names, types, methods)] of the raster functions of a
+  catalog.
 
-  `names` holds the normalized names a binding may give the function, and
-  `types` the raster types its SQL signatures name.  Overloads of one SQL
+  `names` holds the normalized names a binding may give the function,
+  `types` the raster types its SQL signatures name, and `methods` the
+  (class, method name) pairs the object model gives it, normalized.  Overloads of one SQL
   name are one function, needing every raster type an overload names.  A
   signature carrying a SQL name of its own (`valuePercent`, beside the
   `valueCount` of `raster_value_count`) is a function under that name.  The
@@ -99,7 +104,13 @@ def read_functions(catalog):
   """
   with open(catalog, encoding='utf-8') as handle:
     data = json.load(handle)
-  by_sql = {}
+  methods = {}
+  for cls, spec in ((data.get('objectModel') or {}).get('classes') or {}).items():
+    for entry in (spec.get('methods') or []) + (spec.get('operators') or []):
+      if entry.get('ooName') and not entry.get('ooExclude'):
+        methods.setdefault(entry['function'], set()).add(
+          (normal(cls), normal(entry['ooName'])))
+  by_sql, by_methods = {}, {}
   for f in data['functions']:
     if f.get('family') != FAMILY or f.get('api') != 'public' or \
         not f.get('sqlfn') or f.get('sqlAgg'):
@@ -113,6 +124,7 @@ def read_functions(catalog):
       names.update(normal(n) for n in (sql, f.get('altSqlName'), f['name'])
         if n)
       types.update(signature_types([sig]))
+      by_methods.setdefault(sql, set()).update(methods.get(f['name'], ()))
   raster = {f['name'] for f in data['functions'] if f.get('family') == FAMILY}
   for agg in data.get('aggregates') or ():
     if (agg.get('transition') or {}).get('meos') not in raster:
@@ -121,7 +133,8 @@ def read_functions(catalog):
     names.update(normal(n) for n in (agg['sqlName'], agg.get('altSqlName'))
       if n)
     types.update(signature_types([agg]))
-  return sorted((sql, names, types) for sql, (names, types) in by_sql.items())
+  return sorted((sql, names, types, by_methods.get(sql, set()))
+    for sql, (names, types) in by_sql.items())
 
 
 def carried_types(path, roots, files):
@@ -147,9 +160,13 @@ def binding_cover(path, roots, functions):
   files = binding_names(path, roots)
   every = set().union(*(names for _, names in files)) if files else set()
   types = carried_types(path, roots, files)
+  by_key = {}
+  for key, names in files:
+    by_key.setdefault(key, set()).update(names)
   covered, missing = [], []
-  for sql, names, needs in functions:
-    if names & every and needs <= types:
+  for sql, names, needs, methods in functions:
+    named = names & every or any(oo in by_key.get(cls, ()) for cls, oo in methods)
+    if named and needs <= types:
       covered.append(sql)
     else:
       missing.append(sql)
@@ -185,7 +202,7 @@ def render_functions(covers, functions):
   names = [n for n, _ in covers]
   lines = ['| Function | ' + ' | '.join(names) + ' |',
     '|---|' + '---|' * len(names)]
-  for sql, _, _ in functions:
+  for sql, _, _, _ in functions:
     lines.append('| `%s` | ' % sql + ' | '.join(
       'yes' if sql in c else NO for _, c in covers) + ' |')
   return '\n'.join(lines) + '\n'

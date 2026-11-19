@@ -2,19 +2,19 @@
 
 SELECT asText(round(temp, 6)) FROM tbl_tgeometry LIMIT 10;
 SELECT asText(round(temp, 6)) FROM tbl_tgeography LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeography3D LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeometry3d LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeography3d LIMIT 10;
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT asText(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
-SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3D WHERE temp IS NOT NULL AND k % 10 = 1;
+-- SELECT asText(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geography3d WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3d WHERE temp IS NOT NULL AND k % 10 = 1;
 
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeometry LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography3D LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeometry3d LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography3d LIMIT 10;
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT asEWKT(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
-SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3D WHERE temp IS NOT NULL AND k % 10 = 1;
+-- SELECT asEWKT(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geography3d WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3d WHERE temp IS NOT NULL AND k % 10 = 1;
 
 SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 

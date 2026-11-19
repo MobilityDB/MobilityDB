@@ -63,6 +63,15 @@ SELECT bool_and(cellToParent(c, 0) = quadbin '480fffffffffffff')
  t
 (1 row)
 
+-- Children are finer than their cell, at most at resolution 26, and number
+-- no more than the largest allocation PostgreSQL makes holds
+/* Errors */
+SELECT cellToChildren(quadbin '48a6227affffffff', 5);
+ERROR:  The children resolution must be finer than the cell resolution 10 and at most 26: 5
+SELECT cellToChildren(quadbin '48a6227affffffff', 27);
+ERROR:  The children resolution must be finer than the cell resolution 10 and at most 26: 27
+SELECT cellToChildren(quadbin '480fffffffffffff', 14);
+ERROR:  The 268435456 children of a cell of resolution 0 at resolution 14 exceed the largest array MEOS allocates
 -- Sibling: moving right then left returns to the origin (same resolution)
 SELECT quadbinCellSibling(quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
   = quadbin '48427fffffffffff';
@@ -115,7 +124,16 @@ FROM s;
 
 /* Errors */
 SELECT gridDisk(gridDisk(quadbin '48a6227affffffff', 1), -1);
-ERROR:  quadbin_grid_disk: k must be >= 0
+ERROR:  The value cannot be negative: -1
+SELECT gridDisk(quadbin '48a6227affffffff', -1);
+ERROR:  The value cannot be negative: -1
+-- A ring of more cells than the largest allocation PostgreSQL makes: the
+-- 134258569 cells within 5793 of a cell of zoom 14, and the 8590138489 cells
+-- within 46341 of a cell of zoom 17, a count no int holds
+SELECT gridDisk(quadbinTileToCell(8192, 8192, 14), 5793);
+ERROR:  The 134258569 cells within 5793 of a cell of resolution 14 exceed the largest array MEOS allocates
+SELECT gridDisk(quadbinTileToCell(65535, 65535, 17), 46341);
+ERROR:  The 8590138489 cells within 46341 of a cell of resolution 17 exceed the largest array MEOS allocates
 -------------------------------------------------------------------------------
 -- cellToCover / coverCells
 -------------------------------------------------------------------------------

@@ -287,6 +287,12 @@ SELECT tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04
 -- that cross zero produces a three-instant sequence instead of a straight line
 SELECT tfloat '[1@2001-01-01, -1@2001-01-03]' * tfloat '[1@2001-01-01, -1@2001-01-03]';
 SELECT tfloat '[1@2001-01-01, 3@2001-01-03]' * tfloat '[3@2001-01-01, 1@2001-01-03]';
+-- The extremum is dated at its nearest microsecond: at 3.7 microseconds, so
+-- at 4, and a fraction 5e-7 of a day after its start, at 43200 microseconds
+SELECT timestamps(tfloat '[0@2001-01-01 00:00:00, 10@2001-01-01 00:00:00.00001]' *
+  tfloat '[7.4@2001-01-01 00:00:00, -2.6@2001-01-01 00:00:00.00001]');
+SELECT timestamps(tfloat '[0@2001-01-01, 1@2001-01-02]' *
+  tfloat '[0.0864@2001-01-01, -86399.9136@2001-01-02]');
 
 -- A temporal float with step interpolation keeps its jumps when combined with
 -- one with linear interpolation, whichever of the two is the first operand, so

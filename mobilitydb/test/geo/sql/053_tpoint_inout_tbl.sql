@@ -2,19 +2,19 @@
 
 SELECT asText(round(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
 SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeompoint3d LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint3d LIMIT 10;
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT asText(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geog3D WHERE g IS NOT NULL AND k % 10 = 1;
-SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
+-- SELECT asText(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geog3d WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3d WHERE temp IS NOT NULL AND k % 10 = 1;
 
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint3d LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint3d LIMIT 10;
 -- PostGIS 3.3 changed the output of MULTIPOINT
--- SELECT asEWKT(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geog3D WHERE g IS NOT NULL AND k % 10 = 1;
-SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
+-- SELECT asEWKT(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geog3d WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3d WHERE temp IS NOT NULL AND k % 10 = 1;
 
 SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeompoint_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 
@@ -49,9 +49,9 @@ SELECT count(*) FROM tbl_tgeompoint
   WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
 SELECT count(*) FROM tbl_tgeogpoint
   WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
-SELECT count(*) FROM tbl_tgeompoint3D
+SELECT count(*) FROM tbl_tgeompoint3d
   WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
-SELECT count(*) FROM tbl_tgeogpoint3D
+SELECT count(*) FROM tbl_tgeogpoint3d
   WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
 SELECT count(*) FROM tbl_ais_tgeompoint
   WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);

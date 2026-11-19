@@ -75,6 +75,7 @@ extern bool h3index_is_valid_input(H3Index index);
 extern bool ensure_h3index_cell(H3Index cell);
 extern bool ensure_h3index_directed_edge(H3Index edge);
 extern bool ensure_h3index_vertex(H3Index vertex);
+extern bool ensure_h3_success(H3Error err);
 
 /*****************************************************************************
  * Datum packing

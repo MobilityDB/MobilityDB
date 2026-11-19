@@ -258,6 +258,7 @@ SELECT asText(round(ARRAY[cbuffer(ST_Point(1.123456789,1.123456789), 0.123456789
 SRID(cbuffer) → integer
 setSRID(cbuffer,integer) → cbuffer
 </programlisting>
+<para>El SRID se establece como <link linkend="geo_srid"><varname>setSRID</varname></link> lo establece en una geometría: un SRID negativo se establece como el SRID desconocido 0 y un SRID más allá del rango reservado se pliega dentro de él. El SRID inválido se rechaza.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(cbuffer 'Cbuffer(SRID=5676;Point(1 1), 0.3)');
 -- 5676
@@ -974,6 +975,7 @@ SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
 SRID(tcbuffer) → integer
 setSRID(tcbuffer,integer) → tcbuffer
 </programlisting>
+<para>El SRID se establece como <link linkend="geo_srid"><varname>setSRID</varname></link> lo establece en una geometría, plegándose dentro del rango reservado un SRID que lo exceda, y los valores y la caja delimitadora toman ese mismo SRID. El SRID inválido se rechaza, así como el SRID desconocido 0, que es como se lee un SRID negativo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(tcbuffer 'SRID=5676;
   [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)');

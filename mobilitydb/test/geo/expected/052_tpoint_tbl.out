@@ -52,25 +52,25 @@ SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint_inst;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3D_inst;
+SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3d_inst;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3D_inst;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3d_inst;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3D_inst;
+SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3d_inst;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3D_inst;
+SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3d_inst;
  tempsubtype 
 -------------
  SequenceSet
@@ -100,25 +100,25 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint_inst;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3D_inst;
+SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3d_inst;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3D_inst;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3d_inst;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3D_inst;
+SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3d_inst;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3D_inst;
+SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3d_inst;
  tempsubtype 
 -------------
  SequenceSet
@@ -149,25 +149,25 @@ SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint_discseq;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3D_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3d_discseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3D_discseq;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3d_discseq;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3D_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3d_discseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3D_discseq;
+SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3d_discseq;
  tempsubtype 
 -------------
  SequenceSet
@@ -197,25 +197,25 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint_discseq;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3D_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3d_discseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3D_discseq;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3d_discseq;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3D_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3d_discseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3D_discseq;
+SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3d_discseq;
  tempsubtype 
 -------------
  SequenceSet
@@ -246,25 +246,25 @@ SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint_contseq;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3D_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3d_contseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3D_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3d_contseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3D_contseq;
+SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3d_contseq;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3D_contseq;
+SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3d_contseq;
  tempsubtype 
 -------------
  SequenceSet
@@ -294,25 +294,25 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint_contseq;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3D_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3d_contseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3D_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3d_contseq WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3D_contseq;
+SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3d_contseq;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3D_contseq;
+SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3d_contseq;
  tempsubtype 
 -------------
  SequenceSet
@@ -343,25 +343,25 @@ SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint_seqset;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3D_seqset WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeompointInst(temp)) FROM tbl_tgeompoint3d_seqset WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3D_seqset WHERE duration(temp) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeompoint3d_seqset WHERE duration(temp) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3D_seqset WHERE numSequences(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeompointSeq(temp)) FROM tbl_tgeompoint3d_seqset WHERE numSequences(temp) = 1;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3D_seqset;
+SELECT DISTINCT tempSubtype(tgeompointSeqSet(temp)) FROM tbl_tgeompoint3d_seqset;
  tempsubtype 
 -------------
  SequenceSet
@@ -391,25 +391,25 @@ SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint_seqset;
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3D_seqset WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeogpointInst(temp)) FROM tbl_tgeogpoint3d_seqset WHERE numInstants(temp) = 1;
  tempsubtype 
 -------------
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3D_seqset WHERE duration(temp) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeogpoint3d_seqset WHERE duration(temp) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3D_seqset WHERE numSequences(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeogpointSeq(temp)) FROM tbl_tgeogpoint3d_seqset WHERE numSequences(temp) = 1;
  tempsubtype 
 -------------
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3D_seqset;
+SELECT DISTINCT tempSubtype(tgeogpointSeqSet(temp)) FROM tbl_tgeogpoint3d_seqset;
  tempsubtype 
 -------------
  SequenceSet
@@ -447,7 +447,7 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint ORDER BY 1;
  SequenceSet
 (3 rows)
 
-SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeompoint3D ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeompoint3d ORDER BY 1;
  tempsubtype 
 -------------
  Instant
@@ -455,7 +455,7 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeompoint3D ORDER BY 1;
  SequenceSet
 (3 rows)
 
-SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3d ORDER BY 1;
  tempsubtype 
 -------------
  Instant
@@ -476,13 +476,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE memSize(temp) > 0;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint3d WHERE memSize(temp) > 0;
  count 
 -------
    100
@@ -500,13 +500,13 @@ SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint;
  30.050304
 (1 row)
 
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint3D;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint3d;
    max    
 ----------
  88.83362
 (1 row)
 
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint3d;
     max    
 -----------
  31.711561
@@ -525,13 +525,13 @@ SELECT MAX(ST_MemSize(getValue(temp)::geometry)) FROM tbl_tgeogpoint_inst;
   48
 (1 row)
 
-SELECT MAX(ST_MemSize(getValue(temp))) FROM tbl_tgeompoint3D_inst;
+SELECT MAX(ST_MemSize(getValue(temp))) FROM tbl_tgeompoint3d_inst;
  max 
 -----
   40
 (1 row)
 
-SELECT MAX(ST_MemSize(getValue(temp)::geometry)) FROM tbl_tgeogpoint3D_inst;
+SELECT MAX(ST_MemSize(getValue(temp)::geometry)) FROM tbl_tgeogpoint3d_inst;
  max 
 -----
   64
@@ -549,13 +549,13 @@ SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeogpoint;
  1984
 (1 row)
 
-SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeompoint3d;
  max  
 ------
  2600
 (1 row)
 
-SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeogpoint3d;
  max  
 ------
  2600
@@ -573,13 +573,13 @@ SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint;
   48
 (1 row)
 
-SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeompoint3d;
  max 
 -----
   40
 (1 row)
 
-SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint3d;
  max 
 -----
   64
@@ -597,13 +597,13 @@ SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint;
   48
 (1 row)
 
-SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_tgeompoint3d;
  max 
 -----
   40
 (1 row)
 
-SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint3d;
  max 
 -----
   64
@@ -621,13 +621,13 @@ SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeogpoint;
   48
 (1 row)
 
-SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_tgeompoint3d;
  max 
 -----
   40
 (1 row)
 
-SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeogpoint3d;
  max 
 -----
   64
@@ -645,13 +645,13 @@ SELECT MAX(getTimestamp(temp)) FROM tbl_tgeogpoint_inst;
  Sun Dec 30 14:05:00 2001 PST
 (1 row)
 
-SELECT MAX(getTimestamp(temp)) FROM tbl_tgeompoint3D_inst;
+SELECT MAX(getTimestamp(temp)) FROM tbl_tgeompoint3d_inst;
              max              
 ------------------------------
  Mon Dec 24 13:44:00 2001 PST
 (1 row)
 
-SELECT MAX(getTimestamp(temp)) FROM tbl_tgeogpoint3D_inst;
+SELECT MAX(getTimestamp(temp)) FROM tbl_tgeogpoint3d_inst;
              max              
 ------------------------------
  Fri Dec 28 01:03:00 2001 PST
@@ -669,13 +669,13 @@ SELECT MAX(duration(getTime(temp))) FROM tbl_tgeogpoint;
  @ 3 hours 19 mins
 (1 row)
 
-SELECT MAX(duration(getTime(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeompoint3d;
         max        
 -------------------
  @ 3 hours 27 mins
 (1 row)
 
-SELECT MAX(duration(getTime(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeogpoint3d;
         max        
 -------------------
  @ 3 hours 53 mins
@@ -693,13 +693,13 @@ SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeogpoint;
  @ 4 hours 47 mins
 (1 row)
 
-SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeompoint3d;
         max        
 -------------------
  @ 4 hours 34 mins
 (1 row)
 
-SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeogpoint3d;
         max        
 -------------------
  @ 5 hours 16 mins
@@ -717,13 +717,13 @@ SELECT MAX(duration(temp)) FROM tbl_tgeogpoint;
  @ 3 hours 19 mins
 (1 row)
 
-SELECT MAX(duration(temp)) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(temp)) FROM tbl_tgeompoint3d;
         max        
 -------------------
  @ 3 hours 27 mins
 (1 row)
 
-SELECT MAX(duration(temp)) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(temp)) FROM tbl_tgeogpoint3d;
         max        
 -------------------
  @ 3 hours 53 mins
@@ -741,13 +741,13 @@ SELECT MAX(numSequences(temp)) FROM tbl_tgeogpoint_contseq;
    1
 (1 row)
 
-SELECT MAX(numSequences(temp)) FROM tbl_tgeompoint3D_contseq;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeompoint3d_contseq;
  max 
 -----
    1
 (1 row)
 
-SELECT MAX(numSequences(temp)) FROM tbl_tgeogpoint3D_contseq;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeogpoint3d_contseq;
  max 
 -----
    1
@@ -765,13 +765,13 @@ SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeogpoint_contseq;
  @ 51 mins
 (1 row)
 
-SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeompoint3D_contseq;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeompoint3d_contseq;
     max    
 -----------
  @ 53 mins
 (1 row)
 
-SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeogpoint3D_contseq;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeogpoint3d_contseq;
     max    
 -----------
  @ 58 mins
@@ -789,13 +789,13 @@ SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeogpoint_contseq;
  @ 51 mins
 (1 row)
 
-SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeompoint3D_contseq;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeompoint3d_contseq;
     max    
 -----------
  @ 53 mins
 (1 row)
 
-SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeogpoint3D_contseq;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeogpoint3d_contseq;
     max    
 -----------
  @ 58 mins
@@ -813,13 +813,13 @@ SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeogpoint_co
  @ 51 mins
 (1 row)
 
-SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeompoint3D_contseq;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeompoint3d_contseq;
     max    
 -----------
  @ 53 mins
 (1 row)
 
-SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeogpoint3D_contseq;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeogpoint3d_contseq;
     max    
 -----------
  @ 58 mins
@@ -837,13 +837,13 @@ SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeogpoint_contseq;
    1
 (1 row)
 
-SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeompoint3D_contseq;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeompoint3d_contseq;
  max 
 -----
    1
 (1 row)
 
-SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeogpoint3D_contseq;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeogpoint3d_contseq;
  max 
 -----
    1
@@ -861,13 +861,13 @@ SELECT MAX(numSequences(temp)) FROM tbl_tgeogpoint_seqset;
    9
 (1 row)
 
-SELECT MAX(numSequences(temp)) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeompoint3d_seqset;
  max 
 -----
    9
 (1 row)
 
-SELECT MAX(numSequences(temp)) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeogpoint3d_seqset;
  max 
 -----
    9
@@ -885,13 +885,13 @@ SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeogpoint_seqset;
  @ 53 mins
 (1 row)
 
-SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeompoint3d_seqset;
     max    
 -----------
  @ 49 mins
 (1 row)
 
-SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeogpoint3d_seqset;
     max    
 -----------
  @ 50 mins
@@ -909,13 +909,13 @@ SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeogpoint_seqset;
  @ 54 mins
 (1 row)
 
-SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeompoint3d_seqset;
     max    
 -----------
  @ 55 mins
 (1 row)
 
-SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeogpoint3d_seqset;
     max    
 -----------
  @ 49 mins
@@ -933,13 +933,13 @@ SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeogpoint_se
  @ 54 mins
 (1 row)
 
-SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeompoint3d_seqset;
     max    
 -----------
  @ 55 mins
 (1 row)
 
-SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeogpoint3d_seqset;
     max    
 -----------
  @ 49 mins
@@ -957,13 +957,13 @@ SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeogpoint_seqset;
    9
 (1 row)
 
-SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeompoint3d_seqset;
  max 
 -----
    9
 (1 row)
 
-SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeogpoint3d_seqset;
  max 
 -----
    9
@@ -981,13 +981,13 @@ SELECT MAX(numInstants(temp)) FROM tbl_tgeogpoint;
   47
 (1 row)
 
-SELECT MAX(numInstants(temp)) FROM tbl_tgeompoint3D;
+SELECT MAX(numInstants(temp)) FROM tbl_tgeompoint3d;
  max 
 -----
   52
 (1 row)
 
-SELECT MAX(numInstants(temp)) FROM tbl_tgeogpoint3D;
+SELECT MAX(numInstants(temp)) FROM tbl_tgeogpoint3d;
  max 
 -----
   52
@@ -1005,13 +1005,13 @@ SELECT COUNT(startInstant(temp)) FROM tbl_tgeogpoint;
    100
 (1 row)
 
-SELECT COUNT(startInstant(temp)) FROM tbl_tgeompoint3D;
+SELECT COUNT(startInstant(temp)) FROM tbl_tgeompoint3d;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(startInstant(temp)) FROM tbl_tgeogpoint3D;
+SELECT COUNT(startInstant(temp)) FROM tbl_tgeogpoint3d;
  count 
 -------
    100
@@ -1029,13 +1029,13 @@ SELECT COUNT(endInstant(temp)) FROM tbl_tgeogpoint;
    100
 (1 row)
 
-SELECT COUNT(endInstant(temp)) FROM tbl_tgeompoint3D;
+SELECT COUNT(endInstant(temp)) FROM tbl_tgeompoint3d;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(endInstant(temp)) FROM tbl_tgeogpoint3D;
+SELECT COUNT(endInstant(temp)) FROM tbl_tgeogpoint3d;
  count 
 -------
    100
@@ -1053,13 +1053,13 @@ SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeogpoint;
    100
 (1 row)
 
-SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeompoint3D;
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeompoint3d;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeogpoint3D;
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeogpoint3d;
  count 
 -------
    100
@@ -1077,13 +1077,13 @@ SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeogpoint;
   47
 (1 row)
 
-SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeompoint3D;
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeompoint3d;
  max 
 -----
   52
 (1 row)
 
-SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeogpoint3D;
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeogpoint3d;
  max 
 -----
   52
@@ -1101,13 +1101,13 @@ SELECT MAX(numTimestamps(temp)) FROM tbl_tgeogpoint;
   47
 (1 row)
 
-SELECT MAX(numTimestamps(temp)) FROM tbl_tgeompoint3D;
+SELECT MAX(numTimestamps(temp)) FROM tbl_tgeompoint3d;
  max 
 -----
   52
 (1 row)
 
-SELECT MAX(numTimestamps(temp)) FROM tbl_tgeogpoint3D;
+SELECT MAX(numTimestamps(temp)) FROM tbl_tgeogpoint3d;
  max 
 -----
   52
@@ -1125,13 +1125,13 @@ SELECT MAX(startTimestamp(temp)) FROM tbl_tgeogpoint;
  Mon Dec 17 10:54:00 2001 PST
 (1 row)
 
-SELECT MAX(startTimestamp(temp)) FROM tbl_tgeompoint3D;
+SELECT MAX(startTimestamp(temp)) FROM tbl_tgeompoint3d;
              max              
 ------------------------------
  Sun Dec 30 02:15:00 2001 PST
 (1 row)
 
-SELECT MAX(startTimestamp(temp)) FROM tbl_tgeogpoint3D;
+SELECT MAX(startTimestamp(temp)) FROM tbl_tgeogpoint3d;
              max              
 ------------------------------
  Sun Dec 23 00:21:00 2001 PST
@@ -1149,13 +1149,13 @@ SELECT MAX(endTimestamp(temp)) FROM tbl_tgeogpoint;
  Mon Dec 17 10:56:00 2001 PST
 (1 row)
 
-SELECT MAX(endTimestamp(temp)) FROM tbl_tgeompoint3D;
+SELECT MAX(endTimestamp(temp)) FROM tbl_tgeompoint3d;
              max              
 ------------------------------
  Sun Dec 30 06:00:00 2001 PST
 (1 row)
 
-SELECT MAX(endTimestamp(temp)) FROM tbl_tgeogpoint3D;
+SELECT MAX(endTimestamp(temp)) FROM tbl_tgeogpoint3d;
              max              
 ------------------------------
  Sun Dec 23 00:21:00 2001 PST
@@ -1173,13 +1173,13 @@ SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeogpoint;
  Mon Dec 17 10:56:00 2001 PST
 (1 row)
 
-SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeompoint3d;
              max              
 ------------------------------
  Sun Dec 30 06:00:00 2001 PST
 (1 row)
 
-SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeogpoint3d;
              max              
 ------------------------------
  Sun Dec 23 00:21:00 2001 PST
@@ -1197,13 +1197,13 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint;
   47
 (1 row)
 
-SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeompoint3D;
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeompoint3d;
  max 
 -----
   52
 (1 row)
 
-SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint3D;
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint3d;
  max 
 -----
   52
@@ -1224,13 +1224,13 @@ SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
   9900
 (1 row)
 
-SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeompoint3d, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeogpoint3d, tbl_interval;
  count 
 -------
   9900
@@ -1248,13 +1248,13 @@ SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
   9900
 (1 row)
 
-SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeompoint3d, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeogpoint3d, tbl_interval;
  count 
 -------
   9900
@@ -1272,13 +1272,13 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint, tbl_interval;
   9900
 (1 row)
 
-SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeompoint3d, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint3d, tbl_interval;
  count 
 -------
   9900
@@ -1363,13 +1363,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= startValue(temp);
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE temp ?= startValue(temp);
  count 
 -------
     77
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d WHERE temp ?= startValue(temp);
  count 
 -------
     80
@@ -1387,13 +1387,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= startValue(temp);
     31
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp %= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE temp %= startValue(temp);
  count 
 -------
     28
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp %= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3d WHERE temp %= startValue(temp);
  count 
 -------
     39
@@ -1414,13 +1414,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE temp != merge(atValue(
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_geom_point3d WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geog_point3d WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
  count 
 -------
      0
@@ -1442,16 +1442,16 @@ WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, (
-  SELECT set(array_agg(g)) AS s FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp
+SELECT COUNT(*) FROM tbl_tgeompoint3d, (
+  SELECT set(array_agg(g)) AS s FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp
 WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, (
-  SELECT set(array_agg(g)) AS s FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry)) tmp
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, (
+  SELECT set(array_agg(g)) AS s FROM tbl_geog_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry)) tmp
 WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
  count 
 -------
@@ -1470,13 +1470,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE valueAtTimestamp(temp
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
  count 
 -------
      0
@@ -1494,13 +1494,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp != merge(atTime(
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
@@ -1518,13 +1518,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp != merge(atTime(temp
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
@@ -1542,13 +1542,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp != merge(atTime(tem
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
@@ -1566,13 +1566,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp != merge(atTime(
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
@@ -1603,7 +1603,7 @@ SELECT MAX(ST_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
   32
 (1 row)
 
-SELECT MAX(ST_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_memsize(twCentroid(temp))) FROM tbl_tgeompoint3d;
  max 
 -----
   40
@@ -1696,84 +1696,84 @@ WHERE t1.temp >= t2.temp;
   5059
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE t1.temp = t2.temp;
  count 
 -------
    118
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE t1.temp <> t2.temp;
  count 
 -------
   9882
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE t1.temp < t2.temp;
  count 
 -------
   4941
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE t1.temp <= t2.temp;
  count 
 -------
   5059
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE t1.temp > t2.temp;
  count 
 -------
   4941
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
   5059
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2
 WHERE t1.temp = t2.temp;
  count 
 -------
    118
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2
 WHERE t1.temp <> t2.temp;
  count 
 -------
   9882
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2
 WHERE t1.temp < t2.temp;
  count 
 -------
   4941
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2
 WHERE t1.temp <= t2.temp;
  count 
 -------
   5059
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2
 WHERE t1.temp > t2.temp;
  count 
 -------
   4941
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2
 WHERE t1.temp >= t2.temp;
  count 
 -------

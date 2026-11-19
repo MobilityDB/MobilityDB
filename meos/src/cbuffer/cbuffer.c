@@ -1002,6 +1002,8 @@ cbuffer_set_srid_intl(Cbuffer *cb, int32_t srid)
 /**
  * @ingroup meos_cbuffer_base_srid
  * @brief Return a circular buffer with the coordinates set to an SRID
+ * @details The invalid SRID is refused and any other SRID is clamped as
+ * #geo_set_srid clamps it
  * @param[in] cb Circular buffer
  * @param[in] srid SRID
  * @csqlfn #Cbuffer_set_srid()
@@ -1014,7 +1016,7 @@ cbuffer_set_srid(const Cbuffer *cb, int32_t srid)
   if (! ensure_srid_valid(srid))
     return NULL;
   Cbuffer *result = cbuffer_copy(cb);
-  result->srid = srid;
+  cbuffer_set_srid_intl(result, clamp_srid(srid));
   return result;
 }
 

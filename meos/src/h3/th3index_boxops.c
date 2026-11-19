@@ -126,12 +126,8 @@ static bool
 th3index_cell_bounds(H3Index cell, double *bounds)
 {
   CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "H3 cellToBoundary failed for cell %" PRIx64, (uint64_t) cell);
+  if (! ensure_h3_success(cellToBoundary(cell, &bnd)))
     return false;
-  }
   double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
   for (int i = 0; i < bnd.numVerts; i++)
   {

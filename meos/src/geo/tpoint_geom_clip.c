@@ -508,7 +508,8 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
     /* Iterate only for the points */
     if (e->etype != EDGE_POINT)
       continue;
-    // assert(e->x1 == e->x2 && e->y1 == e->y2);
+    /* A point edge holds its point at both ends, as #extract_point builds it */
+    assert(e->x1 == e->x2 && e->y1 == e->y2);
 
     /* Solve parameter t */
     double t = use_x ? (e->x1 - a->x) * inv : (e->y1 - a->y) * inv;

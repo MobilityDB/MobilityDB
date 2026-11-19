@@ -14,9 +14,9 @@ SELECT extent(getSpaceTile(g, 2.5, geometry 'Point(10 10)')) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
 -- 3D
 SELECT extent(getSpaceTile(g, 2.5)) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
 SELECT extent(getSpaceTile(g, 2.5, geometry 'Point(10 10 10)')) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10) t1;
 
 -- Time
 SELECT extent(getStboxTimeTile(t, interval '2 days')) FROM
@@ -33,10 +33,10 @@ SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days', geometry 'Point(10 
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
 -- 3D
 SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days')) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
 SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days', geometry 'Point(10 10 10)', '2001-06-01')) FROM
-(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g) LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL) t2;
 
 -------------------------------------------------------------------------------

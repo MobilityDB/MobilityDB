@@ -29,13 +29,11 @@
 
 /**
  * @file
- * @brief MEOS lifting for metric functions, plus the static unit-string
- * dispatcher and libh3-wrapping adapters that back them
- * @details All three entries take a text `unit` argument. The unit is
- * validated once at the MEOS entry point (via `h3_unit_from_cstring`
- * defined below) and then carried through the lifting machinery as
- * an `Int32` datum holding the `H3Unit` enum — saves parsing the
- * string at every instant.
+ * @brief MEOS lifting for metric functions, and the libh3-wrapping
+ * functions that back them
+ * @details The area of a cell answers square metres, the length of an edge
+ * and the great-circle distance metres. The lifting machinery carries the
+ * unit as an `Int32` datum holding the `H3Unit` enum.
  */
 
 /* C */
@@ -50,6 +48,7 @@
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
+#include "h3/h3index.h"
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
@@ -78,11 +77,8 @@ h3_cell_area_meos(H3Index cell, H3Unit unit)
         "h3_cell_area_meos: expected an area unit (km2, m2, rads2)");
       return 0.0;
   }
-  if (err != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(err))
     return 0.0;
-  }
   return area;
 }
 
@@ -104,11 +100,8 @@ h3_edge_length_meos(H3Index edge, H3Unit unit)
         "h3_edge_length: expected a length unit (km, m, rads)");
       return 0.0;
   }
-  if (err != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  if (! ensure_h3_success(err))
     return 0.0;
-  }
   return len;
 }
 

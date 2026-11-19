@@ -75,23 +75,26 @@ rewrites:
   - pattern: '^\s*PG_FREE_IF_COPY\([^)]*\)\s*;\s*$'
     replace: ""
 
-  # `h3_assert(expr);`
-  #   → two-line guard:
-  #       `if ((expr) != E_SUCCESS)`
-  #       `  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");`
-  # The two-space continuation prefix is preserved by render_c's
-  # tab-only lstrip so the generated code stays under 80 columns.
+  # `h3_assert(expr);` → `ensure_h3_success(expr);`, which raises the
+  # error h3-pg's h3_assert raises: the code libh3 returns and its
+  # description. The destination of the call keeps its zero initializer
+  # when the error handler returns.
   - pattern: '^(\s*)h3_assert\(([^;]+)\)\s*;\s*$'
-    replace: "if ((\\2) != E_SUCCESS)\n  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, \"h3 library error\");"
+    replace: "ensure_h3_success(\\2);"
 
-# Any function whose body contains tokens listed in the `opt-out`
-# section of opt-out.yaml is skipped by the extractor and must be
-# implemented by hand in `meos/src/h3/h3_adapter.c`. This keeps
-# complex PG-varlena adaptation (POLYGON, GSERIALIZED, text with
-# ereport, GUC reads) out of the generated path.
+# A function whose body uses a token no rule here handles is listed in
+# opt-out.yaml, skipped by the extractor and written by hand in
+# meos/src/h3. This keeps complex PG-varlena adaptation (POLYGON,
+# GSERIALIZED, text with ereport, GUC reads) out of the generated path.
 
 # The brief of a function h3-pg leaves without a comment. The brief of
 # every other function is the first paragraph of its h3-pg comment.
 briefs:
   h3_cell_to_child_pos: "Return the position of a cell among the children of its parent"
   h3_child_pos_to_cell: "Return the child of a cell at a position among its children"
+
+# The details of a function whose h3-pg comment, copied from libh3, states
+# a result the binding does not give: on a failure the binding raises the
+# error libh3 returns.
+details:
+  h3_grid_distance: "The distance cannot be found when the two indexes are not comparable (different resolutions), too far apart, or separated by pentagonal distortion, the limitations of the local IJ coordinate space functions; the error libh3 returns is then raised."

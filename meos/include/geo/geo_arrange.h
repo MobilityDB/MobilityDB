@@ -102,6 +102,9 @@ typedef struct
 
 extern ArrangeStatus arrange_wound_tangent_surfaces(const MeosArray *edges,
   MeosArray ***rings, uint32_t *nrings, int32_t **owner, ArrangeCert *cert);
+extern ArrangeStatus arrange_wound_tangent_surfaces_signed(
+  const MeosArray *edges, int sense, MeosArray ***rings, uint32_t *nrings,
+  int32_t **owner);
 extern bool point_segment_far_exact(double px, double py, double ax,
   double ay, double bx, double by, double d);
 extern void arrange_rings_free(MeosArray **rings, uint32_t nrings);

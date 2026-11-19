@@ -3,18 +3,18 @@
 -- This test creates its indexes on copies of the tables of the setup scripts,
 -- which hide those tables in its session: every test reads them, and an
 -- index on them would change the plans of the other tests.
-CREATE TEMP TABLE tbl_tgeompoint3D AS TABLE tbl_tgeompoint3D;
-CREATE TEMP TABLE tbl_tgeogpoint3D AS TABLE tbl_tgeogpoint3D;
-ANALYZE tbl_tgeompoint3D, tbl_tgeogpoint3D;
+CREATE TEMP TABLE tbl_tgeompoint3d AS TABLE tbl_tgeompoint3d;
+CREATE TEMP TABLE tbl_tgeogpoint3d AS TABLE tbl_tgeogpoint3d;
+ANALYZE tbl_tgeompoint3d, tbl_tgeogpoint3d;
 
-DROP INDEX IF EXISTS tbl_tgeompoint3D_rtree_idx;
-DROP INDEX IF EXISTS tbl_tgeogpoint3D_rtree_idx;
+DROP INDEX IF EXISTS tbl_tgeompoint3d_rtree_idx;
+DROP INDEX IF EXISTS tbl_tgeogpoint3d_rtree_idx;
 
-DROP INDEX IF EXISTS tbl_tgeompoint3D_quadtree_idx;
-DROP INDEX IF EXISTS tbl_tgeogpoint3D_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tgeompoint3d_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tgeogpoint3d_quadtree_idx;
 
-DROP INDEX IF EXISTS tbl_tgeompoint3D_kdtree_idx;
-DROP INDEX IF EXISTS tbl_tgeogpoint3D_kdtree_idx;
+DROP INDEX IF EXISTS tbl_tgeompoint3d_kdtree_idx;
+DROP INDEX IF EXISTS tbl_tgeogpoint3d_kdtree_idx;
 
 -------------------------------------------------------------------------------
 
@@ -30,672 +30,672 @@ CREATE TEMP TABLE test_topops3d(
 );
 
 -------------------------------------------------------------------------------
--- <type> op tgeompoint3D
+-- <type> op tgeompoint3d
 
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tstzspan', 'tgeompoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t && temp;
+SELECT '&&', 'tstzspan', 'tgeompoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t && temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzspan', 'tgeompoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t @> temp;
+SELECT '@>', 'tstzspan', 'tgeompoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t @> temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tstzspan', 'tgeompoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t <@ temp;
+SELECT '<@', 'tstzspan', 'tgeompoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t <@ temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tstzspan', 'tgeompoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t -|- temp;
+SELECT '-|-', 'tstzspan', 'tgeompoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t -|- temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tstzspan', 'tgeompoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t ~= temp;
+SELECT '~=', 'tstzspan', 'tgeompoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t ~= temp;
 
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'stbox', 'tgeompoint3D', COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b && temp;
+SELECT '&&', 'stbox', 'tgeompoint3d', COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b && temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'stbox', 'tgeompoint3D', COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b @> temp;
+SELECT '@>', 'stbox', 'tgeompoint3d', COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b @> temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'stbox', 'tgeompoint3D', COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b <@ temp;
+SELECT '<@', 'stbox', 'tgeompoint3d', COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b <@ temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'stbox', 'tgeompoint3D', COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b -|- temp;
+SELECT '-|-', 'stbox', 'tgeompoint3d', COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b -|- temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'stbox', 'tgeompoint3D', COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b ~= temp;
-
--------------------------------------------------------------------------------
--- <type> op tgeogpoint3D
-
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tstzspan', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t && temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzspan', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t @> temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tstzspan', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t <@ temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tstzspan', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t -|- temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tstzspan', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t ~= temp;
-
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'stbox', 'tgeogpoint3D', COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b && temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'stbox', 'tgeogpoint3D', COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b @> temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'stbox', 'tgeogpoint3D', COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b <@ temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'stbox', 'tgeogpoint3D', COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b -|- temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'stbox', 'tgeogpoint3D', COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b ~= temp;
+SELECT '~=', 'stbox', 'tgeompoint3d', COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b ~= temp;
 
 -------------------------------------------------------------------------------
---  tgeompoint3D op <type>
+-- <type> op tgeogpoint3d
 
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeompoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp && t;
+SELECT '&&', 'tstzspan', 'tgeogpoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t && temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeompoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp @> t;
+SELECT '@>', 'tstzspan', 'tgeogpoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t @> temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeompoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp <@ t;
+SELECT '<@', 'tstzspan', 'tgeogpoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t <@ temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeompoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp -|- t;
+SELECT '-|-', 'tstzspan', 'tgeogpoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t -|- temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeompoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp ~= t;
+SELECT '~=', 'tstzspan', 'tgeogpoint3d', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t ~= temp;
 
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeompoint3D', 'stbox', COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp && b;
+SELECT '&&', 'stbox', 'tgeogpoint3d', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b && temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeompoint3D', 'stbox', COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp @> b;
+SELECT '@>', 'stbox', 'tgeogpoint3d', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b @> temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeompoint3D', 'stbox', COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp <@ b;
+SELECT '<@', 'stbox', 'tgeogpoint3d', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b <@ temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeompoint3D', 'stbox', COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp -|- b;
+SELECT '-|-', 'stbox', 'tgeogpoint3d', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b -|- temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeompoint3D', 'stbox', COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp ~= b;
-
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeompoint3D', 'tgeompoint3D', COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp && t2.temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeompoint3D', 'tgeompoint3D', COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp @> t2.temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeompoint3D', 'tgeompoint3D', COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp <@ t2.temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeompoint3D', 'tgeompoint3D', COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp -|- t2.temp;
-INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeompoint3D', 'tgeompoint3D', COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp ~= t2.temp;
+SELECT '~=', 'stbox', 'tgeogpoint3d', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b ~= temp;
 
 -------------------------------------------------------------------------------
---  tgeogpoint3D op <type>
+--  tgeompoint3d op <type>
 
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeogpoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp && t;
+SELECT '&&', 'tgeompoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp && t;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeogpoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp @> t;
+SELECT '@>', 'tgeompoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp @> t;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeogpoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp <@ t;
+SELECT '<@', 'tgeompoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp <@ t;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeogpoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp -|- t;
+SELECT '-|-', 'tgeompoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp -|- t;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeogpoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp ~= t;
+SELECT '~=', 'tgeompoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp ~= t;
 
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeogpoint3D', 'stbox', COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp && b;
+SELECT '&&', 'tgeompoint3d', 'stbox', COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp && b;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeogpoint3D', 'stbox', COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp @> b;
+SELECT '@>', 'tgeompoint3d', 'stbox', COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp @> b;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeogpoint3D', 'stbox', COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp <@ b;
+SELECT '<@', 'tgeompoint3d', 'stbox', COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp <@ b;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeogpoint3D', 'stbox', COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp -|- b;
+SELECT '-|-', 'tgeompoint3d', 'stbox', COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp -|- b;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeogpoint3D', 'stbox', COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp ~= b;
+SELECT '~=', 'tgeompoint3d', 'stbox', COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp ~= b;
 
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeogpoint3D', 'tgeogpoint3D', COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp && t2.temp;
+SELECT '&&', 'tgeompoint3d', 'tgeompoint3d', COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp && t2.temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeogpoint3D', 'tgeogpoint3D', COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp @> t2.temp;
+SELECT '@>', 'tgeompoint3d', 'tgeompoint3d', COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp @> t2.temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeogpoint3D', 'tgeogpoint3D', COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp <@ t2.temp;
+SELECT '<@', 'tgeompoint3d', 'tgeompoint3d', COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp <@ t2.temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeogpoint3D', 'tgeogpoint3D', COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp -|- t2.temp;
+SELECT '-|-', 'tgeompoint3d', 'tgeompoint3d', COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp -|- t2.temp;
 INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeogpoint3D', 'tgeogpoint3D', COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp ~= t2.temp;
+SELECT '~=', 'tgeompoint3d', 'tgeompoint3d', COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp ~= t2.temp;
 
 -------------------------------------------------------------------------------
+--  tgeogpoint3d op <type>
 
-CREATE INDEX tbl_tgeompoint3D_rtree_idx ON tbl_tgeompoint3D USING GIST(temp);
-CREATE INDEX tbl_tgeogpoint3D_rtree_idx ON tbl_tgeogpoint3D USING GIST(temp);
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tgeogpoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp && t;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tgeogpoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp @> t;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tgeogpoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp <@ t;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tgeogpoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp -|- t;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tgeogpoint3d', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp ~= t;
 
--------------------------------------------------------------------------------
--- <type> op tgeompoint3D
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tgeogpoint3d', 'stbox', COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp && b;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tgeogpoint3d', 'stbox', COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp @> b;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tgeogpoint3d', 'stbox', COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp <@ b;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tgeogpoint3d', 'stbox', COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp -|- b;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tgeogpoint3d', 'stbox', COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp ~= b;
 
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t && temp )
-WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t @> temp )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t <@ temp )
-WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t -|- temp )
-WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t ~= temp )
-WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b && temp )
-WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b @> temp )
-WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b <@ temp )
-WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b -|- temp )
-WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b ~= temp )
-WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-
--------------------------------------------------------------------------------
--- <type> op tgeogpoint3D
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t && temp )
-WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t @> temp )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t <@ temp )
-WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t -|- temp )
-WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t ~= temp )
-WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b && temp )
-WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b @> temp )
-WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b <@ temp )
-WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b -|- temp )
-WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b ~= temp )
-WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-
--------------------------------------------------------------------------------
--- tgeompoint3D op <type>
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp && t )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp @> t )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp <@ t )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp -|- t )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp ~= t )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp && b )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp @> b )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp <@ b )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp -|- b )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp ~= b )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp && t2.temp )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp @> t2.temp )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp <@ t2.temp )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp -|- t2.temp )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp ~= t2.temp )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-
--------------------------------------------------------------------------------
--- tgeogpoint3D op <type>
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp && t )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp @> t )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp <@ t )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp -|- t )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp ~= t )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp && b )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp @> b )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp <@ b )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp -|- b )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp ~= b )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp && t2.temp )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp @> t2.temp )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp <@ t2.temp )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp -|- t2.temp )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp ~= t2.temp )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tgeogpoint3d', 'tgeogpoint3d', COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp && t2.temp;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tgeogpoint3d', 'tgeogpoint3d', COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp @> t2.temp;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tgeogpoint3d', 'tgeogpoint3d', COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp <@ t2.temp;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tgeogpoint3d', 'tgeogpoint3d', COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp -|- t2.temp;
+INSERT INTO test_topops3d(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tgeogpoint3d', 'tgeogpoint3d', COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp ~= t2.temp;
 
 -------------------------------------------------------------------------------
 
-DROP INDEX tbl_tgeompoint3D_rtree_idx;
-DROP INDEX tbl_tgeogpoint3D_rtree_idx;
+CREATE INDEX tbl_tgeompoint3d_rtree_idx ON tbl_tgeompoint3d USING GIST(temp);
+CREATE INDEX tbl_tgeogpoint3d_rtree_idx ON tbl_tgeogpoint3d USING GIST(temp);
+
+-------------------------------------------------------------------------------
+-- <type> op tgeompoint3d
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+
+-------------------------------------------------------------------------------
+-- <type> op tgeogpoint3d
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+
+-------------------------------------------------------------------------------
+-- tgeompoint3d op <type>
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+
+-------------------------------------------------------------------------------
+-- tgeogpoint3d op <type>
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
 
 -------------------------------------------------------------------------------
 
-CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp);
-CREATE INDEX tbl_tgeogpoint3D_quadtree_idx ON tbl_tgeogpoint3D USING SPGIST(temp);
-
--------------------------------------------------------------------------------
--- <type> op tgeompoint3D
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t && temp )
-WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t @> temp )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t <@ temp )
-WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t -|- temp )
-WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t ~= temp )
-WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b && temp )
-WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b @> temp )
-WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b <@ temp )
-WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b -|- temp )
-WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b ~= temp )
-WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-
--------------------------------------------------------------------------------
--- <type> op tgeogpoint3D
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t && temp )
-WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t @> temp )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t <@ temp )
-WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t -|- temp )
-WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t ~= temp )
-WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b && temp )
-WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b @> temp )
-WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b <@ temp )
-WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b -|- temp )
-WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b ~= temp )
-WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-
--------------------------------------------------------------------------------
--- tgeompoint3D op <type>
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp && t )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp @> t )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp <@ t )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp -|- t )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp ~= t )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp && b )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp @> b )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp <@ b )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp -|- b )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp ~= b )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp && t2.temp )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp @> t2.temp )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp <@ t2.temp )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp -|- t2.temp )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp ~= t2.temp )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-
--------------------------------------------------------------------------------
--- tgeogpoint3D op <type>
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp && t )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp @> t )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp <@ t )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp -|- t )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp ~= t )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp && b )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp @> b )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp <@ b )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp -|- b )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp ~= b )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp && t2.temp )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp @> t2.temp )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp <@ t2.temp )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp -|- t2.temp )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp ~= t2.temp )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
+DROP INDEX tbl_tgeompoint3d_rtree_idx;
+DROP INDEX tbl_tgeogpoint3d_rtree_idx;
 
 -------------------------------------------------------------------------------
 
-DROP INDEX tbl_tgeompoint3D_quadtree_idx;
-DROP INDEX tbl_tgeogpoint3D_quadtree_idx;
+CREATE INDEX tbl_tgeompoint3d_quadtree_idx ON tbl_tgeompoint3d USING SPGIST(temp);
+CREATE INDEX tbl_tgeogpoint3d_quadtree_idx ON tbl_tgeogpoint3d USING SPGIST(temp);
+
+-------------------------------------------------------------------------------
+-- <type> op tgeompoint3d
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+
+-------------------------------------------------------------------------------
+-- <type> op tgeogpoint3d
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+
+-------------------------------------------------------------------------------
+-- tgeompoint3d op <type>
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+
+-------------------------------------------------------------------------------
+-- tgeogpoint3d op <type>
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
 
 -------------------------------------------------------------------------------
 
-CREATE INDEX tbl_tgeompoint3D_kdtree_idx ON tbl_tgeompoint3D USING SPGIST(temp tgeompoint_kdtree_ops);
-CREATE INDEX tbl_tgeogpoint3D_kdtree_idx ON tbl_tgeogpoint3D USING SPGIST(temp tgeogpoint_kdtree_ops);
-
--------------------------------------------------------------------------------
--- <type> op tgeompoint3D
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t && temp )
-WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t @> temp )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t <@ temp )
-WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t -|- temp )
-WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE t ~= temp )
-WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3D';
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b && temp )
-WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b @> temp )
-WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b <@ temp )
-WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b -|- temp )
-WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3D, tbl_tgeompoint3D WHERE b ~= temp )
-WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3D';
-
--------------------------------------------------------------------------------
--- <type> op tgeogpoint3D
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t && temp )
-WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t @> temp )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t <@ temp )
-WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t -|- temp )
-WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE t ~= temp )
-WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3D';
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b && temp )
-WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b @> temp )
-WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b <@ temp )
-WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b -|- temp )
-WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b ~= temp )
-WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
-
--------------------------------------------------------------------------------
--- tgeompoint3D op <type>
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp && t )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp @> t )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp <@ t )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp -|- t )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp ~= t )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzspan';
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp && b )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp @> b )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp <@ b )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp -|- b )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_stbox3D WHERE temp ~= b )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'stbox';
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp && t2.temp )
-WHERE op = '&&' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp @> t2.temp )
-WHERE op = '@>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp <@ t2.temp )
-WHERE op = '<@' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp -|- t2.temp )
-WHERE op = '-|-' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp ~= t2.temp )
-WHERE op = '~=' AND leftarg = 'tgeompoint3D' AND rightarg = 'tgeompoint3D';
-
--------------------------------------------------------------------------------
--- tgeogpoint3D op <type>
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp && t )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp @> t )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp <@ t )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp -|- t )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp ~= t )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzspan';
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp && b )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp @> b )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp <@ b )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp -|- b )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp ~= b )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
-
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp && t2.temp )
-WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp @> t2.temp )
-WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp <@ t2.temp )
-WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp -|- t2.temp )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
-UPDATE test_topops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp ~= t2.temp )
-WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tgeogpoint3D';
+DROP INDEX tbl_tgeompoint3d_quadtree_idx;
+DROP INDEX tbl_tgeogpoint3d_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
-DROP INDEX tbl_tgeompoint3D_kdtree_idx;
-DROP INDEX tbl_tgeogpoint3D_kdtree_idx;
+CREATE INDEX tbl_tgeompoint3d_kdtree_idx ON tbl_tgeompoint3d USING SPGIST(temp tgeompoint_kdtree_ops);
+CREATE INDEX tbl_tgeogpoint3d_kdtree_idx ON tbl_tgeogpoint3d USING SPGIST(temp tgeogpoint_kdtree_ops);
+
+-------------------------------------------------------------------------------
+-- <type> op tgeompoint3d
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3d WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint3d';
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox3d, tbl_tgeompoint3d WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeompoint3d';
+
+-------------------------------------------------------------------------------
+-- <type> op tgeogpoint3d
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3d WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint3d';
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint3d WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3d';
+
+-------------------------------------------------------------------------------
+-- tgeompoint3d op <type>
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'tstzspan';
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d, tbl_stbox3d WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'stbox';
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3d t1, tbl_tgeompoint3d t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tgeompoint3d' AND rightarg = 'tgeompoint3d';
+
+-------------------------------------------------------------------------------
+-- tgeogpoint3d op <type>
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tstzspan';
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d, tbl_geodstbox3d WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'stbox';
+
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+UPDATE test_topops3d
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_tgeogpoint3d t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tgeogpoint3d' AND rightarg = 'tgeogpoint3d';
+
+-------------------------------------------------------------------------------
+
+DROP INDEX tbl_tgeompoint3d_kdtree_idx;
+DROP INDEX tbl_tgeogpoint3d_kdtree_idx;
 
 -------------------------------------------------------------------------------
 

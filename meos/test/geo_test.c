@@ -503,6 +503,65 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* A line starting four units in the last place outside the slanted edge of
+   * the triangle and running inwards, and one starting four units inside and
+   * running outwards: each has a stretch of positive length on the side of
+   * its start, however short, so its interior meets both the interior and the
+   * exterior of the triangle. CGAL's exact kernel answers both */
+  struct { const char *a, *b, *matrix; } nearstarts[] = {
+    { "LINESTRING(3.0500000000000016 0.95,2.68 0.44)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1010F0212" },
+    { "LINESTRING(3.049999999999998 0.95,3.46 1.24)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1010F0212" },
+  };
+  for (size_t i = 0; i < sizeof(nearstarts) / sizeof(nearstarts[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(nearstarts[i].a, -1);
+    GSERIALIZED *gb = geom_in(nearstarts[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb, &size_out);
+    printf("geom_relate(a line starting near an edge, %zu): %s, errno %d\n",
+      i, gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, nearstarts[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
+  /* A line runs along the boundary of an area only where it lies on the line
+   * of a boundary edge. Traced one unit in the last place outside the slanted
+   * edge of the triangle, the line lies outside it; traced one unit inside,
+   * it lies inside and ends on the bottom edge; traced exactly, the whole ring
+   * lies on the boundary, which it covers. CGAL's exact kernel answers the
+   * first two */
+  struct { const char *a, *b, *matrix; } alongs[] = {
+    { "LINESTRING(4.000000000000001 0,1.0000000000000002 3)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "FF1FF0212" },
+    { "LINESTRING(3.9999999999999996 0,0.9999999999999999 3)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "101F00212" },
+    { "LINESTRING(0 0,4 0,1 3,0 0)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "F1FFFF2F2" },
+  };
+  for (size_t i = 0; i < sizeof(alongs) / sizeof(alongs[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(alongs[i].a, -1);
+    GSERIALIZED *gb = geom_in(alongs[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb, &size_out);
+    printf("geom_relate(a line along an edge, %zu): %s, errno %d\n",
+      i, gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, alongs[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
   /* Two input points are one point exactly where their coordinates are
    * equal, and an input point lies on a segment exactly where it lies on its
    * line within its span. Points 1e-13 apart are two points: the two are

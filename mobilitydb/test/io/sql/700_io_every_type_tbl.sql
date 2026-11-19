@@ -2263,14 +2263,14 @@ SELECT astext('{}'::geometry[]);
 
 SELECT asText(round(temp, 6)) FROM tbl_tgeometry LIMIT 10;
 SELECT asText(round(temp, 6)) FROM tbl_tgeography LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeography3D LIMIT 10;
-SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3D WHERE temp IS NOT NULL AND k % 10 = 1;
+SELECT asText(round(temp, 6)) FROM tbl_tgeometry3d LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeography3d LIMIT 10;
+SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3d WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeometry LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography3D LIMIT 10;
-SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3D WHERE temp IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeometry3d LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeography3d LIMIT 10;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeography3d WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT DISTINCT asText(tgeometryFromText(asText(temp))) = asText(temp) FROM tbl_tgeometry;
 SELECT DISTINCT asText(tgeographyFromText(asText(temp))) = asText(temp) FROM tbl_tgeography;
@@ -2507,14 +2507,14 @@ RESET ALL;
 
 SELECT asText(round(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
 SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
+SELECT asText(round(temp, 6)) FROM tbl_tgeompoint3d LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint3d LIMIT 10;
+SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3d WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
 SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint3d LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint3d LIMIT 10;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3d WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeompoint_inst WHERE temp IS NOT NULL AND k % 10 = 1;
 SELECT DISTINCT asText(tgeompointFromText(asText(temp))) = asText(temp) FROM tbl_tgeompoint;
 SELECT DISTINCT asText(tgeogpointFromText(asText(temp))) = asText(temp) FROM tbl_tgeogpoint;
@@ -2534,9 +2534,9 @@ SELECT count(*) FROM tbl_tgeompoint
   WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
 SELECT count(*) FROM tbl_tgeogpoint
   WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
-SELECT count(*) FROM tbl_tgeompoint3D
+SELECT count(*) FROM tbl_tgeompoint3d
   WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
-SELECT count(*) FROM tbl_tgeogpoint3D
+SELECT count(*) FROM tbl_tgeogpoint3d
   WHERE asEWKB(tgeogpointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
 SELECT count(*) FROM tbl_ais_tgeompoint
   WHERE asEWKB(tgeompointFromEWKB(asEWKB(temp))) <> asEWKB(temp);
@@ -2796,8 +2796,8 @@ SELECT asEWKT(force3D(tgeography 'Linestring(0 0,1 1)@2001-01-01', 50));
 
 SELECT asText(round(temp, 2)) FROM tbl_tgeometry LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeography LIMIT 10;
-SELECT asText(round(temp, 2)) FROM tbl_tgeometry3D LIMIT 10;
-SELECT asText(round(temp, 2)) FROM tbl_tgeography3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeometry3d LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeography3d LIMIT 10;
 SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeometry_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeography_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 -------------------------------------------------------------------------------
@@ -3105,8 +3105,8 @@ SELECT asEWKT(force3D(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]
 
 SELECT asText(round(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
 SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3d LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3d LIMIT 10;
 SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 SELECT asText(round(array_agg(temp ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE temp IS NOT NULL AND k % 20 = 1;
 -------------------------------------------------------------------------------
@@ -3886,7 +3886,7 @@ SELECT asText(tprecision(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3d WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
 -------------------------------------------------------------------------------
 -- Extracted from h3/sql/250_h3index.sql
 -------------------------------------------------------------------------------
@@ -4124,9 +4124,9 @@ SELECT asText(atStbox(th3index(h3index '832d5afffffffff', timestamptz '2001-01-0
 SELECT asText(atStbox(th3index(h3index '8310a5fffffffff', timestamptz '2001-01-01'),
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
 SELECT asText(atStbox(th3index(h3index '8009fffffffffff', timestamptz '2001-01-01'),
-  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194323584,73.310223685443958),(0.32561035194323584,73.310223685443958))'));
 SELECT asText(atStbox(th3index(h3index '8001fffffffffff', timestamptz '2001-01-01'),
-  stbox 'SRID=4326;GEODSTBOX X((0.32561035194326043,73.310223685443958),(0.32561035194326043,73.310223685443958))'));
+  stbox 'SRID=4326;GEODSTBOX X((0.32561035194323584,73.310223685443958),(0.32561035194323584,73.310223685443958))'));
 SELECT asText(atStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',
   stbox 'SRID=4326;GEODSTBOX X((0,40),(90,50))'));
 SELECT asText(minusStbox(th3index '[832d5afffffffff@2001-01-01, 8310a5fffffffff@2001-01-02, 832d5afffffffff@2001-01-03]',

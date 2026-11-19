@@ -51,8 +51,8 @@ SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memSize(setUnion(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
-SELECT memSize(setUnion(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT memSize(setUnion(g)) FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT memSize(setUnion(g)) FROM tbl_geog_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
 /* Errors */
 -- An empty geometry has no bounding box, so it is refused in every position,
@@ -64,8 +64,8 @@ SELECT geogset '{"Polygon empty", "Point(4 5)"}';
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
-SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT MAX(memSize(set(g))) FROM tbl_geom_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT MAX(memSize(set(g))) FROM tbl_geog_point3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
 -- Coverage of tstzspanset_stbox_slice
 DROP TABLE IF EXISTS test;
@@ -108,8 +108,8 @@ FROM (VALUES (geogset '{"Point(1.123456789 2.987654321)", "Point(3.333333333 4.4
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions
 
-SELECT numValues(setUnion(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
-SELECT numValues(setUnion(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
+SELECT numValues(setUnion(g)) FROM tbl_geom_point3d WHERE NOT ST_IsEmpty(g);
+SELECT numValues(setUnion(g)) FROM tbl_geog_point3d WHERE NOT ST_IsEmpty(g::geometry);
 
 WITH test1(k, g) AS (
   SELECT k, unnest(g) FROM tbl_geomset ),

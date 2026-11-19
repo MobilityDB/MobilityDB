@@ -60,7 +60,13 @@ jobs:
           sudo apt-get install -y \
             cmake ninja-build \
             libproj-dev libjson-c-dev \
-            libgdal-dev libh3-dev libxml2-dev zlib1g-dev
+            libgdal-dev libxml2-dev zlib1g-dev
+
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a package carries
+        # whatever release it last took and releases state different vertices
+        run: sudo .github/scripts/install-h3.sh /usr/local
 
       - name: Configure standalone MEOS
         run: |
