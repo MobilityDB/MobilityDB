@@ -90,6 +90,10 @@ CREATE FUNCTION geoEquals(geometry, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Geom_equals'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION orderingEquals(geometry, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geo_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION disjoint(geography, geography)
   RETURNS boolean
@@ -182,6 +186,38 @@ CREATE FUNCTION numPoints(geometry)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Geo_num_points'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION SRID(geometry)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Geo_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION SRID(geography)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Geo_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION memSize(geometry)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Geo_mem_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION memSize(geography)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Geo_mem_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION isEmpty(geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geo_is_empty'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION isEmpty(geography)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geo_is_empty'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION points(geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_points'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION azimuth(geometry, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Geom_azimuth'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Lines
@@ -199,6 +235,10 @@ CREATE FUNCTION lineLocatePoint(geometry, geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Line_locate_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pointN(geometry, integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Line_point_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Densification
@@ -211,6 +251,14 @@ CREATE FUNCTION segmentize(geometry, float)
 CREATE FUNCTION segmentize(geography, float)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Geo_segmentize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(geometry, integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(geography, integer)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geo_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -232,6 +280,23 @@ CREATE FUNCTION makePoint(x float, y float, srid integer)
 CREATE FUNCTION makePoint(x float, y float, z float, srid integer)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geom_makepoint3dz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Unions
+ *****************************************************************************/
+
+CREATE FUNCTION unaryUnion(geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_unary_union'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geoUnion(geometry[])
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_array_union'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geoUnion(geography[])
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geog_array_union'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

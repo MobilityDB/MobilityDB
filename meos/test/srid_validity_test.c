@@ -117,6 +117,16 @@ int main(void)
     pose_set_srid(pose, invalid), MEOS_ERR_INVALID_ARG_VALUE);
   check_refused("posechain_set_srid(pc, SRID_INVALID)",
     posechain_set_srid(pc, invalid), MEOS_ERR_INVALID_ARG_VALUE);
+  GSERIALIZED *geom = geom_in("Point(1 1)", -1);
+  assert(geom);
+  check_refused("geo_set_srid(geom, SRID_INVALID)",
+    geo_set_srid(geom, invalid), MEOS_ERR_INVALID_ARG_VALUE);
+  /* An unknown SRID is a valid one, as for a circular buffer */
+  GSERIALIZED *geom0 = geo_set_srid(geom, 0);
+  printf("geo_set_srid(geom, 0): %s, errno %d\n", geom0 ? "a value" : "NULL",
+    meos_errno());
+  assert(geom0 && meos_errno() == 0);
+  free(geom0); free(geom);
 
   /* A geography refuses a coordinate system that is not lon/lat, whether it
    * is read from text or converted from a geometry */
