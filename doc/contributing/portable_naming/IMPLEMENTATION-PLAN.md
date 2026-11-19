@@ -198,7 +198,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   raises on another, as `cell_sibling` of quadbin-py does (census of 16 directions: 12 answered
   otherwise on master, a misspelt one as NULL like a cell at the edge), by the owner's ruling of
   2026-11-19 ("approve"),
-  branch `meos/quadbin-sibling-direction-as-quadbin-py` (`a5c18c4e22`) rewrites 8fc7962209.
+  branch `meos/quadbin-sibling-direction-as-quadbin-py` (`a5c18c4e22`) rewrites 8fc7962209,
+  OPEN as MobilityDB #3853.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
