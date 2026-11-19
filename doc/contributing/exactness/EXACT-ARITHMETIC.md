@@ -960,11 +960,16 @@ by r where it lies in P and its distance to the boundary is at least r. The test
 buffer constructs, `fabs(buffer_ring_signed_area(pieces)) <= MEOS_GEOM_TOLERANCE`, stays with the
 construction of the buffer's joints.
 
-`ring_area_sign` takes its first tier about the origin as well. On the 1147 rings of the 192
-real multipolygons of the speed cells it decides 943, and the other 204 build an expansion; the
-same sum about the first vertex, the form GEOS and PostGIS take, decides all 1147. Its bound is
-stated again for the differences to the first vertex, which round, and the tier is taken there,
-the expansion and `DyadicWide` behind it unchanged.
+`ring_area_sign` takes its first tier about the first vertex, one product a vertex, the form
+GEOS and PostGIS take, on the coordinates read in place (MobilityDB #3815, open). On the 1147
+rings of the 192 real polygons of the speed cells the tier decides all 1147, where the sum about
+the origin decides 943, and the function costs 0.62 of its instructions; the buffer runs at
+0.956, 0.906 and 0.568 of GEOSBuffer at radius 1, 50 and 500 and at 0.747 on the joints. CGAL
+judges every sign, 192 of 192 real rows and 2871 of 2871 polygon rows of the area ledger
+(`oracle-kit`, `cpwork/ringsign`). On the ledger the tier decides 4193 of 5716 rings, where the
+sum about the origin decides 4269: rings joining vertices within 1e-150 of the origin to vertices
+at units, at 1e150 or near the largest double cancel to an exact zero about the first vertex or
+overflow their differences, and the expansion or `DyadicWide` decides them.
 
 ## 8. Decisions asked of the committers
 
