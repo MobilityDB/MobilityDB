@@ -689,23 +689,6 @@ Tpcbox_round(PG_FUNCTION_ARGS)
   PG_RETURN_TPCBOX_P(result);
 }
 
-PGDLLEXPORT Datum Tpcbox_set_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_set_srid);
-/**
- * @ingroup mobilitydb_pointcloud_box
- * @brief Return a TPCBox with the SRID overwritten (no coordinate reprojection)
- * @sqlfn setSRID()
- */
-Datum
-Tpcbox_set_srid(PG_FUNCTION_ARGS)
-{
-  TPCBox *box = PG_GETARG_TPCBOX_P(0);
-  int32_t srid = PG_GETARG_INT32(1);
-  TPCBox *result = tpcbox_set_srid(box, srid);
-  if (! result) PG_RETURN_NULL();
-  PG_RETURN_TPCBOX_P(result);
-}
-
 /*****************************************************************************
  * Set operations
  *****************************************************************************/
