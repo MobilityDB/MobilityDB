@@ -60,7 +60,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `EXACT-ARITHMETIC.md`), as the owner decided on 2026-11-19 ("yes factor", "please factorize as
   much as you can, we cannot continue duplicating code in the geometry engine"): `monotone_search`
   and `monotone_halve` in `geo_dyadic.h` and `offset_nearest_bounded` in `tsequence.h` replace ten
-  copies of the gallop and halving and two of the proof of a nearest microsecond.
+  copies of the gallop and halving and two of the proof of a nearest microsecond: MobilityDB #3848,
   branch `consol/one-monotone-search` rewrites `6aa9d0c47b` there, the search of the nearest crossing of two float segments;
   branch `consol/one-monotone-search` rewrites `5b10501659` there, the search of the distance of the interiors of two segments;
   branch `consol/one-monotone-search` rewrites `923ace06ac` there, the search of the offset at which a moving disc reaches a point;
