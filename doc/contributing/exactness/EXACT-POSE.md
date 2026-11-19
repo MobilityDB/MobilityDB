@@ -53,6 +53,10 @@ less than `MEOS_EPSILON` are read as not turning, so the angle between them answ
 where the interpolation answers another double. The exact question is whether the two angles are
 equal, `theta_delta == 0`, and its answer is a comparison of two doubles. This is one of the
 tolerances beside an exact sign that the consolidation removes, and it belongs with its C steps.
+The walk of the distance of the temporal rigid geometries holds the same tolerance in
+`motion_omega` (`trgeo_distwalk.c`): a body turning by 5e-7 radians, 1000 units from its rotation
+center, is walked at its start angle, a temporal distance of 5e-05 where the body valueAtTimestamp
+places meets the point. MobilityDB #3852 turns it wherever its two angles differ.
 
 ### P2. A composed joint is a constructed point
 
