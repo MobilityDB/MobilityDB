@@ -139,15 +139,17 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the (exactly four-per-level) children of a quadbin cell. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The children of a cell number 4 to the power of the levels between the two resolutions, and an array of more than the largest allocation PostgreSQL makes, 14 levels finer or more, is refused </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>Quadbin cell </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">children_resolution</td><td>Target resolution (&gt; resolution of <code>cell</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">children_resolution</td><td>Target resolution, finer than the resolution of <code>cell</code> and at most 26 </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of children returned </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A palloc'd array of children cells, or NULL on invalid resolution </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A palloc'd array of children cells </dd>
+<dd>
+On error return NULL </dd></dl>
 
 </div>
 </div>
