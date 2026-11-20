@@ -52,4 +52,19 @@ INSERT INTO tbl_geo_part VALUES (tgeompoint '[Point(0 0)@2001-01-01]'), (tgeompo
 SELECT COUNT(*) FROM tbl_geo_part;
 DROP TABLE tbl_geo_part;
 
+-- Geometries are ordered and equated by value: the type, so that a point
+-- precedes a line and a line a polygon; the counts before the coordinates;
+-- the coordinates as numbers, a zero of either sign being 0; a geography
+-- read on the sphere
+SELECT asText(geomset '{"Polygon((0 0,1 0,1 1,0 0))", "Linestring(9 9,8 8)", "Point(5 5)"}');
+SELECT asText(geomset '{"Linestring(0 0,0 1,0 2)", "Linestring(5 5,6 6)"}');
+SELECT numValues(geomset '{"Linestring(0 0,1 1)", "Linestring(-0 0,1 1)"}');
+SELECT geomset '{"Polygon((0 0,1 0,1 1,0 0))"}' = geomset '{"Polygon((-0 0,1 0,1 1,-0 0))"}';
+SELECT tgeometry '[Linestring(0 0,1 1)@2001-01-01]' = tgeometry '[Linestring(-0 0,1 1)@2001-01-01]';
+SELECT hash(tgeometry '[Linestring(0 0,1 1)@2001-01-01]') = hash(tgeometry '[Linestring(-0 0,1 1)@2001-01-01]');
+SELECT hashExtended(tgeometry '[Linestring(0 0,1 1)@2001-01-01]', 5) =
+  hashExtended(tgeometry '[Linestring(-0 0,1 1)@2001-01-01]', 5);
+SELECT numValues(geogset '{"Linestring(180 10,0 0)", "Linestring(-180 10,0 0)"}');
+SELECT tgeography '[Point(10 90)@2001-01-01]' = tgeography '[Point(20 90)@2001-01-01]';
+
 -------------------------------------------------------------------------------

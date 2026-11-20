@@ -44,6 +44,7 @@
 #include "postgres.h"
 #include <utils/float.h>
 #include <utils/memutils.h>  /* TopMemoryContext */
+#include <common/hashfn.h>
 #include <common/int128.h>
 #include <pgtypes.h>
 #include <port/pg_bitutils.h>
@@ -17994,13 +17995,41 @@ meos_is_simple(const LWGEOM *geom, bool *result)
  *****************************************************************************/
 
 /**
+ * @brief Read the coordinates of a vertex in the form by which a geometry is
+ * compared, ordered and hashed
+ * @details A geography vertex denotes a point of the sphere, which two
+ * longitudes name on the antimeridian, 180 and -180, and every longitude
+ * names at a pole. The longitude -180 is read as 180 and the longitude of a
+ * pole as 0, so that one point of the sphere is one value; a zero of either
+ * sign is read as 0, as #float8_eq compares it
+ * @param[in,out] coords Coordinates, x and y first
+ * @param[in] n Number of coordinates
+ * @param[in] geodetic True for a geography vertex
+ */
+static void
+vertex_canon(double *coords, int n, bool geodetic)
+{
+  if (geodetic)
+  {
+    if (fabs(coords[1]) == 90.0)
+      coords[0] = 0.0;
+    else if (coords[0] == -180.0)
+      coords[0] = 180.0;
+  }
+  /* Adding +0 turns a zero of negative sign into +0, rounding to nearest,
+   * and leaves every other double as it is */
+  for (int i = 0; i < n; i++)
+    coords[i] += 0.0;
+}
+
+/**
  * @brief Set in the output array the coordinates by which a point is
  * compared, ordered and hashed, and return their number
  * @details A geography point denotes a point of the sphere, which two
  * longitudes name on the antimeridian, 180 and -180, and every longitude
  * names at a pole. The longitude -180 is read as 180 and the longitude of a
  * pole as 0, so that one point of the sphere is one value for #geopoint_eq,
- * #geopoint_cmp, #geopoint_sortkey_put and #geopoint_hash; a zero of either
+ * #geopoint_cmp and #geopoint_hash; a zero of either
  * sign is read as 0, as #float8_eq compares it
  * @param[in] gs Point
  * @param[out] coords Its coordinates, the Z coordinate last where it has one
@@ -18021,17 +18050,7 @@ geopoint_coords(const GSERIALIZED *gs, double *coords)
     coords[0] = point->x; coords[1] = point->y;
     n = 2;
   }
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-  {
-    if (fabs(coords[1]) == 90.0)
-      coords[0] = 0.0;
-    else if (coords[0] == -180.0)
-      coords[0] = 180.0;
-  }
-  /* Adding +0 turns a zero of negative sign into +0, rounding to nearest,
-   * and leaves every other double as it is */
-  for (int i = 0; i < n; i++)
-    coords[i] += 0.0;
+  vertex_canon(coords, n, FLAGS_GET_GEODETIC(gs->gflags));
   return n;
 }
 
@@ -18099,36 +18118,272 @@ geopoint_hash_extended(const GSERIALIZED *gs, uint64 seed)
   return result;
 }
 
+/*****************************************************************************
+ * Geometries ordered by value
+ *****************************************************************************/
+
 /**
- * @brief Return the number of bytes of the sort key of a point
- * @param[in] gs Point
+ * @brief Write a count as four bytes most significant first, or count them
+ * when the buffer is NULL
  */
-size_t
-geopoint_sortkey_size(const GSERIALIZED *gs)
+static size_t
+geo_sortkey_count(uint32_t count, uint8_t *out)
 {
-  return (FLAGS_GET_Z(gs->gflags) ? 3 : 2) * datum_sortkey_size(T_FLOAT8);
+  if (out)
+  {
+    for (int i = 0; i < 4; i++)
+      out[i] = (uint8_t) (count >> (8 * (3 - i)));
+  }
+  return 4;
 }
 
 /**
- * @brief Write the sort key of a point
- * @details The key is the coordinates as #geopoint_coords reads them, in the
- * order #geopoint_cmp compares them, each written as a double
- * @param[in] gs Point
- * @param[out] out Buffer of #geopoint_sortkey_size bytes
+ * @brief Write the key of a point array, or count its bytes when the buffer
+ * is NULL
+ * @details The key is the number of vertices, then each vertex as its
+ * coordinates in the order x, y, z, m, each read by #vertex_canon and
+ * written as #datum_sortkey_put writes a float
+ */
+static size_t
+geo_sortkey_ptarray(const POINTARRAY *pa, bool geodetic, uint8_t *out)
+{
+  size_t result = geo_sortkey_count(pa->npoints, out);
+  bool hasz = FLAGS_GET_Z(pa->flags), hasm = FLAGS_GET_M(pa->flags);
+  int n = 2 + (hasz ? 1 : 0) + (hasm ? 1 : 0);
+  size_t d = datum_sortkey_size(T_FLOAT8);
+  for (uint32_t i = 0; i < pa->npoints; i++)
+  {
+    POINT4D p;
+    getPoint4d_p(pa, i, &p);
+    double coords[4] = {p.x, p.y, 0.0, 0.0};
+    int k = 2;
+    if (hasz)
+      coords[k++] = p.z;
+    if (hasm)
+      coords[k++] = p.m;
+    vertex_canon(coords, n, geodetic);
+    for (int j = 0; j < n; j++)
+    {
+      if (out)
+        datum_sortkey_put(Float8GetDatum(coords[j]), T_FLOAT8, out + result);
+      result += d;
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Write the key of a geometry below its SRID and flags, or count its
+ * bytes when the buffer is NULL
+ * @details The key is the geometry type as a byte, then the counts of its
+ * parts, rings or vertices, each before the elements it governs, down to the
+ * vertices, which #geo_sortkey_ptarray writes
+ */
+static size_t
+geo_sortkey_lwgeom(const LWGEOM *geom, bool geodetic, uint8_t *out)
+{
+  size_t result = 1;
+  if (out)
+    out[0] = geom->type;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      return result + geo_sortkey_ptarray(((const LWPOINT *) geom)->point,
+        geodetic, out ? out + result : NULL);
+    case LINETYPE:
+      return result + geo_sortkey_ptarray(((const LWLINE *) geom)->points,
+        geodetic, out ? out + result : NULL);
+    case CIRCSTRINGTYPE:
+      return result + geo_sortkey_ptarray(((const LWCIRCSTRING *) geom)->points,
+        geodetic, out ? out + result : NULL);
+    case TRIANGLETYPE:
+      return result + geo_sortkey_ptarray(((const LWTRIANGLE *) geom)->points,
+        geodetic, out ? out + result : NULL);
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      result += geo_sortkey_count(poly->nrings, out ? out + result : NULL);
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        result += geo_sortkey_ptarray(poly->rings[i], geodetic,
+          out ? out + result : NULL);
+      return result;
+    }
+    case CURVEPOLYTYPE:
+    {
+      const LWCURVEPOLY *poly = (const LWCURVEPOLY *) geom;
+      result += geo_sortkey_count(poly->nrings, out ? out + result : NULL);
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        result += geo_sortkey_lwgeom(poly->rings[i], geodetic,
+          out ? out + result : NULL);
+      return result;
+    }
+    default:
+    {
+      /* Every other type is a collection of geometries */
+      assert(lwgeom_is_collection(geom));
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      result += geo_sortkey_count(coll->ngeoms, out ? out + result : NULL);
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        result += geo_sortkey_lwgeom(coll->geoms[i], geodetic,
+          out ? out + result : NULL);
+      return result;
+    }
+  }
+}
+
+/**
+ * @brief Write the sort key of a geometry or a geography, or count its bytes
+ * when the buffer is NULL
+ * @details The key holds the fields in the order #geo_cmp compares them: the
+ * SRID, written as an integer, whether the value has a Z coordinate, an M
+ * coordinate and whether it is geodetic, one byte each, then the geometry as
+ * #geo_sortkey_lwgeom writes it: its type, the counts of its parts, rings and
+ * vertices each before what it governs, and its coordinates as numbers, a
+ * zero of either sign being 0 and a geography read on the sphere
+ * (#vertex_canon). Every field ends where its bytes say it does, so two keys
+ * compared byte by byte order the values as #geo_cmp does and two values have
+ * the same key exactly when #geo_eq holds
+ */
+static size_t
+geo_sortkey_write(const GSERIALIZED *gs, uint8_t *out)
+{
+  size_t i4 = datum_sortkey_size(T_INT4);
+  if (out)
+  {
+    datum_sortkey_put(Int32GetDatum(gserialized_get_srid(gs)), T_INT4, out);
+    out[i4] = FLAGS_GET_Z(gs->gflags) ? 1 : 0;
+    out[i4 + 1] = FLAGS_GET_M(gs->gflags) ? 1 : 0;
+    out[i4 + 2] = FLAGS_GET_GEODETIC(gs->gflags) ? 1 : 0;
+  }
+  size_t result = i4 + 3;
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  result += geo_sortkey_lwgeom(geom, FLAGS_GET_GEODETIC(gs->gflags),
+    out ? out + result : NULL);
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a geometry or a
+ * geography, which #geo_sortkey_write states
+ * @param[in] gs Geometry or geography
+ */
+size_t
+geo_sortkey_size(const GSERIALIZED *gs)
+{
+  assert(gs);
+  return geo_sortkey_write(gs, NULL);
+}
+
+/**
+ * @brief Write the sort key of a geometry or a geography, which
+ * #geo_sortkey_write states
+ * @param[in] gs Geometry or geography
+ * @param[out] out Buffer of #geo_sortkey_size bytes
  * @return The first byte after the key
  */
 uint8_t *
-geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
+geo_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
 {
-  double coords[3];
-  int ncoords = geopoint_coords(gs, coords);
-  size_t n = datum_sortkey_size(T_FLOAT8);
-  for (int i = 0; i < ncoords; i++)
-  {
-    datum_sortkey_put(Float8GetDatum(coords[i]), T_FLOAT8, out);
-    out += n;
-  }
-  return out;
+  assert(gs); assert(out);
+  return out + geo_sortkey_write(gs, out);
+}
+
+/**
+ * @brief Return true if two geometries are points of one SRID and one set of
+ * flags without an M coordinate, which #geopoint_cmp, #geopoint_eq and
+ * #geopoint_hash read as #geo_sortkey_write orders them
+ */
+static bool
+geo_point_pair(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  return gserialized_get_type(gs1) == POINTTYPE &&
+    gserialized_get_type(gs2) == POINTTYPE &&
+    gs1->gflags == gs2->gflags && ! FLAGS_GET_M(gs1->gflags) &&
+    gserialized_get_srid(gs1) == gserialized_get_srid(gs2);
+}
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first geometry or
+ * geography is less than, equal to, or greater than the second one
+ * @details The values are ordered by value, field by field in the order
+ * #geo_sortkey_write writes them: the SRID, the Z, M and geodetic flags, the
+ * geometry type, so that a point precedes any other geometry, the counts of
+ * the parts, rings and vertices before what they govern, so that an empty
+ * geometry precedes a non-empty one of its type, and the coordinates as
+ * numbers. Two points of one SRID and one set of flags are ordered by their
+ * coordinates (#geopoint_cmp), which is the same order
+ * @param[in] gs1,gs2 Geometries or geographies
+ */
+int
+geo_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (geo_point_pair(gs1, gs2))
+    return geopoint_cmp(gs1, gs2);
+  size_t n1 = geo_sortkey_write(gs1, NULL);
+  size_t n2 = geo_sortkey_write(gs2, NULL);
+  uint8_t *k1 = palloc(n1), *k2 = palloc(n2);
+  geo_sortkey_write(gs1, k1);
+  geo_sortkey_write(gs2, k2);
+  int c = memcmp(k1, k2, Min(n1, n2));
+  pfree(k1); pfree(k2);
+  if (c)
+    return c < 0 ? -1 : 1;
+  return (n1 > n2) - (n1 < n2);
+}
+
+/**
+ * @brief Return true if two geometries or geographies are equal by value,
+ * which #geo_cmp answers 0 for
+ * @param[in] gs1,gs2 Geometries or geographies
+ */
+bool
+geo_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (geo_point_pair(gs1, gs2))
+    return geopoint_eq(gs1, gs2);
+  return geo_cmp(gs1, gs2) == 0;
+}
+
+/**
+ * @brief Return the 32-bit hash of a geometry or a geography, which two values
+ * #geo_eq holds equal share
+ * @details A point without an M coordinate hashes its coordinates
+ * (#geopoint_hash), and any other value the bytes of its sort key
+ * @param[in] gs Geometry or geography
+ */
+uint32
+geo_hash(const GSERIALIZED *gs)
+{
+  if (gserialized_get_type(gs) == POINTTYPE && ! FLAGS_GET_M(gs->gflags))
+    return geopoint_hash(gs);
+  size_t n = geo_sortkey_write(gs, NULL);
+  uint8_t *key = palloc(n);
+  geo_sortkey_write(gs, key);
+  uint32 result = hash_bytes(key, (int) n);
+  pfree(key);
+  return result;
+}
+
+/**
+ * @brief Return the 64-bit hash of a geometry or a geography under a seed,
+ * which two values #geo_eq holds equal share
+ * @details A point without an M coordinate hashes its coordinates
+ * (#geopoint_hash_extended), and any other value the bytes of its sort key
+ * @param[in] gs Geometry or geography
+ * @param[in] seed Seed
+ */
+uint64
+geo_hash_extended(const GSERIALIZED *gs, uint64 seed)
+{
+  if (gserialized_get_type(gs) == POINTTYPE && ! FLAGS_GET_M(gs->gflags))
+    return geopoint_hash_extended(gs, seed);
+  size_t n = geo_sortkey_write(gs, NULL);
+  uint8_t *key = palloc(n);
+  geo_sortkey_write(gs, key);
+  uint64 result = hash_bytes_extended(key, (int) n, seed);
+  pfree(key);
+  return result;
 }
 
 /**

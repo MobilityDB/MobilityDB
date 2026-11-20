@@ -77,7 +77,7 @@ length, and `datum_sortkey_type` answers whether a base type has a key.
 | big integer, timestamp, H3 cell, quadbin cell, S2 cell | 8 bytes, big endian, sign bit flipped |
 | float | 8 bytes: -0.0 written as 0.0 and every NaN as one NaN; then the sign bit flipped for a positive value and every bit flipped for a negative one, big endian, so that NaN sorts above infinity as `pg_float8_cmp` orders it |
 | text | its bytes, escaped |
-| point (geometry or geography) | its coordinates, each as a float (`geopoint_sortkey_put`) |
+| geometry, geography | its value, field by field as section 7 orders them (`geo_sortkey_put`) |
 | circular buffer | its SRID as an integer, then the x and y of its centre and its radius as floats (`cbuffer_sortkey_put`) |
 | network point | its route as a big integer, then its position as a float (`npoint_sortkey_put`) |
 | pose | whether it is spatial and whether it is geodetic, one Boolean byte each, its SRID as an integer, then its 3 values (x, y, angle) or 7 values (x, y, z, quaternion) as floats (`pose_sortkey_put`) |
@@ -162,7 +162,7 @@ equal.
 
 | Has a key | Has none |
 |---|---|
-| Booleans, integers, big integers, floats, dates, timestamps, texts; H3, quadbin and S2 cells; points; circular buffers; network points; poses and pose chains; point-cloud points and patches; JSON values; every set, span, span set and temporal type over them; temporal, spatiotemporal and point-cloud boxes | geometries and geographies that are not points, their sets and their temporal types (section 7); temporal rigid geometries |
+| Booleans, integers, big integers, floats, dates, timestamps, texts; H3, quadbin and S2 cells; geometries and geographies; circular buffers; network points; poses and pose chains; point-cloud points and patches; JSON values; every set, span, span set and temporal type over them; temporal, spatiotemporal and point-cloud boxes | temporal rigid geometries |
 
 ## 6. The tests of a key
 
@@ -170,8 +170,9 @@ A MEOS test program per family compares the byte order of the keys with the
 comparison over every pair of a corpus of sets and of temporal values, and the
 comparison with the equality, antisymmetry and transitivity over every pair and
 triple of base values: `meos/test/cbuffer_npoint_sortkey_test.c`,
-`meos/test/pointcloud_sortkey_test.c` and `meos/test/json_sortkey_test.c` among
-them. The fields that rest on exact arithmetic (floats, decimal numbers) are
+`meos/test/pointcloud_sortkey_test.c`, `meos/test/json_sortkey_test.c` and
+`meos/test/geo_sortkey_test.c` among them. The fields that rest on exact
+arithmetic (floats, decimal numbers, coordinates) are
 also judged by an exact oracle that reads every field as a rational number and
 requires the comparison and the byte order of the keys to equal the
 lexicographic order of the fields on every row.
@@ -180,60 +181,62 @@ lexicographic order of the fields on every row.
 
 Sets, spans and temporal values of geometries and geographies sort, remove
 duplicates and normalize through `datum_cmp` and `datum_eq` with the type
-`T_GEOMETRY` or `T_GEOGRAPHY`.
+`T_GEOMETRY` or `T_GEOGRAPHY`, which call `geo_cmp` and `geo_eq`. A geometry is
+compared by its value, as every other base type is, never by how it is
+serialized.
 
-### 7.1 The order: `datum_cmp`
+### 7.1 The order: `geo_cmp`
 
-1. **Two points of the same SRID and the same dimension** (both with or both
-   without Z) take a fast path: `geopoint_cmp` compares their coordinates
-   exactly, x, then y, then z.
-2. **A point precedes any geometry that is not a point**, whatever their SRIDs,
-   so that the order stays total on a value holding geometries of several types.
-3. **Every other pair** goes to PostGIS's `gserialized_cmp`, which answers 0
-   only when the bytes after the header, the SRID and the Z and M flags are all
-   identical, and otherwise decides in this order:
-   1. an empty geometry precedes a non-empty one;
-   2. for two non-empty geometries, a 64-bit sortable hash of the bounding box
-      (`gbox_get_sortable_hash`) decides;
-   3. when the bytes of one are a prefix of the bytes of the other, the
-      shorter precedes;
-   4. otherwise the SRID decides, then the Z flag, then the M flag;
-   5. finally the first differing byte decides.
+Two geometries or geographies are compared field by field, in this order:
 
-### 7.2 The equality: `datum_eq`
+1. **the SRID**, as an integer;
+2. **the flags**: whether the value has a Z coordinate, an M coordinate, and
+   whether it is a geography, a value without the flag first;
+3. **the geometry type**, as its liblwgeom type number, POINT being the
+   smallest, so that a point precedes any other geometry;
+4. **the structure**: the number of parts of a collection, of rings of a
+   polygon and of vertices of a point array, each before the elements it
+   governs, so that an empty geometry precedes a non-empty one of its type and
+   a line of fewer vertices precedes a line of more;
+5. **the coordinates as numbers**, vertex by vertex, x, then y, then z, then m,
+   each read as follows:
+   - a zero of either sign is 0, as `float8_eq` compares it;
+   - for a geography, which denotes points of the sphere, the longitude -180 is
+     read as 180, and the longitude of a pole as 0, so that one point of the
+     sphere is one value (`vertex_canon`).
 
-1. **Two points** are equal when they have the same dimension and the same
-   coordinates, compared exactly. A 2D and a 3D point are not equal.
-2. **Any other pair** is equal when `geo_same` holds: the same values, vertex
-   by vertex, compared exactly, as PostGIS answers `=`.
+Two points of one SRID and one set of flags without an M coordinate take a
+fast path, `geopoint_cmp`, which compares their coordinates read the same way
+and gives the same order.
+
+### 7.2 The equality: `geo_eq`
+
+Two geometries or geographies are equal exactly when `geo_cmp` answers 0:
+every field above equal. So `LINESTRING(0 0,1 1)` and `LINESTRING(-0 0,1 1)`
+are one value, as `POINT(0 0)` and `POINT(-0 0)` are, and the geography points
+`POINT(180 10)` and `POINT(-180 10)` are one value.
 
 The point-set equality, under which a line and the same line drawn in the
-other direction are equal, is `geo_equals`, not `datum_eq`.
+other direction are equal, is `geo_equals`, not `geo_eq`. The equality PostGIS
+answers with `=` on raw geometries, which compares their serialized bytes,
+holds `LINESTRING(0 0,1 1)` and `LINESTRING(-0 0,1 1)` different; a MEOS set or
+temporal value holds them as one.
 
-### 7.3 What it means for a key
+### 7.3 The hash and the key
 
-1. **Points have a key** (4.1). No other geometry has one, so a set of
-   geometries and a temporal geometry have none.
-2. **Across SRIDs, the order of 7.1 is not a dictionary order.** The prefix
-   rule (7.1, 3.3) is read before the SRID (3.4) and the bytes (3.5) after it.
-   Read from the rule, three geometries of one bounding box can be ordered in a
-   cycle: A's bytes a prefix of B's, so A < B whatever their SRIDs; B and C of
-   one SRID with B's bytes below C's, so B < C; C and A neither a prefix of the
-   other, with C's SRID below A's, so C < A. No byte key encodes a cycle.
-3. **This does not prevent a key for sets and temporal values.** They refuse
-   operands of different SRIDs, so their keys compare geometries of one SRID
-   only. Within one SRID and one dimension, rules 3.3 to 3.5 reduce to "the
-   bytes in order, a prefix first", which a key can encode: a byte separating
-   points from other geometries (points first); for a point, its coordinate key;
-   otherwise a byte that is 0 for an empty geometry and 1 otherwise, the 8-byte
-   bounding-box hash for a non-empty one, then the bytes, escaped.
-4. **Zero of both signs.** A coordinate `-0.0` and a coordinate `0.0` are
-   different bytes, so `gserialized_cmp` holds two such geometries different,
-   while `geo_same`, comparing vertices with `==`, can hold them equal. Where
-   both happen, `datum_cmp` answers non-zero on a pair `datum_eq` holds equal,
-   and no key agrees with both. The exact answer is that they are one vertex:
-   `-0.0` and `0.0` are one rational number, as the point fast path already
-   reads them.
+- **The hash** (`geo_hash`, `geo_hash_extended`) reads what the equality reads:
+  a point without an M coordinate hashes its coordinates read as 7.1 reads them,
+  and any other value the bytes of its key.
+- **The key** (`geo_sortkey_put`) writes the fields of 7.1 in their order: the
+  SRID as an integer, one byte per flag, the type as a byte, each count as 4
+  bytes big endian, and each coordinate as the key of a float. Every field ends
+  where its bytes say it does, so comparing two keys byte by byte orders the
+  values as `geo_cmp` does, and two values have one key exactly when `geo_eq`
+  holds.
+
+The order differs from the one PostGIS gives raw geometries (a hash of the
+bounding box, then the serialized bytes): a set of geometries lists its
+elements in the order of 7.1.
 
 ## 8. Out of scope
 
