@@ -578,6 +578,7 @@ extern bool ensure_positive_window(const Interval *interv);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
+extern const GSERIALIZED *temporal_geom_p(const Temporal *temp);
 extern Temporal *temporal_strip_geom(const Temporal *temp,
   const GSERIALIZED **geom);
 extern Temporal *temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp);
