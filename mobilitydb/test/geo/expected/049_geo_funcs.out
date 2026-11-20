@@ -481,6 +481,32 @@ SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5),
  t
 (1 row)
 
+-- A flat cap cuts the strip of an end arc along the line through its end and
+-- its centre: the upper half of the ring from 0.5 to 1.5, without the point
+-- 0.22 from the end (1 0) below that line, which a round cap holds; a square
+-- cap stretches the strip by 0.5 past the end along the tangent there, and
+-- holds a point of that square 0.64 from the end
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), 6));
+                                                            st_astext                                                             
+----------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((0.5 0,1.5 0),CIRCULARSTRING(1.5 0,0 1.5,-1.5 0),(-1.5 0,-0.5 0),CIRCULARSTRING(-0.5 0,0 0.5,0.5 0)))
+(1 row)
+
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), ST_Point(1.2, -0.1)) AS past_flat_cap;
+ past_flat_cap 
+---------------
+ f
+(1 row)
+
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=square'), ST_Point(1.45, -0.45)) AS in_square_cap;
+ in_square_cap 
+---------------
+ t
+(1 row)
+
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
  st_geometrytype 

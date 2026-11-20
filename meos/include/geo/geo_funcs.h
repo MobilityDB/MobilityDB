@@ -132,7 +132,10 @@ typedef struct
                                       for the one on the second */
   int8_t along;                  /**< 0 for the point on the circle, 1 or -1
                                       for the one past it by the radius along
-                                      C2 - C1 or C1 - C2 */
+                                      C2 - C1 or C1 - C2; for the end of the
+                                      offset of an arc, along the tangent of
+                                      its circle there, counterclockwise or
+                                      clockwise */
   const ExactArc *arc;           /**< The input arc whose offset ends at the
                                       point, NULL for a point where a tangent
                                       touches a circle */
