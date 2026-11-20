@@ -102,6 +102,20 @@ int main(void)
   check_style(meos_get_intervalstyle(&size), "iso_8601",
     "meos_get_intervalstyle");
 
+  /* An IntervalStyle is read by its whole name in any case, as PostgreSQL
+   * reads the setting, so a name it begins is refused and the style set
+   * before stays */
+  check("meos_set_intervalstyle(SQL_Standard)",
+    meos_set_intervalstyle("SQL_Standard", 0), true, 0);
+  check("meos_set_intervalstyle(sql_stan)",
+    meos_set_intervalstyle("sql_stan", 0), false, MEOS_ERR_TEXT_INPUT);
+  check("meos_set_intervalstyle(sql_standards)",
+    meos_set_intervalstyle("sql_standards", 0), false, MEOS_ERR_TEXT_INPUT);
+  check("meos_set_intervalstyle(sql_stanXYZ)",
+    meos_set_intervalstyle("sql_stanXYZ", 0), false, MEOS_ERR_TEXT_INPUT);
+  check_style(meos_get_intervalstyle(&size), "sql_standard",
+    "meos_get_intervalstyle");
+
   /* A null path is reported rather than copied */
   meos_set_spatial_ref_sys_csv(NULL);
   check("meos_set_spatial_ref_sys_csv(NULL)", false, false,
