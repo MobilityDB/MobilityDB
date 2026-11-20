@@ -225,7 +225,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `config_enum_lookup_by_name` reads the setting (3 of 3 names beginning `sql_stan` setting the
   SQL standard style, to 0), the 8-character comparison of `check_intervalstyle`,
   branch `meos/intervalstyle-whole-name` (`0b73c63bce`) rewrites 7128c9344a,
-  open. `check_nullable_params.py` reads a @param entry through a line opening with an inline
+  MobilityDB #3866, open. `check_nullable_params.py` reads a @param entry through a line opening with an inline
   command (12 public entries read cut short, to 0, the findings unchanged), its end of an entry,
   branch `tools/nullable-param-inline-commands` (`743d9b285e`) rewrites 6e22d6c736,
   MobilityDB #3864, open.
