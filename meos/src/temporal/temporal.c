@@ -5474,8 +5474,8 @@ temporal_sortkey_intl(const Temporal *temp, size_t *size)
  * @details The key is the bytes whose unsigned byte order is the order of
  * #temporal_cmp and whose byte equality is #temporal_eq. The temporal
  * Booleans, integers, big integers, floats, texts, points, cells, circular
- * buffers, network points, poses, pose chains, point-cloud points and
- * point-cloud patches have a sort key.
+ * buffers, network points, poses, pose chains, point-cloud points,
+ * point-cloud patches and JSON values have a sort key.
  * @param[in] temp Temporal value
  * @param[out] size Number of bytes of the key
  * @errval NULL
