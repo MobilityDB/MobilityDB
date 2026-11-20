@@ -2,7 +2,7 @@
 			When creating indexes for temporal types, what is stored in the index is not the actual value but instead, a bounding box that <span class="emphasis"><em>represents</em></span> the value. In this case, the index will provide a list of candidate values that <span class="emphasis"><em>may</em></span> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.
 		</p><p>
 			However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <span class="emphasis"><em>single</em></span> bounding box, but instead with <span class="emphasis"><em>multiple</em></span> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple bounding boxes for a single temporal value.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_splitNSpans"></a><a class="indexterm" name="id8174"></a><p>Return an array of N time spans obtained by merging the instants or segments of a temporal value <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_splitNSpans"></a><a class="indexterm" name="id8175"></a><p>Return an array of N time spans obtained by merging the instants or segments of a temporal value <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 
@@ -29,7 +29,7 @@ SELECT splitNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-0
   A@2001-01-05]', 6);
 /* {"[2001-01-01, 2001-01-02]","[2001-01-02, 2001-01-03]","[2001-01-03,
    2001-01-04]","[2001-01-04, 2001-01-05]"} */
-</pre></li><li class="listitem"><a name="ttype_mergeNSpans"></a><a class="indexterm" name="id8196"></a><p>Return an array of N time spans obtained by merging the time spans of the instants or segments of a temporal value, each time the consecutive pair whose union adds the least size to theirs</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeNSpans"></a><a class="indexterm" name="id8197"></a><p>Return an array of N time spans obtained by merging the time spans of the instants or segments of a temporal value, each time the consecutive pair whose union adds the least size to theirs</p><pre class="programlisting">
 mergeNSpans(ttype,integer) → tstzspan[]
 </pre><pre class="programlisting">
 SELECT mergeNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
@@ -53,7 +53,7 @@ SELECT mergeNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-0
   A@2001-01-05]', 6);
 /* {"[2001-01-01, 2001-01-02]","[2001-01-02, 2001-01-03]",
    "[2001-01-03, 2001-01-04]","[2001-01-04, 2001-01-05]"} */
-</pre></li><li class="listitem"><a name="ttype_splitEachNSpans"></a><a class="indexterm" name="id8203"></a><p>Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="ttype_splitEachNSpans"></a><a class="indexterm" name="id8204"></a><p>Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 
@@ -76,7 +76,7 @@ SELECT splitEachNSpans(tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-0
 SELECT splitEachNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
   [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 6);
 -- {"[2001-01-01, 2001-01-02]","[2001-01-03, 2001-01-04]","[2001-01-05, 2001-01-05]"}
-</pre></li><li class="listitem"><a name="ttype_mergeEachNSpans"></a><a class="indexterm" name="id8227"></a><p>Return an array of time spans obtained by merging the time spans of the instants or segments of a temporal value, each time the consecutive pair whose union adds the least size to theirs, until a span holds on average a given number of them</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeEachNSpans"></a><a class="indexterm" name="id8228"></a><p>Return an array of time spans obtained by merging the time spans of the instants or segments of a temporal value, each time the consecutive pair whose union adds the least size to theirs, until a span holds on average a given number of them</p><pre class="programlisting">
 mergeEachNSpans(ttype,integer) → tstzspan[]
 </pre><pre class="programlisting">
 SELECT mergeEachNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
@@ -96,7 +96,7 @@ SELECT mergeEachNSpans(tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-0
 SELECT mergeEachNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
   [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 6);
 -- {"[2001-01-01, 2001-01-05]"}
-</pre></li><li class="listitem"><a name="ttype_mergeQuerySpans"></a><a class="indexterm" name="id8234"></a><p>Return an array of time spans obtained by merging the time spans of the instants or segments of a temporal value into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeQuerySpans"></a><a class="indexterm" name="id8235"></a><p>Return an array of time spans obtained by merging the time spans of the instants or segments of a temporal value into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</p><pre class="programlisting">
 mergeQuerySpans(ttype,tstzspan) → tstzspan[]
 </pre><pre class="programlisting">
 SELECT mergeQuerySpans(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-10,
@@ -107,7 +107,7 @@ SELECT mergeQuerySpans(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001
 SELECT mergeQuerySpans(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-10,
   1@2001-01-11}', tstzspan '[2001-01-01, 2001-01-04]');
 -- {"[2001-01-01, 2001-01-03]","[2001-01-10, 2001-01-11]"}
-</pre></li><li class="listitem"><a name="ttype_splitNTboxes"></a><a class="indexterm" name="id8241"></a><p>Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_splitNTboxes"></a><a class="indexterm" name="id8242"></a><p>Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</p><pre class="programlisting">
 splitNTboxes(tnumber,integer) → tbox[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of output boxes. If the number of input instants or segments is less than or equal to the given number, the resulting array will have one box per instant or segment of the temporal number. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</p><pre class="programlisting">
 SELECT splitNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
@@ -131,7 +131,7 @@ SELECT splitNTboxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-0
 /* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-02])","TBOXINT XT([1, 3),[2001-01-02,
    2001-01-03])","TBOXINT XT([1, 5),[2001-01-03, 2001-01-04])","TBOXINT XT([1,
    5),[2001-01-04, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_mergeNTboxes"></a><a class="indexterm" name="id8249"></a><p>Return an array of N temporal boxes obtained by merging the boxes of the instants or segments of a temporal number, each time the consecutive pair whose union adds the least size to theirs</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeNTboxes"></a><a class="indexterm" name="id8250"></a><p>Return an array of N temporal boxes obtained by merging the boxes of the instants or segments of a temporal number, each time the consecutive pair whose union adds the least size to theirs</p><pre class="programlisting">
 mergeNTboxes(tnumber,integer) → tbox[]
 </pre><pre class="programlisting">
 SELECT mergeNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
@@ -159,7 +159,7 @@ SELECT mergeNTboxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-0
    "TBOXINT XT([1, 3),[2001-01-02, 2001-01-03])",
    "TBOXINT XT([1, 5),[2001-01-03, 2001-01-04])",
    "TBOXINT XT([1, 5),[2001-01-04, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_splitEachNTboxes"></a><a class="indexterm" name="id8256"></a><p>Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_splitEachNTboxes"></a><a class="indexterm" name="id8257"></a><p>Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</p><pre class="programlisting">
 splitEachNTboxes(tnumber,integer) → tbox[]
 </pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of input instants or segments that are merged to produce an output box. If the number of input instants or segments is less than or equal to the given number, the resulting array will have a single box per sequence. Otherwise, the specified number of consecutive instants or segments will be merged into each output box. Notice that, contrary to the <a class="link" href="ch09s06.html#ttype_splitNTboxes"><code class="varname">splitNTboxes</code></a> function, the number of boxes in the result depends on the number of input instants or segments.</p><pre class="programlisting">
 SELECT splitEachNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
@@ -180,7 +180,7 @@ SELECT splitEachNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02],
   [1@2001-01-03, 4@2001-01-04], [1@2001-01-05]}', 6);
 /* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])","TBOXFLOAT XT([1, 4],[2001-01-03,
    2001-01-04])","TBOXFLOAT XT([1, 1],[2001-01-05, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_mergeEachNTboxes"></a><a class="indexterm" name="id8266"></a><p>Return an array of temporal boxes obtained by merging the boxes of the instants or segments of a temporal number, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeEachNTboxes"></a><a class="indexterm" name="id8267"></a><p>Return an array of temporal boxes obtained by merging the boxes of the instants or segments of a temporal number, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</p><pre class="programlisting">
 mergeEachNTboxes(tnumber,integer) → tbox[]
 </pre><pre class="programlisting">
 SELECT mergeEachNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
@@ -203,7 +203,7 @@ SELECT mergeEachNTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@200
 SELECT mergeEachNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02],
   [1@2001-01-03, 4@2001-01-04], [1@2001-01-05]}', 6);
 -- {"TBOXFLOAT XT([1, 4],[2001-01-01, 2001-01-05])"}
-</pre></li><li class="listitem"><a name="ttype_mergeQueryTboxes"></a><a class="indexterm" name="id8273"></a><p>Return an array of temporal boxes obtained by merging the boxes of the instants or segments of a temporal number into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeQueryTboxes"></a><a class="indexterm" name="id8274"></a><p>Return an array of temporal boxes obtained by merging the boxes of the instants or segments of a temporal number into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</p><pre class="programlisting">
 mergeQueryTboxes(tnumber,tbox) → tbox[]
 </pre><pre class="programlisting">
 SELECT mergeQueryTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 9@2001-01-04,
@@ -214,7 +214,7 @@ SELECT mergeQueryTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 9@200
 SELECT mergeQueryTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 9@2001-01-04,
   8@2001-01-05]', tbox 'TBOX T([2001-01-01, 2001-01-08])');
 -- {"TBOXFLOAT XT([1, 9],[2001-01-01, 2001-01-05])"}
-</pre></li><li class="listitem"><a name="ttype_splitNStboxes"></a><a class="indexterm" name="id8280"></a><p>Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="ttype_splitNStboxes"></a><a class="indexterm" name="id8281"></a><p>Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
@@ -256,7 +256,7 @@ SELECT splitNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
 /* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])","STBOX
    XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])","STBOX XT(((3,1),(4,2)),[2001-01-03,
    2001-01-04])","STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_mergeNStboxes"></a><a class="indexterm" name="id8303"></a><p>Return an array of N spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of N spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point, each time the consecutive pair whose union adds the least size to theirs</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeNStboxes"></a><a class="indexterm" name="id8304"></a><p>Return an array of N spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of N spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point, each time the consecutive pair whose union adds the least size to theirs</p><pre class="programlisting">
 mergeNStboxes({lines,tpoint},integer) → stbox[]
 </pre><pre class="programlisting">
 SELECT mergeNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
@@ -297,7 +297,7 @@ SELECT mergeNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
    "STBOX XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])",
    "STBOX XT(((3,1),(4,2)),[2001-01-03, 2001-01-04])",
    "STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_splitEachNStboxes"></a><a class="indexterm" name="id8311"></a><p>Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="ttype_splitEachNStboxes"></a><a class="indexterm" name="id8312"></a><p>Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
@@ -329,7 +329,7 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
 /* {"SRID=4326;GEODSTBOX XT(((1,1),(2,2)),[2001-01-01,
    2001-01-02])","SRID=4326;GEODSTBOX XT(((3,1),(4,2)),[2001-01-03,
    2001-01-04])","SRID=4326;GEODSTBOX XT(((5,1),(5,1)),[2001-01-05, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_mergeEachNStboxes"></a><a class="indexterm" name="id8336"></a><p>Return an array of spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeEachNStboxes"></a><a class="indexterm" name="id8337"></a><p>Return an array of spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point, each time the consecutive pair whose union adds the least size to theirs, until a box holds on average a given number of them</p><pre class="programlisting">
 mergeEachNStboxes({lines,tpoint},integer) → stbox[]
 </pre><pre class="programlisting">
 SELECT mergeEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
@@ -359,7 +359,7 @@ SELECT mergeEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01
   [Point(3 1)@2001-01-03, Point(4 2)@2001-01-04], [Point(5 1)@2001-01-05]}', 2);
 /* {"SRID=4326;GEODSTBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
    "SRID=4326;GEODSTBOX XT(((3,1),(5,2)),[2001-01-03, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_mergeQueryStboxes"></a><a class="indexterm" name="id8344"></a><p>Return an array of spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_mergeQueryStboxes"></a><a class="indexterm" name="id8345"></a><p>Return an array of spatial boxes obtained by merging the boxes of the segments of a (multi)line, or of spatiotemporal boxes obtained by merging the boxes of the instants or segments of a temporal point into those a query of the extents of a query box is expected to read least: the widths of the query box are the extents of a query, its position is not read, and a dimension it lacks restricts no query</p><pre class="programlisting">
 mergeQueryStboxes({lines,tpoint},stbox) → stbox[]
 </pre><pre class="programlisting">
 SELECT mergeQueryStboxes(geometry 'Linestring(1 1,2 2,3 1,10 10,11 11)',
