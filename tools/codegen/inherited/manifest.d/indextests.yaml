@@ -22,6 +22,57 @@
 #   extra                     the queries of the family ahead of that table.
 # ---------------------------------------------------------------------------
 indextests:
+  - temp: tgeompoint
+    base: geometry
+    file: mobilitydb/test/geo/sql/074_tgeompoint_indexes_tbl.sql
+    srid: 0
+    # values in two and in three dimensions, each with its own fixtures
+    dims:
+      - {suffix: "", offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
+      - {suffix: 3d, z: true, offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
+    same: "Point(5 5)"
+    sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
+    labels: true
+  - temp: tgeogpoint
+    base: geography
+    file: mobilitydb/test/geo/sql/074_tgeogpoint_indexes_tbl.sql
+    srid: 4326
+    # values in two and in three dimensions, each with its own fixtures
+    dims:
+      - {suffix: "", offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
+      - {suffix: 3d, z: true, offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
+    same: "SRID=4326;Point(5 45)"
+    sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
+    labels: true
+  - temp: tgeometry
+    base: geometry
+    file: mobilitydb/test/geo/sql/074_tgeometry_indexes_tbl.sql
+    srid: 3812
+    # values in two and in three dimensions, each with its own fixtures; the
+    # ever and always overlaps, which restrict the value to the box, refuse a
+    # value with Z, which MEOS does not restrict
+    dims:
+      - {suffix: "", offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
+      - {suffix: 3d, z: true, ever: false, offset: 10100, copies: 0,
+         srcfilter: k % 1000 = 0}
+    same: "SRID=3812;Point(5 5)"
+    sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
+    labels: true
+  - temp: tgeography
+    base: geography
+    file: mobilitydb/test/geo/sql/074_tgeography_indexes_tbl.sql
+    srid: 7844
+    # values in two and in three dimensions, each with its own fixtures; the
+    # ever and always overlaps, which restrict the value to the box, refuse a
+    # geography, which MEOS restricts to a box only when it is a point
+    dims:
+      - {suffix: "", ever: false, offset: 10100, copies: 0,
+         srcfilter: k % 1000 = 0}
+      - {suffix: 3d, z: true, ever: false, offset: 10100, copies: 0,
+         srcfilter: k % 1000 = 0}
+    same: "SRID=7844;Point(5 45)"
+    sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
+    labels: true
   - temp: tcbuffer
     base: cbuffer
     file: mobilitydb/test/cbuffer/sql/216_tcbuffer_indexes_tbl.sql
