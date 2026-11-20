@@ -3180,7 +3180,9 @@ arr_piece_at(const Arr *a, const ArrPiece *p, uint32_t k, ArrPiece *buf)
  * passes them by along the run: the labels and the rings read the chain
  * between the nodes it starts and ends at, and every question about its
  * points reads its members (#arr_piece_member). A run is ended before it
- * closes on the node it starts at
+ * closes on the node it starts at, and a run that holds no stretch but @p i,
+ * such as the first of the two half turns of a circle meeting nothing, is no
+ * chain
  */
 static uint32_t
 arr_chain(Arr *a, uint32_t i)
@@ -3226,6 +3228,10 @@ arr_chain(Arr *a, uint32_t i)
       break;
     k++;
   }
+  /* A run of the one stretch, ended before its next closes on its start, is
+   * no chain: the stretch is cut as every other is */
+  if (k == i)
+    return i;
   int32_t w0 = arr_weight(a, i);
   a->chw[c] = a->chagree[a->choff[c]] ? w0 : - w0;
   a->choff[c + 1] = m;
