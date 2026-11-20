@@ -332,11 +332,6 @@ meos_pc_schema_register_dims(uint32_t pcid, int32_t srid,
 }
 
 /**
- * @ingroup meos_pointcloud_schema_cache
- * @brief Register a parsed PCSCHEMA along with its source XML in the
- *   MEOS-owned cache.
- */
-/**
  * @brief Register a schema, answering whether the cache took it
  * @details The two public entries answer nothing, so this is what a caller
  *   that must know reads — the registration entry stating its own outcome and
@@ -634,15 +629,6 @@ meos_pc_schema_ndims(uint32_t pcid)
   return result;
 }
 
-/**
- * @ingroup meos_pointcloud_schema_cache
- * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering
- *   @p NULL where neither the cache nor a hook holds one.
- *
- * A caller that cannot answer without the schema asks through
- * @ref meos_pc_schema, which states the miss as an error; a caller reading a
- * property it can answer without one asks here and reads the miss itself.
- */
 /*****************************************************************************
  * The document a host with no SQL states its schemas in
  *
@@ -758,6 +744,15 @@ read_pointcloud_schemas_xml(void)
   xmlFreeDoc(doc);
 }
 
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering
+ *   @p NULL where neither the cache nor a hook holds one.
+ *
+ * A caller that cannot answer without the schema asks through
+ * @ref meos_pc_schema, which states the miss as an error; a caller reading a
+ * property it can answer without one asks here and reads the miss itself.
+ */
 PCSCHEMA *
 meos_pc_schema_lookup(uint32_t pcid)
 {

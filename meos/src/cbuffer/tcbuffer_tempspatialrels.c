@@ -2462,16 +2462,6 @@ tcbufferseq_always_contains_native(const TSequence *seq, const void *ctx,
 }
 
 /**
- * @ingroup meos_internal_cbuffer_rel_ever
- * @brief Return 1 if a geometry ever/always contains (@p strict) or covers a
- * temporal circular buffer, 0 if not, and -1 for a geometry that has no edge
- * decomposition (the caller then uses the traversed-area path)
- * @param[in] temp Temporal circular buffer
- * @param[in] gs Geometry
- * @param[in] ever True for the ever semantics, false for the always semantics
- * @param[in] strict True for contains, false for covers
- */
-/**
  * @brief Return 1 if a context ever/always contains or covers a temporal
  * circular buffer, 0 if not
  * @details The choice between contains and covers is given by @p strict. The
@@ -2574,6 +2564,16 @@ tcbuffer_disk_may_fit_box(const Temporal *temp, double bxmin, double bymin,
   return false;
 }
 
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a geometry ever/always contains (@p strict) or covers a
+ * temporal circular buffer, 0 if not, and -1 for a geometry that has no edge
+ * decomposition (the caller then uses the traversed-area path)
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @param[in] strict True for contains, false for covers
+ */
 int
 eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
   bool ever, bool strict)
