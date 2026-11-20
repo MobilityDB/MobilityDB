@@ -70,6 +70,13 @@ CREATE TABLE tbl_tgeography3d (
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography3d.data'
 COPY tbl_tgeography3d (k, temp) FROM :'filename';
 
+CREATE TABLE tbl_tgeography_big (
+    k integer,
+    temp tgeography
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeography_big.data'
+COPY tbl_tgeography_big (k, temp) FROM :'filename';
+
 CREATE TABLE tbl_tgeography3d_big (
     k integer,
     temp tgeography
@@ -146,6 +153,13 @@ CREATE TABLE tbl_tgeometry3d (
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry3d.data'
 COPY tbl_tgeometry3d (k, temp) FROM :'filename';
+
+CREATE TABLE tbl_tgeometry_big (
+    k integer,
+    temp tgeometry
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeometry_big.data'
+COPY tbl_tgeometry_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeometry3d_big (
     k integer,

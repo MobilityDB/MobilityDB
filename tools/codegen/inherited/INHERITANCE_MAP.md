@@ -422,12 +422,17 @@ alone and the spans of its values (`valspan`) in place of those of space; a fami
 with values in two and three dimensions has one test per dimension
 (`<nnn>_<fam>_indexes_tbl` and `<nnn>_<fam>_indexes3d_tbl`), and a family of several types one
 test per type at the number of the family (`044_tbool`, `044_ttext`, `044_tint`, `044_tfloat`,
-as `074_tgeo` and `074_tpoint`). Generated: tcbuffer, tpose (2D and 3D), trgeometry (2D and 3D),
-tnpoint, th3index, tquadbin, ts2cell, tposechain, tjsonb, tbool, ttext, tint, tbigint and tfloat.
+as `074_tgeompoint` and `074_tgeometry`). Generated: tgeompoint, tgeogpoint, tgeometry and
+tgeography (2D and 3D), tcbuffer, tpose (2D and 3D), trgeometry (2D and 3D), tnpoint, th3index,
+tquadbin, ts2cell, tposechain, tjsonb, tbool, ttext, tint, tbigint and tfloat.
 The counts of th3index hold because every build
 reads the one H3 release MobilityDB supports (`H3_REQUIRED_VERSION`), on whose vertices the box
-of a cell is read. Written by hand: the tests of the temporal geometries and points (`074_tgeo`,
-`074_tpoint`), which test the structure of the trees; and `044_temporal`, which keeps the B-tree
+of a cell is read. Written by hand: `074_tgeo` and `074_tpoint`, which keep what the generated
+tests of the temporal geometries and points do not state (the selectivity of a commuted
+operator, an empty geometry, the function forms of the position operators, the comparisons, the
+quad-tree node of identical values, the inclusivity of the bounds of a node, the boxes of several
+structures, the columns of boxes, the nearest neighbours of a geography and the exclusion
+constraints); and `044_temporal`, which keeps the B-tree
 comparisons of the base types, the function forms of `ttext` (`overlaps`, `contains`, `before`,
 ...) and the structure of the trees.
 

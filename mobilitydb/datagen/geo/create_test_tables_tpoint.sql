@@ -860,6 +860,16 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 -- each made by the call that makes the table of that subtype.
 ------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS tbl_tgeompoint_big;
+CREATE TABLE tbl_tgeompoint_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeompoint_inst(0, 100, 0, 100, '2001-01-01', '2001-12-31')
+  WHEN 1 THEN random_tgeompoint_discseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  WHEN 2 THEN random_tgeompoint_contseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  ELSE random_tgeompoint_seqset(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
 DROP TABLE IF EXISTS tbl_tgeompoint3d_big;
 CREATE TABLE tbl_tgeompoint3d_big(k, temp) AS
 SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
@@ -867,6 +877,16 @@ SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
   WHEN 1 THEN random_tgeompoint3d_discseq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
   WHEN 2 THEN random_tgeompoint3d_contseq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
   ELSE random_tgeompoint3d_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
+DROP TABLE IF EXISTS tbl_tgeogpoint_big;
+CREATE TABLE tbl_tgeogpoint_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeogpoint_inst(-10, 32, 35, 72, '2001-01-01', '2001-12-31')
+  WHEN 1 THEN random_tgeogpoint_discseq(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  WHEN 2 THEN random_tgeogpoint_contseq(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+  ELSE random_tgeogpoint_seqset(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10)
   END AS temp
 FROM generate_series(1, size * 100 + 100) k;
 

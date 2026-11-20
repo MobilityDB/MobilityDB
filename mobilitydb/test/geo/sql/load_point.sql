@@ -245,6 +245,13 @@ CREATE TABLE tbl_tgeogpoint3d (
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint3d.data'
 COPY tbl_tgeogpoint3d (k, temp) FROM :'filename';
 
+CREATE TABLE tbl_tgeogpoint_big (
+    k integer PRIMARY KEY,
+    temp tgeogpoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeogpoint_big.data'
+COPY tbl_tgeogpoint_big (k, temp) FROM :'filename';
+
 CREATE TABLE tbl_tgeogpoint3d_big (
     k integer PRIMARY KEY,
     temp tgeogpoint
@@ -349,6 +356,13 @@ CREATE TABLE tbl_tgeompoint3d (
 );
 \set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint3d.data'
 COPY tbl_tgeompoint3d (k, temp) FROM :'filename';
+
+CREATE TABLE tbl_tgeompoint_big (
+    k integer PRIMARY KEY,
+    temp tgeompoint
+);
+\set filename :srcdir '/mobilitydb/test/geo/data/tbl_tgeompoint_big.data'
+COPY tbl_tgeompoint_big (k, temp) FROM :'filename';
 
 CREATE TABLE tbl_tgeompoint3d_big (
     k integer PRIMARY KEY,
