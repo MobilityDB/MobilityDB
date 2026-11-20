@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tgeoinst_affine</title>
+<title>MobilityDB: tcbuffer_restrict_stbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__internal__geo__transf.html">Transformation functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__cbuffer__restrict.html">Restriction functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,45 +79,42 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_ga9d8eab259cc4881c8dc42588f6f99f5d.html#ga9d8eab259cc4881c8dc42588f6f99f5d">tgeo_scale_geo_intl</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__geo__transf_ga62dba932b9e583dd8f245f865699d5b9.html#ga62dba932b9e583dd8f245f865699d5b9">tgeoinst_affine</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_ga6fbf8b614c7ea96d6f50d0a27381b290.html#ga6fbf8b614c7ea96d6f50d0a27381b290">tgeoinst_scale</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_ga6ae110bb402dd317c4320d123e4f5a38.html#ga6ae110bb402dd317c4320d123e4f5a38">tgeoseq_affine</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_ga8fa23772c6089cb087af95c5bf1ad72d.html#ga8fa23772c6089cb087af95c5bf1ad72d">tgeoseq_scale</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_ga8b91744ac22f9266635dc3de7be706fe.html#ga8b91744ac22f9266635dc3de7be706fe">tgeoseqset_affine</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_ga0b935030472a9aa84af259559dce0f90.html#ga0b935030472a9aa84af259559dce0f90">tgeoseqset_scale</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_gacbb3f71dc72faec1114036ea985ee11c.html#gacbb3f71dc72faec1114036ea985ee11c">tpointseq_make_simple</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__transf_gacccfb1da8808bb874695c720a42ecd26.html#gacccfb1da8808bb874695c720a42ecd26">tpointseqset_make_simple</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga305db10161ae34cc30de5a906954daa8.html#ga305db10161ae34cc30de5a906954daa8">tcbuffer_restrict_cbuffer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga994c61a211ac8ba20ad6ff703eb2366b.html#ga994c61a211ac8ba20ad6ff703eb2366b">tcbuffer_restrict_geom</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__restrict_gaf5289f0255a41af9b021dd88daf25a88.html#gaf5289f0255a41af9b021dd88daf25a88">tcbuffer_restrict_stbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga62dba932b9e583dd8f245f865699d5b9" name="ga62dba932b9e583dd8f245f865699d5b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga62dba932b9e583dd8f245f865699d5b9">&#9670;&#160;</a></span>tgeoinst_affine()</h2>
+<a id="gaf5289f0255a41af9b021dd88daf25a88" name="gaf5289f0255a41af9b021dd88daf25a88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf5289f0255a41af9b021dd88daf25a88">&#9670;&#160;</a></span>tcbuffer_restrict_stbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structTInstant.html">TInstant</a> * tgeoinst_affine </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tcbuffer_restrict_stbox </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
-          <td class="paramname"><em>inst</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structAFFINE.html">AFFINE</a> *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool border_inc&#160;</td>
+          <td class="paramname"><em>UNUSED</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>lift</em>&#160;</td>
+          <td class="paramname"><em>atfunc</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -125,18 +122,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Return the affine transformation of a temporal geo instant. </p>
+<p>Return a temporal circular buffer restricted to a spatiotemporal box. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">inst</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">a</td><td>Affine transformation </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">atfunc</td><td>True if the restriction is <code>at</code>, false for <code>minus</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. @csqlfn <a class="el" href="group__mobilitydb__geo__restrict_ga52343f565864204f7540eb3aa24b3931.html#ga52343f565864204f7540eb3aa24b3931" title="Return a temporal circular buffer restricted to a spatiotemporal box.">Tcbuffer_at_stbox()</a> </td></tr>
   </table>
   </dd>
 </dl>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: eacontains_tcbuffer_geo_native</title>
+<title>MobilityDB: eacontains_tcbuffer_ctx_native</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,8 +80,8 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga73691abc14c8a3e4e02026ddd241750e.html#ga73691abc14c8a3e4e02026ddd241750e">eacontains_tcbuffer_cbuffer_native</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga8d84c46494d0c97d42292b8ccd9bef2a.html#ga8d84c46494d0c97d42292b8ccd9bef2a">eacontains_tcbuffer_ctx_native</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a6e5e7c0eb3e3fd057a7b257a0839e2aa.html#a6e5e7c0eb3e3fd057a7b257a0839e2aa">eacontains_tcbuffer_geo_native</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a8d84c46494d0c97d42292b8ccd9bef2a.html#a8d84c46494d0c97d42292b8ccd9bef2a">eacontains_tcbuffer_ctx_native</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_ga6e5e7c0eb3e3fd057a7b257a0839e2aa.html#ga6e5e7c0eb3e3fd057a7b257a0839e2aa">eacontains_tcbuffer_geo_native</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_gafa7304dfcd309f55f04b652e3444f472.html#gafa7304dfcd309f55f04b652e3444f472">eatouches_tcbuffer_geo_native</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_gace29edfcd68a20aef7ee936e8c28cb6a.html#gace29edfcd68a20aef7ee936e8c28cb6a">edisjoint_tcbuffer_geo_native</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a1fcd6e54780f33f8049a502ea2186ba5.html#a1fcd6e54780f33f8049a502ea2186ba5">tcbuffer_disk_may_fit_box</a></td></tr>
@@ -162,14 +162,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a6e5e7c0eb3e3fd057a7b257a0839e2aa" name="a6e5e7c0eb3e3fd057a7b257a0839e2aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6e5e7c0eb3e3fd057a7b257a0839e2aa">&#9670;&#160;</a></span>eacontains_tcbuffer_geo_native()</h2>
+<a id="a8d84c46494d0c97d42292b8ccd9bef2a" name="a8d84c46494d0c97d42292b8ccd9bef2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d84c46494d0c97d42292b8ccd9bef2a">&#9670;&#160;</a></span>eacontains_tcbuffer_ctx_native()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int eacontains_tcbuffer_geo_native </td>
+          <td class="memname">static int eacontains_tcbuffer_ctx_native </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -177,8 +180,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>ctx</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -198,7 +201,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return 1 if a context ever/always contains or covers a temporal circular buffer, 0 if not. </p>
+<p >The choice between contains and covers is given by <code>strict</code>. The function scans the instants and per-segment sub-intervals; the context abstracts either a geometry boundary or a static disc. </p>
 
 </div>
 </div>

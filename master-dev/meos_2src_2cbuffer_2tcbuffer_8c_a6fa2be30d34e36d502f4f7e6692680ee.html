@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffer_restrict_stbox</title>
+<title>MobilityDB: tcbuffer_may_reach_box</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -92,8 +92,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__inout_ga3689e9059e5f7fd956ef9d45243873ef.html#ga3689e9059e5f7fd956ef9d45243873ef">tcbuffer_from_mfjson</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__inout_ga43aa9306fae3d8d46311d01e0b31194e.html#ga43aa9306fae3d8d46311d01e0b31194e">tcbuffer_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__constructor_ga54a11d6bf466a1064421804df74c8b54.html#ga54a11d6bf466a1064421804df74c8b54">tcbuffer_make</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga6fa2be30d34e36d502f4f7e6692680ee.html#ga6fa2be30d34e36d502f4f7e6692680ee">tcbuffer_may_reach_box</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__accessor_gaa7e3a407d05ac27fe25817686f5fbbd7.html#gaa7e3a407d05ac27fe25817686f5fbbd7">tcbuffer_members</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a6fa2be30d34e36d502f4f7e6692680ee.html#a6fa2be30d34e36d502f4f7e6692680ee">tcbuffer_may_reach_box</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_aa7e3a407d05ac27fe25817686f5fbbd7.html#aa7e3a407d05ac27fe25817686f5fbbd7">tcbuffer_members</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__restrict_gaf3abef6dbdad15edef7816e359ddc18b.html#gaf3abef6dbdad15edef7816e359ddc18b">tcbuffer_minus_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__restrict_ga6cbd55a9bf7bd8bceeb6d04a1a02d435.html#ga6cbd55a9bf7bd8bceeb6d04a1a02d435">tcbuffer_minus_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__restrict_gae1c5fd07bca12e302244d5c1b6367bf2.html#gae1c5fd07bca12e302244d5c1b6367bf2">tcbuffer_minus_stbox</a></td></tr>
@@ -102,7 +102,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__accessor_ga35c1761a7f523977b39c0b69241375c0.html#ga35c1761a7f523977b39c0b69241375c0">tcbuffer_radius</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga305db10161ae34cc30de5a906954daa8.html#ga305db10161ae34cc30de5a906954daa8">tcbuffer_restrict_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga994c61a211ac8ba20ad6ff703eb2366b.html#ga994c61a211ac8ba20ad6ff703eb2366b">tcbuffer_restrict_geom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_af5289f0255a41af9b021dd88daf25a88.html#af5289f0255a41af9b021dd88daf25a88">tcbuffer_restrict_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_gaf5289f0255a41af9b021dd88daf25a88.html#gaf5289f0255a41af9b021dd88daf25a88">tcbuffer_restrict_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__transf_gab3b82af3c1273aec966dcdfd228ab3c2.html#gab3b82af3c1273aec966dcdfd228ab3c2">tcbuffer_rotate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__transf_gac513410c4b8e14f8ce6a27e501ccfe88.html#gac513410c4b8e14f8ce6a27e501ccfe88">tcbuffer_rotate_z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a9ac78e1918a18eee516ba5be757b7e5e.html#a9ac78e1918a18eee516ba5be757b7e5e">tcbuffer_scale</a></td></tr>
@@ -162,14 +162,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="af5289f0255a41af9b021dd88daf25a88" name="af5289f0255a41af9b021dd88daf25a88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5289f0255a41af9b021dd88daf25a88">&#9670;&#160;</a></span>tcbuffer_restrict_stbox()</h2>
+<a id="a6fa2be30d34e36d502f4f7e6692680ee" name="a6fa2be30d34e36d502f4f7e6692680ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fa2be30d34e36d502f4f7e6692680ee">&#9670;&#160;</a></span>tcbuffer_may_reach_box()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tcbuffer_restrict_stbox </td>
+          <td class="memname">static bool tcbuffer_may_reach_box </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -178,19 +181,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool border_inc&#160;</td>
-          <td class="paramname"><em>UNUSED</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>atfunc</em>&#160;</td>
+          <td class="paramname"><em>box</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -198,7 +189,16 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return true when some unit of a temporal circular buffer can reach the space of the box <code>box</code>. </p>
+<p >A disk meets a box exactly when its centre lies within the radius of it, so a unit whose centre box stands farther than the larger of its two radii from the box reaches it at no instant. The box of the value cannot express this: it is widened by the radius and spans the whole trajectory, so it overlaps wherever the disks reach anywhere, and on a spatial join it passes nearly every pair into the running relationship below.</p>
+<p >Reading the centre against a radius-widened threshold, rather than a radius-widened box against the box, keeps the radius from being removed on both axes at once. The centre box and the radius maximum both over-approximate the unit, so a value that does reach the box is never rejected, and the scan is linear in the instants and touches no geometry. </p>
 
 </div>
 </div>

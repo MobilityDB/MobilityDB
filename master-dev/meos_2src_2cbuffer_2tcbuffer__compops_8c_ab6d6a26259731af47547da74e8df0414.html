@@ -155,7 +155,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return 1 if a temporal circular buffer ever (or always) lies in a spatiotemporal box, 0 if not, and -1 on error, as <a class="el" href="meos_2src_2geo_2tgeo__compops_8c_af44f89172cf2814bf4aa237298926af6.html#af44f89172cf2814bf4aa237298926af6" title="Return 1 if a temporal geo ever (or always) lies in a spatiotemporal box, 0 if not,...">eaoverlaps_tgeo_stbox</a> answers it for a temporal geo. </p>
-<p >The value ever lies in the box when its restriction to the box by <a class="el" href="tcbuffer__spatialfuncs_8h_a0067678b729c5c9678e6b74521b50961.html#a0067678b729c5c9678e6b74521b50961">tcbuffer_restrict_stbox</a> is not empty, and always lies in it when its restriction to the complement of the box is empty; a box with only the T dimension restricts the value to its period </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The value ever lies in the box when its restriction to the box by <a class="el" href="group__meos__internal__cbuffer__restrict_gaf5289f0255a41af9b021dd88daf25a88.html#gaf5289f0255a41af9b021dd88daf25a88" title="Return a temporal circular buffer restricted to a spatiotemporal box.">tcbuffer_restrict_stbox</a> is not empty, and always lies in it when its restriction to the complement of the box is empty; a box with only the T dimension restricts the value to its period </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
