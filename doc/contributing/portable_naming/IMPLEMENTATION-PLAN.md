@@ -246,7 +246,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   function declaring its pipeline `const char *` (1 writable array kept for an argument described
   as `char *`, to 0), the input `geo_pipeline1` of `gen_smoketest.py`,
   branch `fix/transform-pipeline-const` (`c599011539`),
-  MERGED as MobilityDB #3880 (`a4f0448ebc`).
+  MERGED as MobilityDB #3880 (`a4f0448ebc`). `check_doxygen_groups.py` rejects a doc block
+  carrying `@ingroup` that another comment follows or that stands above a static definition, and
+  every such block stands on the public definition it documents (14 blocks, 4 documenting no
+  definition and 10 tagging a static one, to 0), the doc blocks of `tcbuffer.c`,
+  `tcbuffer_tempspatialrels.c`, `schema_hook.c`, `tgeo_spatialfuncs.c` and
+  `tnpoint_spatialfuncs.c`,
+  branch `docs/static-doc-groups` (`1021416be1`),
+  MobilityDB #3882, open.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
