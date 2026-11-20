@@ -792,14 +792,13 @@ spatialset_transform_pipeline(const Set *s, const char *pipelinestr,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_SPATIALSET(s, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
-  int32_t srid_from = spatialset_srid(s);
-  if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid))
+  /* Neither SRID is read: the pipeline string itself states the source and
+   * the destination coordinate reference systems, as for
+   * #geo_transform_pipeline and #tspatial_transform_pipeline. A geography is
+   * transformed only into a lon/lat coordinate system */
+  if (MEOS_FLAGS_GET_GEODETIC(s->flags) && srid != SRID_UNKNOWN &&
+      ! ensure_srid_is_latlong(srid))
     return NULL;
-  /* A geography is transformed only into a lon/lat coordinate system */
-  if (MEOS_FLAGS_GET_GEODETIC(s->flags) && ! ensure_srid_is_latlong(srid))
-    return NULL;
-
-  /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
   LWPROJ *pj = lwproj_from_str_pipeline(pipelinestr, is_forward);

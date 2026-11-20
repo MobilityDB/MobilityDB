@@ -477,6 +477,44 @@ SELECT asText(transformPipeline(tgeompoint 'POINT(426857.9877165967 5427937.5233
  POINT(2 49)@Sun Dec 31 15:00:00 2000 PST
 (1 row)
 
+-- The pipeline states both coordinate systems, so neither SRID is read: a
+-- geometry, a set and a temporal value of the same point may each take the
+-- unknown SRID as the SRID of the result, or have it as their own
+SELECT ST_SRID(transformPipeline(geometry 'SRID=4326;Point(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'));
+ st_srid 
+---------
+       0
+(1 row)
+
+SELECT asEWKT(transformPipeline(geomset 'SRID=4326;{"Point(2 49)"}',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
+              asewkt               
+-----------------------------------
+ {"POINT(426857.988 5427937.523)"}
+(1 row)
+
+SELECT asEWKT(transformPipeline(tgeompoint 'SRID=4326;Point(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
+                           asewkt                           
+------------------------------------------------------------
+ POINT(426857.988 5427937.523)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(transformPipeline(geomset '{"Point(2 49)"}',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                    asewkt                    
+----------------------------------------------
+ SRID=32631;{"POINT(426857.988 5427937.523)"}
+(1 row)
+
+SELECT asEWKT(transformPipeline(tgeompoint 'Point(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                                asewkt                                 
+-----------------------------------------------------------------------
+ SRID=32631;POINT(426857.988 5427937.523)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 --------------------------------------------------------
 WITH test1(pipeline) AS (
   SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
