@@ -214,6 +214,16 @@ CREATE TABLE tbl_tgeography3d(k, temp) AS
 -- each made by the call that makes the table of that subtype.
 ------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS tbl_tgeometry_big;
+CREATE TABLE tbl_tgeometry_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeometry_inst(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 3812)
+  WHEN 1 THEN random_tgeometry_discseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  WHEN 2 THEN random_tgeometry_stepseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  ELSE random_tgeometry_seqset(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
 DROP TABLE IF EXISTS tbl_tgeometry3d_big;
 CREATE TABLE tbl_tgeometry3d_big(k, temp) AS
 SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
@@ -221,6 +231,16 @@ SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
   WHEN 1 THEN random_tgeometry3d_discseq(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
   WHEN 2 THEN random_tgeometry3d_stepseq(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
   ELSE random_tgeometry3d_seqset(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
+DROP TABLE IF EXISTS tbl_tgeography_big;
+CREATE TABLE tbl_tgeography_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeography_inst(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 7844)
+  WHEN 1 THEN random_tgeography_discseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844)
+  WHEN 2 THEN random_tgeography_stepseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844)
+  ELSE random_tgeography_seqset(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 7844)
   END AS temp
 FROM generate_series(1, size * 100 + 100) k;
 

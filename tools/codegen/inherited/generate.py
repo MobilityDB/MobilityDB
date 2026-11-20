@@ -502,7 +502,9 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
                                     "srcfilter": test["srcfilter"]}]
     cd = [i for i, d in enumerate(alldims) if d.get("dist", True)][-1]
     withsame = which == 0 and bool(test.get("same") or test.get("sameexpr"))
-    withcol = which == cd and box == "stbox"
+    # A column of boxes is queried by the members the subtype adds to the box
+    # family, so a subtype adding none has no such queries
+    withcol = which == cd and box == "stbox" and bool(sub.get("boxmembers"))
     dims = [alldims[which]]
     # Whether the class has a distance, which a cell's has not
     classdist = "|=|" in cls
@@ -513,8 +515,10 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
                                 f"{d['suffix']} " if len(dims) > 1 else "",
                                 bool(d.get("z")), d.get("dist", True) and classdist,
                                 d.get("ever", True), opnames, valspan)
-    # A cell bounded by great-circle arcs has a geodetic box
-    boxkw = "GEODSTBOX" if sub.get("geodetic_target") else "STBOX"
+    # A cell bounded by great-circle arcs, and a value of a geography, has a
+    # geodetic box
+    boxkw = "GEODSTBOX" if sub.get("geodetic_target") or \
+        test.get("base") == "geography" else "STBOX"
     tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box, valspan,
                                           test.get("base"))
                        for d, stem in zip(dims, stems))
