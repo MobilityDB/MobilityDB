@@ -15,8 +15,12 @@ var searchData=
   ['arcseg_5fsigns_12',['ARCSEG_SIGNS',['../meos_2src_2geo_2geo__funcs_8c_a7d83eea7f36408b1cf513ae7bb5d5e0f.html#a7d83eea7f36408b1cf513ae7bb5d5e0f',1,'geo_funcs.c']]],
   ['area_5fint_5fblock_13',['AREA_INT_BLOCK',['../meos_2src_2geo_2geo__funcs_8c_acdbd19fa680accbe4156cccbfab64140.html#acdbd19fa680accbe4156cccbfab64140',1,'geo_funcs.c']]],
   ['arena_14',['ARENA',['../rtree__mest__example_8c_a08bb50663a7d17fe03e3976032fe8009.html#a08bb50663a7d17fe03e3976032fe8009',1,'ARENA():&#160;rtree_mest_example.c'],['../sptree__mest__example_8c_a08bb50663a7d17fe03e3976032fe8009.html#a08bb50663a7d17fe03e3976032fe8009',1,'ARENA():&#160;sptree_mest_example.c']]],
-  ['assertion_5fsegs_5fper_5fquad_15',['ASSERTION_SEGS_PER_QUAD',['../geo__op__diff_8c_a55a1aca334b087c07d688c1edd3243e9.html#a55a1aca334b087c07d688c1edd3243e9',1,'geo_op_diff.c']]],
-  ['axis1_5fportable_5ffunctions_16',['AXIS1_PORTABLE_FUNCTIONS',['../temporal__supportfn_8c_aeb285000b4a075315134db408054c35f.html#aeb285000b4a075315134db408054c35f',1,'temporal_supportfn.c']]],
-  ['axis1_5fportable_5fstrategies_17',['AXIS1_PORTABLE_STRATEGIES',['../temporal__supportfn_8c_acee915e422b23c5359c2f3cbc9724cd9.html#acee915e422b23c5359c2f3cbc9724cd9',1,'temporal_supportfn.c']]],
-  ['axis23_5fportable_5ffunctions_18',['AXIS23_PORTABLE_FUNCTIONS',['../temporal__supportfn_8c_a6268f6a2e1d72109117dde8612521459.html#a6268f6a2e1d72109117dde8612521459',1,'temporal_supportfn.c']]]
+  ['arith_5ffrom_15',['ARITH_FROM',['../zone__thread__test_8c_a0e0ff84ad9d7ab01e876db503493c9e7.html#a0e0ff84ad9d7ab01e876db503493c9e7',1,'zone_thread_test.c']]],
+  ['arith_5fhour_5fusecs_16',['ARITH_HOUR_USECS',['../zone__thread__test_8c_a81a4e6c838de984905e51604341a9864.html#a81a4e6c838de984905e51604341a9864',1,'zone_thread_test.c']]],
+  ['arith_5fstart_5fusecs_17',['ARITH_START_USECS',['../zone__thread__test_8c_af9a6087e85fddb3a656e608d55713d60.html#af9a6087e85fddb3a656e608d55713d60',1,'zone_thread_test.c']]],
+  ['arith_5fto_18',['ARITH_TO',['../zone__thread__test_8c_a6c60a29315c72a689a786b257f0d14e9.html#a6c60a29315c72a689a786b257f0d14e9',1,'zone_thread_test.c']]],
+  ['assertion_5fsegs_5fper_5fquad_19',['ASSERTION_SEGS_PER_QUAD',['../geo__op__diff_8c_a55a1aca334b087c07d688c1edd3243e9.html#a55a1aca334b087c07d688c1edd3243e9',1,'geo_op_diff.c']]],
+  ['axis1_5fportable_5ffunctions_20',['AXIS1_PORTABLE_FUNCTIONS',['../temporal__supportfn_8c_aeb285000b4a075315134db408054c35f.html#aeb285000b4a075315134db408054c35f',1,'temporal_supportfn.c']]],
+  ['axis1_5fportable_5fstrategies_21',['AXIS1_PORTABLE_STRATEGIES',['../temporal__supportfn_8c_acee915e422b23c5359c2f3cbc9724cd9.html#acee915e422b23c5359c2f3cbc9724cd9',1,'temporal_supportfn.c']]],
+  ['axis23_5fportable_5ffunctions_22',['AXIS23_PORTABLE_FUNCTIONS',['../temporal__supportfn_8c_a6268f6a2e1d72109117dde8612521459.html#a6268f6a2e1d72109117dde8612521459',1,'temporal_supportfn.c']]]
 ];
