@@ -206,14 +206,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   0), by the owner's rulings of 2026-11-19 ("please uniformize and aim at removing redundancy",
   "please fix then"), the readers of `raster_reclass`, `raster_terrain` and `raster_map_algebra`,
   branch `meos/raster-pixel-type-one-reader` (`9c970e36bb`) rewrites c123cb1e00, rewrites 7128c9344a, rewrites 6685673243 and rewrites ee2b35c35d,
-  MobilityDB #3860, open. The temporal point cloud projections `getX`, `getY`, `getZ` and
+  MERGED as MobilityDB #3860 (`726f498cc9`). The temporal point cloud projections `getX`, `getY`, `getZ` and
   `getDim` are the MEOS functions `tpcpoint_get_x`, `tpcpoint_get_y`, `tpcpoint_get_z` and
   `tpcpoint_get_dim`, reading the schema as `tpcpoint_to_tgeompoint` does, and a dimension the
   schema does not state raises as pgPointCloud's `PC_Get` raises it, for a value and for a point
   (census of 12 names: the 4 the schema does not state answering NULL, to 0), by the owner's ruling
   of 2026-11-19 ("fix this ASAP"), the projection the PostgreSQL wrappers carried,
   branch `meos/pointcloud-dimension-unknown-raises` (`c6df459d3d`) rewrites 7128c9344a and rewrites f69b861f64,
-  MobilityDB #3863, open. The string arguments of the public functions are read by class
+  MERGED as MobilityDB #3863 (`6f1ba1ac9a`). The string arguments of the public functions are read by class
   (`~/cpwork/contract/scan_strings.py`, 35 on master `2a0e95f2c0`), by the owner's ruling of
   2026-11-19 ("fix irregularities at sight -> mandatory"). `meos_pc_schema_from_dims` refuses a
   compression name the point cloud library does not read back as itself, where
@@ -221,14 +221,21 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   compression, to 0), the schemas document keeping pgPointCloud's reading, the entry of its
   compression parameter,
   branch `meos/pointcloud-compression-unknown-raises` (`ff48944329`) rewrites 7128c9344a,
-  MobilityDB #3865, open. `meos_set_intervalstyle` reads `sql_standard` by its whole name, as PostgreSQL's
+  MERGED as MobilityDB #3865 (`84098ce055`). `meos_set_intervalstyle` reads `sql_standard` by its whole name, as PostgreSQL's
   `config_enum_lookup_by_name` reads the setting (3 of 3 names beginning `sql_stan` setting the
   SQL standard style, to 0), the 8-character comparison of `check_intervalstyle`,
   branch `meos/intervalstyle-whole-name` (`0b73c63bce`) rewrites 7128c9344a,
-  MobilityDB #3866, open. `check_nullable_params.py` reads a @param entry through a line opening with an inline
+  MERGED as MobilityDB #3866 (`591b2752c9`). `check_nullable_params.py` reads a @param entry through a line opening with an inline
   command (12 public entries read cut short, to 0, the findings unchanged), its end of an entry,
   branch `tools/nullable-param-inline-commands` (`743d9b285e`) rewrites 6e22d6c736,
-  MobilityDB #3864, open.
+  MERGED as MobilityDB #3864 (`d0628d41af`). `geom_relate_pattern` takes its pattern as
+  `const char *` and folds `t` and `f` into a copy of its own, as PostGIS's `relate_pattern` reads
+  the case, and refuses a pattern that is not nine symbols among `T`, `F`, `*`, `0`, `1` and `2`
+  with `MEOS_ERR_INVALID_ARG_VALUE`, as GEOS 3.14.1 refuses it (a lower-case string constant
+  faulting in the write, and a shorter pattern read past its end, to 0), by the owner's ruling of
+  2026-11-20 ("yes make it const"), the in-place fold and the 9-byte copy of `relate_query_init`,
+  branch `fix/relate-pattern-const` (`76784f6513`) rewrites 7128c9344a,
+  MobilityDB #3876, open.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
