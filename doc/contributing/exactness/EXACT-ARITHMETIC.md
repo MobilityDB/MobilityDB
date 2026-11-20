@@ -928,16 +928,21 @@ workstation for 41 of 47 coordinates of the vertices of eight cells of resolutio
 `h3_vertex.c` reads the integer inputs of the formula from the core library of H3 vendored under
 `h3lib/`: a face of the icosahedron, a resolution and a point of the lattice, or the crossing of a
 segment of the lattice with a face edge, whose existence it decides on the integers.
-`gnomonic_face_point_nearest` (`geo_trig.c`) rounds each longitude and latitude first in bounded
-pairs of doubles (`ddb_gnomonic_face_point_nearest`) and, where their bound cannot tell, on an
-exact enclosure through `nearest_double_exact`. On every cell of resolutions 0 to 3 (48008 cells),
-an interval evaluation of the formula in MPFI, its rounding read in `CGAL::Gmpq` (`d8_judge`),
-agrees with every outline the head states and refuses libh3's on 47987 cells; an mpmath
-transcription agrees with all 1 196 914 outline and 199 220 center coordinates of the census.
-Against libh3 called directly, by callgrind on the 6846 cells of resolutions 0 to 2, the outline
-and the center of a cell cost 113 thousand instructions against 9.3 thousand, 12.2 times,
-`ddb_atan_degrees` taking 22% of them. The vendored library is MobilityDB #3873; the vertices are
-MobilityDB #3875, a draft until that cost reaches parity or the owner accepts it.
+`gnomonic_face_point_nearest` (`geo_trig.c`) rounds each longitude and latitude first in pairs of
+doubles under one bound stated for the whole evaluation (`dd_gnomonic_point_nearest`, as
+`point_distance_offset_dd` reads its value), then in bounded pairs of doubles
+(`ddb_gnomonic_face_point_nearest`) and, where their bound cannot tell, on an exact enclosure
+through `nearest_double_exact`. One arithmetic of the arctangent (`atan_ratio_degrees_core`)
+serves both tiers, and the operations on pairs of doubles (`dd_mul`, `dd_add`, `dd_div`,
+`dd_sqrt`) are the values their bounded twins compute, so the QUADBIN row latitudes and the S2
+corners read the same arithmetic. On every cell of resolutions 0 to 3 (48008 cells), an interval
+evaluation of the formula in MPFI, its rounding read in `CGAL::Gmpq` (`d8_judge`), agrees with
+every outline the head states and refuses libh3's on 47987 cells; an mpmath transcription agrees
+with all 1 196 914 outline and 199 220 center coordinates of the census. Against libh3 called
+directly, by callgrind on the 6846 cells of resolutions 0 to 2, the outline and the center of a
+cell cost 17.3 thousand instructions against 9.3 thousand, 1.87 times, the pairs under one bound
+deciding every point. The vendored library is MobilityDB #3873, merged as `c725de45ea`; the
+vertices are MobilityDB #3875, a draft until the owner accepts that cost.
 Left to the cell walks: the two `atan(sinh)` sites of `raster_quadbin.c`, which their raster walk
 rewrites.
 
