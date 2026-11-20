@@ -63,11 +63,10 @@ indextests:
     file: mobilitydb/test/geo/sql/074_tgeography_indexes_tbl.sql
     srid: 7844
     # values in two and in three dimensions, each with its own fixtures; the
-    # ever and always overlaps, which restrict the value to the box, refuse a
-    # geography, which MEOS restricts to a box only when it is a point
+    # ever and always overlaps refuse a value with Z, which MEOS reads against
+    # a box only without Z
     dims:
-      - {suffix: "", ever: false, offset: 10100, copies: 0,
-         srcfilter: k % 1000 = 0}
+      - {suffix: "", offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
       - {suffix: 3d, z: true, ever: false, offset: 10100, copies: 0,
          srcfilter: k % 1000 = 0}
     same: "SRID=7844;Point(5 45)"
