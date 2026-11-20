@@ -105,6 +105,10 @@ static bool typesequiv(struct state const *sp, int a, int b);
 /* MEOS: per-thread broken-down-time buffer (pg_gmtime/pg_localtime return a
  * pointer to it); concurrent calls must not share it. */
 static MEOS_TLS struct pg_tm tm;
+/* Its address, read once by each caller: passed as the result buffer of
+ * #timesub, it is a constant the compiler reads again at each of its uses
+ * otherwise, one lookup of the thread each time (MEOS_TLS_ADDRESS) */
+MEOS_TLS_ADDRESS(struct pg_tm, tm_buffer, tm)
 
 /* GMT timezone state data is kept here. MEOS: per-thread so the
  * check-then-allocate and the cached state do not race across threads, and
@@ -1390,7 +1394,7 @@ localsub(struct state const *sp, pg_time_t const *timep,
 struct pg_tm *
 pg_localtime(const pg_time_t *timep, const pg_tz *tz)
 {
-  return localsub(&tz->state, timep, &tm);
+  return localsub(&tz->state, timep, tm_buffer());
 }
 
 
@@ -1432,7 +1436,7 @@ gmtsub(pg_time_t const *timep, int32 offset,
 struct pg_tm *
 pg_gmtime(const pg_time_t *timep)
 {
-  return gmtsub(timep, 0, &tm);
+  return gmtsub(timep, 0, tm_buffer());
 }
 
 /*
