@@ -786,6 +786,11 @@ datum_sortkey_type(MeosType type)
   if (type == T_PCPOINT || type == T_PCPATCH)
     return true;
 #endif
+#if JSON
+  /* A JSON value has a key whose length depends on the value */
+  if (type == T_JSONB)
+    return true;
+#endif
   return datum_sortkey_size(type) > 0 || type == T_TEXT;
 }
 
@@ -800,7 +805,8 @@ datum_sortkey_type(MeosType type)
  * and of a pose chain the length #pose_sortkey_size and
  * #posechain_sortkey_size give, which depends on the value, as the key of a
  * point-cloud point and patch the length #pcpoint_sortkey_size and
- * #pcpatch_sortkey_size give.
+ * #pcpatch_sortkey_size give, and as the key of a JSON value the length
+ * #jsonb_sortkey_size gives.
  * @param[in] d Value
  * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
  * or geography type when the value is a point
@@ -839,6 +845,10 @@ datum_sortkey_len(Datum d, MeosType type)
       return pcpoint_sortkey_size(DatumGetPcpointP(d));
     case T_PCPATCH:
       return pcpatch_sortkey_size(DatumGetPcpatchP(d));
+#endif
+#if JSON
+    case T_JSONB:
+      return jsonb_sortkey_size(DatumGetJsonbP(d));
 #endif
     case T_BOOL:
     case T_INT4:
@@ -901,7 +911,8 @@ sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
  * through #npoint_sortkey_put, and a pose and a pose chain their flags, SRID
  * and values through #pose_sortkey_put and #posechain_sortkey_put, and a
  * point-cloud point and patch their pcid and stored bytes through
- * #pcpoint_sortkey_put and #pcpatch_sortkey_put.
+ * #pcpoint_sortkey_put and #pcpatch_sortkey_put, and a JSON value its
+ * tokens through #jsonb_sortkey_put.
  * @param[in] d Value
  * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
  * or geography type when the value is a point
@@ -1020,6 +1031,11 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
       return;
     case T_PCPATCH:
       pcpatch_sortkey_put(DatumGetPcpatchP(d), out);
+      return;
+#endif
+#if JSON
+    case T_JSONB:
+      jsonb_sortkey_put(DatumGetJsonbP(d), out);
       return;
 #endif
     default: /* Error! */
