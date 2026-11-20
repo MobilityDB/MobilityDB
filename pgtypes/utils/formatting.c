@@ -4071,7 +4071,10 @@ to_timestamp(text *date_txt, text *fmt, Oid collid)
   if (ftz.has_tz)
     tz = ftz.gmtoffset;
   else
+  {
+    meos_ensure_timezone();
     tz = DetermineTimeZoneOffset(&tm, session_timezone);
+  }
 
   if (tm2timestamp(&tm, fsec, &tz, &result) != 0)
   {

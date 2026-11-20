@@ -640,6 +640,7 @@ date2timestamptz_opt_overflow(DateADT date, int *overflow)
     tm->tm_hour = 0;
     tm->tm_min = 0;
     tm->tm_sec = 0;
+    meos_ensure_timezone();
     tz = DetermineTimeZoneOffset(tm, session_timezone);
 
     result = date * USECS_PER_DAY + tz * USECS_PER_SEC;
@@ -3056,6 +3057,7 @@ timetz_at_local(const TimeTzADT *timetz)
 TimeTzADT *
 pg_timetz_at_local(const TimeTzADT *timetz)
 {
+  meos_ensure_timezone();
   const char *tzn = pg_get_timezone_name(session_timezone);
   text *zone = pg_cstring_to_text(tzn);
   return pg_timetz_zone(timetz, zone);

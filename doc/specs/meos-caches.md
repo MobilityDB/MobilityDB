@@ -53,16 +53,17 @@ empties it. Every such call is made by `meos_finalize`.
    handler, the paths of the data files and the date and interval styles are
    set once for the process, and every thread reads them.
 5. **The time zone a thread names is the zone of the program.** A thread
-   naming none, through `meos_initialize_timezone` with `NULL`, takes the
-   zone the program named last, by whichever thread, and the zone of the
-   machine while the program names none. It follows each later naming, which
-   it finds on its next timestamp read or written; a thread naming its own
-   zone keeps it.
+   naming none takes the zone the program named last, by whichever thread,
+   and the zone of the machine while the program names none. Every function
+   reading the zone of the thread takes it first (`meos_ensure_timezone`), so
+   such a thread follows each later naming from its next such call, whether
+   it reads or writes a timestamp or computes with one, as adding an interval
+   or truncating to a unit does; a thread naming its own zone keeps it.
 
 A program using MEOS from several threads therefore calls `meos_initialize`
 once for the process, then, on each thread before its first MEOS call,
-`meos_initialize_timezone` and `meos_initialize_collation`, and on each thread
-before it ends, `meos_finalize`.
+`meos_initialize_collation`, and `meos_initialize_timezone` where the thread
+names a zone of its own, and on each thread before it ends, `meos_finalize`.
 
 ## 4. The caches
 
