@@ -139,8 +139,8 @@ $(function() {
 <p>Return the order of the validity periods of a raster series, or <code>NULL</code> when they are not the periods of a series. </p>
 <p >The periods must be time spans, at least one. Rows sharing one period are the tiles of one raster in space, read together; two distinct periods that overlap are refused, since two rasters valid at one time over one place would give two values there </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">spans</td><td>Validity periods of the rasters, one per raster </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of periods </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">spans</td><td>Array of the validity periods of the rasters, one per raster </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
   </table>
   </dd>
 </dl>

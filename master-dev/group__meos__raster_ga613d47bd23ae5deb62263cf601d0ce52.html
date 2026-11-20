@@ -161,9 +161,9 @@ $(function() {
 <p >Each raster is read over the part of <code>traj</code> within its validity period, in the order of the periods. A part of the trajectory within no period reads no value, and periods that overlap are refused </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory (temporal geometry point) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rasts</td><td>Rasters of the series </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">spans</td><td>Validity periods of the rasters, one per raster </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of rasters </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rasts</td><td>Array of the rasters of the series </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">spans</td><td>Array of the validity periods of the rasters, one per raster </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the arrays </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Band number (1-based) </td></tr>
   </table>
   </dd>
