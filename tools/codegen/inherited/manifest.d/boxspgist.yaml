@@ -73,4 +73,6 @@ boxspgist:
         #endif /* POINTCLOUD */
       distance:    nad_stbox_stbox(&box, key, true)
       bound:       true
+      # the lower bound a leaf key reports, geodetic boxes included
+      indexdistance: stbox_index_distance(&box, key)
       noun:        spatiotemporal values

@@ -111,6 +111,7 @@
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "geo/stbox_index.h"
+#include "temporal/tcellindex.h"
 #if POINTCLOUD
   #include <meos_pointcloud.h>             /* TPCBox, DatumGetTpcboxP */
   #include "pointcloud/tpcbox.h"
@@ -718,6 +719,140 @@ stbox_index_distance_bound(double dist, const STBox *box1, const STBox *box2)
   return fmax(dist - 8 * DBL_EPSILON * scale, 0.0);
 }
 
+/* The semi-major axis and the flattening of the WGS84 spheroid */
+#define WGS84_A 6378137.0
+#define WGS84_F (1.0 / 298.257223563)
+
+/**
+ * @brief Set the least and the greatest of the cosine (@p sine false) or the
+ * sine of the longitudes of [@p lon1, @p lon2] in degrees, the extremes at
+ * the ends of the interval or at a multiple of 90 inside it
+ */
+static void
+lon_trig_range(double lon1, double lon2, bool sine, double *lo, double *hi)
+{
+  double r1 = lon1 * M_PI / 180.0, r2 = lon2 * M_PI / 180.0;
+  double a = sine ? sin(r1) : cos(r1);
+  double b = sine ? sin(r2) : cos(r2);
+  *lo = fmin(a, b); *hi = fmax(a, b);
+  /* The multiples of 90 from -180 to 180: cosines 1, 0, -1 and sines 0, 1,
+   * 0, -1 in the order of the table */
+  static const double mult[5] = { -180.0, -90.0, 0.0, 90.0, 180.0 };
+  static const double cosv[5] = { -1.0, 0.0, 1.0, 0.0, -1.0 };
+  static const double sinv[5] = { 0.0, -1.0, 0.0, 1.0, 0.0 };
+  for (int k = 0; k < 5; k++)
+  {
+    if (mult[k] <= lon1 || mult[k] >= lon2)
+      continue;
+    double v = sine ? sinv[k] : cosv[k];
+    *lo = fmin(*lo, v); *hi = fmax(*hi, v);
+  }
+}
+
+/**
+ * @brief Set in @p lo and @p hi the earth-centred box holding every point of
+ * the WGS84 spheroid whose longitude and latitude lie in the planar extent of
+ * the geodetic box @p box, or in the polygon of that extent
+ * @details The nearest approach of geodetic boxes, which is the distance of
+ * a set of geographies, measures the polygon #stbox_geo builds on the corners
+ * of the box, whose top and bottom edges are great-circle arcs: such an arc
+ * rises above the latitudes of its ends toward the pole, as
+ * #dggs_lonlat_segment_extend_box states, so the latitudes are first extended
+ * to hold it, and an extent of half the longitudes or more reaches the pole.
+ * The distance of a point to the polar axis, N cos(lat), decreases
+ * with the absolute latitude and its height on the axis, N (1 - e^2) sin(lat),
+ * increases with the latitude, so each takes its extremes at the ends of the
+ * latitudes or at the equator; x and y are that distance times the cosine and
+ * the sine of the longitude, whose extremes #lon_trig_range gives
+ */
+static void
+geodstbox_ecef_box(const STBox *box, double *lo, double *hi)
+{
+  double e2 = WGS84_F * (2.0 - WGS84_F);
+  /* An extent reaching past the earth, as the unbounded node of a space
+   * partitioning tree does, is read up to the poles and over every longitude,
+   * and so is a longitude extent wrapping the antimeridian */
+  double ymin = fmax(box->ymin, -90.0), ymax = fmin(box->ymax, 90.0);
+  double lon1 = box->xmin, lon2 = box->xmax;
+  if (lon1 > lon2 || lon1 < -180.0 || lon2 > 180.0)
+  {
+    lon1 = -180.0; lon2 = 180.0;
+  }
+  /* The top and bottom edges of the polygon of the extent */
+  if (lon2 - lon1 >= 180.0)
+  {
+    if (ymax > 0.0)
+      ymax = 90.0;
+    if (ymin < 0.0)
+      ymin = -90.0;
+  }
+  else
+  {
+    double xmin = lon1, xmax = lon2, ylo = ymin, yhi = ymax;
+    dggs_lonlat_segment_extend_box(lon1, yhi, lon2, yhi, &xmin, &ymin, &xmax,
+      &ymax);
+    dggs_lonlat_segment_extend_box(lon1, ylo, lon2, ylo, &xmin, &ymin, &xmax,
+      &ymax);
+  }
+  const double lats[3] = { ymin, ymax, 0.0 };
+  int nlat = (ymin < 0.0 && ymax > 0.0) ? 3 : 2;
+  double rlo = DBL_MAX, rhi = 0.0, zlo = DBL_MAX, zhi = -DBL_MAX;
+  for (int i = 0; i < nlat; i++)
+  {
+    double phi = lats[i] * M_PI / 180.0;
+    double n = WGS84_A / sqrt(1.0 - e2 * sin(phi) * sin(phi));
+    double r = n * cos(phi), z = n * (1.0 - e2) * sin(phi);
+    rlo = fmin(rlo, r); rhi = fmax(rhi, r);
+    zlo = fmin(zlo, z); zhi = fmax(zhi, z);
+  }
+  double clo, chi, slo, shi;
+  lon_trig_range(lon1, lon2, false, &clo, &chi);
+  lon_trig_range(lon1, lon2, true, &slo, &shi);
+  lo[0] = fmin(rlo * clo, rhi * clo); hi[0] = fmax(rlo * chi, rhi * chi);
+  lo[1] = fmin(rlo * slo, rhi * slo); hi[1] = fmax(rlo * shi, rhi * shi);
+  lo[2] = zlo; hi[2] = zhi;
+}
+
+/**
+ * @brief Return the distance an index reports for two spatiotemporal boxes:
+ * a lower bound of the distance the ordering operator computes for any two
+ * values the boxes bound
+ * @details Boxes whose periods do not meet answer DBL_MAX. Two planar boxes
+ * answer their nearest approach distance, lowered by
+ * #stbox_index_distance_bound. Two geodetic boxes answer the distance between
+ * the earth-centred boxes holding their points on the WGS84 spheroid
+ * (#geodstbox_ecef_box): a straight line between two points of the spheroid
+ * is never longer than the geodesic between them, so this bounds the
+ * distance on the spheroid from below. The nearest approach of the boxes
+ * themselves does not: it measures polygons whose edges are great-circle
+ * arcs, which leave out parts of a box of longitudes and latitudes, a value
+ * of which can then be nearer than its box
+ * @param[in] box1,box2 Spatiotemporal boxes with a spatial extent
+ */
+double
+stbox_index_distance(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  assert(MEOS_FLAGS_GET_X(box1->flags)); assert(MEOS_FLAGS_GET_X(box2->flags));
+  if (MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags) &&
+      ! overlaps_span_span(&box1->period, &box2->period))
+    return DBL_MAX;
+  if (! MEOS_FLAGS_GET_GEODETIC(box1->flags))
+    return stbox_index_distance_bound(stbox_nad(box1, box2, true), box1,
+      box2);
+  double lo1[3], hi1[3], lo2[3], hi2[3], d2 = 0.0;
+  geodstbox_ecef_box(box1, lo1, hi1);
+  geodstbox_ecef_box(box2, lo2, hi2);
+  for (int i = 0; i < 3; i++)
+  {
+    double d = fmax(fmax(lo1[i] - hi2[i], lo2[i] - hi1[i]), 0.0);
+    d2 += d * d;
+  }
+  /* The rounding of coordinates of the order of the radius is taken from the
+   * bound as #stbox_index_distance_bound takes it */
+  return fmax(sqrt(d2) - 8 * DBL_EPSILON * WGS84_A, 0.0);
+}
+
 /**
  * @brief Return the lower bound for the distance between a query and a nodebox
  * @note The temporal dimension is only taken into account for returning
@@ -739,6 +874,20 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
       datum_gt(query->period.lower, nodebox->right.period.upper, T_TIMESTAMPTZ) ||
       datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
     return DBL_MAX;
+
+  /* A geodetic node is bounded as every geodetic box is, its extent being
+   * the least and the greatest bounds of its two corner boxes */
+  if (MEOS_FLAGS_GET_GEODETIC(query->flags))
+  {
+    STBox node = nodebox->left;
+    node.xmax = nodebox->right.xmax;
+    node.ymax = nodebox->right.ymax;
+    node.zmax = nodebox->right.zmax;
+    MEOS_FLAGS_SET_T(node.flags, false);
+    STBox q = *query;
+    MEOS_FLAGS_SET_T(q.flags, false);
+    return stbox_index_distance(&q, &node);
+  }
 
   double dx, dy, dz = 0; /* make compiler quiet */
   if (query->xmax < nodebox->left.xmin)
