@@ -583,3 +583,61 @@ DROP FUNCTION pg_temp.day_of(int);
 DROP FUNCTION pg_temp.index_structures(text, text, text[], text[], text[]);
 
 -------------------------------------------------------------------------------
+-- The nearest neighbours of a geography found by each index are those of a
+-- sequential scan: the distance an index orders by bounds from below the
+-- distance on the spheroid, which a box of longitudes and latitudes read as a
+-- polygon of great-circle arcs does not
+
+CREATE FUNCTION pg_temp.knn_nearest(tbl text, qtbl text)
+RETURNS TABLE(k int, d text) AS $$
+BEGIN
+  RETURN QUERY EXECUTE format(
+    'SELECT q.k, (SELECT string_agg(round(s.d::numeric, 3)::text, '','' ORDER BY s.d)
+       FROM (SELECT t.temp |=| q.g AS d FROM %I t ORDER BY t.temp |=| q.g LIMIT 5) s)
+     FROM %I q WHERE q.g IS NOT NULL', tbl, qtbl);
+END $$ LANGUAGE plpgsql;
+CREATE TEMP TABLE tbl_knn_nearest(tbl text, idx text, k int, d text);
+CREATE FUNCTION pg_temp.knn_run(tbl text, qtbl text, idx text) RETURNS void AS $$
+BEGIN
+  IF idx = 'scan' THEN
+    SET LOCAL enable_indexscan = off; SET LOCAL enable_bitmapscan = off;
+  ELSE
+    SET LOCAL enable_seqscan = off;
+    EXECUTE format('CREATE INDEX tbl_knn_idx ON %I USING %s', tbl,
+      CASE idx WHEN 'rtree' THEN 'gist(temp)' WHEN 'quadtree' THEN 'spgist(temp)'
+        ELSE 'spgist(temp tgeogpoint_kdtree_ops)' END);
+  END IF;
+  INSERT INTO tbl_knn_nearest
+  SELECT tbl, idx, x.k, x.d FROM pg_temp.knn_nearest(tbl, qtbl) x;
+  IF idx <> 'scan' THEN DROP INDEX tbl_knn_idx; END IF;
+END $$ LANGUAGE plpgsql;
+
+CREATE TEMP TABLE tbl_knn_tgeogpoint AS SELECT k, temp FROM tbl_tgeogpoint;
+CREATE TEMP TABLE tbl_knn_tgeogpoint3d AS SELECT k, temp FROM tbl_tgeogpoint3d_big;
+CREATE TEMP TABLE tbl_knn_geog AS SELECT k, g FROM tbl_geog_point;
+CREATE TEMP TABLE tbl_knn_geog3d AS SELECT k, g FROM tbl_geog_point3d WHERE k <= 30;
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint', 'tbl_knn_geog', 'scan');
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint', 'tbl_knn_geog', 'rtree');
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint', 'tbl_knn_geog', 'quadtree');
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint', 'tbl_knn_geog', 'kdtree');
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint3d', 'tbl_knn_geog3d', 'scan');
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint3d', 'tbl_knn_geog3d', 'rtree');
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint3d', 'tbl_knn_geog3d', 'quadtree');
+SELECT pg_temp.knn_run('tbl_knn_tgeogpoint3d', 'tbl_knn_geog3d', 'kdtree');
+
+SELECT r.tbl, r.idx, COUNT(*) AS queries,
+  COUNT(*) FILTER (WHERE r.d IS DISTINCT FROM s.d) AS differ
+FROM tbl_knn_nearest r JOIN tbl_knn_nearest s ON
+  s.tbl = r.tbl AND s.idx = 'scan' AND s.k = r.k
+WHERE r.idx <> 'scan'
+GROUP BY r.tbl, r.idx ORDER BY 1, 2;
+
+DROP TABLE tbl_knn_nearest;
+DROP TABLE tbl_knn_tgeogpoint;
+DROP TABLE tbl_knn_tgeogpoint3d;
+DROP TABLE tbl_knn_geog;
+DROP TABLE tbl_knn_geog3d;
+DROP FUNCTION pg_temp.knn_run(text, text, text);
+DROP FUNCTION pg_temp.knn_nearest(text, text);
+
+-------------------------------------------------------------------------------

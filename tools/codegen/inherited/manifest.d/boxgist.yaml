@@ -86,6 +86,8 @@ boxgist:
       same:         extent
       distance:     nad_stbox_stbox(key, &query, true)
       bound:        true
+      # the lower bound an entry carrying a box reports, geodetic boxes included
+      indexdistance: stbox_index_distance(key, &query)
       noun:         spatiotemporal boxes
       tempnoun:     spatiotemporal values
     - box:          tpcbox

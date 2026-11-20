@@ -30,6 +30,8 @@ on:
     paths:
       - '.github/workflows/fedora.yml'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -41,6 +43,8 @@ on:
     paths:
       - '.github/workflows/fedora.yml'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'

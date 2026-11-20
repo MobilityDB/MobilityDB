@@ -6068,6 +6068,18 @@ _BOXGIST_BOUND = """
 """
 
 
+# A box type stating the lower bound its index reports (#stbox_index_distance)
+# reports it for an entry carrying a box and the operator's answer otherwise
+_BOXGIST_INDEXDISTANCE = """  /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
+   * box rather than the value, so what they report is a lower bound of the
+   * distance the ordering operator computes (#{INDEXFN}). The exact
+   * leaf of a column of boxes reports the operator's own answer */
+  double distance = (! GIST_LEAF(entry) || *recheck) ?
+    {INDEXDISTANCE} : {DISTANCE};
+
+"""
+
+
 def render_boxgist(box: dict, samekinds: dict) -> str:
     """The GiST support functions of a box type, rendered from its template as
     #render_indextree renders a tree's constructors"""
@@ -6075,7 +6087,13 @@ def render_boxgist(box: dict, samekinds: dict) -> str:
     same = textwrap.indent(samekinds[box["same"]].replace("{FIELDS}", fields),
                            "    ")
     bound = _BOXGIST_BOUND if box["bound"] else "\n"
-    text = read_template("boxgist.c.tmpl").replace("{BOUND}", bound)
+    text = read_template("boxgist.c.tmpl")
+    if box.get("indexdistance"):
+        text = text.replace("  double distance = {DISTANCE};\n{BOUND}",
+                            _BOXGIST_INDEXDISTANCE
+                            .replace("{INDEXFN}", box["indexdistance"].split("(")[0])
+                            .replace("{INDEXDISTANCE}", box["indexdistance"]))
+    text = text.replace("{BOUND}", bound)
     for key, val in (("{SAME}", same), ("{CONSISTENT}", box["consistent"]),
                      ("{TEMPDISTANCE}", box["tempdistance"]),
                      ("{GETBOX}", box["getbox"]), ("{DATUMGET}", box["datumget"]),
@@ -6162,7 +6180,11 @@ def _boxspgist_nodetest(test: str, box: dict) -> str:
 def render_boxspgist(box: dict, posaxes: list, posops: list) -> str:
     """The SP-GiST support functions of a box type, rendered from its template
     as #render_boxgist renders the GiST ones"""
-    if box["bound"]:
+    if box.get("indexdistance"):
+        distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
+                    "       * reports is a lower bound of the operator's own distance */\n"
+                    f"      distances[i] = {box['indexdistance']};")
+    elif box["bound"]:
         distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
                     "       * reports is lowered to stay under the operator's own distance */\n"
                     f"      distances[i] = {box['box']}_index_distance_bound(\n"

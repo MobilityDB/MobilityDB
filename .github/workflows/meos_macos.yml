@@ -9,6 +9,8 @@ on:
     paths:
       - '.github/workflows/meos_macos.yml'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'pgtypes/**'
       - 'postgis/**'
@@ -20,6 +22,8 @@ on:
     paths:
       - '.github/workflows/meos_macos.yml'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'pgtypes/**'
       - 'postgis/**'
