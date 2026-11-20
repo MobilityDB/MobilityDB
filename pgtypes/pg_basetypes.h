@@ -80,6 +80,19 @@ typedef struct varlena text;
 
 #endif /* POSTGRES_H */
 
+#ifndef pg_noinline
+/* The pg_noinline of c.h, word for word, for the units that do not include
+ * it, which MEOS_TLS_ADDRESS of meos_tls.h reads */
+#if (defined(__GNUC__) && __GNUC__ > 2) || defined(__SUNPRO_C)
+#define pg_noinline __attribute__((noinline))
+/* msvc via declspec */
+#elif defined(_MSC_VER)
+#define pg_noinline __declspec(noinline)
+#else
+#define pg_noinline
+#endif
+#endif /* pg_noinline */
+
 #ifndef DATATYPE_TIMESTAMP_H
 
 typedef int64 Timestamp;

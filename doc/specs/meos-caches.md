@@ -60,6 +60,20 @@ empties it. Every such call is made by `meos_finalize`.
    it reads or writes a timestamp or computes with one, as adding an interval
    or truncating to a unit does; a thread naming its own zone keeps it.
 
+6. **A per-thread variable read in a hot path is read once per call.**
+   Each reading of a per-thread variable in the standalone library loaded at
+   run time, as the bindings load it, is one lookup of the thread
+   (`__tls_get_addr`). A function reading one in a loop copies its value into
+   a local once and passes it to the functions it calls for each step, as
+   the clipping of a temporal point passes its arrays of events, intervals
+   and meets to the functions computing the intervals of each segment. The
+   address of a per-thread variable is a constant to the compiler, which
+   reads it again wherever it is used, inlined copies and specialized clones
+   included, so a variable whose address is passed is read through
+   `MEOS_TLS_ADDRESS` of `meos/include/meos_tls.h`, a function the compiler
+   does not inline, as the broken-down time of `pgtypes/timezone/localtime.c`
+   is.
+
 A program using MEOS from several threads therefore calls `meos_initialize`
 once for the process, then, on each thread before its first MEOS call,
 `meos_initialize_collation`, and `meos_initialize_timezone` where the thread
