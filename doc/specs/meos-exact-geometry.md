@@ -438,6 +438,7 @@ arcs as arcs (a `CURVEPOLYGON`, or a `MULTISURFACE` of them).
 | multipoint | positive | none | the region the circles about its points wind around at least once, a point repeating another dropped |
 | circular string, compound curve, multicurve | positive | round joins, any cap | the region the offset curves wind around at least once, each curve walked out to its end and back, or, under a flat or a square cap, the strips of its end elements and the curve between them |
 | curve polygon, multisurface | positive | round joins | the region the offset curves of its rings wind around at least once |
+| geometry collection of points, lines, polygons, curve polygons and curves, a multisurface of polygons and curve polygons | positive | round joins, any cap | the region the offset curves of its members wind around at least once, each member offset as it is alone |
 
 Round joins and round caps are the default style.
 
@@ -509,7 +510,8 @@ enclosing circle is no larger than `r` holds no point of its erosion.
 built on the older path, whose answers read the tolerances of section 3 and
 are outside this document's guarantee; the buffer of a line is declined, since
 no other path answers it exactly; the erosion of a polygon holding a ring that
-encloses no area is built on the older path. So is the buffer of a curve under
+encloses no area is built on the older path. So is the buffer of a lone point,
+whose disc that path writes as its whole circle, of a curve under
 a flat or a square cap ending in an arc whose radius is not shown to exceed
 the distance, of a curve polygon ring whose arcs turn against its
 shoelace sum, and of a curve polygon holding a hole of arcs, other than a whole
@@ -557,6 +559,7 @@ rests on a rounding.
 | circular strings, compound curves and curve polygons | 200 geometries of one to three arcs, whole circles among them, at three distances, a grid about each and points at 0.999 and 1.001 of the distance from every arc and every end | 41268 of 41268, with no decline |
 | curve polygons bounded by whole circles, with and without a circular hole | 60 discs at distances below and above the radius of the hole, points at 0.999 and 1.001 of the distance from either circle | 11087 of 11087, with no decline |
 | circular strings and compound curves under a flat or a square cap | 120 curves of one to three arcs, ending in segments or arcs, at 0.3 and 0.97 of the smallest radius of their end arcs, a grid about each, points at 0.999 and 1.001 of the distance from every arc, segment and end, and on both sides of every cut and of every side and corner of a square | 57760 of 57760, with no decline |
+| geometry collections of points, multipoints, lines, multilines, polygons with and without a hole, curve polygons and curves, nested at times | 80 collections of two to five members about one centre, 41 holding a line, under the round, flat and square caps at 0.3 and 0.9 of the smallest radius of their curves' end arcs, a grid about each and points at 0.999 and 1.001 of the distance from every edge, arc and point | 46392 of 46392, with no decline |
 
 Every query a line's certificate declines has a distance below the rounding of
 its coordinates, at most 0.32 of an ulp; answered instead, five of them are

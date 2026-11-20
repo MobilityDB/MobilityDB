@@ -10700,107 +10700,6 @@ buffer_round_line_offsets(const POINTARRAY *pa, double radius,
 }
 
 /**
- * @brief Return the rings bounding the buffer of a polygon or a multipolygon
- * with round joins, the region the exact offset curves of its rings wind
- * around
- * @details Every ring is offset with round joins (#buffer_round_ring_offsets),
- * the shells turning counterclockwise and the holes clockwise. The curves
- * wind around a point as many times as the parts the polygons have within
- * the distance of it, less the holes lying within that distance of it whole:
- * the Euler characteristic of the polygons within the disc about the point.
- * A hole that a circle no larger than the distance encloses is covered by
- * the buffer whole and is left out, and no other hole lies within such a
- * disc but at a set of points bounding no area, so the buffer is the set of
- * points the curves wind around at least once, read off their arrangement
- * (#arrange_wound_tangent_surfaces), and the buffers of the polygons of a
- * multipolygon are united in that one arrangement. Each offset and each
- * join is fixed by the input doubles and the distance alone, so no point of
- * the curves is constructed and then asked about, and only the vertices of
- * the answer are rounded, each once
- * @param[in] geom Polygon or multipolygon
- * @param[in] radius Distance, positive
- * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
- * owning each, as #arrange_wound_tangent_surfaces answers them
- * @return False for another type, a shell enclosing no area, where the
- * arrangement leaves the region unanswered or answers no ring -- a caller
- * that has another way to answer may take it
- */
-static bool
-buffer_round_rings(const LWGEOM *geom, double radius, MeosArray ***rings,
-  uint32_t *nrings, int32_t **owner)
-{
-  assert(geom); assert(radius > 0.0);
-  if (lwgeom_is_empty(geom) ||
-      (geom->type != POLYGONTYPE && geom->type != MULTIPOLYGONTYPE))
-    return false;
-  const LWGEOM *const *parts = &geom;
-  uint32_t nparts = 1;
-  if (geom->type == MULTIPOLYGONTYPE)
-  {
-    parts = (const LWGEOM *const *) ((const LWCOLLECTION *) geom)->geoms;
-    nparts = ((const LWCOLLECTION *) geom)->ngeoms;
-  }
-  uint32_t total = 0;
-  for (uint32_t i = 0; i < nparts; i++)
-  {
-    const LWPOLY *poly = (const LWPOLY *) parts[i];
-    if (parts[i]->type != POLYGONTYPE ||
-        (poly->nrings > 0 && ring_area_sign(poly->rings[0]) == 0))
-      return false;
-    for (uint32_t r = 0; r < poly->nrings; r++)
-      total += poly->rings[r]->npoints;
-  }
-  TangentPoint *tps = palloc(sizeof(TangentPoint) * 2 * Max(total, 1u));
-  /* An offset segment and at most one arc for every point */
-  MeosArray *edges = meos_array_create(sizeof(Edge));
-  edge_array_reserve(edges, 2 * (size_t) total);
-  uint32_t ntp = 0;
-  POINT2D *pts = palloc(sizeof(POINT2D) * Max(total, 1u));
-  for (uint32_t i = 0; i < nparts; i++)
-  {
-    const LWPOLY *poly = (const LWPOLY *) parts[i];
-    for (uint32_t r = 0; r < poly->nrings; r++)
-    {
-      const POINTARRAY *pa = poly->rings[r];
-      /* A hole enclosing no area takes nothing from its polygon */
-      if (r > 0 && ring_area_sign(pa) == 0)
-        continue;
-      /* A hole within a circle no larger than the distance lies within that
-       * distance of its own ring, the buffer covering it whole: kept, it
-       * would lie within the disc of the distance about the points it holds
-       * and take from the winding number there (#buffer_round_ring_offsets),
-       * so it is left out, the smallest enclosing circle compared with the
-       * distance exactly (#mec_radius_cmp) */
-      if (r > 0)
-      {
-        for (uint32_t k = 0; k < pa->npoints; k++)
-          pts[k] = *getPoint2d_cp(pa, k);
-        if (mec_radius_cmp(pts, (int) pa->npoints, radius) <= 0)
-          continue;
-      }
-      buffer_round_ring_offsets(pa, r == 0, radius, tps, &ntp, edges);
-    }
-  }
-  pfree(pts);
-  bool found = false;
-  bool arranged = edges->count > 0 && arrange_wound_tangent_surfaces(edges,
-    rings, nrings, owner, NULL) == ARR_ANSWERED;
-  if (arranged)
-  {
-    found = *nrings > 0;
-    if (! found)
-    {
-      arrange_rings_free(*rings, *nrings);
-      if (*owner)
-        pfree(*owner);
-    }
-  }
-  meos_array_destroy(edges);
-  pfree(tps);
-  return found;
-}
-
-/**
  * @brief Return whether the written ends of every segment between tangent
  * points lie strictly on the side of the edge offset at each that its
  * tangent point takes, which #cross_product_sign decides exactly on the
@@ -10835,7 +10734,8 @@ buffer_offsets_keep_their_side(const MeosArray *edges)
 /**
  * @brief Return the rings bounding the buffer of a line or a multiline with
  * round joins and round, flat or square caps, the region the exact offset
- * curves of its lines wind around, as #buffer_round_rings answers a polygon
+ * curves of its lines wind around, as #buffer_round_member_rings answers a
+ * polygon
  * @details Every line is offset out and back (#buffer_round_line_offsets),
  * and the buffers of the lines of a multiline are united in one arrangement
  * (#arrange_wound_tangent_surfaces). Where an offset segment is written on
@@ -10919,7 +10819,7 @@ buffer_round_line_rings(const LWGEOM *geom, double radius, EndCapStyle cap,
 }
 
 /*
- * Order two points by x then y, for #buffer_round_point_rings to drop a point
+ * Order two points by x then y, for #buffer_point_circles to drop a point
  * repeating another
  */
 static int
@@ -10931,89 +10831,6 @@ buffer_point2d_cmp(const void *a, const void *b)
   if (p->y != q->y)
     return (p->y < q->y) ? -1 : 1;
   return 0;
-}
-
-/**
- * @brief Return the rings bounding the buffer of a multipoint, the union of
- * the discs of the distance about its points, read off the exact arrangement
- * of their circles, as #buffer_round_rings answers a polygon
- * @details The arrangement takes edges ending where tangents touch circles,
- * so the circle about a point is the two half turns, counterclockwise,
- * between the points where the two common tangents of that circle and the
- * one of the distance about another point touch it (#TangentPoint): the
- * point above it, or the next double above where the coordinate does not
- * move. Each circle winds once around every point of its disc, so the
- * buffer is the set of points the circles wind around at least once, a
- * point repeating another dropped. Every circle is fixed by the input doubles
- * and the distance, and only the vertices of the answer are rounded
- * @param[in] geom Multipoint
- * @param[in] radius Distance, positive
- * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
- * owning each, as #arrange_wound_tangent_surfaces answers them
- * @return False for another type, an empty multipoint, where the
- * arrangement leaves the region unanswered or answers no ring -- a caller
- * that has another way to answer may take it
- */
-static bool
-buffer_round_point_rings(const LWGEOM *geom, double radius,
-  MeosArray ***rings, uint32_t *nrings, int32_t **owner)
-{
-  assert(geom); assert(radius > 0.0);
-  if (geom->type != MULTIPOINTTYPE || lwgeom_is_empty(geom))
-    return false;
-  const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
-  POINT2D *pts = palloc(sizeof(POINT2D) * Max(col->ngeoms, 1u));
-  uint32_t n = 0;
-  for (uint32_t i = 0; i < col->ngeoms; i++)
-  {
-    const LWPOINT *pt = (const LWPOINT *) col->geoms[i];
-    if (col->geoms[i]->type != POINTTYPE || lwgeom_is_empty(col->geoms[i]))
-      continue;
-    pts[n++] = *getPoint2d_cp(pt->point, 0);
-  }
-  if (n == 0)
-  {
-    pfree(pts);
-    return false;
-  }
-  qsort(pts, n, sizeof(POINT2D), buffer_point2d_cmp);
-  uint32_t m = 1;
-  for (uint32_t i = 1; i < n; i++)
-    if (buffer_point2d_cmp(&pts[i], &pts[m - 1]) != 0)
-      pts[m++] = pts[i];
-  TangentPoint *tps = palloc(sizeof(TangentPoint) * 2 * m);
-  MeosArray *edges = meos_array_create(sizeof(Edge));
-  edge_array_reserve(edges, 2 * (size_t) m);
-  for (uint32_t i = 0; i < m; i++)
-  {
-    const POINT2D *p = &pts[i];
-    double qy = p->y + 1.0;
-    if (qy == p->y)
-      qy = nextafter(p->y, INFINITY);
-    TangentPoint *t = &tps[2 * i];
-    t[0] = (TangentPoint) {p->x, p->y, radius, p->x, qy, radius, 1, 0, 0,
-      NULL};
-    t[1] = (TangentPoint) {p->x, p->y, radius, p->x, qy, radius, -1, 0, 0,
-      NULL};
-    edges_add_tangent_arc(edges, p->x, p->y, radius, true, &t[0], &t[1]);
-    edges_add_tangent_arc(edges, p->x, p->y, radius, true, &t[1], &t[0]);
-  }
-  pfree(pts);
-  bool found = false;
-  if (arrange_wound_tangent_surfaces(edges, rings, nrings, owner, NULL) ==
-      ARR_ANSWERED)
-  {
-    found = *nrings > 0;
-    if (! found)
-    {
-      arrange_rings_free(*rings, *nrings);
-      if (*owner)
-        pfree(*owner);
-    }
-  }
-  meos_array_destroy(edges);
-  pfree(tps);
-  return found;
 }
 
 /* An element of the walk of a curve: a segment from p[0] to p[2], an arc
@@ -11390,91 +11207,6 @@ buffer_capped_curve_offsets(const BufferWalkElem *w, uint32_t n,
 }
 
 /**
- * @brief Return the rings bounding the buffer of a curve or a multicurve
- * with round joins and any cap, the region the exact offset curves of its
- * curves wind around, as #buffer_round_line_rings answers a line
- * @details Every curve, its segments and its arcs, is walked out and back
- * (#buffer_round_curve_offsets); under a flat or a square cap a curve that
- * does not close is the strips of its end elements and the walk of the
- * curve between them (#buffer_capped_curve_offsets). The buffers of the
- * curves of a multicurve are united in one arrangement
- * (#arrange_wound_tangent_surfaces), as the discs of a multipoint are
- * (#buffer_round_point_rings)
- * @param[in] geom Circular string, compound curve or multicurve
- * @param[in] radius Distance, positive
- * @param[in] cap Cap at the ends of the curves
- * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
- * owning each, as #arrange_wound_tangent_surfaces answers them
- * @return False for another type, where an end strip, a turn or the
- * arrangement leaves the region unanswered or it answers no ring -- a
- * caller that has another way to answer may take it
- */
-static bool
-buffer_round_curve_rings(const LWGEOM *geom, double radius, EndCapStyle cap,
-  MeosArray ***rings, uint32_t *nrings, int32_t **owner)
-{
-  assert(geom); assert(radius > 0.0);
-  if (lwgeom_is_empty(geom) || (geom->type != CIRCSTRINGTYPE &&
-      geom->type != COMPOUNDTYPE && geom->type != MULTICURVETYPE))
-    return false;
-  const LWGEOM *const *parts = &geom;
-  uint32_t nparts = 1;
-  if (geom->type == MULTICURVETYPE)
-  {
-    parts = (const LWGEOM *const *) ((const LWCOLLECTION *) geom)->geoms;
-    nparts = ((const LWCOLLECTION *) geom)->ngeoms;
-  }
-  uint32_t total = buffer_curve_npoints(geom);
-  /* Out and back, at most two elements per point each way */
-  BufferWalkElem *w = palloc(sizeof(BufferWalkElem) * 4 * Max(total, 1u));
-  BufferWalkElem *u = (cap == ENDCAP_ROUND) ? NULL :
-    palloc(sizeof(BufferWalkElem) * 4 * Max(total, 1u));
-  TangentPoint *tps = palloc(sizeof(TangentPoint) * 8 * Max(total, 1u));
-  ExactArc *arcs = palloc(sizeof(ExactArc) * 4 * Max(total, 1u));
-  MeosArray *edges = meos_array_create(sizeof(Edge));
-  edge_array_reserve(edges, 8 * (size_t) Max(total, 1u));
-  uint32_t ntp = 0;
-  bool ok = true;
-  for (uint32_t i = 0; i < nparts && ok; i++)
-  {
-    uint32_t n = 0;
-    ok = buffer_curve_elems(parts[i], w, &n);
-    if (! ok || n == 0)
-      continue;
-    /* A curve that closes has no end, so its walk stands whatever the cap */
-    if (cap != ENDCAP_ROUND && (w[0].p[0][0] != w[n - 1].p[2][0] ||
-        w[0].p[0][1] != w[n - 1].p[2][1]))
-    {
-      ok = buffer_capped_curve_offsets(w, n, radius, cap, u, tps, arcs,
-        &ntp, edges);
-      continue;
-    }
-    buffer_curve_walk_back(w, n);
-    ok = buffer_round_curve_offsets(w, 2 * n, radius, tps, arcs, &ntp,
-      edges);
-  }
-  bool found = false;
-  if (ok && edges->count > 0 && arrange_wound_tangent_surfaces(edges, rings,
-      nrings, owner, NULL) == ARR_ANSWERED)
-  {
-    found = *nrings > 0;
-    if (! found)
-    {
-      arrange_rings_free(*rings, *nrings);
-      if (*owner)
-        pfree(*owner);
-    }
-  }
-  meos_array_destroy(edges);
-  pfree(arcs);
-  pfree(tps);
-  if (u)
-    pfree(u);
-  pfree(w);
-  return found;
-}
-
-/**
  * @brief Return the sense a ring of segments and arcs turns in, decided
  * exactly, 1 counterclockwise and -1 clockwise, or 0 where it is not told
  * @details The area the ring encloses is the shoelace sum of the ring
@@ -11551,7 +11283,7 @@ buffer_round_curve_ring_offsets(const LWGEOM *ring, bool shell,
   if (! shell)
   {
     /* A hole within a circle no larger than the distance is covered by the
-     * buffer whole (#buffer_round_rings); the circle enclosing the points
+     * buffer whole (#buffer_polygon_offsets); the circle enclosing the points
      * that fix the hole bounds the one enclosing the hole from below, so
      * only a hole whose points the distance cannot enclose is kept, any
      * other left unanswered */
@@ -11590,60 +11322,304 @@ buffer_round_curve_ring_offsets(const LWGEOM *ring, bool shell,
   return buffer_round_curve_offsets(w, n, radius, tps, arcs, ntp, edges);
 }
 
+/* The blocks a member's edges point into, tangent points and input arcs,
+ * kept until the arrangement of every member is read */
+typedef struct
+{
+  void **blocks;
+  uint32_t n, cap;
+} BufferKeep;
+
+static void *
+buffer_keep(BufferKeep *k, size_t size)
+{
+  if (k->n == k->cap)
+  {
+    k->cap = k->cap ? 2 * k->cap : 8;
+    k->blocks = k->blocks ? repalloc(k->blocks, sizeof(void *) * k->cap) :
+      palloc(sizeof(void *) * k->cap);
+  }
+  return k->blocks[k->n++] = palloc(size);
+}
+
+static void
+buffer_keep_free(BufferKeep *k)
+{
+  for (uint32_t i = 0; i < k->n; i++)
+    pfree(k->blocks[i]);
+  if (k->blocks)
+    pfree(k->blocks);
+  return;
+}
+
 /**
- * @brief Return the rings bounding the buffer of a curve polygon or a
- * multisurface with round joins, the region the exact offset curves of its
- * rings wind around, as #buffer_round_rings answers a polygon
- * @details Every ring of segments and arcs is offset with round joins
- * (#buffer_round_curve_ring_offsets), the shells turning counterclockwise
- * and the holes clockwise, and the buffers of the surfaces of a multisurface
- * are united in one arrangement (#arrange_wound_tangent_surfaces)
- * @param[in] geom Curve polygon or multisurface
+ * @brief Add to an edge array the circles of the distance about points, a
+ * point repeating another dropped
+ * @details The arrangement takes edges ending where tangents touch circles,
+ * so the circle about a point is the two half turns, counterclockwise,
+ * between the points where the two common tangents of that circle and the
+ * one of the distance about another point touch it (#TangentPoint): the
+ * point above it, or the next double above where the coordinate does not
+ * move. Each circle winds once around every point of its disc and is fixed
+ * by the input doubles and the distance
+ * @param[in,out] pts The points, sorted and left without repeats
+ * @param[in] n Number of points, positive
  * @param[in] radius Distance, positive
- * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
- * owning each, as #arrange_wound_tangent_surfaces answers them
- * @return False for another type, where a ring's sense, a turn or the
- * arrangement leaves the region unanswered or it answers no ring -- a caller
- * that has another way to answer may take it
+ * @param[in,out] keep The blocks kept for the arrangement
+ * @param[in,out] edges Edges, appended to
+ */
+static void
+buffer_point_circles(POINT2D *pts, uint32_t n, double radius,
+  BufferKeep *keep, MeosArray *edges)
+{
+  qsort(pts, n, sizeof(POINT2D), buffer_point2d_cmp);
+  uint32_t m = 1;
+  for (uint32_t i = 1; i < n; i++)
+    if (buffer_point2d_cmp(&pts[i], &pts[m - 1]) != 0)
+      pts[m++] = pts[i];
+  TangentPoint *tps = buffer_keep(keep, sizeof(TangentPoint) * 2 * m);
+  for (uint32_t i = 0; i < m; i++)
+  {
+    const POINT2D *p = &pts[i];
+    double qy = p->y + 1.0;
+    if (qy == p->y)
+      qy = nextafter(p->y, INFINITY);
+    TangentPoint *t = &tps[2 * i];
+    t[0] = (TangentPoint) {p->x, p->y, radius, p->x, qy, radius, 1, 0, 0,
+      NULL};
+    t[1] = (TangentPoint) {p->x, p->y, radius, p->x, qy, radius, -1, 0, 0,
+      NULL};
+    edges_add_tangent_arc(edges, p->x, p->y, radius, true, &t[0], &t[1]);
+    edges_add_tangent_arc(edges, p->x, p->y, radius, true, &t[1], &t[0]);
+  }
+  return;
+}
+
+/**
+ * @brief Add to an edge array the offset curves of the rings of a polygon
+ * with round joins, every piece of them exact
+ * @details Every ring is offset with round joins (#buffer_round_ring_offsets),
+ * the shell turning counterclockwise and the holes clockwise. The curves
+ * wind around a point as many times as the polygon has parts within the
+ * distance of it, less the holes lying within that distance of it whole: the
+ * Euler characteristic of the polygon within the disc about the point. A hole
+ * that a circle no larger than the distance encloses is covered by the buffer
+ * whole and is left out, and no other hole lies within such a disc but at a
+ * set of points bounding no area, so the curves wind around every point of
+ * the buffer at least once and around no other point at all
+ * @return False where the shell encloses no area, nothing then appended
  */
 static bool
-buffer_round_curvepoly_rings(const LWGEOM *geom, double radius,
+buffer_polygon_offsets(const LWPOLY *poly, double radius, BufferKeep *keep,
+  MeosArray *edges)
+{
+  if (poly->nrings > 0 && ring_area_sign(poly->rings[0]) == 0)
+    return false;
+  uint32_t total = 0;
+  for (uint32_t r = 0; r < poly->nrings; r++)
+    total += poly->rings[r]->npoints;
+  TangentPoint *tps = buffer_keep(keep, sizeof(TangentPoint) * 2 *
+    Max(total, 1u));
+  uint32_t ntp = 0;
+  POINT2D *pts = palloc(sizeof(POINT2D) * Max(total, 1u));
+  for (uint32_t r = 0; r < poly->nrings; r++)
+  {
+    const POINTARRAY *pa = poly->rings[r];
+    /* A hole enclosing no area takes nothing from its polygon */
+    if (r > 0 && ring_area_sign(pa) == 0)
+      continue;
+    /* A hole within a circle no larger than the distance lies within that
+     * distance of its own ring, the buffer covering it whole: kept, it
+     * would lie within the disc of the distance about the points it holds
+     * and take from the winding number there (#buffer_round_ring_offsets),
+     * so it is left out, the smallest enclosing circle compared with the
+     * distance exactly (#mec_radius_cmp) */
+    if (r > 0)
+    {
+      for (uint32_t k = 0; k < pa->npoints; k++)
+        pts[k] = *getPoint2d_cp(pa, k);
+      if (mec_radius_cmp(pts, (int) pa->npoints, radius) <= 0)
+        continue;
+    }
+    buffer_round_ring_offsets(pa, r == 0, radius, tps, &ntp, edges);
+  }
+  pfree(pts);
+  return true;
+}
+
+/**
+ * @brief Add to an edge array the offset curves of the rings of a curve
+ * polygon with round joins, every piece of them exact, as
+ * #buffer_polygon_offsets offsets a polygon
+ * @details Every ring of segments and arcs is offset with round joins
+ * (#buffer_round_curve_ring_offsets), the shell turning counterclockwise and
+ * the holes clockwise
+ * @return False where a ring's sense or a turn is not told or a hole of arcs
+ * lies within a circle of the distance
+ */
+static bool
+buffer_curvepoly_offsets(const LWCURVEPOLY *cp, double radius,
+  BufferKeep *keep, MeosArray *edges)
+{
+  uint32_t total = 0;
+  for (uint32_t r = 0; r < cp->nrings; r++)
+    total += buffer_curve_npoints(cp->rings[r]) + 1;
+  BufferWalkElem *w = palloc(sizeof(BufferWalkElem) * 2 * Max(total, 1u));
+  TangentPoint *tps = buffer_keep(keep, sizeof(TangentPoint) * 4 *
+    Max(total, 1u));
+  ExactArc *arcs = buffer_keep(keep, sizeof(ExactArc) * 2 * Max(total, 1u));
+  uint32_t ntp = 0;
+  bool ok = true;
+  for (uint32_t r = 0; r < cp->nrings && ok; r++)
+    ok = buffer_round_curve_ring_offsets(cp->rings[r], r == 0, radius, w,
+      tps, arcs, &ntp, edges);
+  pfree(w);
+  return ok;
+}
+
+/**
+ * @brief Add to an edge array the offset curves of a circular string or a
+ * compound curve with round joins and any cap, every piece of them exact
+ * @details The curve is walked out and back (#buffer_round_curve_offsets);
+ * under a flat or a square cap a curve that does not close is the strips of
+ * its end elements and the walk of the curve between them
+ * (#buffer_capped_curve_offsets)
+ * @return False where an end strip or a turn is not told
+ */
+static bool
+buffer_curve_member_offsets(const LWGEOM *curve, double radius,
+  EndCapStyle cap, BufferKeep *keep, MeosArray *edges)
+{
+  uint32_t total = Max(buffer_curve_npoints(curve), 1u);
+  /* Out and back, at most two elements per point each way */
+  BufferWalkElem *w = palloc(sizeof(BufferWalkElem) * 4 * total);
+  TangentPoint *tps = buffer_keep(keep, sizeof(TangentPoint) * 8 * total);
+  ExactArc *arcs = buffer_keep(keep, sizeof(ExactArc) * 4 * total);
+  uint32_t ntp = 0, n = 0;
+  bool ok = buffer_curve_elems(curve, w, &n);
+  if (ok && n > 0)
+  {
+    /* A curve that closes has no end, so its walk stands whatever the cap */
+    if (cap != ENDCAP_ROUND && (w[0].p[0][0] != w[n - 1].p[2][0] ||
+        w[0].p[0][1] != w[n - 1].p[2][1]))
+    {
+      BufferWalkElem *u = palloc(sizeof(BufferWalkElem) * 4 * total);
+      ok = buffer_capped_curve_offsets(w, n, radius, cap, u, tps, arcs, &ntp,
+        edges);
+      pfree(u);
+    }
+    else
+    {
+      buffer_curve_walk_back(w, n);
+      ok = buffer_round_curve_offsets(w, 2 * n, radius, tps, arcs, &ntp,
+        edges);
+    }
+  }
+  pfree(w);
+  return ok;
+}
+
+/**
+ * @brief Add to an edge array the offset curves of a geometry and gather its
+ * points, every member of a collection in turn, nested collections included
+ * @details A point is gathered, its circle drawn once every point is known
+ * (#buffer_point_circles); a polygon, a curve polygon and a curve are offset
+ * by #buffer_polygon_offsets, #buffer_curvepoly_offsets and
+ * #buffer_curve_member_offsets, a line among them walked as a curve of
+ * segments, as a multicurve walks its lines. Each member's curves wind around
+ * every point of its buffer at least once and around no other point at all,
+ * so the sum over the members winds around exactly the points of the buffer
+ * of the whole. A line or a multiline alone is answered with the rounding
+ * certificate of its rings (#buffer_round_line_rings) and never reaches here
+ * @param[in] geom Geometry
+ * @param[in] radius Distance, positive
+ * @param[in] cap Cap at the ends of the curves
+ * @param[in,out] keep The blocks kept for the arrangement
+ * @param[in,out] pts The points gathered, of POINT2D
+ * @param[in,out] edges Edges, appended to
+ * @return False for a type or a member no edge array here answers
+ */
+static bool
+buffer_member_offsets(const LWGEOM *geom, double radius, EndCapStyle cap,
+  BufferKeep *keep, MeosArray *pts, MeosArray *edges)
+{
+  if (lwgeom_is_empty(geom))
+    return true;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+    {
+      const POINT2D *p = getPoint2d_cp(((const LWPOINT *) geom)->point, 0);
+      meos_array_add(pts, (void *) p);
+      return true;
+    }
+    case POLYGONTYPE:
+      return buffer_polygon_offsets((const LWPOLY *) geom, radius, keep,
+        edges);
+    case CURVEPOLYTYPE:
+      return buffer_curvepoly_offsets((const LWCURVEPOLY *) geom, radius,
+        keep, edges);
+    case LINETYPE:
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+      return buffer_curve_member_offsets(geom, radius, cap, keep, edges);
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case MULTISURFACETYPE:
+    case MULTICURVETYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *c = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < c->ngeoms; i++)
+        if (! buffer_member_offsets(c->geoms[i], radius, cap, keep, pts,
+            edges))
+          return false;
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
+ * @brief Return the rings bounding the buffer with round joins of a point, a
+ * line, a polygon, a curve polygon, a curve, or any collection of them, the
+ * region the exact offset curves of its members wind around
+ * @details Every member is offset (#buffer_member_offsets) into one edge
+ * array and the region the curves wind around at least once is read off
+ * their arrangement (#arrange_wound_tangent_surfaces), the buffers of the
+ * members united in it. Each offset and each join is fixed by the input
+ * doubles and the distance alone, so no point of the curves is constructed
+ * and then asked about, and only the vertices of the answer are rounded,
+ * each once
+ * @param[in] geom Geometry
+ * @param[in] radius Distance, positive
+ * @param[in] cap Cap at the ends of the curves
+ * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
+ * owning each, as #arrange_wound_tangent_surfaces answers them
+ * @return False for a type or a member no edge array here answers, where
+ * the arrangement leaves the region unanswered or it answers no ring -- a
+ * caller that has another way to answer may take it
+ */
+static bool
+buffer_round_member_rings(const LWGEOM *geom, double radius, EndCapStyle cap,
   MeosArray ***rings, uint32_t *nrings, int32_t **owner)
 {
   assert(geom); assert(radius > 0.0);
-  if (lwgeom_is_empty(geom) || (geom->type != CURVEPOLYTYPE &&
-      geom->type != MULTISURFACETYPE))
+  if (lwgeom_is_empty(geom))
     return false;
-  const LWGEOM *const *parts = &geom;
-  uint32_t nparts = 1;
-  if (geom->type == MULTISURFACETYPE)
-  {
-    parts = (const LWGEOM *const *) ((const LWCOLLECTION *) geom)->geoms;
-    nparts = ((const LWCOLLECTION *) geom)->ngeoms;
-  }
-  uint32_t total = 0;
-  for (uint32_t i = 0; i < nparts; i++)
-  {
-    if (parts[i]->type != CURVEPOLYTYPE || lwgeom_is_empty(parts[i]))
-      return false;
-    const LWCURVEPOLY *cp = (const LWCURVEPOLY *) parts[i];
-    for (uint32_t r = 0; r < cp->nrings; r++)
-      total += buffer_curve_npoints(cp->rings[r]) + 1;
-  }
-  BufferWalkElem *w = palloc(sizeof(BufferWalkElem) * 2 * Max(total, 1u));
-  TangentPoint *tps = palloc(sizeof(TangentPoint) * 4 * Max(total, 1u));
-  ExactArc *arcs = palloc(sizeof(ExactArc) * 2 * Max(total, 1u));
+  BufferKeep keep = {NULL, 0, 0};
+  MeosArray *pts = meos_array_create(sizeof(POINT2D));
+  /* An offset and at most one arc for every vertex, as a polygon's rings
+   * need, reserved once rather than grown while the members are offset */
   MeosArray *edges = meos_array_create(sizeof(Edge));
-  edge_array_reserve(edges, 4 * (size_t) Max(total, 1u));
-  uint32_t ntp = 0;
-  bool ok = true;
-  for (uint32_t i = 0; i < nparts && ok; i++)
-  {
-    const LWCURVEPOLY *cp = (const LWCURVEPOLY *) parts[i];
-    for (uint32_t r = 0; r < cp->nrings && ok; r++)
-      ok = buffer_round_curve_ring_offsets(cp->rings[r], r == 0, radius, w,
-        tps, arcs, &ntp, edges);
-  }
+  edge_array_reserve(edges, 2 * (size_t) Max(lwgeom_count_vertices(geom),
+    1u));
+  bool ok = buffer_member_offsets(geom, radius, cap, &keep, pts, edges);
+  if (ok && pts->count > 0)
+    buffer_point_circles((POINT2D *) pts->elems, pts->count, radius, &keep,
+      edges);
   bool found = false;
   if (ok && edges->count > 0 && arrange_wound_tangent_surfaces(edges, rings,
       nrings, owner, NULL) == ARR_ANSWERED)
@@ -11657,16 +11633,16 @@ buffer_round_curvepoly_rings(const LWGEOM *geom, double radius,
     }
   }
   meos_array_destroy(edges);
-  pfree(arcs);
-  pfree(tps);
-  pfree(w);
+  meos_array_destroy(pts);
+  buffer_keep_free(&keep);
   return found;
 }
 
+
 /**
  * @brief Return the buffer of a polygon or a multipolygon with round joins,
- * the surfaces the rings of #buffer_round_rings bound
- * @return @p NULL where #buffer_round_rings answers no ring
+ * the surfaces the rings of #buffer_round_member_rings bound
+ * @return @p NULL where #buffer_round_member_rings answers no ring
  */
 static LWGEOM *
 buffer_round_offsets(const LWGEOM *geom, double radius, int32_t srid)
@@ -11674,7 +11650,8 @@ buffer_round_offsets(const LWGEOM *geom, double radius, int32_t srid)
   MeosArray **rings;
   uint32_t nrings;
   int32_t *owner;
-  if (! buffer_round_rings(geom, radius, &rings, &nrings, &owner))
+  if (! buffer_round_member_rings(geom, radius, ENDCAP_ROUND, &rings,
+      &nrings, &owner))
     return NULL;
   return buffer_surfaces_from_rings(rings, nrings, owner, srid);
 }
@@ -11743,7 +11720,7 @@ buffer_mpoly_arranged(const LWMPOLY *mpoly, double radius, int32_t srid)
  * @brief Return the erosion of a polygon or a multipolygon with round joins,
  * the region the exact offset curves of its rings wind around clockwise
  * @details The erosion is what the buffer of the complement of the polygons
- * leaves, so it is read off the curves #buffer_round_rings reads a buffer
+ * leaves, so it is read off the curves #buffer_polygon_offsets reads a buffer
  * off, with the parts of the complement: the exterior of every polygon is a
  * hole of the complement, offset turning clockwise into the polygon, and
  * every hole a shell of it, offset turning counterclockwise out of the hole
@@ -11754,7 +11731,7 @@ buffer_mpoly_arranged(const LWMPOLY *mpoly, double radius, int32_t srid)
  * (#arrange_wound_tangent_surfaces_signed), however the grown holes and the
  * contracted exteriors cross. A polygon within a circle no larger than the
  * distance holds no point of the erosion and adds no curve, as
- * #buffer_round_rings leaves out such a hole, the smallest enclosing circle
+ * #buffer_polygon_offsets leaves out such a hole, the smallest enclosing circle
  * compared with the distance exactly (#mec_radius_cmp). A region with no such
  * point is the empty polygon
  * @param[in] geom Polygon or multipolygon
@@ -12567,84 +12544,25 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
     return NULL;
   }
 
-  /* Round joins about the vertices of polygons: the region the exact offset
-   * curves wind around (#buffer_round_rings), serialized from the rings of
-   * their arrangement at once (#buffer_rings_serialize) */
-  if (size > 0.0 && join_style == JOIN_ROUND &&
-      (lwg->type == POLYGONTYPE || lwg->type == MULTIPOLYGONTYPE))
+  /* A multipoint, a polygon, a curve polygon, a curve or any collection of
+   * them and of lines, with round joins, the discs of a multipoint with any:
+   * the region the exact offset curves of its members wind around
+   * (#buffer_round_member_rings), serialized from the rings of their
+   * arrangement at once (#buffer_rings_serialize); where it leaves a
+   * question open, the older path, which writes the disc of a lone point as
+   * its whole circle */
+  if (size > 0.0 && (join_style == JOIN_ROUND ||
+      lwg->type == MULTIPOINTTYPE) &&
+      (lwg->type == MULTIPOINTTYPE ||
+       lwg->type == POLYGONTYPE || lwg->type == MULTIPOLYGONTYPE ||
+       lwg->type == CURVEPOLYTYPE || lwg->type == MULTISURFACETYPE ||
+       lwg->type == CIRCSTRINGTYPE || lwg->type == COMPOUNDTYPE ||
+       lwg->type == MULTICURVETYPE || lwg->type == COLLECTIONTYPE))
   {
     MeosArray **rings;
     uint32_t nrings;
     int32_t *owner;
-    if (buffer_round_rings(lwg, size, &rings, &nrings, &owner))
-    {
-      GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
-        lwgeom_get_srid(lwg));
-      if (result)
-      {
-        lwgeom_free(lwg);
-        return result;
-      }
-      arrange_rings_free(rings, nrings);
-      pfree(owner);
-    }
-  }
-  /* The discs about the points of a multipoint: the region their exact
-   * circles wind around (#buffer_round_point_rings), serialized from the rings
-   * of their arrangement at once; where it leaves a question open, the older
-   * path */
-  if (size > 0.0 && lwg->type == MULTIPOINTTYPE)
-  {
-    MeosArray **rings;
-    uint32_t nrings;
-    int32_t *owner;
-    if (buffer_round_point_rings(lwg, size, &rings, &nrings, &owner))
-    {
-      GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
-        lwgeom_get_srid(lwg));
-      if (result)
-      {
-        lwgeom_free(lwg);
-        return result;
-      }
-      arrange_rings_free(rings, nrings);
-      pfree(owner);
-    }
-  }
-  /* Round joins about the rings of curve polygons: the region their exact
-   * offset curves wind around (#buffer_round_curvepoly_rings); where it
-   * leaves a question open, the older path */
-  if (size > 0.0 && join_style == JOIN_ROUND &&
-      (lwg->type == CURVEPOLYTYPE || lwg->type == MULTISURFACETYPE))
-  {
-    MeosArray **rings;
-    uint32_t nrings;
-    int32_t *owner;
-    if (buffer_round_curvepoly_rings(lwg, size, &rings, &nrings, &owner))
-    {
-      GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
-        lwgeom_get_srid(lwg));
-      if (result)
-      {
-        lwgeom_free(lwg);
-        return result;
-      }
-      arrange_rings_free(rings, nrings);
-      pfree(owner);
-    }
-  }
-  /* Round joins about curves carrying arcs, with any cap: the region their
-   * exact offset curves wind around (#buffer_round_curve_rings), serialized
-   * from the rings of their arrangement at once; where it leaves a question
-   * open, the older path */
-  if (size > 0.0 && join_style == JOIN_ROUND &&
-      (lwg->type == CIRCSTRINGTYPE || lwg->type == COMPOUNDTYPE ||
-       lwg->type == MULTICURVETYPE))
-  {
-    MeosArray **rings;
-    uint32_t nrings;
-    int32_t *owner;
-    if (buffer_round_curve_rings(lwg, size, cap_style, &rings, &nrings,
+    if (buffer_round_member_rings(lwg, size, cap_style, &rings, &nrings,
         &owner))
     {
       GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
