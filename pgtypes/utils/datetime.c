@@ -442,6 +442,7 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
 {
   TimestampTz cur_ts = GetCurrentTimestamp();
 
+  meos_ensure_timezone();
   if (cur_ts != cache_ts || session_timezone != cache_timezone)
   {
     /*
@@ -3094,6 +3095,7 @@ pg_DecodeTimezoneAbbrev(int field, const char *lowtoken, int *ftype, int *offset
    */
   bool isfixed;
   int isdst;
+  meos_ensure_timezone();
   if (session_timezone && TimeZoneAbbrevIsKnown(lowtoken, session_timezone,
         &isfixed, offset, &isdst))
   {
@@ -3321,6 +3323,7 @@ pg_DecodeTimezoneAbbrevPrefix(const char *str, int *offset, pg_tz **tz)
     const datetkn *tp;
 
     /* See if the current session_timezone recognizes it. */
+    meos_ensure_timezone();
     if (session_timezone && TimeZoneAbbrevIsKnown(lowtoken, session_timezone,
           &isfixed, offset, &isdst))
     {
@@ -5015,6 +5018,7 @@ pg_timezone_abbrevs_zone(PG_FUNCTION_ARGS)
 
   pindex = (int *) palloc(sizeof(int));
   *pindex = 0;
+  meos_ensure_timezone();
   while ((abbrev = 
           pg_get_next_timezone_abbrev(pindex, session_timezone)) != NULL)
   {
