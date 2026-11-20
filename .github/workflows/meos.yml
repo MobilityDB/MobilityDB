@@ -246,7 +246,8 @@ jobs:
       # ways_thread_test reads the routes of a ways file in two threads
       # while the main thread names another file between their reads;
       # zone_thread_test writes a timestamp in threads naming no time zone
-      # while the main thread names another zone between their writes.
+      # while the main thread names another zone between their writes, and
+      # adds a day to a timestamp in a thread whose first call is that sum.
       - name: Run threaded_test, ways_thread_test and zone_thread_test under TSan
         run: |
           cd meos/test

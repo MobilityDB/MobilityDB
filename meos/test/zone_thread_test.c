@@ -40,7 +40,9 @@
  * file #meos_set_ways_csv names last (ways_thread_test.c). The worker then
  * names Europe/Moscow and writes +03; the main thread, which names its own
  * zone, still writes -05, and a second worker naming none writes +03, the
- * zone named last. Each step of a thread waits for the step of the other
+ * zone named last. A third worker naming none makes its first call one day
+ * added to a value it builds in binary, which reads the zone named last as
+ * the text does. Each step of a thread waits for the step of the other
  * before it.
  *
  * The program can be build as follows
@@ -131,6 +133,42 @@ late_worker(void *arg)
   return NULL;
 }
 
+/* A thread naming no zone whose first call is arithmetic in the zone, as a
+ * thread receiving values in binary makes: one day added to the midnight of
+ * Europe/Moscow, the zone named last, that precedes its move to summer time
+ * is the next midnight, 23 hours later. The start is built from its
+ * microseconds, and both midnights are read as text only after the
+ * arithmetic */
+#define ARITH_START_USECS 38782800000000LL  /* that midnight, from the MEOS epoch */
+#define ARITH_FROM "2001-03-25 00:00:00"
+#define ARITH_TO "2001-03-26 00:00:00"
+#define ARITH_HOUR_USECS 3600000000LL  /* the width of the span shifted */
+
+static void *
+arith_worker(void *arg)
+{
+  (void) arg;
+  TimestampTz start = ARITH_START_USECS;
+  Span *s = tstzspan_make(start, start + ARITH_HOUR_USECS, true, true);
+  Interval *day = interval_from_parts(0, 1, 0);
+  Interval *hour = interval_from_parts(0, 0, ARITH_HOUR_USECS);
+  Span *r = tstzspan_shift_scale(s, day, hour);
+  TimestampTz got = r ? tstzspan_lower(r) : 0;
+  TimestampTz from = timestamptz_in(ARITH_FROM, -1);
+  TimestampTz to = timestamptz_in(ARITH_TO, -1);
+  bool ok = from == start && got == to;
+  pthread_mutex_lock(&lock);
+  if (! ok)
+    failures++;
+  printf("%s arith worker, naming none, one day from a midnight in the zone "
+    "named last: %ld microseconds, expected %ld\n", ok ? "ok  " : "FAIL",
+    (long) (got - start), (long) (to - from));
+  pthread_mutex_unlock(&lock);
+  free(s); free(day); free(hour); free(r);
+  meos_finalize_timezone();
+  return NULL;
+}
+
 int
 main(void)
 {
@@ -151,6 +189,10 @@ main(void)
   if (pthread_create(&late, NULL, late_worker, NULL) != 0)
     return 1;
   pthread_join(late, NULL);
+  pthread_t arith;
+  if (pthread_create(&arith, NULL, arith_worker, NULL) != 0)
+    return 1;
+  pthread_join(arith, NULL);
   meos_finalize();
   printf("%d failure(s)\n", failures);
   return failures ? 1 : 0;
