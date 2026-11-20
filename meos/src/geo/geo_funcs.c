@@ -120,6 +120,8 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
     Edge e;
     e.centred = false;
+    e.offset = false;
+    e.side = 0;
     e.from = e.to = NULL;
     e.cut = false;
     e.x1 = a->x; e.y1 = a->y;
@@ -172,6 +174,8 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
   const POINT2D *p = getPoint2d_cp(pt->point, 0);
   Edge e;
   e.centred = false;
+  e.offset = false;
+  e.side = 0;
   e.from = e.to = NULL;
   e.cut = false;
   e.x1 = e.x2 = e.xmin = e.xmax = p->x;
@@ -511,6 +515,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     {
       Edge e;
       e.centred = false;
+      e.offset = false;
+      e.side = 0;
       e.from = e.to = NULL;
       e.cut = false;
       e.cx = mx; e.cy = my; e.radius = radius;
@@ -552,6 +558,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     {
       Edge e;
       e.centred = false;
+      e.offset = false;
+      e.side = 0;
       e.from = e.to = NULL;
       e.cut = false;
       e.x1 = px[i]; e.y1 = py[i];
@@ -572,6 +580,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   double c2 = cx * cx + cy * cy;
   Edge e;
   e.centred = false;
+  e.offset = false;
+  e.side = 0;
   e.from = e.to = NULL;
   e.cut = false;
   /* Circumcenter of the three points */
@@ -7713,6 +7723,8 @@ edge_disk_circle(const double *p, double r, Edge *c)
   c->etype = EDGE_POLYARC;
   c->cx = p[0]; c->cy = p[1]; c->radius = r;
   c->centred = true;
+  c->offset = false;
+  c->side = 0;
   c->ccw = true;
   c->x1 = c->x2 = p[0] - r;
   c->y1 = c->y2 = p[1];
@@ -11408,6 +11420,14 @@ tower_same_k(DyadicCtx *ctx, const DyadicX *x, const DyadicX *y, int k)
 static bool
 tangent_same_pair(const TangentPoint *a, const TangentPoint *b)
 {
+  /* The ends of the offset of an input arc carry the root of its circle
+   * (#tower_point_radial), which only the ends of an offset of that arc
+   * share: its points fix it */
+  if (a->arc || b->arc)
+    return a->arc && b->arc && a->arc->half == b->arc->half &&
+      a->arc->s[0] == b->arc->s[0] && a->arc->s[1] == b->arc->s[1] &&
+      a->arc->m[0] == b->arc->m[0] && a->arc->m[1] == b->arc->m[1] &&
+      a->arc->e[0] == b->arc->e[0] && a->arc->e[1] == b->arc->e[1];
   if (a->c1x == b->c1x && a->c1y == b->c1y && a->r1 == b->r1 &&
       a->c2x == b->c2x && a->c2y == b->c2y && a->r2 == b->r2)
     return true;
@@ -11525,6 +11545,45 @@ tower_point_xy(DyadicCtx *ctx, double px, double py, double ox, double oy,
 }
 
 /**
+ * @brief Set a point where the offset of an input arc ends, exactly
+ * @details The sibling of #tower_point_tangent for the ends of the offset
+ * of an arc (#TangentPoint, member arc). The circle of the arc through S,
+ * M and E is the one #tower_arc_circle forms, centre c / w and squared
+ * radius r2 / w^2, w positive, so for A the end asked n = w (A - O) - c is
+ * (A - C) w and the unit vector from C to A is n / sqrt(r2): the point is
+ * A + side r n / sqrt(r2), over r2 the point A r2 + side r n sqrt(r2). The
+ * tower has the one root sqrt(r2), the same number for both ends of one arc.
+ * An arc whose three points lie on one line has no centre, which marks the
+ * arithmetic unsafe
+ */
+static void
+tower_point_radial(DyadicCtx *ctx, const TangentPoint *tp, double ox,
+  double oy, TowerPoint *out)
+{
+  assert(tp->arc);
+  const ExactArc *arc = tp->arc;
+  DyadicX cx, cy, w, r2;
+  if (tower_arc_circle(ctx, arc->s, arc->m, arc->e, arc->half, ox, oy, &cx,
+      &cy, &w, &r2) == 0 && ! arc->half)
+    ctx->arena.unsafe = true;
+  const double *a = tp->k ? arc->e : arc->s;
+  double ax = a[0], ay = a[1];
+  DyadicX px = dx_diff(ctx, ax, ox), py = dx_diff(ctx, ay, oy);
+  DyadicX nx = dx_sub(ctx, dx_mul(ctx, w, px), cx);
+  DyadicX ny = dx_sub(ctx, dx_mul(ctx, w, py), cy);
+  DyadicX sr = dx_scale(ctx, dx_val(ctx, tp->r1), (double) tp->side);
+  out->t.depth = 1;
+  out->t.key[0] = NULL;
+  out->t.h[0].c[0] = r2;
+  out->x.c[0] = dx_mul(ctx, px, r2);
+  out->x.c[1] = dx_mul(ctx, sr, nx);
+  out->y.c[0] = dx_mul(ctx, py, r2);
+  out->y.c[1] = dx_mul(ctx, sr, ny);
+  tower_set(ctx, r2, 1, out->w.c);
+  return;
+}
+
+/**
  * @brief Set a point where the common tangent of two circles touches one of
  * them, exactly
  * @details For circles (C1, r1) and (C2, r2) with d = C2 - C1 and
@@ -11540,6 +11599,12 @@ static void
 tower_point_tangent(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   double oy, TowerPoint *out)
 {
+  /* The end of the offset of an input arc (#tower_point_radial) */
+  if (tp->arc)
+  {
+    tower_point_radial(ctx, tp, ox, oy, out);
+    return;
+  }
   DyadicX dx = dx_diff(ctx, tp->c2x, tp->c1x);
   DyadicX dy = dx_diff(ctx, tp->c2y, tp->c1y);
   DyadicX dr = dx_diff(ctx, tp->r1, tp->r2);
@@ -11568,41 +11633,346 @@ tower_point_tangent(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   return;
 }
 
-/**
- * @brief Set a point where two circles cross, the meeting sigma, and return
- * the sign of the number under its root: none where it is negative, a
- * touching where it is zero
- * @details With d = C2 - C1, D = |d|^2 and g = D + r1^2 - r2^2 the
- * meetings are C1 + (g d + sigma sqrt(4 r1^2 D - g^2) rot(d)) / (2 D), the
- * points #arcarc_meet_exact places for two centred arcs
- */
-static int
-tower_point_circles(DyadicCtx *ctx, double c1x, double c1y, double r1,
-  double c2x, double c2y, double r2, int sigma, double ox, double oy,
-  TowerPoint *out)
+/* The circle of an arc of an arrangement of tangent points in a tower: its
+ * centre (x / w, y / w) taken from an origin, w positive and holding no
+ * root, and its squared radius times w^2, rr, a number of the tower t. A
+ * centred arc is the circle of its doubles, w 1 and t holding no root
+ * (unit); the offset of an input arc has the rational centre of that arc
+ * and the radius R + side r, R a root (#edges_add_offset_arc) */
+typedef struct
 {
-  DyadicX dx = dx_diff(ctx, c2x, c1x), dy = dx_diff(ctx, c2y, c1y);
-  DyadicX dd = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
-  DyadicX a = dx_val(ctx, r1), b = dx_val(ctx, r2);
-  DyadicX g = dx_sub(ctx, dx_add(ctx, dd, dx_mul(ctx, a, a)),
-    dx_mul(ctx, b, b));
-  DyadicX h = dx_sub(ctx, dx_scale(ctx, dx_mul(ctx, dx_mul(ctx, a, a), dd),
-    4.0), dx_mul(ctx, g, g));
-  int sh = dx_sign(ctx, h);
-  if (sh < 0)
-    return sh;
-  DyadicX w = dx_scale(ctx, dd, 2.0);
+  Tower t;
+  DyadicX x, y, w;
+  TowerNum rr;
+  bool unit;
+} TowerCircle;
+
+/**
+ * @brief Set the circle of a centred arc or of an offset arc in a tower
+ * @details The sibling of #tower_point_radial for the circle the ends of an
+ * offset lie on, taken from an origin. A centred arc is the circle of its
+ * doubles. The offset of an input arc of circle c / w and squared radius
+ * r2 / w^2 (#tower_arc_circle) has the radius R + side r, R w = sqrt(r2), so
+ * rr = (R + side r)^2 w^2 = r2 + r^2 w^2 + 2 side r w sqrt(r2): the tower
+ * has the one root sqrt(r2), the root of the ends of the offset
+ */
+static void
+tower_circle_of(DyadicCtx *ctx, const Edge *e, double ox, double oy,
+  TowerCircle *out)
+{
+  /* An offset is a centred arc whose doubles do not hold its circle */
+  if (! e->offset)
+  {
+    assert(e->centred);
+    out->t.depth = 0;
+    out->x = dx_diff(ctx, e->cx, ox);
+    out->y = dx_diff(ctx, e->cy, oy);
+    out->w = dx_val(ctx, 1.0);
+    DyadicX r = dx_val(ctx, e->radius);
+    out->rr.c[0] = dx_mul(ctx, r, r);
+    out->unit = true;
+    return;
+  }
+  const double s[2] = {e->sx, e->sy}, m[2] = {e->mx, e->my},
+    en[2] = {e->ex, e->ey};
+  DyadicX r2;
+  if (tower_arc_circle(ctx, s, m, en, e->diameter, ox, oy, &out->x, &out->y,
+      &out->w, &r2) == 0 && ! e->diameter)
+    ctx->arena.unsafe = true;
+  DyadicX rw = dx_mul(ctx, dx_val(ctx, e->radius), out->w);
   out->t.depth = 1;
   out->t.key[0] = NULL;
-  out->t.h[0].c[0] = h;
-  out->x.c[0] = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, c1x, ox), w),
-    dx_mul(ctx, g, dx));
-  out->x.c[1] = dx_scale(ctx, dy, (double) - sigma);
-  out->y.c[0] = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, c1y, oy), w),
-    dx_mul(ctx, g, dy));
-  out->y.c[1] = dx_scale(ctx, dx, (double) sigma);
-  tower_set(ctx, w, 1, out->w.c);
+  out->t.h[0].c[0] = r2;
+  out->rr.c[0] = dx_add(ctx, r2, dx_mul(ctx, rw, rw));
+  out->rr.c[1] = dx_scale(ctx, rw, 2.0 * e->side);
+  out->unit = false;
+  return;
+}
+
+/* The centre and the squared radius of a circle as two points of its tower,
+ * for #tower_points_read to read them in the tower of a question: the
+ * centre, and rr as the x of a point whose y is 0 and w 1 */
+static void
+tower_circle_points(DyadicCtx *ctx, const TowerCircle *c, TowerPoint *cp,
+  TowerPoint *rp)
+{
+  int n = 1 << c->t.depth;
+  cp->t = c->t;
+  rp->t = c->t;
+  for (int m = 0; m < n; m++)
+  {
+    DyadicX z = dx_val(ctx, 0.0);
+    cp->x.c[m] = cp->y.c[m] = cp->w.c[m] = z;
+    rp->y.c[m] = rp->w.c[m] = z;
+    rp->x.c[m] = c->rr.c[m];
+  }
+  cp->x.c[0] = c->x; cp->y.c[0] = c->y; cp->w.c[0] = c->w;
+  rp->w.c[0] = dx_val(ctx, 1.0);
+  return;
+}
+
+static bool tower_points_read(DyadicCtx *ctx, const TowerPoint *const *pts,
+  int n, Tower *t, DyadicX (*xyw)[3][TOWER_SIZE]);
+
+/**
+ * @brief Return how the radii of two circles of a tower compare
+ * @details The circles are those of #TowerCircle, of squared radii
+ * rr1 / W1^2 and rr2 / W2^2, so the radii compare as rr1 W2^2 and rr2 W1^2,
+ * read in the tower of both: -1, 0 or 1, 2 where it is not told
+ */
+static int
+tower_circles_radius_cmp(DyadicCtx *ctx, const TowerCircle *c1,
+  const TowerCircle *c2)
+{
+  TowerPoint q1, r1, q2, r2;
+  tower_circle_points(ctx, c1, &q1, &r1);
+  tower_circle_points(ctx, c2, &q2, &r2);
+  const TowerPoint *pts[2] = {&r1, &r2};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  DyadicX a[TOWER_SIZE], b[TOWER_SIZE];
+  tower_mulx_k(ctx, v[0][0], dx_mul(ctx, c2->w, c2->w), k, a);
+  tower_mulx_k(ctx, v[1][0], dx_mul(ctx, c1->w, c1->w), k, b);
+  tower_sub_k(ctx, a, b, k, a);
+  int s = tower_sign_k(ctx, &t, a, k);
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Set a point where two circles cross
+ * @details The circles are those of a tower (#TowerCircle) and the meeting
+ * is sigma; the result is the sign of the number under its root: none where
+ * it is negative, a touching where it is zero, 2 where the point is not
+ * built. With d = C2 - C1, D = |d|^2 and g = D + r1^2 - r2^2 the meetings
+ * are C1 + (g d + sigma sqrt(4 r1^2 D - g^2) rot(d)) / (2 D), the points
+ * #arcarc_meet_exact places for two arcs. With the centres X1 / W1 and
+ * X2 / W2 and the squared radii rr1 / W1^2 and rr2 / W2^2, every term
+ * scaled by W1 W2: d' = X2 W1 - X1 W2, D' = |d'|^2,
+ * g' = D' + rr1 W2^2 - rr2 W1^2, h' = 4 rr1 W2^2 D' - g'^2 and the meetings
+ * (2 D' W2 X1 + g' d' + sigma sqrt(h') rot(d')) / (2 D' W1 W2), in the
+ * tower of the radii with sqrt(h') above it. Two centred arcs have W 1 and
+ * radii of no root
+ */
+static int
+tower_point_circles(DyadicCtx *ctx, const TowerCircle *c1,
+  const TowerCircle *c2, int sigma, TowerPoint *out)
+{
+  TowerPoint q1, r1, q2, r2;
+  tower_circle_points(ctx, c1, &q1, &r1);
+  tower_circle_points(ctx, c2, &q2, &r2);
+  const TowerPoint *pts[2] = {&r1, &r2};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v) || t.depth == TOWER_MAXDEPTH)
+    return 2;
+  int k = t.depth, half = 1 << k;
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, c2->x, c1->w),
+    dx_mul(ctx, c1->x, c2->w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, c2->y, c1->w),
+    dx_mul(ctx, c1->y, c2->w));
+  DyadicX dd = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
+  DyadicX a1[TOWER_SIZE], a2[TOWER_SIZE], g[TOWER_SIZE], h[TOWER_SIZE],
+    u[TOWER_SIZE];
+  /* rr1 W2^2 and rr2 W1^2 */
+  tower_mulx_k(ctx, v[0][0], dx_mul(ctx, c2->w, c2->w), k, a1);
+  tower_mulx_k(ctx, v[1][0], dx_mul(ctx, c1->w, c1->w), k, a2);
+  tower_sub_k(ctx, a1, a2, k, g);
+  g[0] = dx_add(ctx, g[0], dd);
+  tower_mulx_k(ctx, a1, dx_scale(ctx, dd, 4.0), k, h);
+  tower_mul_k(ctx, &t, g, g, k, u);
+  tower_sub_k(ctx, h, u, k, h);
+  int sh = tower_sign_k(ctx, &t, h, k);
+  if (dyadic_ctx_unsafe(ctx))
+    return 2;
+  if (sh < 0)
+    return sh;
+  out->t = t;
+  memcpy(out->t.h[k].c, h, sizeof(DyadicX) * half);
+  out->t.key[k] = NULL;
+  out->t.depth = k + 1;
+  DyadicX z = dx_val(ctx, 0.0);
+  DyadicX twodw2 = dx_scale(ctx, dx_mul(ctx, dd, c2->w), 2.0);
+  /* x = 2 D' W2 X1 + g' dx - sigma dy sqrt(h'), y alike with sigma dx */
+  tower_mulx_k(ctx, g, dx, k, out->x.c);
+  out->x.c[0] = dx_add(ctx, out->x.c[0], dx_mul(ctx, twodw2, c1->x));
+  tower_mulx_k(ctx, g, dy, k, out->y.c);
+  out->y.c[0] = dx_add(ctx, out->y.c[0], dx_mul(ctx, twodw2, c1->y));
+  for (int m = 0; m < half; m++)
+  {
+    out->x.c[half + m] = out->y.c[half + m] = z;
+    out->w.c[m] = out->w.c[half + m] = z;
+  }
+  out->x.c[half] = dx_scale(ctx, dy, (double) - sigma);
+  out->y.c[half] = dx_scale(ctx, dx, (double) sigma);
+  out->w.c[0] = dx_mul(ctx, twodw2, c1->w);
   return sh;
+}
+
+typedef struct
+{
+  const Edge *p, *q;
+} TowerCirclesArg;
+
+static int
+tower_circles_meet_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCirclesArg *o = arg;
+  double ox = o->p->cx, oy = o->p->cy;
+  TowerCircle c1, c2;
+  tower_circle_of(ctx, o->p, ox, oy, &c1);
+  tower_circle_of(ctx, o->q, ox, oy, &c2);
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, c2.x, c1.w), dx_mul(ctx, c1.x, c2.w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, c2.y, c1.w), dx_mul(ctx, c1.y, c2.w));
+  int sd = dx_sign(ctx, dx_add(ctx, dx_mul(ctx, dx, dx),
+    dx_mul(ctx, dy, dy)));
+  if (dyadic_ctx_unsafe(ctx))
+    return 2;
+  if (sd == 0)
+  {
+    /* One centre: one circle where the radii are equal, else apart */
+    int rc = tower_circles_radius_cmp(ctx, &c1, &c2);
+    return (rc == 2) ? 2 : ((rc == 0) ? 3 : -1);
+  }
+  TowerPoint pt;
+  int sh = tower_point_circles(ctx, &c1, &c2, 1, &pt);
+  return (sh == 2) ? 2 : sh;
+}
+
+typedef struct
+{
+  const double *in[3], *out[3];
+  int inarc, outarc;
+  int *dot;
+} WalkTurnArg;
+
+/* The direction of an element of a walk at its end (@p atend) or its start,
+ * times a positive factor, taken from the origin O: a segment's B - A; an
+ * arc's radius there, w (P - O) - c (#tower_arc_circle), turned a quarter
+ * in the sense it runs, counterclockwise where the turn of its start,
+ * middle and end is positive */
+static void
+walk_direction(DyadicCtx *ctx, const double *const *pt, int arc, bool atend,
+  double ox, double oy, DyadicX *dx, DyadicX *dy)
+{
+  if (! arc)
+  {
+    *dx = dx_diff(ctx, pt[2][0], pt[0][0]);
+    *dy = dx_diff(ctx, pt[2][1], pt[0][1]);
+    return;
+  }
+  DyadicX cx, cy, w, r2;
+  /* A half circle on its diameter turns in the sense its kind gives, 2
+   * counterclockwise and -2 clockwise, as its three points cannot */
+  bool half = (arc == 2 || arc == -2);
+  int sd = tower_arc_circle(ctx, pt[0], pt[1], pt[2], half, ox, oy, &cx,
+    &cy, &w, &r2);
+  if (half)
+    sd = (arc > 0) ? -1 : 1;
+  else if (sd == 0)
+    ctx->arena.unsafe = true;
+  const double *p = atend ? pt[2] : pt[0];
+  DyadicX nx = dx_sub(ctx, dx_mul(ctx, w, dx_diff(ctx, p[0], ox)), cx);
+  DyadicX ny = dx_sub(ctx, dx_mul(ctx, w, dx_diff(ctx, p[1], oy)), cy);
+  /* The sign of D is minus the turn, so the arc runs counterclockwise
+   * where sd is negative: rot(n) = (-ny, nx) */
+  double s = (sd < 0) ? 1.0 : -1.0;
+  *dx = dx_scale(ctx, ny, - s);
+  *dy = dx_scale(ctx, nx, s);
+  return;
+}
+
+static int
+walk_turn_pred(DyadicCtx *ctx, const void *arg)
+{
+  const WalkTurnArg *o = arg;
+  double ox = o->in[2][0], oy = o->in[2][1];
+  DyadicX ax, ay, bx, by;
+  walk_direction(ctx, o->in, o->inarc, true, ox, oy, &ax, &ay);
+  walk_direction(ctx, o->out, o->outarc, false, ox, oy, &bx, &by);
+  int cross = dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, ax, by),
+    dx_mul(ctx, ay, bx)));
+  *o->dot = dx_sign(ctx, dx_add(ctx, dx_mul(ctx, ax, bx),
+    dx_mul(ctx, ay, by)));
+  return dyadic_ctx_unsafe(ctx) ? 2 : cross;
+}
+
+/**
+ * @brief Return how a walk turns at the point where one element ends and
+ * the next starts, decided exactly
+ * @details Each element is a segment from A to B (kind 0), an arc through
+ * its start, middle and end, three doubles (kind 1), or a half circle on the
+ * diameter from its start to its end turning counterclockwise (kind 2) or
+ * clockwise (kind -2), and @p in ends where @p out starts.
+ * The result is the sign of the cross product of their directions there,
+ * 1 for a left turn, and @p dot the sign of their dot product, so that a
+ * walk running on reads 0 and 1 and one turning back 0 and -1; 2 where it
+ * is not told. The direction of an arc is its tangent in the sense it runs
+ * (#tower_arc_circle), as #buffer_round_walk_offsets reads the turn of two
+ * segments
+ */
+int
+walk_turn_sign(const double *const in[3], int inarc,
+  const double *const out[3], int outarc, int *dot)
+{
+  assert(in); assert(out); assert(dot);
+  WalkTurnArg arg = {{in[0], in[1], in[2]}, {out[0], out[1], out[2]},
+    inarc, outarc, dot};
+  return dyadic_pred_run(walk_turn_pred, &arg);
+}
+
+typedef struct
+{
+  const Edge *p, *q;
+  bool radius;
+} TowerCirclesCmpArg;
+
+static int
+tower_circles_cmp_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCirclesCmpArg *o = arg;
+  double ox = o->p->cx, oy = o->p->cy;
+  TowerCircle c1, c2;
+  tower_circle_of(ctx, o->p, ox, oy, &c1);
+  tower_circle_of(ctx, o->q, ox, oy, &c2);
+  if (o->radius)
+    return tower_circles_radius_cmp(ctx, &c1, &c2);
+  /* y1 / w1 - y2 / w2, both w positive */
+  int s = dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, c1.y, c2.w),
+    dx_mul(ctx, c2.y, c1.w)));
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return how the centres or the radii of two circles compare
+ * @details The circles are those of centred arcs a tower holds
+ * (#tower_circle_of), an offset of an input arc among them: with
+ * @p radius their radii, else the heights of their centres, decided
+ * exactly, -1, 0 or 1, 2 where it is not told
+ */
+int
+tower_circles_cmp(const Edge *p, const Edge *q, bool radius)
+{
+  assert(p); assert(q); assert(p->centred); assert(q->centred);
+  TowerCirclesCmpArg arg = {p, q, radius};
+  return dyadic_pred_run(tower_circles_cmp_pred, &arg);
+}
+
+/**
+ * @brief Return how two circles of centred arcs meet, decided exactly
+ * @details As #arcarc_meet_exact counts the meetings of two arcs, for
+ * circles a tower holds (#tower_circle_of), an offset of an input arc among
+ * them: -1 apart, 0 touching, 1 crossing at two points, 3 one circle, 2
+ * where it is not told
+ */
+int
+tower_circles_meet(const Edge *p, const Edge *q)
+{
+  assert(p); assert(q); assert(p->centred); assert(q->centred);
+  TowerCirclesArg arg = {p, q};
+  return dyadic_pred_run(tower_circles_meet_pred, &arg);
 }
 
 /* The coordinates of several points read in one tower, the tower of all
@@ -11667,31 +12037,48 @@ tower_point_lines(DyadicCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
  * root sigma along the line, and return the sign of the number under its
  * root: none where it is negative, a touching where it is zero, 2 where the
  * point is not built
- * @details With U = P0 - C w0 and V = P1 w0 - P0 w1 the line is
- * P0 / w0 + t V / (w0 w1), and it meets the circle at
- * t = (-(V.U) + sigma sw1 sqrt(D)) w1 / (V.V), sw1 the sign of w1 and
- * D = (V.U)^2 - (V.V) (U.U - r^2 w0^2): the point
- * (P0 (V.V) + (-(V.U) + sigma sw1 sqrt(D)) V) / (w0 (V.V)), in the tower of
- * the line with sqrt(D) above it. Sigma 1 is the farther along P0 -> P1
+ * @details For the circle of centre C / cw, cw positive, and squared radius
+ * rr / cw^2 (#TowerCircle), with U = P0 cw - C w0 and V = P1 w0 - P0 w1 the
+ * line is P0 / w0 + t V / (w0 w1), and it meets the circle where
+ * |U + mu V|^2 = rr w0^2, mu = t cw / w1:
+ * mu = (-(V.U) + sigma sw1 sqrt(D)) / (V.V), sw1 the sign of w1 and
+ * D = (V.U)^2 - (V.V) (U.U - rr w0^2): the point
+ * (P0 cw (V.V) + (-(V.U) + sigma sw1 sqrt(D)) V) / (w0 cw (V.V)), in the
+ * tower of the line and the circle with sqrt(D) above it. Sigma 1 is the
+ * farther along P0 -> P1. A circle of doubles has cw 1 and asks nothing
+ * more of the line
  */
 static int
 tower_point_line_circle(DyadicCtx *ctx, const TowerPoint *p0,
-  const TowerPoint *p1, double cx, double cy, double r, int sigma, double ox,
-  double oy, TowerPoint *out)
+  const TowerPoint *p1, const TowerCircle *circ, int sigma, TowerPoint *out)
 {
-  const TowerPoint *pts[2] = {p0, p1};
-  DyadicX c[2][3][TOWER_SIZE];
+  TowerPoint cp, rp;
+  const TowerPoint *pts[4] = {p0, p1, &cp, &rp};
+  DyadicX c[4][3][TOWER_SIZE];
   Tower t;
-  if (! tower_points_read(ctx, pts, 2, &t, c) || t.depth == TOWER_MAXDEPTH)
+  if (! circ->unit)
+    tower_circle_points(ctx, circ, &cp, &rp);
+  if (! tower_points_read(ctx, pts, circ->unit ? 2 : 4, &t, c) ||
+      t.depth == TOWER_MAXDEPTH)
     return 2;
   int k = t.depth;
   DyadicX ux[TOWER_SIZE], uy[TOWER_SIZE], vx[TOWER_SIZE], vy[TOWER_SIZE],
     a[TOWER_SIZE], b[TOWER_SIZE];
-  /* U = P0 - C w0 */
-  tower_mulx_k(ctx, c[0][2], dx_diff(ctx, cx, ox), k, a);
-  tower_sub_k(ctx, c[0][0], a, k, ux);
-  tower_mulx_k(ctx, c[0][2], dx_diff(ctx, cy, oy), k, a);
-  tower_sub_k(ctx, c[0][1], a, k, uy);
+  /* U = P0 cw - C w0, the centre holding no root */
+  if (circ->unit)
+  {
+    memcpy(ux, c[0][0], sizeof(DyadicX) * (1 << k));
+    memcpy(uy, c[0][1], sizeof(DyadicX) * (1 << k));
+  }
+  else
+  {
+    tower_mulx_k(ctx, c[0][0], circ->w, k, ux);
+    tower_mulx_k(ctx, c[0][1], circ->w, k, uy);
+  }
+  tower_mulx_k(ctx, c[0][2], circ->x, k, a);
+  tower_sub_k(ctx, ux, a, k, ux);
+  tower_mulx_k(ctx, c[0][2], circ->y, k, a);
+  tower_sub_k(ctx, uy, a, k, uy);
   /* V = P1 w0 - P0 w1 */
   tower_mul_k(ctx, &t, c[1][0], c[0][2], k, a);
   tower_mul_k(ctx, &t, c[0][0], c[1][2], k, b);
@@ -11709,10 +12096,12 @@ tower_point_line_circle(DyadicCtx *ctx, const TowerPoint *p0,
   tower_mul_k(ctx, &t, ux, ux, k, a);
   tower_mul_k(ctx, &t, uy, uy, k, b);
   tower_add_k(ctx, a, b, k, uu);
-  /* U.U - r^2 w0^2 */
-  DyadicX rr = dx_val(ctx, r);
+  /* U.U - rr w0^2 */
   tower_mul_k(ctx, &t, c[0][2], c[0][2], k, a);
-  tower_mulx_k(ctx, a, dx_mul(ctx, rr, rr), k, a);
+  if (circ->unit)
+    tower_mulx_k(ctx, a, circ->rr.c[0], k, a);
+  else
+    tower_mul_k(ctx, &t, a, c[3][0], k, a);
   tower_sub_k(ctx, uu, a, k, uu);
   tower_mul_k(ctx, &t, vu, vu, k, a);
   tower_mul_k(ctx, &t, vv, uu, k, b);
@@ -11729,17 +12118,21 @@ tower_point_line_circle(DyadicCtx *ctx, const TowerPoint *p0,
   out->t.depth = k + 1;
   int half = 1 << k;
   double s = (double) (sigma * sw1);
-  /* x = x0 (V.V) - (V.U) Vx + s Vx sqrt(D) */
+  /* x = x0 cw (V.V) - (V.U) Vx + s Vx sqrt(D) */
   DyadicX *o[2] = {out->x.c, out->y.c};
   DyadicX *vc[2] = {vx, vy};
   for (int j = 0; j < 2; j++)
   {
     tower_mul_k(ctx, &t, c[0][j], vv, k, a);
+    if (! circ->unit)
+      tower_mulx_k(ctx, a, circ->w, k, a);
     tower_mul_k(ctx, &t, vu, vc[j], k, b);
     tower_sub_k(ctx, a, b, k, o[j]);
     tower_scale_k(ctx, vc[j], s, k, o[j] + half);
   }
   tower_mul_k(ctx, &t, c[0][2], vv, k, out->w.c);
+  if (! circ->unit)
+    tower_mulx_k(ctx, out->w.c, circ->w, k, out->w.c);
   tower_set(ctx, dx_val(ctx, 0.0), k, out->w.c + half);
   return disc;
 }
@@ -11784,6 +12177,30 @@ tower_orient(DyadicCtx *ctx, const TowerPoint *p, const TowerPoint *q,
 static void
 tangent_point_round(const TangentPoint *tp, double *x, double *y)
 {
+  if (tp->arc)
+  {
+    /* The end of the offset of an input arc, on the line from the centre of
+     * its circle in doubles, which the arc carries (#exact_arc_bound),
+     * through that end */
+    const ExactArc *arc = tp->arc;
+    const double *a = tp->k ? arc->e : arc->s;
+    double ax = a[0], ay = a[1];
+    double nx = ax - arc->cx, ny = ay - arc->cy;
+    if (arc->err < 0.0)
+    {
+      /* An arc nearly straight: the direction from its centre tends to the
+       * normal of its chord on the side it bulges to */
+      double cxs = arc->e[0] - arc->s[0], cys = arc->e[1] - arc->s[1];
+      int turn = cross_product_sign(arc->s[0], arc->s[1], arc->m[0],
+        arc->m[1], arc->s[0], arc->s[1], arc->e[0], arc->e[1]);
+      nx = (turn > 0) ? cys : - cys;
+      ny = (turn > 0) ? - cxs : cxs;
+    }
+    double f = tp->side * tp->r1 / hypot(nx, ny);
+    *x = ax + f * nx;
+    *y = ay + f * ny;
+    return;
+  }
   double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
   double d2 = dx * dx + dy * dy, dr = tp->r1 - tp->r2;
   double e = sqrt(fmax(d2 - dr * dr, 0.0));
@@ -11846,15 +12263,23 @@ meet_tower_build(DyadicCtx *ctx, const MeetPoint *m, double ox, double oy,
     {
       TowerPoint p0, p1;
       towerseg_ends(ctx, m->p, ox, oy, &p0, &p1);
-      int disc = tower_point_line_circle(ctx, &p0, &p1, m->q->cx, m->q->cy,
-        m->q->radius, m->sigma, ox, oy, out);
+      TowerCircle circ;
+      tower_circle_of(ctx, m->q, ox, oy, &circ);
+      int disc = tower_point_line_circle(ctx, &p0, &p1, &circ, m->sigma,
+        out);
       return (disc == 2) ? 2 : ((disc < 0) ? 0 : 1);
     }
     case MEET_ARCARC:
-      if (! m->p->centred || ! m->q->centred)
+    {
+      if ((! m->p->centred && ! m->p->offset) ||
+          (! m->q->centred && ! m->q->offset))
         return 0;
-      return tower_point_circles(ctx, m->p->cx, m->p->cy, m->p->radius,
-        m->q->cx, m->q->cy, m->q->radius, m->sigma, ox, oy, out) < 0 ? 0 : 1;
+      TowerCircle c1, c2;
+      tower_circle_of(ctx, m->p, ox, oy, &c1);
+      tower_circle_of(ctx, m->q, ox, oy, &c2);
+      int sh = tower_point_circles(ctx, &c1, &c2, m->sigma, out);
+      return (sh == 2) ? 2 : ((sh < 0) ? 0 : 1);
+    }
     default:
       return 0;
   }
@@ -12679,11 +13104,13 @@ towerseg_meet_circle(DyadicCtx *ctx, const Edge *p, const Edge *q,
   double ox = p->x1, oy = p->y1;
   TowerPoint pe[2], y[2];
   towerseg_ends(ctx, p, ox, oy, &pe[0], &pe[1]);
+  TowerCircle circ;
+  tower_circle_of(ctx, q, ox, oy, &circ);
   int disc = 0;
   for (int r = 0; r < 2; r++)
   {
-    disc = tower_point_line_circle(ctx, &pe[0], &pe[1], q->cx, q->cy,
-      q->radius, r ? 1 : -1, ox, oy, &y[r]);
+    disc = tower_point_line_circle(ctx, &pe[0], &pe[1], &circ, r ? 1 : -1,
+      &y[r]);
     if (disc == 2)
       return -2;
     if (disc < 0)
@@ -12803,13 +13230,27 @@ meets_order_tower_pred(DyadicCtx *ctx, const void *arg)
     return 2;
   int k = t.depth, turn = o->ccw ? 1 : -1, cls[2];
   DyadicX rx[2][TOWER_SIZE], ry[2][TOWER_SIZE], u[TOWER_SIZE];
+  /* The circle of the arc, its centre C / cw holding no root
+   * (#tower_circle_of) */
+  TowerCircle circ;
+  tower_circle_of(ctx, e, ox, oy, &circ);
   for (int i = 0; i < 2; i++)
   {
-    /* The radius times w: P - C w */
-    tower_mulx_k(ctx, v[i][2], dx_diff(ctx, e->cx, ox), k, u);
-    tower_sub_k(ctx, v[i][0], u, k, rx[i]);
-    tower_mulx_k(ctx, v[i][2], dx_diff(ctx, e->cy, oy), k, u);
-    tower_sub_k(ctx, v[i][1], u, k, ry[i]);
+    /* The radius times w cw, cw positive: P cw - C w */
+    if (circ.unit)
+    {
+      memcpy(rx[i], v[i][0], sizeof(DyadicX) * (1 << k));
+      memcpy(ry[i], v[i][1], sizeof(DyadicX) * (1 << k));
+    }
+    else
+    {
+      tower_mulx_k(ctx, v[i][0], circ.w, k, rx[i]);
+      tower_mulx_k(ctx, v[i][1], circ.w, k, ry[i]);
+    }
+    tower_mulx_k(ctx, v[i][2], circ.x, k, u);
+    tower_sub_k(ctx, rx[i], u, k, rx[i]);
+    tower_mulx_k(ctx, v[i][2], circ.y, k, u);
+    tower_sub_k(ctx, ry[i], u, k, ry[i]);
     int sw = tower_sign_k(ctx, &t, v[i][2], k);
     /* (-1, 0) x V = -Vy */
     int side = - tower_sign_k(ctx, &t, ry[i], k) * sw * turn;
@@ -12972,6 +13413,143 @@ meet_point_x_side(const MeetPoint *m, double ox, double d)
   assert(m);
   TowerXSideArg arg = {m, ox, d};
   return dyadic_pred_run(meet_point_x_side_pred, &arg);
+}
+
+typedef struct
+{
+  const MeetPoint *m;
+  const Edge *c;
+  bool alongx;
+  int sr;
+} TowerCircleSideArg;
+
+/* The radius of a circle times its w (#TowerCircle), rho cw, as the x of a
+ * point of its tower whose y is 0 and w 1: the radius of a centred arc, and
+ * for an offset s (sqrt(r2) + side r cw), s its sign, the offset running on
+ * the far side of the centre where it is negative (#edges_add_offset_arc);
+ * false where that sign is not told */
+static bool
+tower_circle_rho(DyadicCtx *ctx, const Edge *e, const TowerCircle *c,
+  TowerPoint *rp)
+{
+  int n = 1 << c->t.depth;
+  DyadicX z = dx_val(ctx, 0.0);
+  rp->t = c->t;
+  for (int m = 0; m < n; m++)
+    rp->x.c[m] = rp->y.c[m] = rp->w.c[m] = z;
+  rp->w.c[0] = dx_val(ctx, 1.0);
+  if (c->unit)
+  {
+    rp->x.c[0] = dx_val(ctx, e->radius);
+    return true;
+  }
+  rp->x.c[0] = dx_mul(ctx, dx_val(ctx, e->side * e->radius), c->w);
+  rp->x.c[1] = dx_val(ctx, 1.0);
+  int s = tower_sign_k(ctx, &c->t, rp->x.c, 1);
+  if (dyadic_ctx_unsafe(ctx))
+    return false;
+  if (s < 0)
+    tower_scale_k(ctx, rp->x.c, -1.0, 1, rp->x.c);
+  return true;
+}
+
+static int
+meet_point_circle_side_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCircleSideArg *o = arg;
+  double ox = o->c->cx, oy = o->c->cy;
+  TowerPoint p, q;
+  if (meet_tower_build(ctx, o->m, ox, oy, &p) != 1)
+    return 2;
+  TowerCircle circ;
+  tower_circle_of(ctx, o->c, ox, oy, &circ);
+  if (! tower_circle_rho(ctx, o->c, &circ, &q))
+    return 2;
+  const TowerPoint *pts[2] = {&p, &q};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  DyadicX u[TOWER_SIZE], a[TOWER_SIZE];
+  /* X cw - c W - sr rho cw W, the centre c / cw holding no root */
+  tower_mulx_k(ctx, v[0][o->alongx ? 0 : 1], circ.w, k, u);
+  tower_mulx_k(ctx, v[0][2], o->alongx ? circ.x : circ.y, k, a);
+  tower_sub_k(ctx, u, a, k, u);
+  if (o->alongx && o->sr != 0)
+  {
+    tower_mul_k(ctx, &t, v[0][2], v[1][0], k, a);
+    tower_scale_k(ctx, a, (double) o->sr, k, a);
+    tower_sub_k(ctx, u, a, k, u);
+  }
+  int s = tower_sign_k(ctx, &t, u, k) * tower_sign_k(ctx, &t, v[0][2], k);
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+static int
+tower_circles_right_cmp_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCirclesArg *o = arg;
+  double ox = o->p->cx, oy = o->p->cy;
+  TowerCircle c1, c2;
+  TowerPoint r1, r2;
+  tower_circle_of(ctx, o->p, ox, oy, &c1);
+  tower_circle_of(ctx, o->q, ox, oy, &c2);
+  if (! tower_circle_rho(ctx, o->p, &c1, &r1) ||
+      ! tower_circle_rho(ctx, o->q, &c2, &r2))
+    return 2;
+  const TowerPoint *pts[2] = {&r1, &r2};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  /* (x1 + rho1 w1) w2 - (x2 + rho2 w2) w1, both w positive */
+  DyadicX a[TOWER_SIZE], b[TOWER_SIZE];
+  memcpy(a, v[0][0], sizeof(DyadicX) * (1 << k));
+  a[0] = dx_add(ctx, a[0], c1.x);
+  tower_mulx_k(ctx, a, c2.w, k, a);
+  memcpy(b, v[1][0], sizeof(DyadicX) * (1 << k));
+  b[0] = dx_add(ctx, b[0], c2.x);
+  tower_mulx_k(ctx, b, c1.w, k, b);
+  tower_sub_k(ctx, a, b, k, a);
+  int s = tower_sign_k(ctx, &t, a, k);
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return how the points of two circles furthest along x compare
+ * @details The circles are those of centred arcs a tower holds
+ * (#tower_circle_of), an offset of an input arc among them: cx + r against
+ * cx + r, decided exactly, -1, 0 or 1, 2 where it is not told
+ */
+int
+tower_circles_right_cmp(const Edge *p, const Edge *q)
+{
+  assert(p); assert(q); assert(p->centred); assert(q->centred);
+  TowerCirclesArg arg = {p, q};
+  return dyadic_pred_run(tower_circles_right_cmp_pred, &arg);
+}
+
+/**
+ * @brief Return the side of a line through a circle the point of a meeting
+ * lies on, decided exactly
+ * @details The line is the horizontal one through the centre of the circle
+ * of a centred arc, or with @p alongx the vertical one through its centre
+ * moved by @p sr times its radius: 1 above or right of it, -1 below or left,
+ * 0 on it, 2 where it is not told. A centred arc holds its circle in its
+ * doubles (#meet_point_y_side, #meet_point_x_side); an offset of an input arc
+ * holds it in a tower (#tower_circle_of)
+ */
+int
+meet_point_circle_side(const MeetPoint *m, const Edge *c, bool alongx, int sr)
+{
+  assert(m); assert(c); assert(c->centred);
+  if (! c->offset)
+    return alongx ? meet_point_x_side(m, c->cx, sr * c->radius) :
+      meet_point_y_side(m, c->cy);
+  TowerCircleSideArg arg = {m, c, alongx, sr};
+  return dyadic_pred_run(meet_point_circle_side_pred, &arg);
 }
 
 typedef struct
@@ -13140,9 +13718,18 @@ meet_point_origin(const MeetPoint *m, double *ox, double *oy)
   switch (m->kind)
   {
     case MEET_TANGENT:
+    {
+      /* The end of an offset lies about the end of its input arc */
+      if (m->tp->arc)
+      {
+        const double *a = m->tp->k ? m->tp->arc->e : m->tp->arc->s;
+        *ox = a[0]; *oy = a[1];
+        return;
+      }
       *ox = m->tp->k ? m->tp->c2x : m->tp->c1x;
       *oy = m->tp->k ? m->tp->c2y : m->tp->c1y;
       return;
+    }
     case MEET_LINES:
     case MEET_LINECIRCLE:
       *ox = m->p->x1; *oy = m->p->y1;
@@ -13610,7 +14197,8 @@ offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
   double box[4])
 {
   int s;
-  if (! m->p || ! m->q || ! m->q->centred || ! towerseg_offset(m->p, &s))
+  if (! m->p || ! m->q || ! m->q->centred || m->q->offset ||
+      ! towerseg_offset(m->p, &s))
     return false;
   if (offset_line_circle_plain(m, s, x, y, box))
     return true;
@@ -13700,7 +14288,7 @@ static pg_noinline bool
 equal_circles_bounds(const MeetPoint *m, double *x, double *y, double box[4])
 {
   if (! m->p || ! m->q || ! m->p->centred || ! m->q->centred ||
-      m->p->radius != m->q->radius)
+      m->p->offset || m->q->offset || m->p->radius != m->q->radius)
     return false;
   if (equal_circles_plain(m, x, y, box))
     return true;
@@ -13796,12 +14384,25 @@ tower_edge_direction(DyadicCtx *ctx, const Edge *e, bool ccw, bool out,
     return;
   }
   {
-    /* (P - C w) times the sign of w */
+    /* (P cw - C w) times the sign of w, the centre C / cw of the circle
+     * holding no root and cw positive (#tower_circle_of) */
+    TowerCircle circ;
+    tower_circle_of(ctx, e, ox, oy, &circ);
     DyadicX vx[TOWER_SIZE], vy[TOWER_SIZE];
-    tower_mulx_k(ctx, pc[2], dx_diff(ctx, e->cx, ox), k, u);
-    tower_sub_k(ctx, pc[0], u, k, vx);
-    tower_mulx_k(ctx, pc[2], dx_diff(ctx, e->cy, oy), k, u);
-    tower_sub_k(ctx, pc[1], u, k, vy);
+    if (circ.unit)
+    {
+      memcpy(vx, pc[0], sizeof(DyadicX) * (1 << k));
+      memcpy(vy, pc[1], sizeof(DyadicX) * (1 << k));
+    }
+    else
+    {
+      tower_mulx_k(ctx, pc[0], circ.w, k, vx);
+      tower_mulx_k(ctx, pc[1], circ.w, k, vy);
+    }
+    tower_mulx_k(ctx, pc[2], circ.x, k, u);
+    tower_sub_k(ctx, vx, u, k, vx);
+    tower_mulx_k(ctx, pc[2], circ.y, k, u);
+    tower_sub_k(ctx, vy, u, k, vy);
     double sw = (double) tower_sign_k(ctx, t, pc[2], k);
     /* Counterclockwise the radius (x, y) turns to (-y, x) */
     tower_scale_k(ctx, vy, ccw ? - sw : sw, k, dx);
@@ -13912,10 +14513,25 @@ edges_turn_cmp_meet_pred(DyadicCtx *ctx, const void *arg)
       bool left1 = (o->ccw1 == o->out1), left2 = (o->ccw2 == o->out2);
       if (left1 != left2)
         return left1 ? 1 : -1;
-      double r1 = o->e1->radius, r2 = o->e2->radius;
-      if (r1 == r2)
+      int rc;
+      if (! o->e1->offset && ! o->e2->offset)
+      {
+        double r1 = o->e1->radius, r2 = o->e2->radius;
+        rc = (r1 < r2) ? -1 : ((r1 > r2) ? 1 : 0);
+      }
+      else
+      {
+        /* The radius of an offset is a root (#tower_circles_radius_cmp) */
+        TowerCircle c1, c2;
+        tower_circle_of(ctx, o->e1, ox, oy, &c1);
+        tower_circle_of(ctx, o->e2, ox, oy, &c2);
+        rc = tower_circles_radius_cmp(ctx, &c1, &c2);
+        if (rc == 2)
+          return 2;
+      }
+      if (rc == 0)
         return 2;
-      return ((r1 < r2) == left1) ? 1 : -1;
+      return ((rc < 0) == left1) ? 1 : -1;
     }
   }
   return 2;
@@ -14060,6 +14676,76 @@ edges_add_tangent_arc(MeosArray *edges, double cx, double cy, double radius,
   edges_add_circle(edges, cx, cy, radius, ccw);
   Edge *e = &((Edge *) edges->elems)[edges->count - 1];
   e->from = from; e->to = to;
+  return;
+}
+
+/**
+ * @brief Add to an edge array the offset of an input arc by a distance,
+ * between the points where it ends (#TangentPoint, member arc), which no
+ * double holds: the offset of an arc of a buffer, the sibling of
+ * #edges_add_tangent_arc for the arc about the centre of an input arc
+ * @details The input arc its ends carry (#ExactArc), through its start,
+ * middle and end or on its diameter, has a circle, of centre C and radius R,
+ * fixed by those doubles exactly; the offset is the arc about C of radius R + side r,
+ * side and r those of its ends, from @p from to @p to in the sense @p ccw,
+ * the points of radius R + side r on the lines from C through the ends of
+ * the input arc. Where R + side r is negative the offset runs on the far
+ * side of C, its points c + (R + side r) u for u the direction of a point of
+ * the input arc, which is still the arc of radius |R + side r| turning in
+ * the sense @p ccw. Every exact question about it reads the three input
+ * points, the side and the distance (#tower_circle_of); its centre and its
+ * ends are rounded once, and its box is that of the whole circle widened by
+ * the rounding of those doubles
+ * @param[in,out] edges Edge array
+ * @param[in] ccw Whether the arc turns counterclockwise about C
+ * @param[in] from,to The ends, of one input arc, distance and side; they
+ * outlive the edge array
+ */
+void
+edges_add_offset_arc(MeosArray *edges, bool ccw, const TangentPoint *from,
+  const TangentPoint *to)
+{
+  assert(edges); assert(from); assert(to);
+  assert(from->arc); assert(to->arc == from->arc); assert(from->r1 > 0.0);
+  assert(from->side == to->side && from->r1 == to->r1);
+  if (edges->count >= edges->capacity)
+    edge_array_reserve(edges, 1);
+  Edge *e = &((Edge *) edges->elems)[edges->count++];
+  memset(e, 0, sizeof(Edge));
+  e->etype = EDGE_POLYARC;
+  e->centred = true;
+  e->offset = true;
+  e->ccw = ccw;
+  e->from = from; e->to = to;
+  e->radius = from->r1;
+  e->side = from->side;
+  /* The input arc and its circle in doubles, which it carries
+   * (#exact_arc_bound) */
+  const ExactArc *arc = from->arc;
+  e->sx = arc->s[0]; e->sy = arc->s[1];
+  e->mx = arc->m[0]; e->my = arc->m[1];
+  e->ex = arc->e[0]; e->ey = arc->e[1];
+  e->diameter = arc->half;
+  e->cx = arc->cx;
+  e->cy = arc->cy;
+  double rho = fabs(arc->r + from->side * from->r1);
+  tangent_point_round(from, &e->x1, &e->y1);
+  tangent_point_round(to, &e->x2, &e->y2);
+  e->theta0 = atan2(e->y1 - e->cy, e->x1 - e->cx);
+  e->theta1 = atan2(e->y2 - e->cy, e->x2 - e->cx);
+  /* The box of the whole circle, widened by the bound on its centre in
+   * doubles; where #exact_arc_bound reads no circle in doubles, as for an
+   * arc nearly straight, the whole plane */
+  if (arc->err < 0.0 || ! isfinite(rho))
+  {
+    e->xmin = e->ymin = - DBL_MAX;
+    e->xmax = e->ymax = DBL_MAX;
+    return;
+  }
+  double m = arc->err + 0x1p-40 * (fabs(e->cx) + fabs(e->cy) + rho +
+    from->r1);
+  e->xmin = e->cx - rho - m; e->xmax = e->cx + rho + m;
+  e->ymin = e->cy - rho - m; e->ymax = e->cy + rho + m;
   return;
 }
 
