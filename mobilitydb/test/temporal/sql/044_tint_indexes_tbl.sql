@@ -64,7 +64,7 @@ SELECT temp::tbox AS b, false AS knn FROM tbl_tint WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_tint_src
 UNION ALL
-SELECT expandTime(expandValue(b, 1), interval '1 day'), false FROM tbl_tint_src
+SELECT expandTime(expandValue(b, 1::integer), interval '1 day'), false FROM tbl_tint_src
 UNION ALL
 SELECT tbox(format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::intspan,
     tstzspan(format('[%s, %s]', lower(t) + (upper(t) - lower(t)) / 2,
@@ -80,7 +80,7 @@ ANALYZE tbl_tint_box;
 -- value, one inside it, the values of a value, and one that meets them
 DROP TABLE IF EXISTS tbl_tint_xbox;
 CREATE TEMP TABLE tbl_tint_xbox AS
-SELECT tbox(format('[%s, %s]', lower(v) - 1, upper(v) + 1)::intspan) AS b
+SELECT tbox(format('[%s, %s]', lower(v) - 1::integer, upper(v) + 1::integer)::intspan) AS b
 FROM tbl_tint_src
 UNION ALL
 SELECT tbox(format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::intspan) AS b
@@ -89,7 +89,7 @@ UNION ALL
 SELECT tbox(v) AS b
 FROM tbl_tint_src
 UNION ALL
-SELECT tbox(format('[%s, %s]', upper(v), upper(v) + 1)::intspan) AS b
+SELECT tbox(format('[%s, %s]', upper(v), upper(v) + 1::integer)::intspan) AS b
 FROM tbl_tint_src;
 ANALYZE tbl_tint_xbox;
 
@@ -101,13 +101,13 @@ SELECT valueSpan(temp) AS v, false AS knn FROM tbl_tint WHERE k % 20 = 0
 UNION ALL
 SELECT v, true FROM tbl_tint_src
 UNION ALL
-SELECT format('[%s, %s]', lower(v) - 1, upper(v) + 1)::intspan, false
+SELECT format('[%s, %s]', lower(v) - 1::integer, upper(v) + 1::integer)::intspan, false
 FROM tbl_tint_src
 UNION ALL
 SELECT format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::intspan, false
 FROM tbl_tint_src
 UNION ALL
-SELECT format('[%s, %s]', upper(v), upper(v) + 1)::intspan, false
+SELECT format('[%s, %s]', upper(v), upper(v) + 1::integer)::intspan, false
 FROM tbl_tint_src;
 ANALYZE tbl_tint_vspan;
 
