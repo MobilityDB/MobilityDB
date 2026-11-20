@@ -1049,8 +1049,9 @@ pcpoint_get_z(const Pcpoint *pt, double *out)
  * @param[in] pt Point
  * @param[in] name Dimension name
  * @param[out] out Result
- * @return @p true on success; @p false if the schema lacks the dimension
- *   or the byte read fails
+ * @return @p true on success; @p false if the byte read fails
+ * @note A name the schema does not state is an error, as pgPointCloud's
+ * `PC_Get` raises it
  * @csqlfn #Pcpoint_get_dim()
  */
 bool
@@ -1062,6 +1063,12 @@ pcpoint_get_dim(const Pcpoint *pt, const char *name, double *out)
   PCSCHEMA *schema = pcpoint_schema(pt);
   if (! schema)
     return false;
+  if (! pc_schema_get_dimension_by_name(schema, name))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "dimension \"%s\" does not exist in schema", name);
+    return false;
+  }
   return pcpoint_schema_get_dim(pt, schema, name, out);
 }
 

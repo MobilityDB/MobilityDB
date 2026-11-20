@@ -943,82 +943,82 @@ SELECT COUNT(*) FROM test_tquadbin_idx;
 SELECT op, no_idx FROM test_tquadbin_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
           op           | no_idx 
 -----------------------+--------
- #&> stbox             | 244164
- #&> tquadbin          | 131277
- #&> tstzspan          | 265935
- #>> stbox             | 243555
- #>> tquadbin          | 131238
- #>> tstzspan          | 265338
- %&& stbox             | 481
- && stbox              | 648
- && stbox x            | 389240
- && tquadbin           | 60
- && tstzspan           | 634
- &< stbox              | 326931
- &< stbox x            | 292929
- &< tquadbin           | 228224
- &<# stbox             | 228905
- &<# tquadbin          | 131240
- &<# tstzspan          | 207125
- &<| stbox             | 292396
- &<| stbox x           | 269018
- &<| tquadbin          | 201774
- &> stbox              | 269604
- &> stbox x            | 159107
- &> tquadbin           | 189389
- -|- stbox             | 14
- -|- stbox x           | 70122
- -|- tquadbin          | 12
- -|- tstzspan          | 12
- << stbox              | 1871
- << stbox x            | 29166
- << tquadbin           | 790
- <<# stbox             | 228297
- <<# tquadbin          | 131202
- <<# tstzspan          | 206528
- <<| stbox             | 836
- <<| stbox x           | 836
- <<| tquadbin          | 56
- <@ stbox              | 417
- <@ stbox x            | 150424
- <@ tquadbin           | 24
- <@ tstzspan           | 582
- >> stbox              | 961
- >> stbox x            | 893
- >> tquadbin           | 68
- ?&& stbox             | 632
- @> stbox              | 38
- @> stbox x            | 163147
- @> tquadbin           | 21
- @> tstzspan           | 32
- stbox #>> tquadbin    | 228297
- stbox && tquadbin     | 648
- stbox -|- tquadbin    | 14
- stbox << tquadbin     | 961
- stbox <<# tquadbin    | 243555
- stbox <<| tquadbin    | 5008
- stbox <@ tquadbin     | 38
- stbox >> tquadbin     | 1871
- stbox @> tquadbin     | 417
- stbox |>> tquadbin    | 836
+ #&> stbox             | 226665
+ #&> tquadbin          | 122514
+ #&> tstzspan          | 248340
+ #>> stbox             | 226030
+ #>> tquadbin          | 122447
+ #>> tstzspan          | 247722
+ %&& stbox             | 425
+ && stbox              | 631
+ && stbox x            | 323541
+ && tquadbin           | 86
+ && tstzspan           | 662
+ &< stbox              | 272231
+ &< stbox x            | 234812
+ &< tquadbin           | 182753
+ &<# stbox             | 246411
+ &<# tquadbin          | 140021
+ &<# tstzspan          | 224727
+ &<| stbox             | 277653
+ &<| stbox x           | 252148
+ &<| tquadbin          | 182869
+ &> stbox              | 286760
+ &> stbox x            | 179071
+ &> tquadbin           | 191075
+ -|- stbox             | 20
+ -|- stbox x           | 41235
+ -|- tquadbin          | 17
+ -|- tstzspan          | 18
+ << stbox              | 33325
+ << stbox x            | 59719
+ << tquadbin           | 14117
+ <<# stbox             | 245787
+ <<# tquadbin          | 139967
+ <<# tstzspan          | 224116
+ <<| stbox             | 22628
+ <<| stbox x           | 22628
+ <<| tquadbin          | 6922
+ <@ stbox              | 404
+ <@ stbox x            | 132084
+ <@ tquadbin           | 52
+ <@ tstzspan           | 596
+ >> stbox              | 27588
+ >> stbox x            | 26334
+ >> tquadbin           | 9218
+ ?&& stbox             | 584
+ @> stbox              | 51
+ @> stbox x            | 162827
+ @> tquadbin           | 35
+ @> tstzspan           | 42
+ stbox #>> tquadbin    | 245787
+ stbox && tquadbin     | 631
+ stbox -|- tquadbin    | 20
+ stbox << tquadbin     | 27588
+ stbox <<# tquadbin    | 226030
+ stbox <<| tquadbin    | 37096
+ stbox <@ tquadbin     | 51
+ stbox >> tquadbin     | 33325
+ stbox @> tquadbin     | 404
+ stbox |>> tquadbin    | 22628
  stbox ~= tquadbin     | 15
- tstzspan #>> tquadbin | 206528
- tstzspan && tquadbin  | 634
- tstzspan -|- tquadbin | 12
- tstzspan <<# tquadbin | 265338
- tstzspan <@ tquadbin  | 32
- tstzspan @> tquadbin  | 582
- tstzspan ~= tquadbin  | 10
- |&> stbox             | 315565
- |&> stbox x           | 263065
- |&> tquadbin          | 226812
- |>> stbox             | 5008
- |>> stbox x           | 849
- |>> tquadbin          | 4179
+ tstzspan #>> tquadbin | 224116
+ tstzspan && tquadbin  | 662
+ tstzspan -|- tquadbin | 18
+ tstzspan <<# tquadbin | 247722
+ tstzspan <@ tquadbin  | 42
+ tstzspan @> tquadbin  | 596
+ tstzspan ~= tquadbin  | 13
+ |&> stbox             | 314304
+ |&> stbox x           | 261804
+ |&> tquadbin          | 215090
+ |>> stbox             | 37096
+ |>> stbox x           | 29313
+ |>> tquadbin          | 17619
  ~= stbox              | 15
- ~= stbox x            | 38468
- ~= tquadbin           | 15
- ~= tstzspan           | 10
+ ~= stbox x            | 28282
+ ~= tquadbin           | 18
+ ~= tstzspan           | 13
 (76 rows)
 
 -- The distances of the nearest values are compared, not stated
@@ -1053,7 +1053,7 @@ CREATE INDEX tbl_tquadbin_allthesame_quadtree ON tbl_tquadbin_allthesame USING s
 SELECT COUNT(*) FROM tbl_tquadbin_allthesame WHERE temp && (SELECT temp::stbox FROM tbl_tquadbin_allthesame LIMIT 1);
  count 
 -------
-     0
+     1
 (1 row)
 
 SET enable_seqscan = off;
@@ -1066,7 +1066,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tquadbin_allthesame W
 SELECT COUNT(*) FROM tbl_tquadbin_allthesame WHERE temp && (SELECT temp::stbox FROM tbl_tquadbin_allthesame LIMIT 1);
  count 
 -------
-     0
+     1
 (1 row)
 
 RESET enable_seqscan;

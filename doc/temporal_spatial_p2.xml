@@ -150,7 +150,7 @@ SELECT asText(atElevation(tgeogpoint 'SRID=4326;[Point(1 1 1)@2001-01-01,
 SRID(tspatial) → integer
 setSRID(tspatial,integer) → tspatial
 </programlisting>
-<para>The SRID is set as <link linkend="geo_srid"><varname>setSRID</varname></link> sets it on a geometry, an SRID beyond the reserved range being folded into it, and the values and the bounding box take that one SRID. The invalid SRID is refused, and so is the unknown SRID 0, which a negative SRID is read as.</para>
+<para>The SRID is set as <link linkend="geo_srid"><varname>setSRID</varname></link> sets it on a geometry, an SRID beyond the reserved range being folded into it, and the values and the bounding box take that one SRID. The invalid SRID is refused, and a negative SRID is set as the unknown SRID 0, as on a geometry.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');
 -- 0

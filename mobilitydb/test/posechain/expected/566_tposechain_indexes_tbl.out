@@ -1084,7 +1084,7 @@ CREATE INDEX tbl_tposechain_allthesame_quadtree ON tbl_tposechain_allthesame USI
 SELECT COUNT(*) AS rows_scan FROM tbl_tposechain_allthesame WHERE temp && stbox 'SRID=3812;STBOX X((5,5),(5,5))';
  rows_scan 
 -----------
-     12380
+     10100
 (1 row)
 
 SET enable_seqscan = off;
@@ -1097,7 +1097,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tposechain_allthesame
 SELECT COUNT(*) AS rows_index FROM tbl_tposechain_allthesame WHERE temp && stbox 'SRID=3812;STBOX X((5,5),(5,5))';
  rows_index 
 ------------
-      12380
+      10100
 (1 row)
 
 RESET enable_seqscan;

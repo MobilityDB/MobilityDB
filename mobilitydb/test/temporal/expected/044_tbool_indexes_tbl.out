@@ -23,14 +23,14 @@ CREATE TEMP TABLE tbl_tbool_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tbool_big
   UNION ALL
-  SELECT k + 10000, temp FROM tbl_tbool_inst
+  SELECT k + 10100, temp FROM tbl_tbool_inst
   UNION ALL
-  SELECT k + 10100, temp FROM tbl_tbool_discseq
+  SELECT k + 10200, temp FROM tbl_tbool_discseq
   UNION ALL
-  SELECT k + 10200, temp FROM tbl_tbool_contseq
+  SELECT k + 10300, temp FROM tbl_tbool_contseq
   UNION ALL
-  SELECT k + 10300, temp FROM tbl_tbool_seqset )
-SELECT k + n * 10400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, temp FROM tbl_tbool_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tbool_idx;
 -- The values and periods the operators are given. Those of the fixture are
@@ -392,7 +392,7 @@ DROP INDEX tbl_tbool_idx_kdtree;
 SELECT COUNT(*) FROM tbl_tbool_idx;
  count 
 -------
- 10400
+ 10500
 (1 row)
 
 SELECT COUNT(*) FROM test_tbool_idx;
@@ -404,33 +404,33 @@ SELECT COUNT(*) FROM test_tbool_idx;
 SELECT op, no_idx FROM test_tbool_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
          op         | no_idx 
 --------------------+--------
- #&> tbool          | 101517
- #&> tstzspan       | 190591
- #>> tbool          | 101467
- #>> tstzspan       | 189994
- %&& tstzspan       | 582
- && tbool           | 60
- && tstzspan        | 640
- &<# tbool          | 148416
- &<# tstzspan       | 259787
- -|- tbool          | 18
- -|- tstzspan       | 19
- <<# tbool          | 148373
- <<# tstzspan       | 259186
- <@ tbool           | 37
- <@ tstzspan        | 582
- ?&& tstzspan       | 634
- @> tbool           | 25
- @> tstzspan        | 40
- tstzspan #>> tbool | 259186
- tstzspan && tbool  | 640
- tstzspan -|- tbool | 19
- tstzspan <<# tbool | 189994
- tstzspan <@ tbool  | 40
- tstzspan @> tbool  | 582
- tstzspan ~= tbool  | 15
- ~= tbool           | 21
- ~= tstzspan        | 15
+ #&> tbool          | 124666
+ #&> tstzspan       | 235951
+ #>> tbool          | 124591
+ #>> tstzspan       | 235317
+ %&& tstzspan       | 590
+ && tbool           | 121
+ && tstzspan        | 726
+ &<# tbool          | 137752
+ &<# tstzspan       | 236898
+ -|- tbool          | 15
+ -|- tstzspan       | 14
+ <<# tbool          | 137688
+ <<# tstzspan       | 236277
+ <@ tbool           | 52
+ <@ tstzspan        | 590
+ ?&& tstzspan       | 714
+ @> tbool           | 52
+ @> tstzspan        | 73
+ tstzspan #>> tbool | 236277
+ tstzspan && tbool  | 726
+ tstzspan -|- tbool | 14
+ tstzspan <<# tbool | 235317
+ tstzspan <@ tbool  | 73
+ tstzspan @> tbool  | 590
+ tstzspan ~= tbool  | 12
+ ~= tbool           | 18
+ ~= tstzspan        | 12
 (27 rows)
 
 -- The distances of the nearest values are compared, not stated

@@ -201,8 +201,9 @@ pcschema_string_copy(const char *str)
  * @param[in] pcid Identifier the schema is registered under
  * @param[in] srid Spatial reference identifier every value of the schema
  *   carries
- * @param[in] compression Name of the compression applied to the data,
- *   @p NULL for none
+ * @param[in] compression Name of the compression applied to the data, read
+ *   in any case among the names of the point cloud library, `none`,
+ *   `dimensional` and `laz`, or @p NULL for none @nullable
  * @param[in] dims Array of the dimensions the schema states, in any order
  * @param[in] ndims Number of elements in the array
  * @return A newly allocated schema
@@ -226,7 +227,14 @@ meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
     return NULL;
   }
 
+  /* A name is one of the library's when it reads back as itself */
   int comp = pc_compression_number(compression);
+  if (compression && pg_strcasecmp(compression, pc_compression_name(comp)) != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown point cloud compression: %s", compression);
+    return NULL;
+  }
   PCSCHEMA *schema = pc_schema_new((uint32_t) ndims);
   schema->pcid = pcid;
   schema->srid = (uint32_t) srid;
@@ -298,7 +306,7 @@ meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
  * @param[in] srid Spatial reference identifier every value of the schema
  *   carries
  * @param[in] compression Name of the compression applied to the data,
- *   @p NULL for none
+ *   @p NULL for none, read as #meos_pc_schema_from_dims reads it
  * @param[in] dims Array of the dimensions the schema states, in any order
  * @param[in] ndims Number of elements in the array
  * @return True when the schema is registered

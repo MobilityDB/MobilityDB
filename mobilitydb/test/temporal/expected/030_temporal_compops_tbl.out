@@ -500,25 +500,25 @@ CREATE INDEX tbl_ttext_rtree_idx ON tbl_ttext_big USING gist(temp);
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
  count 
 -------
-   713
+   728
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
  count 
 -------
-   314
+   394
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ?= text 'AAA';
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
  count 
 -------
-    37
+    31
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
@@ -548,19 +548,19 @@ CREATE INDEX tbl_ttext_quadtree_idx ON tbl_ttext_big USING spgist(temp);
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
  count 
 -------
-   713
+   728
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
  count 
 -------
-   314
+   394
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
  count 
 -------
-    37
+    31
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;

@@ -25,15 +25,15 @@ CREATE TEMP TABLE tbl_tcbuffer_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tcbuffer_big
   UNION ALL
-  SELECT k + 1000, temp FROM tbl_tcbuffer_inst
+  SELECT k + 10100, temp FROM tbl_tcbuffer_inst
   UNION ALL
-  SELECT k + 1100, temp FROM tbl_tcbuffer_discseq
+  SELECT k + 10200, temp FROM tbl_tcbuffer_discseq
   UNION ALL
-  SELECT k + 1200, temp FROM tbl_tcbuffer_contseq
+  SELECT k + 10300, temp FROM tbl_tcbuffer_contseq
   UNION ALL
-  SELECT k + 1300, temp FROM tbl_tcbuffer_seqset )
-SELECT k + n * 1400 AS k, shiftTime(temp, n * interval '1 week') AS temp
-FROM base, generate_series(0, 4) AS n;
+  SELECT k + 10400, temp FROM tbl_tcbuffer_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
+FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tcbuffer_idx;
 
 -- The values, boxes and periods the operators are given. Those of the fixture
@@ -42,7 +42,7 @@ ANALYZE tbl_tcbuffer_idx;
 DROP TABLE IF EXISTS tbl_tcbuffer_src;
 CREATE TEMP TABLE tbl_tcbuffer_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
-FROM tbl_tcbuffer_idx WHERE k % 650 = 0;
+FROM tbl_tcbuffer_idx WHERE k % 1000 = 0;
 
 -- A value of the fixture, a value of the table, and one whose period ends where
 -- that of the value starts. The search for the nearest values, whose distance

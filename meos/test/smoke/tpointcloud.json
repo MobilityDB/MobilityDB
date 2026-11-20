@@ -61,7 +61,7 @@
     "^pcpointset_make$|^pcpatchset_make$": {
       "int": "2"
     },
-    "^pcpoint_get_dim$": {
+    "^pcpoint_get_dim$|^tpcpoint_get_dim$": {
       "char *": "\"X\""
     },
     "_transform$": {

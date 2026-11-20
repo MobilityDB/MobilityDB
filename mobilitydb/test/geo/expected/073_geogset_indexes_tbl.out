@@ -129,12 +129,12 @@ DROP INDEX tbl_geogset_idx_kdtree;
 SELECT op, split_part(no_idx, ':', 1) AS no_idx FROM test_geogset_idx ORDER BY op;
     op    | no_idx 
 ----------+--------
- &&       | 783
- <->      | 141
- <@       | 393
- =        | 197
- @> set   | 393
- @> value | 588
+ &&       | 775
+ <->      | 115
+ <@       | 389
+ =        | 195
+ @> set   | 389
+ @> value | 582
 (6 rows)
 
 SELECT * FROM test_geogset_idx

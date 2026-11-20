@@ -254,8 +254,9 @@ spatialset_srid(const Set *s)
  * @ingroup meos_geo_set_srid
  * @brief Return a spatial set with the coordinates set to an SRID
  * @details The invalid SRID is refused and any other SRID is clamped as
- * #geo_set_srid clamps it; the unknown SRID, which a negative SRID reads as,
- * is refused. The values and the bounding box state the clamped SRID.
+ * #geo_set_srid clamps it, a negative SRID being read as the unknown SRID 0,
+ * which is set as on a geometry. The values and the bounding box state the
+ * clamped SRID.
  * @param[in] s Spatial set
  * @param[in] srid SRID
  * @errval NULL
@@ -269,8 +270,6 @@ spatialset_set_srid(const Set *s, int32_t srid)
   if (! ensure_srid_valid(srid))
     return NULL;
   srid = clamp_srid(srid);
-  if (! ensure_srid_known(srid))
-    return NULL;
 
   Set *result = set_copy(s);
   /* Set the SRID of the composing points */
@@ -402,8 +401,9 @@ tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid)
  * @ingroup meos_geo_srid
  * @brief Return a spatiotemporal value with the coordinates set to an SRID
  * @details The invalid SRID is refused and any other SRID is clamped as
- * #geo_set_srid clamps it; the unknown SRID, which a negative SRID reads as,
- * is refused. The values and the bounding box state the clamped SRID.
+ * #geo_set_srid clamps it, a negative SRID being read as the unknown SRID 0,
+ * which is set as on a geometry. The values and the bounding box state the
+ * clamped SRID.
  * @param[in] temp Spatiotemporal value
  * @param[in] srid SRID
  * @errval NULL
@@ -420,8 +420,6 @@ tspatial_set_srid(const Temporal *temp, int32_t srid)
   if (! ensure_srid_valid(srid))
     return NULL;
   srid = clamp_srid(srid);
-  if (! ensure_srid_known(srid))
-    return NULL;
 
   Temporal *result = temporal_copy(temp);
   /* A value holding its SRID by reference, as a network point, a cell or a

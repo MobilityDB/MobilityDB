@@ -3786,6 +3786,95 @@ polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
   return dyadic_pred_run_expansions(polynomial_sign_pred, &arg);
 }
 
+/* The components the total of #polynomial_sign_exact_pairs holds at most */
+#define POLY_EXACT_PAIRS_TOTAL 32
+
+/**
+ * @brief Return the sign of a polynomial in exact sums where each of its
+ * terms is exact in a pair of doubles, zero included, and 2 elsewhere
+ * @details The certificate the all-exact branches of #cross_product_sign_exact
+ * and #vector_triple_sign state for their own signs, written once for every
+ * polynomial of the ladder: a sum of at most two components is a pair
+ * exactly; the product of a pair and a sum is the sum of the products of
+ * their components, each split exactly into two doubles where it does not
+ * fall below DDB_EXACT_PRODUCT, as #ddb_mul reads a product of two doubles,
+ * and the term stays a pair where those parts add up to at most two
+ * components (#grow_expansion). The terms then add up exactly into an
+ * expansion whose largest component carries the sign of the polynomial. A
+ * term past a pair, the case of factors of many significant bits, answers 2,
+ * and the expansions of the ladder decide it. A tie of inputs that span few
+ * bits, where no bound can tell a zero, is thus decided in pairs
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ * @return -1, 0 or 1, or 2 where a term is not exact in a pair of doubles
+ */
+int
+polynomial_sign_exact_pairs(const ExactSum *sums, const PolyTerm *terms,
+  int nterms)
+{
+  double tot1[POLY_EXACT_PAIRS_TOTAL + 1], tot2[POLY_EXACT_PAIRS_TOTAL + 1];
+  double *tot = tot1, *totbuf = tot2;
+  int totlen = 0;
+  for (int i = 0; i < nterms; i++)
+  {
+    if (terms[i].coef == 0.0)
+      continue;
+    /* The term as an expansion of at most two components */
+    double t[2] = {terms[i].coef, 0.0};
+    int tlen = 1;
+    for (int k = 0; k < terms[i].deg && tlen > 0; k++)
+    {
+      const ExactSum *s = &sums[terms[i].sum[k]];
+      if (s->n > 2)
+        return 2;
+      /* The products of the components, at most eight doubles; a product
+       * splits exactly from DDB_EXACT_PRODUCT up, as #ddb_mul reads it */
+      double h1[9], h2[9];
+      double *h = h1, *hbuf = h2;
+      int hlen = 0;
+      for (int a = 0; a < tlen; a++)
+        for (int b = 0; b < s->n; b++)
+        {
+          if (t[a] == 0.0 || s->e[b] == 0.0)
+            continue;
+          double pr[2];
+          two_product(t[a], s->e[b], &pr[0], &pr[1]);
+          if (! (fabs(pr[0]) >= DDB_EXACT_PRODUCT) || ! isfinite(pr[0]))
+            return 2;
+          for (int c = 0; c < 2; c++)
+          {
+            if (pr[c] == 0.0)
+              continue;
+            hlen = grow_expansion(hlen, h, pr[c], hbuf);
+            double *sw = h;
+            h = hbuf;
+            hbuf = sw;
+          }
+        }
+      if (hlen > 2)
+        return 2;
+      for (int c = 0; c < hlen; c++)
+        t[c] = h[c];
+      tlen = hlen;
+    }
+    for (int c = 0; c < tlen; c++)
+    {
+      if (t[c] == 0.0)
+        continue;
+      totlen = grow_expansion(totlen, tot, t[c], totbuf);
+      double *sw = tot;
+      tot = totbuf;
+      totbuf = sw;
+      if (totlen > POLY_EXACT_PAIRS_TOTAL)
+        return 2;
+    }
+  }
+  if (totlen == 0)
+    return 0;
+  double top = tot[totlen - 1];
+  return (top > 0.0) - (top < 0.0);
+}
+
 /*****************************************************************************
  * Signs of sums of doubles and of functions linear over a segment
  *****************************************************************************/
