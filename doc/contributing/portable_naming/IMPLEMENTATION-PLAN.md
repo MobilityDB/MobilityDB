@@ -213,7 +213,22 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   (census of 12 names: the 4 the schema does not state answering NULL, to 0), by the owner's ruling
   of 2026-11-19 ("fix this ASAP"), the projection the PostgreSQL wrappers carried,
   branch `meos/pointcloud-dimension-unknown-raises` (`c6df459d3d`) rewrites 7128c9344a and rewrites f69b861f64,
-  MobilityDB #3863, open.
+  MobilityDB #3863, open. The string arguments of the public functions are read by class
+  (`~/cpwork/contract/scan_strings.py`, 35 on master `2a0e95f2c0`), by the owner's ruling of
+  2026-11-19 ("fix irregularities at sight -> mandatory"). `meos_pc_schema_from_dims` refuses a
+  compression name the point cloud library does not read back as itself, where
+  `pc_compression_number` reads every unknown name as none (5 of 12 names registering without
+  compression, to 0), the schemas document keeping pgPointCloud's reading, the entry of its
+  compression parameter,
+  branch `meos/pointcloud-compression-unknown-raises` (`95f083c9bd`) rewrites 7128c9344a,
+  open. `meos_set_intervalstyle` reads `sql_standard` by its whole name, as PostgreSQL's
+  `config_enum_lookup_by_name` reads the setting (3 of 3 names beginning `sql_stan` setting the
+  SQL standard style, to 0), the 8-character comparison of `check_intervalstyle`,
+  branch `meos/intervalstyle-whole-name` (`53dfef3111`) rewrites 7128c9344a,
+  open. `check_nullable_params.py` reads a @param entry through a line opening with an inline
+  command (12 public entries read cut short, to 0, the findings unchanged), its end of an entry,
+  branch `tools/nullable-param-inline-commands` (`95b3493a3c`) rewrites 6e22d6c736,
+  open.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
