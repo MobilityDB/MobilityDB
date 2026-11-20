@@ -140,7 +140,7 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 </pre></li><li class="listitem"><a name="geo_relate"></a><a class="indexterm" name="id5414"></a><p>Devuelve la matriz de intersección DE-9IM de dos geometrías o si coincide con un patrón</p><pre class="programlisting">
 relate(geometry,geometry) → text
 relate(geometry,geometry,text) → boolean
-</pre><p>La matriz indica, para cada par formado por el interior, la frontera y el exterior de la primera geometría y de la segunda, la dimensión de lo que comparten: <code class="literal">F</code> cuando no comparten nada, <code class="literal">0</code>, <code class="literal">1</code> o <code class="literal">2</code> cuando comparten puntos, una curva o un área. Un arco circular se lee sobre su propio círculo y no sobre una cadena de segmentos que lo aproxima, y el interior y la frontera de una colección de geometrías son los de la unión de sus miembros. Con un patrón, la función responde si la matriz coincide con él, como lo hace <code class="varname">ST_Relate</code> con tres argumentos: un carácter <code class="literal">T</code> del patrón coincide con cualquiera de <code class="literal">0</code>, <code class="literal">1</code> y <code class="literal">2</code>, y un carácter <code class="literal">*</code> coincide con cualquier cosa.</p><pre class="programlisting">
+</pre><p>La matriz indica, para cada par formado por el interior, la frontera y el exterior de la primera geometría y de la segunda, la dimensión de lo que comparten: <code class="literal">F</code> cuando no comparten nada, <code class="literal">0</code>, <code class="literal">1</code> o <code class="literal">2</code> cuando comparten puntos, una curva o un área. Un arco circular se lee sobre su propio círculo y no sobre una cadena de segmentos que lo aproxima, y el interior y la frontera de una colección de geometrías son los de la unión de sus miembros. Con un patrón, la función responde si la matriz coincide con él, como lo hace <code class="varname">ST_Relate</code> con tres argumentos: un carácter <code class="literal">T</code> del patrón coincide con cualquiera de <code class="literal">0</code>, <code class="literal">1</code> y <code class="literal">2</code>, y un carácter <code class="literal">*</code> coincide con cualquier cosa. Un patrón consta de nueve caracteres entre <code class="literal">T</code>, <code class="literal">F</code>, <code class="literal">*</code>, <code class="literal">0</code>, <code class="literal">1</code> y <code class="literal">2</code>, leídos en mayúsculas o minúsculas; un patrón de otra longitud o que contiene otro carácter produce un error.</p><pre class="programlisting">
 SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Linestring(2 2,6 2)');
 -- 1020F1102
 SELECT relate(geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
@@ -152,7 +152,7 @@ SELECT relate(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))',
 SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)',
   'T*****FF*');
 -- true
-</pre></li><li class="listitem"><a name="geo_spatialrels"></a><a class="indexterm" name="id5432"></a><a class="indexterm" name="id5435"></a><a class="indexterm" name="id5438"></a><a class="indexterm" name="id5441"></a><a class="indexterm" name="id5444"></a><a class="indexterm" name="id5447"></a><p>Devuelve verdadero si dos geometrías satisfacen una relación espacial</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_spatialrels"></a><a class="indexterm" name="id5438"></a><a class="indexterm" name="id5441"></a><a class="indexterm" name="id5444"></a><a class="indexterm" name="id5447"></a><a class="indexterm" name="id5450"></a><a class="indexterm" name="id5453"></a><p>Devuelve verdadero si dos geometrías satisfacen una relación espacial</p><pre class="programlisting">
 contains(geometry,geometry) → boolean
 covers(geometry,geometry) → boolean
 touches(geometry,geometry) → boolean
@@ -168,7 +168,7 @@ SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
 -- false
 SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
 -- true
-</pre></li><li class="listitem"><a name="geo_orderingequals"></a><a class="indexterm" name="id5467"></a><p>Devuelve verdadero si dos geometrías tienen los mismos vértices en el mismo orden</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_orderingequals"></a><a class="indexterm" name="id5473"></a><p>Devuelve verdadero si dos geometrías tienen los mismos vértices en el mismo orden</p><pre class="programlisting">
 orderingEquals(geometry,geometry) → boolean
 </pre><p>Responde como la función de PostGIS <code class="varname">ST_OrderingEquals</code>, mientras que <code class="varname">geoEquals</code> compara los conjuntos de puntos.</p><pre class="programlisting">
 SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(0 0,1 1)');
@@ -177,7 +177,7 @@ SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0
 -- false
 SELECT geoEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0 0)');
 -- true
-</pre></li><li class="listitem"><a name="geo_dwithin"></a><a class="indexterm" name="id5477"></a><p>Devuelve verdadero si dos geometrías están a una distancia dada</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_dwithin"></a><a class="indexterm" name="id5483"></a><p>Devuelve verdadero si dos geometrías están a una distancia dada</p><pre class="programlisting">
 dwithin(geometry,geometry,float) → boolean
 dwithin(geography,geography,float,spheroid boolean=true) → boolean
 </pre><p>Dos geometrías con Z se miden en 3D, como <code class="varname">ST_3DDWithin</code>, y en 2D cuando una de ellas no tiene Z, véase <a class="xref" href="ch08s03.html" title="Operandos de dimensiones distintas">“Operandos de dimensiones distintas”</a>. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</p><pre class="programlisting">
@@ -189,7 +189,7 @@ SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800);
 -- true
 SELECT dwithin(geography 'Point(0 0)', geography 'Point(0 1)', 110800, false);
 -- false
-</pre></li><li class="listitem"><a name="geo_measures"></a><a class="indexterm" name="id5487"></a><a class="indexterm" name="id5490"></a><a class="indexterm" name="id5493"></a><p>Devuelve el área, el perímetro o el centroide de una geometría o una geografía</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_measures"></a><a class="indexterm" name="id5493"></a><a class="indexterm" name="id5496"></a><a class="indexterm" name="id5499"></a><p>Devuelve el área, el perímetro o el centroide de una geometría o una geografía</p><pre class="programlisting">
 area(geometry) → float
 area(geography,spheroid boolean=true) → float
 perimeter(geometry) → float
@@ -207,7 +207,7 @@ SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
 -- 12308778361
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric);
 -- 12364031799
-</pre></li><li class="listitem"><a name="geo_distances"></a><a class="indexterm" name="id5504"></a><a class="indexterm" name="id5507"></a><a class="indexterm" name="id5510"></a><p>Devuelve la distancia, la línea que une los puntos más cercanos o la distancia máxima de dos geometrías o geografías</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_distances"></a><a class="indexterm" name="id5510"></a><a class="indexterm" name="id5513"></a><a class="indexterm" name="id5516"></a><p>Devuelve la distancia, la línea que une los puntos más cercanos o la distancia máxima de dos geometrías o geografías</p><pre class="programlisting">
 distance(geometry,geometry) → float
 distance(geography,geography,spheroid boolean=true) → float
 shortestLine(geometry,geometry) → geometry
@@ -224,7 +224,7 @@ SELECT round(maxDistance(geometry 'Linestring(0 0 0,1 0 0)',
 -- 2.236068
 SELECT round(distance(geography 'Point(0 0)', geography 'Point(0 1)', false)::numeric, 3);
 -- 111195.080
-</pre></li><li class="listitem"><a name="geo_accessors"></a><a class="indexterm" name="id5520"></a><a class="indexterm" name="id5523"></a><a class="indexterm" name="id5526"></a><a class="indexterm" name="id5529"></a><a class="indexterm" name="id5532"></a><p>Devuelve la frontera, la inversión o las partes de una geometría</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_accessors"></a><a class="indexterm" name="id5526"></a><a class="indexterm" name="id5529"></a><a class="indexterm" name="id5532"></a><a class="indexterm" name="id5535"></a><a class="indexterm" name="id5538"></a><p>Devuelve la frontera, la inversión o las partes de una geometría</p><pre class="programlisting">
 boundary(geometry) → geometry
 reverse(geometry) → geometry
 numGeometries(geometry) → integer
@@ -241,7 +241,7 @@ SELECT ST_AsText(geometryN(geometry 'MultiPoint(1 1,5 5)', 2));
 -- POINT(5 5)
 SELECT numPoints(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
 -- 5
-</pre></li><li class="listitem"><a name="geo_srid"></a><a class="indexterm" name="id5545"></a><a class="indexterm" name="id5548"></a><p>Devuelve o establece el identificador de referencia espacial de una geometría o una geografía</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_srid"></a><a class="indexterm" name="id5551"></a><a class="indexterm" name="id5554"></a><p>Devuelve o establece el identificador de referencia espacial de una geometría o una geografía</p><pre class="programlisting">
 SRID({geometry,geography}) → integer
 setSRID({geometry,geography},integer) → {geometry,geography}
 </pre><p>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <code class="varname">ST_</code>: un SRID negativo se establece como el SRID desconocido 0 y un SRID más allá del rango reservado se pliega dentro de él. El SRID inválido se rechaza.</p><pre class="programlisting">
@@ -253,21 +253,21 @@ SELECT ST_AsEWKT(setSRID(geometry 'Point(1 1)', 3812));
 -- SRID=3812;POINT(1 1)
 SELECT setSRID(geometry 'Point(1 1)', 1000001);
 -- ERROR:  The SRID is invalid
-</pre></li><li class="listitem"><a name="geo_memsize"></a><a class="indexterm" name="id5557"></a><p>Devuelve el tamaño en bytes de una geometría o una geografía</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_memsize"></a><a class="indexterm" name="id5563"></a><p>Devuelve el tamaño en bytes de una geometría o una geografía</p><pre class="programlisting">
 memSize({geometry,geography}) → integer
 </pre><p>Responde como la función de PostGIS <code class="varname">ST_MemSize</code>.</p><pre class="programlisting">
 SELECT memSize(geometry 'Point(1 2)');
 -- 32
 SELECT memSize(geometry 'Linestring(0 0,4 0,4 3)');
 -- 80
-</pre></li><li class="listitem"><a name="geo_isempty"></a><a class="indexterm" name="id5566"></a><p>Devuelve verdadero si una geometría o una geografía está vacía</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_isempty"></a><a class="indexterm" name="id5572"></a><p>Devuelve verdadero si una geometría o una geografía está vacía</p><pre class="programlisting">
 isEmpty({geometry,geography}) → boolean
 </pre><p>Responde como la función de PostGIS <code class="varname">ST_IsEmpty</code>.</p><pre class="programlisting">
 SELECT isEmpty(geometry 'Point empty');
 -- true
 SELECT isEmpty(geography 'Point(4.35 50.85)');
 -- false
-</pre></li><li class="listitem"><a name="geo_points"></a><a class="indexterm" name="id5575"></a><a class="indexterm" name="id5578"></a><p>Devuelve los vértices de una geometría o uno de ellos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_points"></a><a class="indexterm" name="id5581"></a><a class="indexterm" name="id5584"></a><p>Devuelve los vértices de una geometría o uno de ellos</p><pre class="programlisting">
 points(geometry) → geometry
 pointN(geometry,integer) → geometry
 </pre><p>Cada una responde como la función de PostGIS del mismo nombre con el prefijo <code class="varname">ST_</code>: <code class="varname">points</code> es un multipunto que contiene todos los vértices, y <code class="varname">pointN</code> cuenta los vértices de una línea desde 1, un número negativo contando desde su final, y responde <code class="varname">NULL</code> más allá de ellos.</p><pre class="programlisting">
@@ -277,7 +277,7 @@ SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', 2));
 -- POINT(6 2)
 SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', -1));
 -- POINT(6 5)
-</pre></li><li class="listitem"><a name="geo_azimuth"></a><a class="indexterm" name="id5590"></a><p>Devuelve el acimut del segmento que une dos puntos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_azimuth"></a><a class="indexterm" name="id5596"></a><p>Devuelve el acimut del segmento que une dos puntos</p><pre class="programlisting">
 azimuth(geometry,geometry) → float
 </pre><p>El acimut es el ángulo en radianes en el sentido de las agujas del reloj desde el norte, como lo responde la función de PostGIS <code class="varname">ST_Azimuth</code>, y es <code class="varname">NULL</code> para dos puntos iguales.</p><pre class="programlisting">
 SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(1 1)')::numeric, 6);
@@ -286,7 +286,7 @@ SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(-1 0)')::numeric, 6)
 -- 4.712389
 SELECT azimuth(geometry 'Point(1 1)', geometry 'Point(1 1)');
 -- NULL
-</pre></li><li class="listitem"><a name="geo_lines"></a><a class="indexterm" name="id5600"></a><a class="indexterm" name="id5603"></a><a class="indexterm" name="id5606"></a><p>Devuelve el punto en una fracción de una línea, la parte entre dos fracciones o la fracción más cercana a un punto</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_lines"></a><a class="indexterm" name="id5606"></a><a class="indexterm" name="id5609"></a><a class="indexterm" name="id5612"></a><p>Devuelve el punto en una fracción de una línea, la parte entre dos fracciones o la fracción más cercana a un punto</p><pre class="programlisting">
 lineInterpolatePoint(geometry,float) → geometry
 lineSubstring(geometry,float,float) → geometry
 lineLocatePoint(geometry,geometry) → float
@@ -297,7 +297,7 @@ SELECT ST_AsText(lineSubstring(geometry 'Linestring(0 0,4 0,4 3)', 0.25, 0.8));
 -- LINESTRING(1.75 0,4 0,4 1.6)
 SELECT lineLocatePoint(geometry 'Linestring(0 0,4 0,4 3)', geometry 'Point(4 4)');
 -- 1
-</pre></li><li class="listitem"><a name="geo_constructors"></a><a class="indexterm" name="id5615"></a><a class="indexterm" name="id5618"></a><p>Devuelve la colección de un arreglo de geometrías o la línea que las une</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_constructors"></a><a class="indexterm" name="id5621"></a><a class="indexterm" name="id5624"></a><p>Devuelve la colección de un arreglo de geometrías o la línea que las une</p><pre class="programlisting">
 collect(geometry[]) → geometry
 makeLine(geometry[]) → geometry
 </pre><p>Una colección toma su tipo únicamente de los tipos de las geometrías, como lo da la función de PostGIS <code class="varname">ST_Collect</code>, de modo que un arreglo de un punto devuelve un multipunto, y una línea une los puntos y las líneas del arreglo en su orden, como los une <code class="varname">ST_MakeLine</code>. Un arreglo vacío devuelve <code class="varname">NULL</code>.</p><pre class="programlisting">
@@ -307,7 +307,7 @@ SELECT ST_AsText(collect(ARRAY[geometry 'Point(1 1)', geometry 'Linestring(0 0,1
 -- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,1 1))
 SELECT ST_AsText(makeLine(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
 -- LINESTRING(1 1,2 2)
-</pre></li><li class="listitem"><a name="geo_makepoint"></a><a class="indexterm" name="id5629"></a><p>Devuelve un punto geométrico a partir de sus coordenadas y su SRID</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_makepoint"></a><a class="indexterm" name="id5635"></a><p>Devuelve un punto geométrico a partir de sus coordenadas y su SRID</p><pre class="programlisting">
 makePoint(x float, y float, srid integer) → geometry
 makePoint(x float, y float, z float, srid integer) → geometry
 </pre><p>Los argumentos vienen en el orden de las funciones de PostGIS <code class="varname">ST_Point</code> y <code class="varname">ST_PointZ</code>, el SRID al final, y la forma que da una coordenada z devuelve un punto 3D. Una coordenada que no es finita se rechaza, y un SRID fuera del rango de PostGIS se convierte como lo convierte PostGIS. Un punto geográfico es la geografía del punto geométrico, como <code class="varname">geography(makePoint(x, y, 4326))</code>.</p><pre class="programlisting">
@@ -315,7 +315,7 @@ SELECT ST_AsEWKT(makePoint(4.35, 50.85, 4326));
 -- SRID=4326;POINT(4.35 50.85)
 SELECT ST_AsEWKT(makePoint(1, 2, 3, 3812));
 -- SRID=3812;POINT(1 2 3)
-</pre></li><li class="listitem"><a name="geo_transform"></a><a class="indexterm" name="id5640"></a><p>Transforma una geometría o una geografía a un identificador de referencia espacial</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_transform"></a><a class="indexterm" name="id5646"></a><p>Transforma una geometría o una geografía a un identificador de referencia espacial</p><pre class="programlisting">
 transform(geometry,integer) → geometry
 transform(geography,integer) → geography
 </pre><p>Una geometría se transforma como la transforma la función de PostGIS <code class="varname">ST_Transform</code>. Una geografía se transforma únicamente a un sistema de coordenadas de longitud y latitud, como lo exige la conversión de una geometría en una geografía.</p><pre class="programlisting">
@@ -323,7 +323,7 @@ SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
 -- SRID=3857;POINT(484239.78 6594803.23)
 SELECT asEWKT(transform(geography 'Point(4.35 50.85)', 3857));
 -- ERROR:  Only lon/lat coordinate systems are supported
-</pre></li><li class="listitem"><a name="geo_segmentize"></a><a class="indexterm" name="id5649"></a><p>Densifica una geometría o una geografía de modo que ningún segmento sea más largo que una distancia</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_segmentize"></a><a class="indexterm" name="id5655"></a><p>Densifica una geometría o una geografía de modo que ningún segmento sea más largo que una distancia</p><pre class="programlisting">
 segmentize(geometry,float) → geometry
 segmentize(geography,float) → geography
 </pre><p>Una geometría se densifica en el plano, la distancia en las unidades de su sistema de referencia espacial, y una geografía sobre la esfera, la distancia en metros, como las densifica la función de PostGIS <code class="varname">ST_Segmentize</code>. Un punto, un multipunto y un valor vacío se devuelven sin cambios, al igual que un triángulo, un TIN y una superficie poliédrica. Una distancia que no es positiva se rechaza.</p><pre class="programlisting">
@@ -331,7 +331,7 @@ SELECT ST_AsText(segmentize(geometry 'Linestring(0 0,3 0)', 1));
 -- LINESTRING(0 0,1 0,2 0,3 0)
 SELECT asText(segmentize(geography 'Linestring(4.35 50.85,2.35 48.85)', 100000), 4);
 -- LINESTRING(4.35 50.85,3.8343 50.3533,3.3293 49.8543,2.8347 49.3532,2.35 48.85)
-</pre></li><li class="listitem"><a name="geo_clustering"></a><a class="indexterm" name="id5658"></a><a class="indexterm" name="id5661"></a><a class="indexterm" name="id5664"></a><a class="indexterm" name="id5667"></a><p>Devuelve los grupos de un arreglo de geometrías</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_clustering"></a><a class="indexterm" name="id5664"></a><a class="indexterm" name="id5667"></a><a class="indexterm" name="id5670"></a><a class="indexterm" name="id5673"></a><p>Devuelve los grupos de un arreglo de geometrías</p><pre class="programlisting">
 clusterKMeans(geometry[],k integer) → integer[]
 clusterDBSCAN(geometry[],eps float,minpoints integer) → integer[]
 clusterIntersecting(geometry[]) → geometry[]
@@ -346,7 +346,7 @@ SELECT clusterDBSCAN(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometr
 SELECT array_length(clusterWithin(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
   geometry 'Point(11 10)', geometry 'Point(30 30)'], 2), 1);
 -- 3
-</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5685"></a><p>Devuelve la región que dos geometrías comparten</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5691"></a><p>Devuelve la región que dos geometrías comparten</p><pre class="programlisting">
 intersection(geometry,geometry) → geometry
 </pre><p>Las cuatro operaciones booleanas de esta sección responden sobre los (multi)polígonos que llevan los tipos temporales cuyos valores son regiones, y cada una toma el nombre de la función de PostGIS para la que responde sin el prefijo <code class="varname">ST_</code>, de modo que una consulta alcanza este motor quitando el prefijo y PostGIS conservándolo. Son planas y bidimensionales: se rechazan una geografía, una dimensión Z y una geometría que no sea un (multi)polígono. Un resultado vacío se responde como <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -358,7 +358,7 @@ SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   geometry 'Polygon((10 10,10 11,11 11,11 10,10 10))') IS NULL;
 -- true
-</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5695"></a><p>Devuelve la región que dos geometrías, o un arreglo de geometrías o de geografías, cubren en conjunto</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5701"></a><p>Devuelve la región que dos geometrías, o un arreglo de geometrías o de geografías, cubren en conjunto</p><pre class="programlisting">
 geoUnion(geometry,geometry) → geometry
 geoUnion(geometry[]) → geometry
 geoUnion(geography[]) → geography
@@ -371,7 +371,7 @@ SELECT ST_AsText(geoUnion(ARRAY[geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
 -- MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)),((0 0,2 0,2 1,3 1,3 3,1 3,1 2,0 2,0 0)))
 SELECT ST_AsText(geoUnion(ARRAY[geography 'Point(1 1)', 'Point(2 2)', 'Point(1 1)']));
 -- MULTIPOINT((1 1),(2 2))
-</pre></li><li class="listitem"><a name="geo_unaryunion"></a><a class="indexterm" name="id5708"></a><p>Devuelve la unión de las partes de una geometría</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_unaryunion"></a><a class="indexterm" name="id5714"></a><p>Devuelve la unión de las partes de una geometría</p><pre class="programlisting">
 unaryUnion(geometry) → geometry
 </pre><p>Responde como la función de PostGIS <code class="varname">ST_UnaryUnion</code>, y la unión de una geometría vacía es esa geometría.</p><pre class="programlisting">
 SELECT ST_AsText(unaryUnion(geometry
@@ -379,7 +379,7 @@ SELECT ST_AsText(unaryUnion(geometry
 -- POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))
 SELECT ST_AsText(unaryUnion(geometry 'MultiLinestring((0 0,2 0),(1 0,3 0))'));
 -- LINESTRING(0 0,2 0,3 0)
-</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5717"></a><p>Devuelve la región de la primera geometría que la segunda no cubre</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5723"></a><p>Devuelve la región de la primera geometría que la segunda no cubre</p><pre class="programlisting">
 difference(geometry,geometry) → geometry
 </pre><p>Una segunda geometría situada dentro de la primera deja un agujero en lugar de dividirla.</p><pre class="programlisting">
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -388,7 +388,7 @@ SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((2 2,2 4,4 4,4 2,2 2))'));
 -- POLYGON((5 1,1 1,1 5,5 5,5 1),(2 4,2 2,4 2,4 4,2 4))
-</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5725"></a><p>Devuelve la región que cubre exactamente una de dos geometrías</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5731"></a><p>Devuelve la región que cubre exactamente una de dos geometrías</p><pre class="programlisting">
 symDifference(geometry,geometry) → geometry
 </pre><p>Es la unión de las dos geometrías menos la región que comparten, por lo que una geometría contra sí misma se responde como <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(symDifference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
