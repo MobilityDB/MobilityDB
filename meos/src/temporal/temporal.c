@@ -5275,8 +5275,7 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
 /**
  * @brief Return true if the values of a temporal type have a sort key
  * @details A temporal type has a key when its base type has one, as
- * #datum_sortkey_type answers, or when it is a temporal point, whose values
- * #datum_sortkey_put writes as points
+ * #datum_sortkey_type answers
  * @param[in] temptype Temporal type
  */
 bool
@@ -5287,8 +5286,7 @@ temporal_sortkey_type(MeosType temptype)
    * holds different can compare equal and have no key that agrees with both */
   if (temptype == T_TRGEOMETRY)
     return false;
-  return tpoint_type(temptype) ||
-    datum_sortkey_type(temptype_basetype(temptype));
+  return datum_sortkey_type(temptype_basetype(temptype));
 }
 
 /**
@@ -5474,8 +5472,8 @@ temporal_sortkey_intl(const Temporal *temp, size_t *size)
  * @details The key is the bytes whose unsigned byte order is the order of
  * #temporal_cmp and whose byte equality is #temporal_eq. The temporal
  * Booleans, integers, big integers, floats, texts, points, cells, circular
- * buffers, network points, poses, pose chains, point-cloud points,
- * point-cloud patches and JSON values have a sort key.
+ * buffers, network points, geometries, geographies, poses, pose chains,
+ * point-cloud points, point-cloud patches and JSON values have a sort key.
  * @param[in] temp Temporal value
  * @param[out] size Number of bytes of the key
  * @errval NULL

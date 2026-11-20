@@ -58,6 +58,7 @@
 #include <meos_geo.h>
 #include <meos_h3.h>
 #include <meos_quadbin.h>
+#include <meos_rgeo.h>
 #include <meos_s2cell.h>
 
 #define MAXT 4000
@@ -231,11 +232,15 @@ int main(void)
   const char *s2cells[] = {"47c3c3", "47c3c4", "47c3c", "54b5c9"};
   tempcorpus_family("ts2cell", ts2cell_in, "", s2cells, 4, false, true);
 
-  /* A null value or a null size is reported rather than dereferenced, and a
-   * temporal type without a sort key is reported */
+  /* A null value or a null size is reported rather than dereferenced, a
+   * temporal type without a sort key, the temporal rigid geometry, is
+   * reported, and a temporal geometry, whose values are ordered by value,
+   * has a sort key */
   size_t size;
   Temporal *temp = tint_in("[1@2001-01-01, 2@2001-01-02]");
   Temporal *geom = tgeometry_in("Polygon((0 0,1 0,1 1,0 0))@2001-01-01");
+  Temporal *rigid = trgeometry_in(
+    "Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2001-01-01");
   meos_errno_reset();
   uint8_t *key = temporal_sortkey(NULL, &size);
   printf("temporal_sortkey(NULL, size): %s, errno %d\n", key ? "a key" : "NULL",
@@ -247,16 +252,22 @@ int main(void)
     meos_errno());
   assert(key == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
+  key = temporal_sortkey(rigid, &size);
+  printf("temporal_sortkey(trgeometry, size): %s, errno %d\n",
+    key ? "a key" : "NULL", meos_errno());
+  assert(key == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
   key = temporal_sortkey(geom, &size);
   printf("temporal_sortkey(tgeometry, size): %s, errno %d\n",
     key ? "a key" : "NULL", meos_errno());
-  assert(key == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  assert(key != NULL && meos_errno() == 0);
+  free(key);
   meos_errno_reset();
   key = temporal_sortkey(temp, &size);
   printf("temporal_sortkey(tint, size): %s of %zu bytes, errno %d\n",
     key ? "a key" : "NULL", size, meos_errno());
   assert(key != NULL && meos_errno() == 0);
-  free(key); free(geom); free(temp);
+  free(key); free(rigid); free(geom); free(temp);
 
   printf("%ld pair(s) ordered or equated otherwise than their comparison\n",
     failures);
