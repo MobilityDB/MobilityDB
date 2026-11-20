@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/macos.yml'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -17,6 +19,8 @@ on:
     paths:
       - '.github/workflows/macos.yml'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
