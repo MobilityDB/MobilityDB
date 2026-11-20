@@ -64,6 +64,9 @@ PARAM = re.compile(r"@param\[([^\]]*)\]\s+(\w+(?:\s*,\s*\w+)*)")
 # The tag, and a line that opens with it rather than ending a @param entry
 TAG = re.compile(r"(?<![\w@])@nullable\b")
 TAG_LINE = re.compile(r"^\s*\*\s*@nullable\b")
+# A command Doxygen reads inside a paragraph, so a line opening with it
+# continues the entry above rather than starting another
+INLINE = re.compile(r"@(?:p|c|a|b|e|em|ref|link)\b")
 # The prose form the tag replaces
 PROSE = re.compile(r"may be\s+`?NULL`?|can be\s+`?NULL`?|`?NULL`?\s+is allowed",
                    re.I)
@@ -148,7 +151,7 @@ def entries_of(doc: list[str]) -> dict[str, tuple[str, str]]:
                        [s.strip() for s in m.group(2).split(",")])
             for name in current[1]:
                 out[name] = (current[0], body)
-        elif body.startswith("@"):
+        elif body.startswith("@") and not INLINE.match(body):
             current = None
         elif current is not None:
             for name in current[1]:
