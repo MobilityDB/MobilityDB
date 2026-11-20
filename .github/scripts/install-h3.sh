@@ -64,7 +64,14 @@ cmake -S "$work/src" -B "$work/build" \
   "$@"
 cmake --build "$work/build" -j
 cmake --install "$work/build"
-if [ "$(uname -s)" = Linux ] && command -v ldconfig > /dev/null; then
+# The loader cache lists the system prefixes alone; a library in another prefix
+# is found through LD_LIBRARY_PATH or the run path of what links it, so the
+# cache is left as it is and a user who may not write it installs there
+case "$prefix" in
+  /usr | /usr/local) system=1 ;;
+  *) system=0 ;;
+esac
+if [ "$system" = 1 ] && [ "$(uname -s)" = Linux ] && command -v ldconfig > /dev/null; then
   ldconfig 2> /dev/null || sudo ldconfig
   # A package may install another libh3.so.1 (pgdg's libh3-1); the loader
   # takes the first its cache lists, which must be this one
