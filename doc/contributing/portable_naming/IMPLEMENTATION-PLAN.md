@@ -251,7 +251,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   270_th3index, and the SQL suite passes with no other expected output moved; MERGED as MobilityDB #3870
   (`151d0db348`). `doc/specs/meos-srid.md` states, for every spatial type, where its SRID comes from, which
   of SRID, setSRID, transform and transformPipeline it has, what its readers accept and its writers write,
-  each statement naming the function of master answering it, branch `docs/meos-srid`.
+  each statement naming the function of master answering it, branch `docs/meos-srid`, MERGED as
+  MobilityDB #3872 (`f04e610d7d`).
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
