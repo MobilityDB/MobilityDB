@@ -11804,7 +11804,7 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
     val = strchr(key, '=');
     if (! val || *(val + 1) == '\0')
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Missing value for buffer parameter %s", key);
       pfree(params1);
       return NULL;
@@ -11823,9 +11823,10 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
         cap_style = ENDCAP_SQUARE;
       else
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid buffer end cap style: %s (accept: 'round', 'flat', "
           "'butt' or 'square')", val);
+        pfree(params1);
         return NULL;
       }
     }
@@ -11839,9 +11840,9 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
         join_style = JOIN_BEVEL;
       else
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-          "Invalid buffer end cap style: %s (accept: 'round', 'mitre', "
-          "'miter'  or 'bevel')", val);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Invalid buffer join style: %s (accept: 'round', 'mitre', "
+          "'miter' or 'bevel')", val);
         pfree(params1);
         return NULL;
       }
@@ -11857,7 +11858,7 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
        * value is accepted without effect. */
       if (atoi(val) < 1)
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid number of quadrant segments: %s (accept: a positive "
           "integer)", val);
         pfree(params1);
@@ -11875,7 +11876,7 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
       }
       else if (strcmp(val, "both"))
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid side parameter: %s (accept: 'right', 'left', 'both')",
           val);
         pfree(params1);
@@ -11884,7 +11885,7 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
     }
     else
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Invalid buffer parameter: %s (accept: 'endcap', 'join', "
         "'mitre_limit', 'miter_limit', 'quad_segs' and 'side')", key);
       pfree(params1);

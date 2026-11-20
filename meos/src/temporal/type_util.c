@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
+#include <common/hashfn.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 #include "utils/varlena.h"
@@ -686,9 +687,18 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
     case T_TEXT:
       return text_hash_extended(DatumGetTextP(d), seed, DEFAULT_COLLATION_OID);
     // PostGIS currently does not provide an extended hash function
-    // case T_GEOMETRY:
-    // case T_GEOGRAPHY:
-      // return gserialized_hash_extended(DatumGetGserializedP(d), seed);
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+    {
+      /* A point hashes as #datum_eq compares it, by its coordinates
+       * (#geopoint_hash_extended); any other geometry by the 32-bit hash of
+       * its SRID and coordinates (#gserialized_hash) under the seed, which
+       * keeps two geometries #datum_eq holds equal on one hash */
+      GSERIALIZED *gs = DatumGetGserializedP(d);
+      if (gserialized_get_type(gs) == POINTTYPE)
+        return geopoint_hash_extended(gs, seed);
+      return hash_uint32_extended((uint32) gserialized_hash(gs), seed);
+    }
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_hash_extended(DatumGetCbufferP(d), seed);

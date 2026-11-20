@@ -30,4 +30,26 @@ SELECT COUNT(*) FROM (SELECT DISTINCT t FROM tbl_geo_eq) s;
 RESET enable_hashagg; RESET enable_sort;
 DROP TABLE tbl_geo_eq;
 
+-- The extended hash, which a hash partition reads, of a set and of a temporal
+-- value of geometries and of points: equal values have equal hashes under one
+-- seed, a zero of either sign and a longitude of 180 or -180 being one value
+SELECT hashExtended(geomset '{"Linestring(0 0,2 0)", "Point(1 1)"}', 0) IS NOT NULL;
+SELECT hashExtended(geogset '{"Linestring(0 0,2 0)", "Point(1 1)"}', 1) IS NOT NULL;
+SELECT hashExtended(tgeometry '[Linestring(0 0,2 0)@2001-01-01]', 0) =
+  hashExtended(tgeometry '[Linestring(0 0,2 0)@2001-01-01]', 0);
+SELECT hashExtended(tgeography '[Linestring(0 0,2 0)@2001-01-01]', 7) IS NOT NULL;
+SELECT hashExtended(tgeompoint '[Point(0 0)@2001-01-01]', 0) =
+  hashExtended(tgeompoint '[Point(-0 0)@2001-01-01]', 0);
+SELECT hashExtended(tgeogpoint '[Point(180 10)@2001-01-01]', 3) =
+  hashExtended(tgeogpoint '[Point(-180 10)@2001-01-01]', 3);
+SELECT hashExtended(tgeompoint '[Point(0 0)@2001-01-01]', 0) <>
+  hashExtended(tgeompoint '[Point(1 0)@2001-01-01]', 0);
+
+CREATE TEMP TABLE tbl_geo_part(t tgeompoint) PARTITION BY HASH (t);
+CREATE TEMP TABLE tbl_geo_part0 PARTITION OF tbl_geo_part FOR VALUES WITH (MODULUS 2, REMAINDER 0);
+CREATE TEMP TABLE tbl_geo_part1 PARTITION OF tbl_geo_part FOR VALUES WITH (MODULUS 2, REMAINDER 1);
+INSERT INTO tbl_geo_part VALUES (tgeompoint '[Point(0 0)@2001-01-01]'), (tgeompoint '[Point(1 1)@2001-01-01]');
+SELECT COUNT(*) FROM tbl_geo_part;
+DROP TABLE tbl_geo_part;
+
 -------------------------------------------------------------------------------

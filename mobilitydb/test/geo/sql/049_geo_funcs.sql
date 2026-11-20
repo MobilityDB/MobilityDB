@@ -157,6 +157,9 @@ SELECT buffer(geometry 'Linestring(12.272387 57.059013,12.272383 57.059013,
 -- The outer side of a turn is filled by the join the style names
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mitre'), 6));
+-- A join or an end cap the parameters do not name is refused
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=pointy');
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'endcap=pointy');
 
 -- A polygon grows outwards and its holes inwards
 SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
@@ -243,7 +246,13 @@ SELECT relate(geometry 'Polyhedralsurface Z (
   geometry 'Linestring(0 0,2 2)');
 
 -- A pattern is matched against that matrix
-SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+-- A pattern is read in any case, and is nine symbols among T, F, *, 0, 1 and 2
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 't*fff*ff*');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(2 2)', 't*fff*ff*');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*F');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FF*F');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FFX');
 
 -------------------------------------------------------------------------------
 

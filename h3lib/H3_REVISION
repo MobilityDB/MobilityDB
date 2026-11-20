@@ -1,0 +1,12 @@
+33ec62807261311a26eb59f8a1c95163c988efff
+# Upstream H3 commit embedded in this tree, tag v4.6.0, the release
+# H3_REQUIRED_VERSION of the top-level CMakeLists.txt names; Apache License 2.0
+# (LICENSE). The files are copied verbatim from
+# https://github.com/uber/h3.git at this commit:
+#   src/h3lib/include/* into h3lib/include/
+#   src/h3lib/lib/*.c into h3lib/lib/
+# Bump with (the tag of the release H3_REQUIRED_VERSION names):
+#   git clone --depth 1 --branch <tag> https://github.com/uber/h3.git <dir>
+#   cp <dir>/src/h3lib/include/* h3lib/include/
+#   cp <dir>/src/h3lib/lib/*.c h3lib/lib/
+#   cp <dir>/LICENSE h3lib/LICENSE
