@@ -1772,6 +1772,30 @@ extern double vector_lon_nearest(const int64 *v);
 extern double vector_lat_nearest(const int64 *v);
 extern double rational_nearest(int64 num, int64 den);
 extern double mercator_lat_nearest(double r);
+
+/**
+ * @brief A point of a face of an icosahedral gnomonic grid, the vertex of an
+ * H3 cell of decision D8 of the cell walks (geo_trig.c)
+ * @details The constants are the decimal literals of the grid read exactly;
+ * a point of the lattice is (2x, 2y / sqrt 3) of its planar point (x, y)
+ */
+typedef struct
+{
+  const char *center[3];  /**< Center of the face, a vector */
+  const char *axis;       /**< Azimuth of its first axis, in radians */
+  const char *rotation;   /**< Turn of the angle of the point, or NULL */
+  const char *gnomonic;   /**< Gnomonic length of the unit at resolution 0 */
+  int res;                /**< Resolution, each one a factor 1 / sqrt 7 */
+  bool substrate;         /**< The grid is the substrate, a third of it */
+  int64 p0[2], p1[2];     /**< Points of the lattice */
+  int64 e0[2], e1[2];     /**< Ends of a face edge, on the lattice */
+  bool crossing;          /**< The point is the crossing of p0 p1 with e0 e1 */
+} GnomonicFacePoint;
+
+extern void gnomonic_face_point_nearest(const GnomonicFacePoint *p,
+  double *lon, double *lat);
+extern void ddb_gnomonic_face_point_nearest(const GnomonicFacePoint *p,
+  double *lon, double *lat, bool *decided);
 extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den);
 

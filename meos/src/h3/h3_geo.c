@@ -66,6 +66,8 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "h3/h3index.h"
+#include "h3/h3_vertex.h"  /* H3VertexRecipe */
+#include "h3lib_literals.h"  /* the decimal literals of the grid */
 #include "h3/th3index_internal.h"  /* DggsOutline */
 #include "geo/geo_funcs.h"  /* cross_product_sign_offset, ExactSum */
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
@@ -280,103 +282,247 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
 }
 
 /**
- * @brief Return true if a boundary of the library holds a vertex, as
- * #h3_edge_holds_vertex reads it
+ * @brief Return the number of a vertex in the cell owning it
+ * @details The H3 index format holds it in the three mode-dependent bits 56
+ * to 58 of a vertex (https://h3geo.org/docs/library/index/vertex)
+ */
+#define H3_VERTEX_NUM(vertex) ((int) (((vertex) >> 56) & 7))
+
+/**
+ * @brief Return the cell owning a vertex: the vertex with the mode of a cell
+ * (1) in its bits 59 to 62 and its bits 56 to 58 cleared
+ */
+#define H3_VERTEX_OWNER(vertex) \
+  (((vertex) & ~(UINT64CONST(0xF) << 59) & ~(UINT64CONST(7) << 56)) | \
+    (UINT64CONST(1) << 59))
+
+/**
+ * @brief Return in @p lon and @p lat the point of decision D8 of the cell
+ * walks of the integer inputs @p r: the doubles nearest the degrees H3's
+ * formula gives them, every constant of the grid read on its decimal literal
+ * (#gnomonic_face_point_nearest), the same on every machine
+ */
+static void
+h3_recipe_lonlat(const H3VertexRecipe *r, double *lon, double *lat)
+{
+  GnomonicFacePoint p;
+  for (int i = 0; i < 3; i++)
+    p.center[i] = H3_FACE_CENTER[r->face][i];
+  p.axis = H3_FACE_AXIS[r->face];
+  p.rotation = r->rotate ? H3_AP7_ROT_RADS : NULL;
+  p.gnomonic = H3_RES0_U_GNOMONIC;
+  p.res = r->res;
+  p.substrate = r->substrate;
+  for (int i = 0; i < 2; i++)
+  {
+    p.p0[i] = r->p0[i];
+    p.p1[i] = r->p1[i];
+    p.e0[i] = r->e0[i];
+    p.e1[i] = r->e1[i];
+  }
+  p.crossing = r->crossing;
+  gnomonic_face_point_nearest(&p, lon, lat);
+}
+
+/** @brief Number of bits of the number of points of H3 cells a thread
+ * keeps (#h3_point_cached) */
+#define H3_POINT_CACHE_BITS 10
+
+/** @brief The points of decision D8 read last, per thread, by the H3 index
+ * naming each: a vertex by its vertex index, the center of a cell by the
+ * cell, the extra vertex of an edge bent across a face by the directed edge
+ * it is read from; the modes of the three kinds of index differ, and the
+ * index 0 names none, so an empty slot holds no point */
+static MEOS_TLS struct H3PointSlot
+{
+  H3Index key;
+  double lon, lat;
+} MEOS_H3_POINT[1 << H3_POINT_CACHE_BITS];
+
+/** @brief Address of #MEOS_H3_POINT, read once by each entry point */
+MEOS_TLS_ADDRESS(struct H3PointSlot, h3_point_table, MEOS_H3_POINT[0])
+
+/**
+ * @brief Return in @p lon and @p lat the point kept under the H3 index
+ * @p key in the table @p tab (#h3_point_table) and true, or false where its
+ * slot holds another point
+ * @details A point is a function of its index alone, and an outline, a walk
+ * and the owner of a position read the points neighbouring cells share again
+ * and again, so the ones read last are kept by their index (#MEOS_CACHE_SLOT)
+ * and answer again, as #quadbin_row_latitude keeps the latitudes of the
+ * QUADBIN rows and #s2cell_corner_lonlat the corners of the S2 cells
  */
 static bool
-h3_boundary_holds(const CellBoundary *bnd, const LatLng *vertex)
+h3_point_cached(const struct H3PointSlot *tab, H3Index key, double *lon,
+  double *lat)
 {
-  for (int k = 0; k < bnd->numVerts; k++)
-    if (memcmp(&bnd->verts[k], vertex, sizeof(LatLng)) == 0)
-      return true;
+  const struct H3PointSlot *e =
+    &tab[MEOS_CACHE_SLOT(key, H3_POINT_CACHE_BITS)];
+  if (e->key != key)
+    return false;
+  *lon = e->lon;
+  *lat = e->lat;
+  return true;
+}
+
+/**
+ * @brief Keep in its slot of the table @p tab the point @p lon and @p lat of
+ * the H3 index @p key (#h3_point_cached)
+ */
+static void
+h3_point_keep(struct H3PointSlot *tab, H3Index key, double lon, double lat)
+{
+  struct H3PointSlot *e =
+    &tab[MEOS_CACHE_SLOT(key, H3_POINT_CACHE_BITS)];
+  e->key = key;
+  e->lon = lon;
+  e->lat = lat;
+}
+
+/**
+ * @brief Return in @p lon and @p lat the point of decision D8 of the vertex
+ * @p vertex (#h3_recipe_lonlat), kept per thread (#h3_point_cached), and
+ * true, or false for an index that is not a vertex
+ */
+static bool
+h3_vertex_lonlat(struct H3PointSlot *tab, H3Index vertex, double *lon,
+  double *lat)
+{
+  if (h3_point_cached(tab, vertex, lon, lat))
+    return true;
+  H3VertexRecipe r;
+  if (! h3_vertex_recipe(vertex, &r))
+    return false;
+  h3_recipe_lonlat(&r, lon, lat);
+  h3_point_keep(tab, vertex, *lon, *lat);
+  return true;
+}
+
+/**
+ * @brief Return in @p lon and @p lat the point of decision D8 of the vertex
+ * @p vertex and true, or false, raising the error `vertexToLatLng` gives an
+ * index that is not a vertex
+ */
+bool
+h3_vertex_point_lonlat(H3Index vertex, double *lon, double *lat)
+{
+  if (h3_vertex_lonlat(h3_point_table(), vertex, lon, lat))
+    return true;
+  /* The error the library gives an index that is not a vertex */
+  LatLng ll;
+  ensure_h3_success(vertexToLatLng(vertex, &ll));
   return false;
 }
 
 /**
- * @brief Return the direction of a directed edge from its origin, a digit
- * of the IJK axes of H3 (1 to 6)
- * @details The H3 index format holds it in the three mode-dependent bits 56
- * to 58 of a directed edge (https://h3geo.org/docs/library/index/directededge)
+ * @brief Return the number of points of the boundary of the cell @p cell, in
+ * the order of `cellToBoundary`, each the point of decision D8 in @p lon and
+ * @p lat, arrays of #H3_BOUNDARY_MAX values, or -1, raising the error
+ * `cellToBoundary` gives an index that is not a cell
  */
-#define H3_EDGE_DIRECTION(edge) ((int) (((edge) >> 56) & 7))
+int
+h3_cell_boundary_lonlat(H3Index cell, double *lon, double *lat)
+{
+  H3VertexRecipe r[H3_BOUNDARY_MAX];
+  int n = h3_cell_boundary_recipes(cell, r);
+  if (n < 0)
+  {
+    /* The error the library gives an index that is not a cell */
+    CellBoundary bnd;
+    ensure_h3_success(cellToBoundary(cell, &bnd));
+    return -1;
+  }
+  for (int i = 0; i < n; i++)
+    h3_recipe_lonlat(&r[i], &lon[i], &lat[i]);
+  return n;
+}
 
-/** @brief Directions of the edges of a hexagon, in the order of its
- * vertices up to a rotation: IJ, J, JK, K, IK, I */
-static const int H3_HEX_DIRECTIONS[6] = { 6, 2, 3, 1, 5, 4 };
-/** @brief Directions of the edges of a pentagon, which has no K axis, in the
- * order of its vertices up to a rotation: IJ, J, JK, IK, I */
-static const int H3_PENT_DIRECTIONS[5] = { 6, 2, 3, 5, 4 };
+/**
+ * @brief Return the number of points of the boundary of the directed edge
+ * @p edge, 2 or 3, in the order of `directedEdgeToBoundary`, each the point
+ * of decision D8 in @p lon and @p lat, or -1, raising the error
+ * `directedEdgeToBoundary` gives an index that is not a directed edge
+ */
+int
+h3_edge_boundary_lonlat(H3Index edge, double *lon, double *lat)
+{
+  H3VertexRecipe r[3];
+  int n = h3_edge_boundary_recipes(edge, r);
+  if (n < 0)
+  {
+    /* The error the library gives an index that is not a directed edge */
+    CellBoundary bnd;
+    ensure_h3_success(directedEdgeToBoundary(edge, &bnd));
+    return -1;
+  }
+  for (int i = 0; i < n; i++)
+    h3_recipe_lonlat(&r[i], &lon[i], &lat[i]);
+  return n;
+}
+
+/**
+ * @brief Return in @p lon and @p lat the center of the cell @p cell, the
+ * doubles nearest the degrees H3's formula gives it as decision D8 states a
+ * vertex, and true, or false, raising the error `cellToLatLng` gives an
+ * index that is not a cell
+ */
+bool
+h3_cell_center_lonlat(H3Index cell, double *lon, double *lat)
+{
+  struct H3PointSlot *tab = h3_point_table();
+  if (h3_point_cached(tab, cell, lon, lat))
+    return true;
+  H3VertexRecipe r;
+  if (! h3_cell_center_recipe(cell, &r))
+  {
+    /* The error the library gives an index that is not a cell */
+    LatLng ll;
+    ensure_h3_success(cellToLatLng(cell, &ll));
+    return false;
+  }
+  h3_recipe_lonlat(&r, lon, lat);
+  h3_point_keep(tab, cell, *lon, *lat);
+  return true;
+}
 
 /**
  * @brief Fill the outline of a cell bent across no face of the icosahedron
  * and return true, or return false for a bent cell
- * @details A cell whose boundary in the library (`cellToBoundary`) holds no
- * more vertices than the cell has edges crosses no face of the icosahedron,
- * so its edges bend at no extra vertex, and that boundary lists the vertices
- * of the vertex index in their order (both measured over every cell of the
- * resolutions 0 to 5). The edges of the cell take the directions of the IJK
- * axes in one cyclic order of its vertices, #H3_HEX_DIRECTIONS or
- * #H3_PENT_DIRECTIONS, from a vertex that depends on the cell: H3 rotates
- * that order by the orientation of the face of the cell (`vertexRotations`
- * of its vertex.c). One directed edge, the one whose boundary holds the k-th
- * and the next vertex of the boundary, places the order, and the cell across
- * each edge is the destination of the directed edge of its direction, so no
- * vertex of a neighbour is read and one directed edge is read instead of
- * every one.
+ * @details A cell whose boundary (#h3_cell_boundary_recipes, the points of
+ * `cellToBoundary`) holds no more points than the cell has edges crosses no
+ * face of the icosahedron, so its edges bend at no extra vertex, and that
+ * boundary lists the vertices of the vertex index in their order (both
+ * measured over every cell of the resolutions 0 to 5), the point k of the
+ * boundary the vertex numbered k in the cell. A vertex the cell owns is read
+ * from that boundary, another from the cell owning it (#h3_vertex_lonlat),
+ * and the cell across each edge is the one #h3_cell_vertexes states
  * @param[in] cell Cell
- * @param[in] verts,n Its vertices in the vertex index and their number
+ * @param[in] tab Points kept per thread (#h3_point_table)
+ * @param[in] verts,across,n Its vertices in the vertex index, the cells
+ * across its edges, and their number
  * @param[out] out Outline, its vertices and the cells across its edges
  */
 static bool
-h3_cell_outline_straight(H3Index cell, const H3Index *verts, int n,
-  DggsOutline *out)
+h3_cell_outline_straight(struct H3PointSlot *tab, H3Index cell,
+  const H3Index *verts, const H3Index *across, int n, DggsOutline *out)
 {
-  CellBoundary bnd;
-  H3Index edges[6] = { 0 };
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS || bnd.numVerts != n ||
-      originToDirectedEdges(cell, edges) != E_SUCCESS)
-    return false;
-  const int *dirs = n == 5 ? H3_PENT_DIRECTIONS : H3_HEX_DIRECTIONS;
-  /* The destination of the directed edge in each direction */
-  H3Index dest[7] = { 0 };
-  int first = -1;
-  for (int j = 0; j < 6; j++)
-  {
-    H3Index ends[2];
-    if (edges[j] == (H3Index) 0)
-      continue;
-    if (directedEdgeToCells(edges[j], ends) != E_SUCCESS)
-      return false;
-    dest[H3_EDGE_DIRECTION(edges[j])] = ends[1];
-    if (first < 0)
-      first = j;
-  }
-  if (first < 0)
-    return false;
-  /* The vertex k0 starting the edge of the first directed edge, and the
-   * place p0 of its direction in the order */
-  CellBoundary eb;
-  if (directedEdgeToBoundary(edges[first], &eb) != E_SUCCESS ||
-      eb.numVerts != 2)
-    return false;
-  int k0 = -1, p0 = -1, d0 = H3_EDGE_DIRECTION(edges[first]);
-  for (int k = 0; k < n && k0 < 0; k++)
-    if (h3_boundary_holds(&eb, &bnd.verts[k]) &&
-        h3_boundary_holds(&eb, &bnd.verts[(k + 1) % n]))
-      k0 = k;
-  for (int i = 0; i < n; i++)
-    if (dirs[i] == d0)
-      p0 = i;
-  if (k0 < 0 || p0 < 0)
+  H3VertexRecipe r[H3_BOUNDARY_MAX];
+  if (h3_cell_boundary_recipes(cell, r) != n)
     return false;
   for (int k = 0; k < n; k++)
   {
-    LatLng v;
-    if (vertexToLatLng(verts[k], &v) != E_SUCCESS)
-      return false;
-    out->lon[k] = radsToDegs(v.lng);
-    out->lat[k] = radsToDegs(v.lat);
-    out->across[k] = dest[dirs[(p0 + k - k0 + n) % n]];
+    double *lon = &out->lon[k], *lat = &out->lat[k];
+    if (! h3_point_cached(tab, verts[k], lon, lat))
+    {
+      if (H3_VERTEX_OWNER(verts[k]) == cell)
+      {
+        h3_recipe_lonlat(&r[H3_VERTEX_NUM(verts[k])], lon, lat);
+        h3_point_keep(tab, verts[k], *lon, *lat);
+      }
+      else if (! h3_vertex_lonlat(tab, verts[k], lon, lat))
+        return false;
+    }
+    out->across[k] = across[k];
     if (! out->across[k])
       return false;
   }
@@ -391,31 +537,33 @@ h3_cell_outline_straight(H3Index cell, const H3Index *verts, int n,
  * boundary of the library, `cellToBoundary`, does not: neighbours
  * state a shared vertex with different doubles in 168 of the 360 pairs at
  * resolution 0 and 16318 of the 6050520 at resolution 5. The outline reads
- * each vertex once, from the vertex index (`cellToVertexes`,
- * `vertexToLatLng`), in degrees by `radsToDegs`. An edge crossing a face of
- * the icosahedron bends at an extra vertex, which the vertex index does not
+ * each vertex once, from the vertex index (#h3_cell_vertexes, the indices
+ * of `cellToVertexes`), as decision D8 states it (#h3_vertex_lonlat). An
+ * edge crossing a face of the icosahedron bends at an extra vertex, which
+ * the vertex index does not
  * name; it is read from the directed edge leaving the lower of the two cells
  * sharing the edge (`directedEdgeToBoundary`), so both cells read it from the
  * same edge. Each edge of the outline records the cell across it, and the
  * outline records whether the cell lies around a pole, where it is the
  * region between its ring and the pole. A cell bent across no face reads the
- * cells across its edges from its own directed edges
- * (#h3_cell_outline_straight).
+ * cells across its edges with its vertices (#h3_cell_outline_straight).
  * @param[in] cell Cell
  * @param[out] out Outline, its vertices in the order of the vertex index
  * @return False on an error of the H3 library
  */
-bool
-h3_cell_outline(H3Index cell, DggsOutline *out)
+static bool
+h3_cell_outline_compute(H3Index cell, DggsOutline *out)
 {
-  H3Index verts[6] = { 0 };
-  if (cellToVertexes(cell, verts) != E_SUCCESS)
+  H3Index verts[6] = { 0 }, edge_cells[6] = { 0 };
+  if (h3_cell_vertexes(cell, verts, edge_cells) < 0)
     return false;
   H3Index north, south;
   h3index_pole_cells(getResolution(cell), &north, &south);
   out->cell = cell;
   out->pole = cell == north ? 1 : (cell == south ? -1 : 0);
-  if (h3_cell_outline_straight(cell, verts, isPentagon(cell) ? 5 : 6, out))
+  struct H3PointSlot *tab = h3_point_table();
+  if (h3_cell_outline_straight(tab, cell, verts, edge_cells,
+      isPentagon(cell) ? 5 : 6, out))
     return true;
   H3Index nbrs[7] = { 0 };
   if (gridDisk(cell, 1, nbrs) != E_SUCCESS)
@@ -424,14 +572,14 @@ h3_cell_outline(H3Index cell, DggsOutline *out)
   H3Index nverts[7][6] = { { 0 } };
   for (int j = 0; j < 7; j++)
     if (nbrs[j] != 0 && nbrs[j] != cell &&
-        cellToVertexes(nbrs[j], nverts[j]) != E_SUCCESS)
+        h3_cell_vertexes(nbrs[j], nverts[j], NULL) < 0)
       return false;
   int n = isPentagon(cell) ? 5 : 6;
   out->count = 0;
   for (int k = 0; k < n; k++)
   {
-    LatLng v;
-    if (vertexToLatLng(verts[k], &v) != E_SUCCESS)
+    double vlon, vlat;
+    if (! h3_vertex_lonlat(tab, verts[k], &vlon, &vlat))
       return false;
     /* The neighbour sharing the vertices k and k + 1 */
     H3Index next = verts[(k + 1) % n], across = 0;
@@ -449,26 +597,82 @@ h3_cell_outline(H3Index cell, DggsOutline *out)
     }
     if (! across)
       return false;
-    out->lon[out->count] = radsToDegs(v.lng);
-    out->lat[out->count] = radsToDegs(v.lat);
+    out->lon[out->count] = vlon;
+    out->lat[out->count] = vlat;
     out->across[out->count++] = across;
     /* The extra vertex of the edge, from the directed edge leaving the lower
      * of the two cells */
     H3Index edge;
-    CellBoundary eb;
+    H3VertexRecipe r;
     if (cellsToDirectedEdge(cell < across ? cell : across,
-          cell < across ? across : cell, &edge) != E_SUCCESS ||
-        directedEdgeToBoundary(edge, &eb) != E_SUCCESS)
+          cell < across ? across : cell, &edge) != E_SUCCESS)
       return false;
-    if (eb.numVerts == 3)
-    {
-      out->lon[out->count] = radsToDegs(eb.verts[1].lng);
-      out->lat[out->count] = radsToDegs(eb.verts[1].lat);
+    double *elon = &out->lon[out->count], *elat = &out->lat[out->count];
+    if (h3_point_cached(tab, edge, elon, elat))
       out->across[out->count++] = across;
+    else
+    {
+      int extra = h3_edge_extra_recipe(edge, &r);
+      if (extra < 0)
+        return false;
+      if (extra == 1)
+      {
+        h3_recipe_lonlat(&r, elon, elat);
+        h3_point_keep(tab, edge, *elon, *elat);
+        out->across[out->count++] = across;
+      }
     }
-    else if (eb.numVerts != 2)
-      return false;
   }
+  return true;
+}
+
+/** @brief Number of outlines a thread keeps, direct-mapped by cell */
+#define H3_OUTLINE_CACHE 64
+
+/** @brief The outlines of the cells read last, per thread: the outline is a
+ * function of the cell alone, and a walk and the owner of a point read the
+ * outlines of the same few cells again and again, each point of which is
+ * stated exactly (#h3_recipe_lonlat) */
+static MEOS_TLS DggsOutline MEOS_H3_OUTLINE[H3_OUTLINE_CACHE];
+
+/**
+ * @brief Return the outline of a cell kept per thread, computed
+ * (#h3_cell_outline_compute) where its slot holds another cell, or NULL on
+ * an error of the H3 library
+ * @details The slot is read in place, valid until a cell of the same slot is
+ * read: the resolution and the base cell sit in the high bits of the index
+ * and its digits below, so the low bits spread the neighbours of a cell
+ */
+static DggsOutline *
+h3_cell_outline_slot(H3Index cell)
+{
+  DggsOutline *slot = &MEOS_H3_OUTLINE[(cell ^ (cell >> 21)) %
+    H3_OUTLINE_CACHE];
+  if (cell == (H3Index) 0 || slot->cell != cell)
+  {
+    if (! h3_cell_outline_compute(cell, slot))
+    {
+      slot->cell = 0;
+      return NULL;
+    }
+  }
+  return slot;
+}
+
+/**
+ * @brief Return in the last argument the canonical outline of a cell, kept
+ * per thread once computed (#h3_cell_outline_slot)
+ * @param[in] cell Cell
+ * @param[out] out Outline, its vertices in the order of the vertex index
+ * @return False on an error of the H3 library
+ */
+bool
+h3_cell_outline(H3Index cell, DggsOutline *out)
+{
+  const DggsOutline *o = h3_cell_outline_slot(cell);
+  if (! o)
+    return false;
+  *out = *o;
   return true;
 }
 
@@ -632,30 +836,17 @@ h3_outline_holds_dir(const DggsOutline *o, const SphereDir *p)
   return dggs_outline_holds_dir(&h3_geodetic_ops, o, p);
 }
 
-/** @brief Outline of the last cell #h3_cell_outline_last read, per thread */
-static MEOS_TLS DggsOutline h3_last_outline;
-/** @brief Cell of #h3_last_outline, or 0 when none */
-static MEOS_TLS H3Index h3_last_outline_cell = 0;
-
 /**
  * @brief Return the outline of a cell, or NULL on an error of the H3
- * library
- * @details The outline is a function of the cell alone, so the one of the
- * last cell asked for answers again for the same cell: consecutive positions
- * of a trajectory mostly lie in one cell, and reading an outline costs more
- * than the rest of the answer for such a position
+ * library, read in place from the outlines kept per thread
+ * (#h3_cell_outline_slot): consecutive positions of a trajectory mostly lie
+ * in one cell, and reading an outline costs more than the rest of the answer
+ * for such a position
  */
 static const DggsOutline *
 h3_cell_outline_last(H3Index cell)
 {
-  if (h3_last_outline_cell != cell)
-  {
-    h3_last_outline_cell = 0;
-    if (! h3_cell_outline(cell, &h3_last_outline))
-      return NULL;
-    h3_last_outline_cell = cell;
-  }
-  return &h3_last_outline;
+  return h3_cell_outline_slot(cell);
 }
 
 /** @brief The outline of a cell for the planar walk, #h3_cell_outline_last */
@@ -1107,11 +1298,9 @@ pointarray_to_cells_into(const POINTARRAY *pa, bool geodetic,
 static bool
 polygon_holds_cell_centre(const LWPOLY *poly, bool geodetic, H3Index cell)
 {
-  LatLng ll;
-  if (cellToLatLng(cell, &ll) != E_SUCCESS)
-    return false;
   POINT2D pt;
-  pt.x = radsToDegs(ll.lng); pt.y = radsToDegs(ll.lat);
+  if (! h3_cell_center_lonlat(cell, &pt.x, &pt.y))
+    return false;
   if (geodetic)
     return lwpoly_covers_point2d(poly, &pt);
   return lwpoly_contains_point(poly, &pt) != LW_OUTSIDE;
@@ -1421,10 +1610,11 @@ h3index_cell_to_cover(H3Index cell, int32 resolution)
     return NULL;
   }
 
-  CellBoundary bnd;
-  if (! ensure_h3_success(cellToBoundary(cell, &bnd)))
+  double lon[H3_BOUNDARY_MAX], lat[H3_BOUNDARY_MAX];
+  int n = h3_cell_boundary_lonlat(cell, lon, lat);
+  if (n < 0)
     return NULL;
-  if (bnd.numVerts < 3)
+  if (n < 3)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
     return NULL;
@@ -1433,13 +1623,9 @@ h3index_cell_to_cover(H3Index cell, int32 resolution)
   h3_buf_init(&buf, 2 * MAX_CELL_BNDRY_VERTS);
   /* The edges of a cell are arcs of great circles, the path the geodetic
    * walk follows, and the last edge closes the boundary on its first vertex */
-  for (int i = 0; i < bnd.numVerts && ! buf.overflow; i++)
-  {
-    const LatLng *v0 = &bnd.verts[i];
-    const LatLng *v1 = &bnd.verts[(i + 1) % bnd.numVerts];
-    segment_to_cells_into(radsToDegs(v0->lng), radsToDegs(v0->lat),
-      radsToDegs(v1->lng), radsToDegs(v1->lat), true, resolution, &buf);
-  }
+  for (int i = 0; i < n && ! buf.overflow; i++)
+    segment_to_cells_into(lon[i], lat[i], lon[(i + 1) % n], lat[(i + 1) % n],
+      true, resolution, &buf);
   if (buf.overflow)
   {
     h3_buf_free(&buf);

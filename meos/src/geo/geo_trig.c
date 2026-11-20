@@ -2491,14 +2491,349 @@ wide_of_magnitude(DyadicWideArena *ar, int64 x)
   return r;
 }
 
+/*****************************************************************************
+ * A point of a face of an icosahedral gnomonic grid
+ *****************************************************************************/
+
+/**
+ * @brief Return the integer N of the decimal literal @p s, of value
+ * N 10^-q, and q in @p q, exactly
+ */
+static DyadicWide *
+wide_of_decimal(DyadicWideArena *ar, const char *s, int *q)
+{
+  bool neg = (*s == '-');
+  if (*s == '-' || *s == '+')
+    s++;
+  DyadicWide *r = dyadic_wide_of_int64(ar, 0);
+  const DyadicWide *ten = dyadic_wide_of_int64(ar, 10);
+  int frac = -1;
+  for (; *s; s++)
+  {
+    if (*s == '.')
+    {
+      frac = 0;
+      continue;
+    }
+    assert(*s >= '0' && *s <= '9');
+    r = dyadic_wide_add(ar, dyadic_wide_mul(ar, r, ten),
+      dyadic_wide_of_int64(ar, *s - '0'));
+    if (frac >= 0)
+      frac++;
+  }
+  *q = frac < 0 ? 0 : frac;
+  return neg ? dyadic_wide_neg(ar, r) : r;
+}
+
+/* b^e exactly, e >= 0 */
+static DyadicWide *
+wide_pow(DyadicWideArena *ar, int64 b, int e)
+{
+  DyadicWide *r = dyadic_wide_of_int64(ar, 1);
+  const DyadicWide *w = dyadic_wide_of_int64(ar, b);
+  for (int i = 0; i < e; i++)
+    r = dyadic_wide_mul(ar, r, w);
+  return r;
+}
+
+/* The interval a 2^e, exactly */
+static WideInterval
+wide_interval_ldexp(DyadicWideArena *ar, WideInterval a, int e)
+{
+  const DyadicWide *f = dyadic_wide_of_double(ar, ldexp(1.0, e));
+  WideInterval r = { dyadic_wide_mul(ar, a.lo, f),
+    dyadic_wide_mul(ar, a.hi, f) };
+  return r;
+}
+
+/**
+ * @brief Enclose the value of a decimal literal at the scale 2^-K, its
+ * digits over the power of ten divided outward (#fix_div_shift), as
+ * #wide_interval_ratio encloses a quotient
+ */
+static WideInterval
+wide_interval_decimal(DyadicWideArena *ar, const char *s, int L, int K)
+{
+  int q;
+  const DyadicWide *n = wide_of_decimal(ar, s, &q);
+  int sign = n->sign;
+  int n64 = (L + 1) / 2;
+  uint64 *buf = palloc0(n64 * sizeof(uint64));
+  uint32_t *a = palloc0(L * sizeof(uint32_t));
+  uint32_t *d = palloc0(L * sizeof(uint32_t));
+  uint32_t *v = palloc(L * sizeof(uint32_t));
+  dyadic_wide_to_fixed(n, 0, false, buf, n64);
+  fix_of_limbs(buf, n64, a, L);
+  dyadic_wide_to_fixed(wide_pow(ar, 10, q), 0, false, buf, n64);
+  fix_of_limbs(buf, n64, d, L);
+  WideInterval r;
+  /* The magnitude rounded down and up, the ends swapped for a negative */
+  fix_div_shift(a, K, d, v, L, sign < 0);
+  r.lo = wide_interval_of_fixed(ar, v, L, K, sign < 0 ? -1 : 1);
+  fix_div_shift(a, K, d, v, L, sign >= 0);
+  r.hi = wide_interval_of_fixed(ar, v, L, K, sign < 0 ? -1 : 1);
+  if (sign < 0)
+  {
+    DyadicWide *t = r.lo;
+    r.lo = r.hi;
+    r.hi = t;
+  }
+  pfree(buf); pfree(a); pfree(d); pfree(v);
+  return r;
+}
+
+/**
+ * @brief The exact parts of a point of a face of an icosahedral gnomonic
+ * grid (#GnomonicFacePoint), read once
+ * @details H3's formula (`_hex2dToVec3` and `vec3ToLatLng` of its
+ * faceijk.c and vec3d.h) places the planar point p = (x, y) of a face of
+ * center c at the distance r = atan(|p| k) along the azimuth
+ * az = axis - atan2(y, x): v = cos r c + sin r (cos az n + sin az e), with n
+ * the unit north at c (the pole less its part along c, normalized), e = n x c
+ * and k the gnomonic length of the unit at the resolution. Its longitude and
+ * latitude are those of the direction of v, so a positive factor leaves them
+ * unchanged: tan r = |p| k and |p| cos az = cos(axis) x + sin(axis) y, |p|
+ * sin az = sin(axis) x - cos(axis) y turn it into
+ * v ~ |n| c + k [(cos(axis) x + sin(axis) y) n + (sin(axis) x - cos(axis) y)
+ * (n x c)] with n unnormalized. With the center C / P and the gnomonic length
+ * G 10^-g read on their literals, the point (U, W sqrt 3) / (2D) and
+ * k = 7^-m [7^-1/2] [1/3] G 10^-g at the resolution 2m [+1] of a [substrate]
+ * grid, the factor 2D 7^m [sqrt 7] [3] 10^g P^3 leaves
+ * v ~ f1 [sqrt 7] |N| C + G P a N + G b (N x C), with N = P^2 n integer,
+ * a = cos(axis) U + sin(axis) W sqrt 3, b = sin(axis) U - cos(axis) W sqrt 3
+ * and f1 = 2D 7^m [3] 10^g: integers but for sqrt 3, sqrt 7, |N| and the sine
+ * and cosine of the axis, which #gnomonic_vector encloses at each precision
+ */
+typedef struct
+{
+  DyadicWideArena ar;        /**< Arena of the values below */
+  const char *axis;          /**< Literal of the azimuth of the first axis */
+  const char *rotation;      /**< Literal of the turn of the angle, or NULL */
+  bool odd;                  /**< The resolution is odd: a factor sqrt 7 */
+  DyadicWide *C[3];          /**< Center of the face, its digits */
+  DyadicWide *N[3];          /**< North at the center, unnormalized */
+  DyadicWide *NC[3];         /**< N x C */
+  DyadicWide *NN;            /**< N . N 2^(-2 nn_e), in [1, 4) */
+  int nn_e;                  /**< Its scale */
+  DyadicWide *f1;            /**< Factor of the term along C */
+  DyadicWide *GP;            /**< Factor of the term along N */
+  DyadicWide *G;             /**< Factor of the term along N x C */
+  DyadicWide *U, *W;         /**< The point, (U, W sqrt 3) / (2D) */
+} GnomonicExact;
+
+/* Read the exact parts of the point p (#GnomonicExact) */
+static void
+gnomonic_exact_init(GnomonicExact *ge, const GnomonicFacePoint *p)
+{
+  DyadicWideArena *ar = &ge->ar;
+  dyadic_wide_arena_init(ar);
+  ge->axis = p->axis;
+  ge->rotation = p->rotation;
+  ge->odd = (p->res % 2) == 1;
+  /* The center on the scale of its longest literal */
+  int q[3], qc = 0;
+  for (int i = 0; i < 3; i++)
+  {
+    ge->C[i] = wide_of_decimal(ar, p->center[i], &q[i]);
+    qc = Max(qc, q[i]);
+  }
+  for (int i = 0; i < 3; i++)
+    ge->C[i] = dyadic_wide_mul(ar, ge->C[i], wide_pow(ar, 10, qc - q[i]));
+  const DyadicWide *P = wide_pow(ar, 10, qc);
+  /* N = P^2 (pole - (pole . c) c) = (-Cz Cx, -Cz Cy, P^2 - Cz^2) */
+  ge->N[0] = dyadic_wide_neg(ar, dyadic_wide_mul(ar, ge->C[2], ge->C[0]));
+  ge->N[1] = dyadic_wide_neg(ar, dyadic_wide_mul(ar, ge->C[2], ge->C[1]));
+  ge->N[2] = dyadic_wide_sub(ar, dyadic_wide_mul(ar, P, P),
+    dyadic_wide_mul(ar, ge->C[2], ge->C[2]));
+  for (int i = 0; i < 3; i++)
+  {
+    int j = (i + 1) % 3, k = (i + 2) % 3;
+    ge->NC[i] = dyadic_wide_sub(ar, dyadic_wide_mul(ar, ge->N[j], ge->C[k]),
+      dyadic_wide_mul(ar, ge->N[k], ge->C[j]));
+  }
+  const DyadicWide *nn = dyadic_wide_of_int64(ar, 0);
+  for (int i = 0; i < 3; i++)
+    nn = dyadic_wide_add(ar, nn, dyadic_wide_mul(ar, ge->N[i], ge->N[i]));
+  /* N . N scaled by an even power of 2 into [1, 4) */
+  int e;
+  (void) frexp(dyadic_wide_approx(nn), &e);
+  ge->nn_e = (e - 1) / 2;
+  ge->NN = dyadic_wide_mul(ar, nn,
+    dyadic_wide_of_double(ar, ldexp(1.0, - 2 * ge->nn_e)));
+  /* The point: a vertex of the lattice, or the crossing of p0 p1 with the
+   * line e0 e1 at the fraction num / den of the segment, all on the lattice,
+   * where crossing two lines commutes with the map (x, y) -> (2x, 2y/sqrt 3) */
+  int64 D = 1;
+  if (! p->crossing)
+  {
+    ge->U = dyadic_wide_of_int64(ar, p->p0[0]);
+    ge->W = dyadic_wide_of_int64(ar, p->p0[1]);
+  }
+  else
+  {
+    int64 s1x = p->p1[0] - p->p0[0], s1y = p->p1[1] - p->p0[1];
+    int64 s2x = p->e1[0] - p->e0[0], s2y = p->e1[1] - p->e0[1];
+    int64 num = s2x * (p->p0[1] - p->e0[1]) - s2y * (p->p0[0] - p->e0[0]);
+    D = - s2x * s1y + s1x * s2y;
+    if (D < 0)
+    {
+      D = - D;
+      num = - num;
+    }
+    const DyadicWide *wD = dyadic_wide_of_int64(ar, D);
+    const DyadicWide *wnum = dyadic_wide_of_int64(ar, num);
+    ge->U = dyadic_wide_add(ar, dyadic_wide_mul(ar,
+      dyadic_wide_of_int64(ar, p->p0[0]), wD), dyadic_wide_mul(ar, wnum,
+      dyadic_wide_of_int64(ar, s1x)));
+    ge->W = dyadic_wide_add(ar, dyadic_wide_mul(ar,
+      dyadic_wide_of_int64(ar, p->p0[1]), wD), dyadic_wide_mul(ar, wnum,
+      dyadic_wide_of_int64(ar, s1y)));
+  }
+  int qg;
+  ge->G = wide_of_decimal(ar, p->gnomonic, &qg);
+  ge->GP = dyadic_wide_mul(ar, ge->G, P);
+  ge->f1 = dyadic_wide_mul(ar, dyadic_wide_of_int64(ar, 2 * D),
+    dyadic_wide_mul(ar, wide_pow(ar, 7, p->res / 2), wide_pow(ar, 10, qg)));
+  if (p->substrate)
+    ge->f1 = dyadic_wide_mul(ar, ge->f1, dyadic_wide_of_int64(ar, 3));
+}
+
+/* The azimuth of the first axis less the turn of the angle of the point,
+ * enclosed: H3 turns the angle of the center of a Class III cell by
+ * M_AP7_ROT_RADS before reading it from the axis (`_hex2dToVec3`) */
+static WideInterval
+gnomonic_axis(GnomonicExact *ge, int L, int K)
+{
+  WideInterval a = wide_interval_decimal(&ge->ar, ge->axis, L, K);
+  if (ge->rotation)
+    a = wide_interval_sub(&ge->ar, a,
+      wide_interval_decimal(&ge->ar, ge->rotation, L, K));
+  return a;
+}
+
+/**
+ * @brief Enclose a vector of the direction of a point of a face at the scale
+ * 2^-K (#GnomonicExact), scaled exactly by a power of 2 so that its largest
+ * component lies below 2; false where an enclosure does not fit the limbs
+ */
+static bool
+gnomonic_vector(GnomonicExact *ge, int L, int K, WideInterval *v)
+{
+  DyadicWideArena *ar = &ge->ar;
+  WideInterval s3, s7, nn, sa, ca;
+  if (! wide_interval_sqrt(ar, wide_interval_point(dyadic_wide_of_int64(ar,
+        3)), L, K, &s3) ||
+      ! wide_interval_sqrt(ar, wide_interval_point(ge->NN), L, K, &nn) ||
+      ! wide_interval_sincos_rad(ar, gnomonic_axis(ge, L, K), L, K, &sa,
+        &ca))
+    return false;
+  nn = wide_interval_ldexp(ar, nn, ge->nn_e);
+  if (ge->odd)
+  {
+    if (! wide_interval_sqrt(ar, wide_interval_point(dyadic_wide_of_int64(ar,
+          7)), L, K, &s7))
+      return false;
+  }
+  else
+    s7 = wide_interval_point(dyadic_wide_of_int64(ar, 1));
+  WideInterval U = wide_interval_point(ge->U);
+  WideInterval W3 = wide_interval_mul(ar, wide_interval_point(ge->W), s3);
+  WideInterval a = wide_interval_add(ar, wide_interval_mul(ar, ca, U),
+    wide_interval_mul(ar, sa, W3));
+  WideInterval b = wide_interval_sub(ar, wide_interval_mul(ar, sa, U),
+    wide_interval_mul(ar, ca, W3));
+  WideInterval t1 = wide_interval_mul(ar, wide_interval_point(ge->f1),
+    wide_interval_mul(ar, s7, nn));
+  WideInterval ta = wide_interval_mul(ar, wide_interval_point(ge->GP), a);
+  WideInterval tb = wide_interval_mul(ar, wide_interval_point(ge->G), b);
+  int emax = INT_MIN;
+  for (int i = 0; i < 3; i++)
+  {
+    v[i] = wide_interval_add(ar, wide_interval_add(ar,
+      wide_interval_mul(ar, t1, wide_interval_point(ge->C[i])),
+      wide_interval_mul(ar, ta, wide_interval_point(ge->N[i]))),
+      wide_interval_mul(ar, tb, wide_interval_point(ge->NC[i])));
+    for (int k = 0; k < 2; k++)
+    {
+      double d = dyadic_wide_approx(k ? v[i].hi : v[i].lo);
+      if (d != 0.0)
+      {
+        int e;
+        (void) frexp(d, &e);
+        emax = Max(emax, e);
+      }
+    }
+  }
+  if (emax == INT_MIN)
+    return false;
+  for (int i = 0; i < 3; i++)
+    v[i] = wide_interval_ldexp(ar, v[i], - emax);
+  return true;
+}
+
+/**
+ * @brief Enclose the magnitude of the longitude, or where @p lat the
+ * latitude, of a point of a face in radians at the scale 2^-K and return its
+ * sign, or 0 where this precision does not decide it
+ * @details The longitude is atan2(vy, vx) and the latitude
+ * atan2(vz, sqrt(vx^2 + vy^2)), as `vec3ToLatLng` reads them; the magnitude
+ * is atan2 of the magnitude of the first over the second
+ * (#wide_interval_atan2)
+ */
+static int
+gnomonic_angle_enclose(GnomonicExact *ge, bool lat, int L, int K,
+  uint32_t *lo, uint32_t *hi)
+{
+  DyadicWideArena *ar = &ge->ar;
+  DyadicWideMark mark = dyadic_wide_arena_mark(ar);
+  int sign = 0;
+  WideInterval v[3];
+  if (gnomonic_vector(ge, L, K, v))
+  {
+    WideInterval y, x, r;
+    bool ok = true;
+    if (lat)
+    {
+      y = v[2];
+      ok = wide_interval_sqrt(ar, wide_interval_add(ar,
+        wide_interval_mul(ar, v[0], v[0]), wide_interval_mul(ar, v[1], v[1])),
+        L, K, &x);
+    }
+    else
+    {
+      y = v[1];
+      x = v[0];
+    }
+    if (ok)
+    {
+      if (wide_sign(y.lo) > 0)
+        sign = 1;
+      else if (wide_sign(y.hi) < 0)
+      {
+        sign = -1;
+        y = wide_interval_neg(ar, y);
+      }
+    }
+    if (sign != 0 && (! wide_interval_atan2(ar, y, x, L, K, &r) ||
+        fix_of_wide(r.lo, K, false, lo, L) == 2 ||
+        fix_of_wide(r.hi, K, true, hi, L) == 2))
+      sign = 0;
+  }
+  dyadic_wide_arena_release(ar, mark);
+  return sign;
+}
+
 /** @brief The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less
- * it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, and an
+ * it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, or of the
+ * longitude or latitude of a point of a face of a gnomonic grid, and an
  * enclosure of their magnitude, the twin of #TrigProduct */
 typedef struct
 {
   const DyadicWide *s, *c;   /**< The angle atan2(sqrt(s), c) */
   bool root;                /**< The angle is atan2(s, c) */
   bool mercator;            /**< The angle is atan(sinh(pi r)), not s and c */
+  GnomonicExact *gnomonic;  /**< The angle of a point of a face, not s and c */
+  bool lat;                 /**< The latitude of that point, not its longitude */
   double r;                 /**< The row of a Mercator angle, 0 < r <= 1 */
   bool complement;          /**< The degrees are 90 less the angle */
   int sign;                 /**< Sign of the degrees, -1 or 1 */
@@ -2619,7 +2954,18 @@ degree_angle_enclose(DegreeAngle *p, int bits)
   uint32_t *phi = palloc(L * sizeof(uint32_t));
   uint32_t *dlo = palloc(L * sizeof(uint32_t));
   uint32_t *dhi = palloc(L * sizeof(uint32_t));
-  if (p->mercator)
+  if (p->gnomonic)
+  {
+    /* A precision leaving the sign undecided gives the widest enclosure,
+     * [0, pi], which the side reads as undecided and raises */
+    if (gnomonic_angle_enclose(p->gnomonic, p->lat, L, K, tlo, thi) !=
+        p->sign)
+    {
+      memset(tlo, 0, L * sizeof(uint32_t));
+      fix_pi(plo, thi, L, K);
+    }
+  }
+  else if (p->mercator)
     fix_mercator_enclose(p->r, tlo, thi, L, K);
   else
     fix_atan2_enclose_root(p->s, p->root, p->c, tlo, thi, L, K);
@@ -2900,4 +3246,78 @@ rational_nearest(int64 num, int64 den)
     rational_side, &q);
   dyadic_wide_arena_free(&ar);
   return result;
+}
+
+/**
+ * @brief Return in @p lon and @p lat the doubles nearest the degrees of the
+ * longitude and the latitude of a point of a face of an icosahedral gnomonic
+ * grid, the value H3's formula gives a vertex of a cell (decision D8 of the
+ * cell walks), every constant read on its decimal literal
+ * @details Bounded pairs of doubles answer each coordinate their bound
+ * places inside the rounding cell of one double
+ * (#ddb_gnomonic_face_point_nearest). Elsewhere the direction of the point
+ * is enclosed exactly (#GnomonicExact, #gnomonic_vector) and its longitude
+ * and latitude are rounded by #nearest_double_exact on an enclosure of their
+ * degrees
+ * (#degree_angle_enclose), the sign of each read first at the precision that
+ * decides it. The degrees are irrational, so the rounding never meets a
+ * midpoint between two doubles.
+ * @param[in] p Point
+ * @param[out] lon,lat Its longitude and latitude in degrees
+ */
+void
+gnomonic_face_point_nearest(const GnomonicFacePoint *p, double *lon,
+  double *lat)
+{
+  /* Bounded pairs of doubles first, the enclosure where they cannot tell,
+   * as #vector_lon_nearest reads #ddb_vector_lon_nearest first */
+  bool decided[2];
+  ddb_gnomonic_face_point_nearest(p, lon, lat, decided);
+  if (decided[0] && decided[1])
+    return;
+  GnomonicExact ge;
+  gnomonic_exact_init(&ge, p);
+  for (int k = 0; k < 2; k++)
+  {
+    if (decided[k])
+      continue;
+    DegreeAngle a;
+    memset(&a, 0, sizeof(a));
+    a.gnomonic = &ge;
+    a.lat = (k == 1);
+    /* The sign and an estimate of the degrees, at the first precision that
+     * decides the sign */
+    double approx = 0.0;
+    for (int bits = TRIG_FIRST_BITS; bits <= TRIG_LAST_BITS && ! a.sign;
+         bits *= 2)
+    {
+      int K = ((bits + 31) / 32) * 32 + 32;
+      int L = (2 * K + 192) / 32;
+      uint32_t *tlo = palloc(L * sizeof(uint32_t));
+      uint32_t *thi = palloc(L * sizeof(uint32_t));
+      a.sign = gnomonic_angle_enclose(&ge, a.lat, L, K, tlo, thi);
+      if (a.sign)
+      {
+        DyadicWideMark mark = dyadic_wide_arena_mark(&ge.ar);
+        approx = a.sign * dyadic_wide_approx(wide_interval_of_fixed(&ge.ar,
+          tlo, L, K, 1)) * (180.0 / M_PI);
+        dyadic_wide_arena_release(&ge.ar, mark);
+      }
+      pfree(tlo);
+      pfree(thi);
+    }
+    if (! a.sign)
+    {
+      dyadic_wide_arena_free(&ge.ar);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "The sign of a coordinate of a point of a gnomonic face is undecided");
+      return;
+    }
+    double d = degree_angle_nearest(&a, approx);
+    if (k == 0)
+      *lon = d;
+    else
+      *lat = d;
+  }
+  dyadic_wide_arena_free(&ge.ar);
 }

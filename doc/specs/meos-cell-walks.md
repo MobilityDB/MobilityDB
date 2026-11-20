@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v1.1.0 |
+| Version | v1.2.0 |
 | Scope | Which cell of a grid a position, an instant and a boundary point of a trajectory belong to, for the space tiles of a box split, the QUADBIN, S2 and H3 cells and the pixels of a raster, and how the instant a trajectory crosses from one cell to the next is dated |
 | Reference | `meos/src/geo/tgeo_tile.c` (space split), `meos/src/quadbin/` (QUADBIN), `meos/src/h3/h3_geo.c` (H3 outline and owner), `meos/src/h3/th3index_latlng.c` (H3 cells of a trajectory), `meos/src/geo/geo_trig.c` (geodetic position, degrees of a vector), `meos/src/geo/geo_funcs.c` (exact signs), `meos/src/s2cell/s2cell.c` (S2 vertices, owner and outline), `meos/src/s2cell/ts2cell_ops.c` (S2 cells of a trajectory), `meos/src/temporal/tcellindex.c` (the walk the grids share), `meos/src/raster/raster_quadbin.c` (the pixels of a trajectory) |
 
@@ -64,9 +64,10 @@ point identically and no point is held by none or by two. The tiles of a box
 grid, the QUADBIN cells and the planar and geodetic H3 and S2 cells of a
 position and of a trajectory follow the rule. For H3, two
 neighbours state their shared vertex with the same doubles: the outline of a
-cell is read from the vertex index of the library, and the extra vertex of
-an edge crossing a face of the icosahedron from the directed edge leaving
-the lower of the two cells.
+cell is read from the vertex index, and the extra vertex of an edge crossing
+a face of the icosahedron from the directed edge leaving the lower of the two
+cells, each point the double nearest the value H3's formula gives it
+(section 7.1).
 
 ## 4. Planar and geodetic cells
 
@@ -141,8 +142,9 @@ pole being stated at any of them.
 
 ### Planar H3
 
-- **A planar cell is its outline**: the vertices of the vertex index of the
-  library joined by straight lines in longitude and latitude, holding its
+- **A planar cell is its outline**: the vertices of the vertex index, each
+  stated by H3's formula (section 7.1), joined by straight lines in longitude
+  and latitude, holding its
   interior and its north and west sides (section 3). The cell around a pole
   is the region between its ring and the pole.
 - **The cell of a position** of a `geometry` or a `tgeompoint` is the cell
@@ -383,11 +385,17 @@ neighbours share with different doubles in 166 of the 360 neighbour pairs at
 resolution 0 and in 1213 of the 17640 at resolution 2 (H3 4.5.0), and two
 builds of the library place the same vertex at different doubles, so the
 count itself depends on the build. MEOS reads every vertex of an H3 cell once,
-from the vertex index of the library, and the extra vertex where an edge
-crosses a face of the icosahedron from the directed edge leaving the lower of
-the two cells, so that every vertex a cell shares with a neighbour has the
-same doubles in both outlines, at every cell of the resolutions 0 to 2
-(`meos/test/unit/h3/h3_outline_unit.c`). The vertices of an S2 cell are the
+from the vertex index, and the extra vertex where an edge crosses a face of
+the icosahedron from the directed edge leaving the lower of the two cells, so
+that every vertex a cell shares with a neighbour has the same doubles in both
+outlines, at every cell of the resolutions 0 to 2
+(`meos/test/unit/h3/h3_outline_unit.c`). Each point is the double nearest the
+degrees of the value the formula of the H3 release MobilityDB requires gives
+it, its constants read on their decimal literals, computed by MEOS on the
+integer addressing of that release (`h3lib/`) and not by the library's
+trigonometry, whose doubles differ from one machine to another; the boundary
+and the center of a cell are stated the same way
+(`meos/test/unit/h3/h3_vertex_unit.c`). The vertices of an S2 cell are the
 exact corners of the cube and the bounds of a QUADBIN tile are computed from
 its column, row and zoom, so neither depends on a library's trigonometry.
 That the H3 vertices still depend on the build of the library is the first
@@ -475,13 +483,12 @@ number with corrections of wording.
 | v0.8.0 | The pixel of a position on a Raquet tile whose sides are powers of 2, read as the QUADBIN tiles of its zoom plus the logarithms of its sides, and its pixels along a trajectory |
 | v1.0.0 | The rule complete over the space tiles, the QUADBIN, S2 and H3 cells and the pixels of a raster, in both models; the cells of a trajectory are those of its exact positions, which a position read in doubles at an instant can leave on a boundary |
 | v1.1.0 | Why the rule is what it is: each vertex stated once, no index frame deciding an owner, the places where the frames of a grid break, the border of an extent, and an instant never moved |
+| v1.2.0 | The vertices, the boundary and the center of an H3 cell, each the double nearest the value H3's formula gives it, the same on every machine |
 
 ## 9. Out of scope
 
 Future: the rule extends to these, each added here with its version:
 
-- the vertices of an H3 cell computed from H3's own formula, so that every
-  build of the library reads the same outline;
 - the pixels of a Raquet tile whose sides are no powers of 2, decided
   exactly.
 
