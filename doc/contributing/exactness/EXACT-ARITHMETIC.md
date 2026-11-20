@@ -940,7 +940,7 @@ evaluation of the formula in MPFI, its rounding read in `CGAL::Gmpq` (`d8_judge`
 every outline the head states and refuses libh3's on 47987 cells; an mpmath transcription agrees
 with all 1 196 914 outline and 199 220 center coordinates of the census. Against libh3 called
 directly, by callgrind on the 6846 cells of resolutions 0 to 2, the outline and the center of a
-cell cost 17.3 thousand instructions against 9.3 thousand, 1.87 times, the pairs under one bound
+cell cost 16.4 thousand instructions against 9.3 thousand, 1.77 times, the pairs under one bound
 deciding every point. The vendored library is MobilityDB #3873, merged as `c725de45ea`; the
 vertices are MobilityDB #3875, a draft until the owner accepts that cost.
 Left to the cell walks: the two `atan(sinh)` sites of `raster_quadbin.c`, which their raster walk
