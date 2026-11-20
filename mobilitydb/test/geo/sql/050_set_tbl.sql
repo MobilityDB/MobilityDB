@@ -189,6 +189,20 @@ SELECT round(setDistance(geogset '{"Point(0 1)", "Point(0 2)"}', geography 'Poin
 SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}')::numeric, 3);
 SELECT round(setDistance(geogset '{"Point(0 1)"}', geogset '{"Point(0 0)"}', false)::numeric, 3);
 
+-- A set of geographies answers for the region of the longitudes and latitudes
+-- of its box: a geography above that region, though inside the polygon of the
+-- corners of the box, lies at the distance along its meridian to the top
+-- parallel, as the point on that parallel answers it on the spheroid
+SELECT round((geogset '{"Point(28.57 56.03)", "Point(79.16 21.19)"}' <->
+  geography 'Point(67.99 57.83)')::numeric, 3);
+SELECT round(ST_Distance(geography 'Point(67.99 56.03)',
+  geography 'Point(67.99 57.83)')::numeric, 3);
+-- Two sets of geographies whose longitudes are apart meet on facing meridians
+SELECT round((geogset '{"Point(0 40)", "Point(10 50)"}' <->
+  geogset '{"Point(30 60)", "Point(40 70)"}')::numeric, 3);
+SELECT round(ST_Distance(geography 'Point(10 50)',
+  geography 'Point(30 60)')::numeric, 3);
+
 -- A geo set casts to the collection of its values, as ST_Collect builds it from
 -- them, a set of one point answering a multipoint
 SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Point(2 2)"}'));

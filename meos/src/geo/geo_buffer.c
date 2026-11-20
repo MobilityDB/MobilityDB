@@ -11216,25 +11216,201 @@ buffer_round_curve_offsets(const BufferWalkElem *w, uint32_t m,
   return true;
 }
 
+/* Append to the @p n elements of the walk of a curve the way back, each
+ * element reversed, from the last to the first */
+static void
+buffer_curve_walk_back(BufferWalkElem *w, uint32_t n)
+{
+  for (uint32_t k = 0; k < n; k++)
+  {
+    BufferWalkElem *f = &w[2 * n - 1 - k];
+    *f = w[k];
+    memcpy(f->p[0], w[k].p[2], sizeof(double[2]));
+    memcpy(f->p[2], w[k].p[0], sizeof(double[2]));
+    f->half = - w[k].half;
+  }
+  return;
+}
+
+/**
+ * @brief Add to an edge array the boundary of the strip of an arc, the
+ * points the segment normal to it of half length the distance sweeps, every
+ * piece of it exact: the sibling of #buffer_strip_offsets for an arc
+ * @details The strip is bounded counterclockwise by the offset of the arc
+ * to its right from its start to its end (#edges_add_offset_arc), the
+ * segment from there to the offset to its left on the line through the end
+ * and the centre C of the arc, that offset back to the start and the segment
+ * on the line through the start and C: every point of them of the one root
+ * of the circle of the arc (#TangentPoint, member arc). Stretched by the
+ * distance past an end, the square cap there, the segment across moves past
+ * the end by the distance along the tangent of the circle there and two
+ * segments along that tangent join it to the offsets (#TangentPoint, member
+ * along). Where the radius R of the arc does not exceed the distance, the
+ * normal segment sweeps through C into the points beyond it, which no one
+ * curve winds around once with the rest of the strip, so R must exceed the
+ * distance by more than the bound on the circle in doubles
+ * @param[in] w The arc
+ * @param[in] radius Distance, positive
+ * @param[in] sa,sb Whether the strip is stretched past the start, past the
+ * end
+ * @param[in,out] tps The tangent points, at most eight appended at @p ntp
+ * @param[in,out] arcs The input arcs, one stored where @p ntp halved points
+ * @param[in,out] ntp Number of tangent points
+ * @param[in,out] edges Edges, appended to
+ * @return False where R is not told to exceed the distance, nothing then
+ * appended
+ */
+static bool
+buffer_arc_strip_offsets(const BufferWalkElem *w, double radius, bool sa,
+  bool sb, TangentPoint *tps, ExactArc *arcs, uint32_t *ntp,
+  MeosArray *edges)
+{
+  const double *a = w->p[0], *mid = w->p[1], *b = w->p[2];
+  ExactArc *ea = &arcs[*ntp / 2];
+  *ea = (ExactArc) {{a[0], a[1]}, {mid[0], mid[1]}, {b[0], b[1]},
+    w->half != 0, 0.0, 0.0, 0.0, 0.0};
+  double box[4];
+  exact_arc_bound(ea, box);
+  if (ea->err < 0.0 ||
+      ! (ea->r - radius > ea->err + 0x1p-50 * (ea->r + radius)))
+    return false;
+  /* The right of an arc running counterclockwise lies outside it, and
+   * running on past its end is running counterclockwise */
+  bool ccw = w->half ? w->half > 0 :
+    cross_product_sign(a[0], a[1], mid[0], mid[1], a[0], a[1], b[0],
+      b[1]) > 0;
+  int8_t sr = ccw ? 1 : -1;
+  TangentPoint *t = &tps[*ntp];
+  uint32_t n = 0;
+  /* The corners in the order the boundary runs: the offsets to the right
+   * at the start and the end, past the end where stretched, the offset to
+   * the left at the end and the start, past the start where stretched */
+  t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, sr, 0, 0,
+    ea};
+  t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, sr, 1, 0,
+    ea};
+  if (sb)
+  {
+    t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, sr, 1,
+      sr, ea};
+    t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -sr, 1,
+      sr, ea};
+  }
+  uint32_t left = n;
+  t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -sr, 1,
+    0, ea};
+  t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -sr, 0,
+    0, ea};
+  if (sa)
+  {
+    t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -sr, 0,
+      -sr, ea};
+    t[n++] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, sr, 0,
+      -sr, ea};
+  }
+  *ntp += n;
+  edges_add_offset_arc(edges, ccw, &t[0], &t[1]);
+  for (uint32_t k = 1; k < left; k++)
+    edges_add_tangent_segment(edges, &t[k], &t[k + 1]);
+  edges_add_offset_arc(edges, ! ccw, &t[left], &t[left + 1]);
+  for (uint32_t k = left + 1; k < n; k++)
+    edges_add_tangent_segment(edges, &t[k], &t[(k + 1) % n]);
+  return true;
+}
+
+/* Add to an edge array the boundary of the strip of an element of the walk
+ * of a curve: #buffer_strip_offsets for a segment, #buffer_arc_strip_offsets
+ * for an arc; the corners at its end, when not stretched, the second and
+ * third tangent points appended */
+static bool
+buffer_elem_strip_offsets(const BufferWalkElem *w, double radius, bool sa,
+  bool sb, TangentPoint *tps, ExactArc *arcs, uint32_t *ntp,
+  MeosArray *edges)
+{
+  if (w->arc)
+    return buffer_arc_strip_offsets(w, radius, sa, sb, tps, arcs, ntp,
+      edges);
+  POINT2D a = {w->p[0][0], w->p[0][1]}, b = {w->p[2][0], w->p[2][1]};
+  buffer_strip_offsets(&a, &b, radius, sa, sb, tps, ntp, edges);
+  return true;
+}
+
+/**
+ * @brief Add to an edge array the offset curves of a curve with round joins
+ * and flat or square caps, every piece of it exact, as
+ * #buffer_round_line_offsets offsets a line
+ * @details The buffer with flat caps is the union of the strips of the two
+ * end elements (#buffer_elem_strip_offsets) and the buffer with round caps of
+ * the curve between them (#buffer_round_curve_offsets), whose caps are the
+ * discs of the joins at its ends; a curve of two elements has the circle
+ * about their common point for that buffer, the two half turns between the
+ * corners of the first strip there, and a curve of one element the one
+ * strip. A square cap stretches each end strip by the distance past the end
+ * of the curve
+ * @param[in] w The @p n elements of the walk of the curve, out only
+ * @param[in] n Number of elements, positive
+ * @param[in] radius Distance, positive
+ * @param[in] cap Cap at the two ends, flat or square
+ * @param[out] u Room for the walk of the curve between its end elements, out
+ * and back
+ * @param[in,out] tps,arcs,ntp,edges As #buffer_round_curve_offsets
+ * @return False where an end strip or a turn is not told
+ */
+static bool
+buffer_capped_curve_offsets(const BufferWalkElem *w, uint32_t n,
+  double radius, EndCapStyle cap, BufferWalkElem *u, TangentPoint *tps,
+  ExactArc *arcs, uint32_t *ntp, MeosArray *edges)
+{
+  bool sq = (cap == ENDCAP_SQUARE);
+  const TangentPoint *t = &tps[*ntp];
+  if (! buffer_elem_strip_offsets(&w[0], radius, sq, sq && n == 1, tps, arcs,
+      ntp, edges))
+    return false;
+  if (n > 1 && ! buffer_elem_strip_offsets(&w[n - 1], radius, false, sq, tps,
+      arcs, ntp, edges))
+    return false;
+  if (n == 2)
+  {
+    /* The circle about the common point, two half turns between the corners
+     * of the first strip there, as every edge of the arrangement ends at
+     * such points */
+    edges_add_tangent_arc(edges, w[0].p[2][0], w[0].p[2][1], radius, true,
+      &t[1], &t[2]);
+    edges_add_tangent_arc(edges, w[0].p[2][0], w[0].p[2][1], radius, true,
+      &t[2], &t[1]);
+  }
+  else if (n > 2)
+  {
+    memcpy(u, &w[1], sizeof(BufferWalkElem) * (n - 2));
+    buffer_curve_walk_back(u, n - 2);
+    return buffer_round_curve_offsets(u, 2 * (n - 2), radius, tps, arcs, ntp,
+      edges);
+  }
+  return true;
+}
+
 /**
  * @brief Return the rings bounding the buffer of a curve or a multicurve
- * with round joins and round caps, the region the exact offset curves of
- * its curves wind around, as #buffer_round_line_rings answers a line
+ * with round joins and any cap, the region the exact offset curves of its
+ * curves wind around, as #buffer_round_line_rings answers a line
  * @details Every curve, its segments and its arcs, is walked out and back
- * (#buffer_round_curve_offsets), and the buffers of the curves of a
- * multicurve are united in one arrangement
+ * (#buffer_round_curve_offsets); under a flat or a square cap a curve that
+ * does not close is the strips of its end elements and the walk of the
+ * curve between them (#buffer_capped_curve_offsets). The buffers of the
+ * curves of a multicurve are united in one arrangement
  * (#arrange_wound_tangent_surfaces), as the discs of a multipoint are
  * (#buffer_round_point_rings)
  * @param[in] geom Circular string, compound curve or multicurve
  * @param[in] radius Distance, positive
+ * @param[in] cap Cap at the ends of the curves
  * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
  * owning each, as #arrange_wound_tangent_surfaces answers them
- * @return False for another type, a whole circle, where a turn or the
+ * @return False for another type, where an end strip, a turn or the
  * arrangement leaves the region unanswered or it answers no ring -- a
  * caller that has another way to answer may take it
  */
 static bool
-buffer_round_curve_rings(const LWGEOM *geom, double radius,
+buffer_round_curve_rings(const LWGEOM *geom, double radius, EndCapStyle cap,
   MeosArray ***rings, uint32_t *nrings, int32_t **owner)
 {
   assert(geom); assert(radius > 0.0);
@@ -11251,6 +11427,8 @@ buffer_round_curve_rings(const LWGEOM *geom, double radius,
   uint32_t total = buffer_curve_npoints(geom);
   /* Out and back, at most two elements per point each way */
   BufferWalkElem *w = palloc(sizeof(BufferWalkElem) * 4 * Max(total, 1u));
+  BufferWalkElem *u = (cap == ENDCAP_ROUND) ? NULL :
+    palloc(sizeof(BufferWalkElem) * 4 * Max(total, 1u));
   TangentPoint *tps = palloc(sizeof(TangentPoint) * 8 * Max(total, 1u));
   ExactArc *arcs = palloc(sizeof(ExactArc) * 4 * Max(total, 1u));
   MeosArray *edges = meos_array_create(sizeof(Edge));
@@ -11263,15 +11441,15 @@ buffer_round_curve_rings(const LWGEOM *geom, double radius,
     ok = buffer_curve_elems(parts[i], w, &n);
     if (! ok || n == 0)
       continue;
-    /* The way back, each element reversed, from the last to the first */
-    for (uint32_t k = 0; k < n; k++)
+    /* A curve that closes has no end, so its walk stands whatever the cap */
+    if (cap != ENDCAP_ROUND && (w[0].p[0][0] != w[n - 1].p[2][0] ||
+        w[0].p[0][1] != w[n - 1].p[2][1]))
     {
-      BufferWalkElem *f = &w[2 * n - 1 - k];
-      *f = w[k];
-      memcpy(f->p[0], w[k].p[2], sizeof(double[2]));
-      memcpy(f->p[2], w[k].p[0], sizeof(double[2]));
-      f->half = - w[k].half;
+      ok = buffer_capped_curve_offsets(w, n, radius, cap, u, tps, arcs,
+        &ntp, edges);
+      continue;
     }
+    buffer_curve_walk_back(w, n);
     ok = buffer_round_curve_offsets(w, 2 * n, radius, tps, arcs, &ntp,
       edges);
   }
@@ -11290,6 +11468,8 @@ buffer_round_curve_rings(const LWGEOM *geom, double radius,
   meos_array_destroy(edges);
   pfree(arcs);
   pfree(tps);
+  if (u)
+    pfree(u);
   pfree(w);
   return found;
 }
@@ -12453,18 +12633,19 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
       pfree(owner);
     }
   }
-  /* Round joins and caps about curves carrying arcs: the region their exact
-   * offset curves wind around (#buffer_round_curve_rings), serialized from
-   * the rings of their arrangement at once; where it leaves a question
+  /* Round joins about curves carrying arcs, with any cap: the region their
+   * exact offset curves wind around (#buffer_round_curve_rings), serialized
+   * from the rings of their arrangement at once; where it leaves a question
    * open, the older path */
-  if (size > 0.0 && join_style == JOIN_ROUND && cap_style == ENDCAP_ROUND &&
+  if (size > 0.0 && join_style == JOIN_ROUND &&
       (lwg->type == CIRCSTRINGTYPE || lwg->type == COMPOUNDTYPE ||
        lwg->type == MULTICURVETYPE))
   {
     MeosArray **rings;
     uint32_t nrings;
     int32_t *owner;
-    if (buffer_round_curve_rings(lwg, size, &rings, &nrings, &owner))
+    if (buffer_round_curve_rings(lwg, size, cap_style, &rings, &nrings,
+        &owner))
     {
       GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
         lwgeom_get_srid(lwg));
