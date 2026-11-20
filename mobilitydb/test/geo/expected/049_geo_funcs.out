@@ -372,6 +372,11 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mi
  CURVEPOLYGON(COMPOUNDCURVE((0 1,9 1,9 10),CIRCULARSTRING(9 10,10 11,11 10),(11 10,11 0,10 0,10 -1,0 -1),CIRCULARSTRING(0 -1,-1 0,0 1)))
 (1 row)
 
+-- A join or an end cap the parameters do not name is refused
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=pointy');
+ERROR:  Invalid buffer join style: pointy (accept: 'round', 'mitre', 'miter' or 'bevel')
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'endcap=pointy');
+ERROR:  Invalid buffer end cap style: pointy (accept: 'round', 'flat', 'butt' or 'square')
 -- A polygon grows outwards and its holes inwards
 SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
                                               st_astext                                              
