@@ -26,7 +26,8 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""Check that every @ingroup names a group some @defgroup defines.
+"""Check that every @ingroup names a defined group and tags the definition
+below it, which is not static.
 
 Why
 ---
@@ -37,6 +38,13 @@ appears on its file's page and on no module page, and the run reports
 nothing that WARN_AS_ERROR could turn into a failure. Nothing else reads
 the tag against the definitions: the compiler never sees a comment, and
 the MEOS-API catalog copies the tag as a string.
+
+A block carrying @ingroup documents the definition that follows it. When
+another comment follows instead, the block documents no function: doxygen
+gives its brief, parameters and group to whatever it documents next, and
+the function it was written for keeps no comment. When the definition is
+static, the block puts a function no caller outside its file can reach in
+a group of the API.
 
 What is read
 ------------
@@ -102,39 +110,69 @@ def comment_blocks(lines):
                 start, body = None, []
 
 
+def follower(lines, end):
+    """Return the first non-blank line after line number @p end, or ''.
+
+    It reads past a block that #comment_blocks delimits, so @p end is the
+    1-based number of the block's closing line.
+    """
+    for line in lines[end:]:
+        if line.strip():
+            return line.strip()
+    return ""
+
+
 def scan(path: Path):
-    """Return the groups this file defines and the (line, group) it uses."""
+    """Return the groups this file defines, the (line, group) it uses and the
+    (line, finding) of each @ingroup block that tags no public definition,
+    each block read as #comment_blocks delimits it."""
     defined: list[str] = []
     used: list[tuple[int, str]] = []
+    misplaced: list[tuple[int, str]] = []
     lines = path.read_text(encoding="utf-8", errors="replace").split("\n")
     for start, body in comment_blocks(lines):
+        tagged = defines = False
         for offset, line in enumerate(body):
             if line.rstrip().endswith("\\"):
                 continue
             match = DEFINE.match(line)
             if match:
+                defines = True
                 defined.append(match.group(1))
                 continue
             match = INGROUP.match(line)
             if match:
+                tagged = True
                 for name in match.group(1).split():
                     used.append((start + offset, name))
-    return defined, used
+        # A block defining a group nests it in its parent with @ingroup and
+        # documents the group, not a definition below it
+        if not tagged or defines:
+            continue
+        nxt = follower(lines, start + len(body) - 1)
+        if nxt.startswith("/*"):
+            misplaced.append((start, "documents no definition: another "
+                              "comment follows it"))
+        elif nxt.startswith("static "):
+            misplaced.append((start, "tags a static definition"))
+    return defined, used, misplaced
 
 
 def main() -> int:
     defined: set[str] = set()
     uses: list[tuple[str, int, str]] = []
+    misplaced: list[tuple[str, int, str]] = []
     scanned = 0
     for root in SCANNED_ROOTS:
         for path in sorted((REPO_ROOT / root).rglob("*")):
             if path.suffix not in SUFFIXES or not path.is_file():
                 continue
             scanned += 1
-            names, used = scan(path)
+            names, used, wrong = scan(path)
             defined.update(names)
             rel = path.relative_to(REPO_ROOT).as_posix()
             uses.extend((rel, line, name) for line, name in used)
+            misplaced.extend((rel, line, what) for line, what in wrong)
 
     if not scanned or not defined:
         print("ERROR: check_doxygen_groups read no group definitions; the roots "
@@ -146,11 +184,15 @@ def main() -> int:
             print(f"{rel}:{line}: @ingroup {name} names a group no @defgroup "
                   "defines")
             failures += 1
+    for rel, line, what in misplaced:
+        print(f"{rel}:{line}: the @ingroup block {what}")
+        failures += 1
     if failures:
         print(f"\nERROR: {failures} finding(s) over {scanned} files.", file=sys.stderr)
         print("Define the group beside its siblings in the family's doxygen "
-              "header, or tag the function with the group that exists.",
-              file=sys.stderr)
+              "header, or tag the function with the group that exists; put a "
+              "block above the definition it documents, and give a static "
+              "function no @ingroup.", file=sys.stderr)
         return 1
     print(f"OK: {len(uses)} @ingroup tags name {len(defined)} defined groups, "
           f"over {scanned} files.")
