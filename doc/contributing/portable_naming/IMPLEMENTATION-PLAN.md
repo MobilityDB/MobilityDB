@@ -235,7 +235,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   faulting in the write, and a shorter pattern read past its end, to 0), by the owner's ruling of
   2026-11-20 ("yes make it const"), the in-place fold and the 9-byte copy of `relate_query_init`,
   branch `fix/relate-pattern-const` (`76784f6513`) rewrites 7128c9344a,
-  MobilityDB #3876, open.
+  MobilityDB #3876, open. `geom_buffer` refuses a style string naming an unknown key, a key
+  without a value or a value its key does not accept with `MEOS_ERR_INVALID_ARG_VALUE`, frees its
+  copy of the string on every refusal and names an unknown join a join style (a refused end cap
+  leaving its 14-byte copy allocated, and every refusal raised as an internal type error, to 0),
+  the reading of `geom_buffer` and the end cap message PostGIS's buffer gives an unknown join,
+  branch `fix/buffer-params-errors` (`4b9872f7c9`) rewrites 7128c9344a,
+  MobilityDB #3879, open.
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
