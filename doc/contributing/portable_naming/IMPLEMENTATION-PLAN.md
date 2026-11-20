@@ -244,6 +244,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   2026-11-19 ("go"): `meos/test/srid_validity_test.c` compares every setter with `geo_set_srid` at -5 and
   0, and CGAL agrees with all 3000 points of the Mercator corpus set to SRID -1, back to 4326 and to 3857;
   MERGED as MobilityDB #3858 (`d5bfa1a25d`).
+  An MF-JSON document whose crs states another SRID than a network point, a cell or a point cloud
+  value takes from its network, from WGS84 or from its schema is refused, as its EWKT and EWKB are,
+  branch `fix/mfjson-crs-derived-srid`, by the owner's "continue as you think is best" of 2026-11-19:
+  the crs 3857 is refused against 4326, 5676 and 4326 in 421_tpcpoint_mfjson, 305_tnpoint_mfjson and
+  270_th3index, and the 38 MF-JSON reads of their five suites answer as without the check but these three.
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
