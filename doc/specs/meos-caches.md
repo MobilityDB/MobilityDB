@@ -72,7 +72,9 @@ empties it. Every such call is made by `meos_finalize`.
    included, so a variable whose address is passed is read through
    `MEOS_TLS_ADDRESS` of `meos/include/meos_tls.h`, a function the compiler
    does not inline, as the broken-down time of `pgtypes/timezone/localtime.c`
-   is.
+   is, and as the tables of the arctangent of the exact arithmetic and the
+   points and cells of H3 are, each entry point reading their address once
+   and passing it to what it calls.
 
 A program using MEOS from several threads therefore calls `meos_initialize`
 once for the process, then, on each thread before its first MEOS call,
@@ -105,10 +107,14 @@ names a zone of its own, and on each thread before it ends, `meos_finalize`.
 | S2 corners | `s2_uv_cache`, `s2_vertex_cache`, `s2_lon_cache` (`meos/src/s2cell/s2cell.c`) | the cube coordinates, the degrees and the longitudes of the corners read last, 1024 of each, by their leaf indices | a corner of an S2 cell read (`s2cell_corner_uv`, `s2cell_corner_lonlat`, `s2cell_corner_lon`) | — | holds no memory |
 | S2 outlines | `s2_last_outline`, `s2_last_outline_cell`, `s2_last_geo_outline`, `s2_last_geo_outline_cell` (`meos/src/s2cell/s2cell.c`) | the planar and the geodetic outline of the last S2 cell read | `s2cell_cell_outline_last`, `s2cell_cell_outline_geodetic_last` | — | holds no memory |
 | QUADBIN rows | `quadbin_lat_cache` (`meos/src/quadbin/quadbin.c`) | the latitudes of the row boundaries read last, 1024, by the bits of their row | a row boundary of a QUADBIN cell read (`quadbin_row_latitude`) | — | holds no memory |
-| H3 outline | `h3_last_outline`, `h3_last_outline_cell` (`meos/src/h3/h3_geo.c`) | the outline of the last H3 cell read | `h3_cell_outline_last` | — | holds no memory |
+| H3 outlines | `MEOS_H3_OUTLINE` (`meos/src/h3/h3_geo.c`) | the outlines of the H3 cells read last, 64, by their cell | an outline of an H3 cell read (`h3_cell_outline_slot`) | — | holds no memory |
+| H3 points | `MEOS_H3_POINT` (`meos/src/h3/h3_geo.c`) | the vertices, centers and extra vertices of H3 cells read last, 1024, by the H3 index naming each | a point of an H3 cell read (`h3_point_cached`) | — | holds no memory |
+| H3 cells | `MEOS_H3_CELL` (`meos/src/h3/h3_vertex.c`) | the face coordinates and the vertex rotations of the H3 cells read last, 1024, by their cell | the points or the vertex indices of an H3 cell read (`cell_faceijk`, `cell_rotations`) | — | holds no memory |
 | H3 poles | `MEOS_H3_POLE_CELL`, `MEOS_H3_POLE_CELL_SET` (`meos/src/h3/th3index_boxops.c`) | the cells holding the two poles at each resolution | the first box of a cell of that resolution (`h3index_pole_cells`) | — | holds no memory |
 | H3 box | `MEOS_H3_BOX`, `MEOS_H3_BOX_CELL` (`meos/src/h3/th3index_boxops.c`) | the box of the last H3 cell a temporal cell value is bounded by | `th3index_cell_set_stbox` | — | holds no memory |
 | Cell positions | `dggs_vec_cache` (`meos/src/temporal/tcellindex.c`) | the geodetic positions of the degrees read last, 512, by the bits of their degrees | the geodetic walk of a cell (`dggs_lonlat_vector`) | — | holds no memory |
+| Arctangent tables | `MEOS_DDB_ATAN` (`meos/src/geo/geo_dyadic.c`) | the degrees of atan(k / 128) for k from 0 to 128 and the reciprocals of the odd integers the series reads, in bounded pairs of doubles | an angle of the exact arithmetic read (`atan_ratio_degrees_core`) | — | holds no memory |
+| Gnomonic faces | `MEOS_DDB_FACE` (`meos/src/geo/geo_dyadic.c`) | the constants of the faces of an icosahedral gnomonic grid read last, 48, the oldest replaced first | a point of a face of such a grid read (`ddb_gnomonic_face`) | — | holds no memory |
 
 `meos_finalize` calls `meos_finalize_timezone`, `meos_finalize_projsrs`,
 `meos_finalize_relate`, `meos_finalize_collation` and, in a build carrying

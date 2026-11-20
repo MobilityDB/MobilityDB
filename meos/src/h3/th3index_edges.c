@@ -65,15 +65,16 @@
 GSERIALIZED *
 h3_directed_edge_to_gs_boundary(H3Index edge)
 {
-  CellBoundary bnd;
-  if (! ensure_h3_success(directedEdgeToBoundary(edge, &bnd)))
+  double lon[3], lat[3];
+  int n = h3_edge_boundary_lonlat(edge, lon, lat);
+  if (n < 0)
     return NULL;
   /* h3-pg emits a closed POLYGON for directed edges (same container
    * as cells), swapping lat/lng in the process — a known upstream
    * quirk. We emit a closed POLYGON too so consumers see a uniform
    * shape, but keep x = lng, y = lat as in
    * `h3index_cell_to_boundary`. */
-  return cell_boundary_to_gs(&bnd, true);
+  return cell_boundary_to_gs(lon, lat, n, true);
 }
 
 /*****************************************************************************
