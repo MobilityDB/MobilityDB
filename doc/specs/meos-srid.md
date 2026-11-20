@@ -49,6 +49,9 @@ given with its source file.
 | `h3index`, `th3index`, `quadbin`, `tquadbin`, `s2cell`, `ts2cell` | 4326 | nowhere: every cell is in WGS84 |
 | `tbox`, `raquet` | none / 4326 | a `tbox` has no spatial dimension; a `raquet` tile states its extent in 4326 |
 
+The reference geometry of a `trgeometry` states the SRID of its poses, so the
+value states one SRID, and `setSRID` sets both.
+
 ### 3.1 The schema of a pcid
 
 pgPointCloud keeps the SRID of a schema in the `srid` column of

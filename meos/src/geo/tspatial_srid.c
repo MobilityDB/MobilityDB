@@ -447,6 +447,12 @@ tspatial_set_srid(const Temporal *temp, int32_t srid)
     default: /* TSEQUENCESET */
       tspatialseqset_set_srid((TSequenceSet *) result, srid);
   }
+#if RGEO
+  /* A temporal rigid geometry carries its reference geometry beside its poses,
+   * and the value states one SRID; the copy owns its geometry */
+  if (result->temptype == T_TRGEOMETRY)
+    gserialized_set_srid((GSERIALIZED *) trgeometry_geom_p(result), srid);
+#endif /* RGEO */
   return result;
 }
 
