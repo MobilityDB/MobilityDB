@@ -162,6 +162,18 @@ CREATE FUNCTION SRID(pcpatch)
   AS 'MODULE_PATHNAME', 'Pcpatch_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- A point cloud value takes its SRID from the schema its pcid names, so it is
+-- transformed into the schema of another pcid, which states the target SRID
+CREATE FUNCTION transform(pcpoint, pcid integer)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Pcpoint_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(pcpatch, pcid integer)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Pcpatch_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Conversion of a patch into its geometry
  *
@@ -509,6 +521,15 @@ CREATE FUNCTION getValues(pcpointset)
 CREATE FUNCTION unnest(pcpointset)
   RETURNS SETOF pcpoint
   AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * pcpointset — SRID
+ ******************************************************************************/
+
+CREATE FUNCTION transform(pcpointset, pcid integer)
+  RETURNS pcpointset
+  AS 'MODULE_PATHNAME', 'Pointcloudset_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -926,6 +947,15 @@ CREATE FUNCTION getValues(pcpatchset)
 CREATE FUNCTION unnest(pcpatchset)
   RETURNS SETOF pcpatch
   AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * pcpatchset — SRID
+ ******************************************************************************/
+
+CREATE FUNCTION transform(pcpatchset, pcid integer)
+  RETURNS pcpatchset
+  AS 'MODULE_PATHNAME', 'Pointcloudset_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

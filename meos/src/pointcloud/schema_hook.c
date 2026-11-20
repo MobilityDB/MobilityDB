@@ -201,8 +201,9 @@ pcschema_string_copy(const char *str)
  * @param[in] pcid Identifier the schema is registered under
  * @param[in] srid Spatial reference identifier every value of the schema
  *   carries
- * @param[in] compression Name of the compression applied to the data,
- *   @p NULL for none
+ * @param[in] compression Name of the compression applied to the data, read
+ *   in any case among the names of the point cloud library, `none`,
+ *   `dimensional` and `laz`, or @p NULL for none @nullable
  * @param[in] dims Array of the dimensions the schema states, in any order
  * @param[in] ndims Number of elements in the array
  * @return A newly allocated schema
@@ -226,7 +227,14 @@ meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
     return NULL;
   }
 
+  /* A name is one of the library's when it reads back as itself */
   int comp = pc_compression_number(compression);
+  if (compression && pg_strcasecmp(compression, pc_compression_name(comp)) != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown point cloud compression: %s", compression);
+    return NULL;
+  }
   PCSCHEMA *schema = pc_schema_new((uint32_t) ndims);
   schema->pcid = pcid;
   schema->srid = (uint32_t) srid;
@@ -298,7 +306,7 @@ meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
  * @param[in] srid Spatial reference identifier every value of the schema
  *   carries
  * @param[in] compression Name of the compression applied to the data,
- *   @p NULL for none
+ *   @p NULL for none, read as #meos_pc_schema_from_dims reads it
  * @param[in] dims Array of the dimensions the schema states, in any order
  * @param[in] ndims Number of elements in the array
  * @return True when the schema is registered
@@ -323,11 +331,6 @@ meos_pc_schema_register_dims(uint32_t pcid, int32_t srid,
   return true;
 }
 
-/**
- * @ingroup meos_pointcloud_schema_cache
- * @brief Register a parsed PCSCHEMA along with its source XML in the
- *   MEOS-owned cache.
- */
 /**
  * @brief Register a schema, answering whether the cache took it
  * @details The two public entries answer nothing, so this is what a caller
@@ -626,15 +629,6 @@ meos_pc_schema_ndims(uint32_t pcid)
   return result;
 }
 
-/**
- * @ingroup meos_pointcloud_schema_cache
- * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering
- *   @p NULL where neither the cache nor a hook holds one.
- *
- * A caller that cannot answer without the schema asks through
- * @ref meos_pc_schema, which states the miss as an error; a caller reading a
- * property it can answer without one asks here and reads the miss itself.
- */
 /*****************************************************************************
  * The document a host with no SQL states its schemas in
  *
@@ -750,6 +744,15 @@ read_pointcloud_schemas_xml(void)
   xmlFreeDoc(doc);
 }
 
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Resolve a parsed PCSCHEMA by pcid, with hook fallback, answering
+ *   @p NULL where neither the cache nor a hook holds one.
+ *
+ * A caller that cannot answer without the schema asks through
+ * @ref meos_pc_schema, which states the miss as an error; a caller reading a
+ * property it can answer without one asks here and reads the miss itself.
+ */
 PCSCHEMA *
 meos_pc_schema_lookup(uint32_t pcid)
 {

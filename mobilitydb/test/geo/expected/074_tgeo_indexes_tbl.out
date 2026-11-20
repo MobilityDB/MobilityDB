@@ -28,214 +28,58 @@ NOTICE:  index "tbl_tgeography3d_big_kdtree_idx" does not exist, skipping
 CREATE INDEX tbl_tgeometry3d_big_rtree_idx ON tbl_tgeometry3d_big USING GIST(temp);
 CREATE INDEX tbl_tgeography3d_big_rtree_idx ON tbl_tgeography3d_big USING GIST(temp);
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-    10
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-   866
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  9233
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 10090
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp < tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
-    10
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
-    10
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp > tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
- 10090
+ 10100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp >= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
- 10090
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    12
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1552
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1740
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1383
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1558
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1591
-(1 row)
-
-SELECT COUNT(*) > 0 FROM tbl_tgeometry3d_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1337
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1510
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1615
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1810
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1364
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1528
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1510
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    10
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    32
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10067
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10090
+ 10100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxLeft(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1552
+  1816
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverleft(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1740
+  2044
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxRight(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1383
+  1629
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverright(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1558
+  1834
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBelow(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1591
+  1845
 (1 row)
 
 SELECT COUNT(*) > 0 FROM tbl_tgeometry3d_big WHERE stboxOverbelow(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
@@ -247,182 +91,98 @@ SELECT COUNT(*) > 0 FROM tbl_tgeometry3d_big WHERE stboxOverbelow(temp, tgeometr
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxAbove(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1337
+  1589
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverabove(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1510
+  1813
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxFront(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1615
+  1839
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverfront(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1810
+  2047
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBack(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1364
+  1613
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverback(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1528
+  1798
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBefore(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-    10
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverbefore(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-    32
+    24
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxAfter(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
- 10067
+ 10075
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverafter(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
- 10090
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-     7
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-   797
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  9302
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 10091
+ 10100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp < tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
-     9
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
-     9
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp > tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
- 10091
+ 10100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp >= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
  count 
 -------
- 10091
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    19
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp && stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(10,10,10)),[2001-01-01, 2001-02-01])';
- count 
--------
-   429
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     7
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    34
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10065
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10091
+ 10100
 (1 row)
 
 -- Test the commutator for the selectivity
 SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]' <<# temp;
  count 
 -------
- 10065
+ 10071
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]' &<# temp;
  count 
 -------
- 10066
+ 10071
 (1 row)
 
 -------------------------------------------------------------------------------
@@ -432,340 +192,100 @@ DROP INDEX IF EXISTS tbl_tgeography3d_big_rtree_idx;
 CREATE INDEX tbl_tgeometry3d_big_quadtree_idx ON tbl_tgeometry3d_big USING SPGIST(temp);
 CREATE INDEX tbl_tgeography3d_big_quadtree_idx ON tbl_tgeography3d_big USING SPGIST(temp);
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    12
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-    10
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-   866
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  9233
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 10090
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1552
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1740
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1383
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1558
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1591
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1802
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1337
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1510
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1615
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1810
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1364
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1528
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1510
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    10
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    32
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10067
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10090
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxLeft(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1552
+  1816
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverleft(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1740
+  2044
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxRight(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1383
+  1629
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverright(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1558
+  1834
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBelow(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1591
+  1845
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverbelow(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1802
+  2068
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxAbove(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1337
+  1589
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverabove(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1510
+  1813
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxFront(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1615
+  1839
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverfront(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1810
+  2047
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBack(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1364
+  1613
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverback(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1528
+  1798
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBefore(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-    10
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverbefore(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-    32
+    24
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxAfter(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
- 10067
+ 10075
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverafter(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
- 10090
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-     7
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-   797
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  9302
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 10091
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    19
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp && stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(10,10,10)),[2001-01-01, 2001-02-01])';
- count 
--------
-   429
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     7
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    34
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10065
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10091
+ 10100
 (1 row)
 
 -------------------------------------------------------------------------------
@@ -775,362 +295,110 @@ DROP INDEX IF EXISTS tbl_tgeography3d_big_quadtree_idx;
 CREATE INDEX tbl_tgeometry3d_big_kdtree_idx ON tbl_tgeometry3d_big USING SPGIST(temp tgeometry_kdtree_ops);
 CREATE INDEX tbl_tgeography3d_big_kdtree_idx ON tbl_tgeography3d_big USING SPGIST(temp tgeography_kdtree_ops);
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp && tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    12
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp @> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <@ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp ~= tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp -|- tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-    10
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-   866
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  9233
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 10090
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp << tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1552
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &< tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1740
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp >> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1383
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1558
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1591
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<| tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1802
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1337
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1510
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1615
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &</ tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1810
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp />> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1364
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp /&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1528
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp |&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-  1510
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp <<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    10
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp &<# tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    32
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #>> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10067
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE temp #&> tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10090
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxLeft(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1552
+  1816
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverleft(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1740
+  2044
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxRight(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1383
+  1629
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverright(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1558
+  1834
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBelow(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1591
+  1845
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverbelow(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1802
+  2068
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxAbove(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1337
+  1589
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverabove(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1510
+  1813
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxFront(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1615
+  1839
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverfront(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1810
+  2047
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBack(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1364
+  1613
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverback(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-  1528
+  1798
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxBefore(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-    10
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverbefore(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
-    32
+    24
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxAfter(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
- 10067
+ 10075
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3d_big WHERE stboxOverafter(temp, tgeometry 'SRID=3812;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]');
  count 
 -------
- 10090
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-     7
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-   797
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  9302
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 10091
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp && tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    19
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp && stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(10,10,10)),[2001-01-01, 2001-02-01])';
- count 
--------
-   429
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp @> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <@ tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp ~= tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp -|- tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp <<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-     7
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp &<# tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
-    34
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #>> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10065
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeography3d_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2001-01-01, Point(10 10 10)@2001-01-02]';
- count 
--------
- 10091
+ 10100
 (1 row)
 
 -------------------------------------------------------------------------------
 DROP INDEX IF EXISTS tbl_tgeometry3d_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tgeography3d_big_kdtree_idx;
 -------------------------------------------------------------------------------
-SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
- count 
--------
-    32
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' ?&& temp;
  count 
 -------
     32
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
- count 
--------
-     3
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' %&& temp;
@@ -1146,83 +414,10 @@ DROP INDEX IF EXISTS tbl_tgeometry3d_rtree_idx;
 NOTICE:  index "tbl_tgeometry3d_rtree_idx" does not exist, skipping
 CREATE INDEX tbl_tgeometry_rtree_idx ON tbl_tgeometry USING GIST(temp);
 CREATE INDEX tbl_tgeometry3d_rtree_idx ON tbl_tgeometry3d USING GIST(temp);
--- EXPLAIN ANALYZE
-WITH test AS (
-  SELECT temp |=| tgeometry 'SRID=3812;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-   round   
------------
-  21.00063
- 41.904817
- 55.551683
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| tgeometry 'SRID=3812;[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeometry3d ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-   round   
------------
- 33.126948
- 36.208515
- 40.799855
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| geometry 'SRID=3812;Point(1 1)' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-  round   
-----------
- 6.265196
- 7.507952
- 9.033748
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| stbox 'SRID=3812;STBOX XT(((1,1),(2,2)),[2001-06-01, 2001-07-01])' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-   round   
------------
- 19.586468
- 40.510493
- 55.551683
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| tgeography 'SRID=7844;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-     round      
-----------------
- 1290835.878317
- 1464882.971455
- 2106194.521674
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| geography 'SRID=7844;Point(1 1)' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-     round     
----------------
- 264041.061863
- 694000.259746
- 928935.040099
-(3 rows)
-
-SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
- count 
--------
-    32
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' ?&& temp;
  count 
 -------
     32
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
- count 
--------
-     3
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' %&& temp;
@@ -1240,83 +435,10 @@ DROP INDEX IF EXISTS tbl_tgeometry3d_quadtree_idx;
 NOTICE:  index "tbl_tgeometry3d_quadtree_idx" does not exist, skipping
 CREATE INDEX tbl_tgeometry_quadtree_idx ON tbl_tgeometry USING SPGIST(temp);
 CREATE INDEX tbl_tgeometry3d_quadtree_idx ON tbl_tgeometry3d USING SPGIST(temp);
--- EXPLAIN ANALYZE
-WITH test AS (
-  SELECT temp |=| tgeometry 'SRID=3812;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-   round   
------------
-  21.00063
- 41.904817
- 55.551683
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| tgeometry 'SRID=3812;[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeometry3d ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-   round   
------------
- 33.126948
- 36.208515
- 40.799855
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| geometry 'SRID=3812;Point(1 1)' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-  round   
-----------
- 6.265196
- 7.507952
- 9.033748
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| stbox 'SRID=3812;STBOX XT(((1,1),(2,2)),[2001-06-01, 2001-07-01])' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-   round   
------------
- 19.586468
- 40.510493
- 55.551683
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| tgeography 'SRID=7844;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-     round      
-----------------
- 1290835.878317
- 1464882.971455
- 2106194.521674
-(3 rows)
-
-WITH test AS (
-  SELECT temp |=| geography 'SRID=7844;Point(1 1)' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-     round     
----------------
- 264041.061863
- 694000.259746
- 928935.040099
-(3 rows)
-
-SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
- count 
--------
-    32
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' ?&& temp;
  count 
 -------
     32
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %&& stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
- count 
--------
-     3
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry WHERE stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])' %&& temp;

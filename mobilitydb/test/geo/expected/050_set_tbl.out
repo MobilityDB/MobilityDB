@@ -31,25 +31,25 @@ DROP TABLE tbl_geogset_tmp;
 SELECT MAX(length(asText(g))) FROM tbl_geomset;
  max 
 -----
- 491
+ 483
 (1 row)
 
 SELECT MAX(length(asText(g))) FROM tbl_geogset;
  max 
 -----
- 470
+ 471
 (1 row)
 
 SELECT MAX(length(asEWKT(g))) FROM tbl_geomset;
  max 
 -----
- 491
+ 483
 (1 row)
 
 SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
  max 
 -----
- 480
+ 481
 (1 row)
 
 -- asBinary emits plain WKB (no SRID); a geography defaults to SRID 4326
@@ -213,21 +213,21 @@ SELECT MIN(numValues(g)) FROM tbl_geomset;
 (1 row)
 
 SELECT MIN(round(ST_X(startValue(g)), 6)) FROM tbl_geomset;
-    min    
------------
- -99.90013
+    min     
+------------
+ -99.171721
 (1 row)
 
 SELECT MIN(round(ST_X(endValue(g)), 6)) FROM tbl_geomset;
     min     
 ------------
- -85.637205
+ -88.903174
 (1 row)
 
 SELECT MIN(round(ST_X(valueN(g, 1)), 6)) FROM tbl_geomset;
-    min    
------------
- -99.90013
+    min     
+------------
+ -99.171721
 (1 row)
 
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
@@ -251,19 +251,19 @@ SELECT MIN(numValues(g)) FROM tbl_geogset;
 SELECT MIN(round(ST_X(startValue(g)::geometry), 6)) FROM tbl_geogset;
    min    
 ----------
- 0.027466
+ 0.109833
 (1 row)
 
 SELECT MIN(round(ST_X(endValue(g)::geometry), 6)) FROM tbl_geogset;
-   min   
----------
- 9.64211
+    min    
+-----------
+ 10.295301
 (1 row)
 
 SELECT MIN(round(ST_X(valueN(g, 1)::geometry), 6)) FROM tbl_geogset;
    min    
 ----------
- 0.027466
+ 0.109833
 (1 row)
 
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
@@ -275,15 +275,15 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
 -------------------------------------------------------------------------------
 -- Transformation functions
 SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
-    min    
------------
- -99.90013
+    min     
+------------
+ -99.171721
 (1 row)
 
 SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
    min    
 ----------
- 0.027466
+ 0.109833
 (1 row)
 
 -- Rounding a set leaves the set it reads unchanged
@@ -340,97 +340,97 @@ SELECT COUNT(*) FROM test2 t1, tbl_geogset t2 WHERE t1.k = t2.k AND t1.g <> t2.g
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE cmp(t1.g, t2.g) = -1;
  count 
 -------
-  4851
+  4753
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g = t2.g;
  count 
 -------
-    99
+    98
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g <> t2.g;
  count 
 -------
-  9702
+  9506
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g < t2.g;
  count 
 -------
-  4851
+  4753
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g <= t2.g;
  count 
 -------
-  4950
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g > t2.g;
  count 
 -------
-  4851
+  4753
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g >= t2.g;
  count 
 -------
-  4950
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE cmp(t1.g, t2.g) = -1;
  count 
 -------
-  4851
+  4753
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g = t2.g;
  count 
 -------
-    99
+    98
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g <> t2.g;
  count 
 -------
-  9702
+  9506
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g < t2.g;
  count 
 -------
-  4851
+  4753
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g <= t2.g;
  count 
 -------
-  4950
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g > t2.g;
  count 
 -------
-  4851
+  4753
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g >= t2.g;
  count 
 -------
-  4950
+  4851
 (1 row)
 
 SELECT MAX(hash(g)) FROM tbl_geomset;
     max     
 ------------
- 2066255607
+ 2100269496
 (1 row)
 
 SELECT MAX(hash(g)) FROM tbl_geogset;
     max     
 ------------
- 2146969963
+ 2124995499
 (1 row)
 
 -- PostGIS currently does not provide an extended hash function

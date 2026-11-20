@@ -86,6 +86,21 @@ SELECT getResolution(quadbinCellSibling(quadbin '48427fffffffffff', 'up'));
              4
 (1 row)
 
+-- The direction is read in any case
+SELECT quadbinCellSibling(quadbin '48427fffffffffff', 'UP') =
+  quadbinCellSibling(quadbin '48427fffffffffff', 'up'),
+  quadbinCellSibling(quadbin '48427fffffffffff', 'Right') =
+  quadbinCellSibling(quadbin '48427fffffffffff', 'right');
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
+/* Errors */
+SELECT quadbinCellSibling(quadbin '48427fffffffffff', 'north');
+ERROR:  The direction of a sibling must be up, down, left or right: "north"
+SELECT quadbinCellSibling(quadbin '48427fffffffffff', '');
+ERROR:  The direction of a sibling must be up, down, left or right: ""
 -------------------------------------------------------------------------------
 -- Grid disk (k-ring): (2k+1)^2 cells, origin included
 -------------------------------------------------------------------------------

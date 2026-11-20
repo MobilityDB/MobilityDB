@@ -9,6 +9,8 @@ on:
       - 'datagen/**'
       - 'doc/**'
       - 'h3-pg/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'

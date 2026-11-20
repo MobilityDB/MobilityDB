@@ -51,44 +51,44 @@ IF perc < 1 THEN perc := 1; END IF;
 
 DROP TABLE IF EXISTS tbl_geometry;
 CREATE TABLE tbl_geometry AS
-SELECT k, random_geometry(-100, 100, -100, 100, 3812) AS geo
+SELECT k, random_geometry(-100, 100, -100, 100, 3812) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geometry3d;
 CREATE TABLE tbl_geometry3d AS
-SELECT k, random_geometry3d(-100, 100, -100, 100, -100, 100, 3812) AS geo
+SELECT k, random_geometry3d(-100, 100, -100, 100, -100, 100, 3812) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geometryset;
 CREATE TABLE tbl_geometryset AS
-SELECT k, random_geometry_set(-100, 100, -100, 100, 1, 10, 3812)
+SELECT k, random_geometry_set(-100, 100, -100, 100, 1, 10, 3812) AS g
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_geometry3dset;
 CREATE TABLE tbl_geometry3dset AS
-SELECT k, random_geometry3d_set(-100, 100, -100, 100, -100, 100, 1, 10, 3812)
+SELECT k, random_geometry3d_set(-100, 100, -100, 100, -100, 100, 1, 10, 3812) AS g
 FROM generate_series(1, size) AS k;
 
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_geography;
 CREATE TABLE tbl_geography AS
-SELECT k, random_geography(-180, 180, -90, 90, 7844) AS geo
+SELECT k, random_geography(-180, 180, -90, 90, 7844) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geography3d;
 CREATE TABLE tbl_geography3d AS
-SELECT k, random_geography3d(-180, 180, -90, 90, 0, 100, 7844) AS geo
+SELECT k, random_geography3d(-180, 180, -90, 90, 0, 100, 7844) AS g
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geographyset;
 CREATE TABLE tbl_geographyset AS
-SELECT k, random_geography_set(-180, 180, -90, 90, 1, 10, 7844)
+SELECT k, random_geography_set(-180, 180, -90, 90, 1, 10, 7844) AS g
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_geography3dset;
 CREATE TABLE tbl_geography3dset AS
-SELECT k, random_geography3d_set(-180, 180, -90, 90, 0, 100, 1, 10, 7844)
+SELECT k, random_geography3d_set(-180, 180, -90, 90, 0, 100, 1, 10, 7844) AS g
 FROM generate_series(1, size) AS k;
 
 ------------------------------------------------------------------------------
@@ -204,6 +204,55 @@ CREATE TABLE tbl_tgeography3d(k, temp) AS
 (SELECT k + size / 4, temp FROM tbl_tgeography3d_discseq LIMIT size / 4) UNION ALL
 (SELECT k + size / 2, temp FROM tbl_tgeography3d_contseq LIMIT size / 4) UNION ALL
 (SELECT k + size / 4 * 3, temp FROM tbl_tgeography3d_seqset LIMIT size / 4);
+
+------------------------------------------------------------------------------
+-- The tables of the index tests: big enough that the planner chooses a
+-- GiST/SP-GiST index scan over a sequential scan, otherwise the index tests
+-- exercise nothing. The threshold is around 10 000 rows; size * 100 + 100
+-- keeps a small margin above it (10 100 at the default size of 100). The four
+-- quarters of a temporal table are the four subtypes, as in its table above,
+-- each made by the call that makes the table of that subtype.
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tgeometry_big;
+CREATE TABLE tbl_tgeometry_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeometry_inst(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 3812)
+  WHEN 1 THEN random_tgeometry_discseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  WHEN 2 THEN random_tgeometry_stepseq(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  ELSE random_tgeometry_seqset(-100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
+DROP TABLE IF EXISTS tbl_tgeometry3d_big;
+CREATE TABLE tbl_tgeometry3d_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeometry3d_inst(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 3812)
+  WHEN 1 THEN random_tgeometry3d_discseq(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  WHEN 2 THEN random_tgeometry3d_stepseq(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 3812)
+  ELSE random_tgeometry3d_seqset(-100, 100, -100, 100, -100, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
+DROP TABLE IF EXISTS tbl_tgeography_big;
+CREATE TABLE tbl_tgeography_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeography_inst(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 7844)
+  WHEN 1 THEN random_tgeography_discseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844)
+  WHEN 2 THEN random_tgeography_stepseq(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 7844)
+  ELSE random_tgeography_seqset(-180, 180, -90, 90, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 7844)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
+DROP TABLE IF EXISTS tbl_tgeography3d_big;
+CREATE TABLE tbl_tgeography3d_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tgeography3d_inst(-180, 180, -90, 90, 0, 100, '2001-01-01', '2001-12-31', 7844)
+  WHEN 1 THEN random_tgeography3d_discseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 7844)
+  WHEN 2 THEN random_tgeography3d_stepseq(-180, 180, -90, 90, 0, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 7844)
+  ELSE random_tgeography3d_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 7844)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
 
 -------------------------------------------------------------------------------
 RETURN 'The End';

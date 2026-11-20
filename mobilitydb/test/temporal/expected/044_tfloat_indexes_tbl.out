@@ -24,14 +24,14 @@ CREATE TEMP TABLE tbl_tfloat_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tfloat_big
   UNION ALL
-  SELECT k + 10000, temp FROM tbl_tfloat_inst
+  SELECT k + 10100, temp FROM tbl_tfloat_inst
   UNION ALL
-  SELECT k + 10100, temp FROM tbl_tfloat_discseq
+  SELECT k + 10200, temp FROM tbl_tfloat_discseq
   UNION ALL
-  SELECT k + 10200, temp FROM tbl_tfloat_contseq
+  SELECT k + 10300, temp FROM tbl_tfloat_contseq
   UNION ALL
-  SELECT k + 10300, temp FROM tbl_tfloat_seqset )
-SELECT k + n * 10400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, temp FROM tbl_tfloat_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tfloat_idx;
 -- The values, boxes, value spans and periods the operators are given. Those of
@@ -63,7 +63,7 @@ SELECT temp::tbox AS b, false AS knn FROM tbl_tfloat WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_tfloat_src
 UNION ALL
-SELECT expandTime(expandValue(b, 1), interval '1 day'), false FROM tbl_tfloat_src
+SELECT expandTime(expandValue(b, 1::float), interval '1 day'), false FROM tbl_tfloat_src
 UNION ALL
 SELECT tbox(format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::floatspan,
     tstzspan(format('[%s, %s]', lower(t) + (upper(t) - lower(t)) / 2,
@@ -79,7 +79,7 @@ ANALYZE tbl_tfloat_box;
 DROP TABLE IF EXISTS tbl_tfloat_xbox;
 NOTICE:  table "tbl_tfloat_xbox" does not exist, skipping
 CREATE TEMP TABLE tbl_tfloat_xbox AS
-SELECT tbox(format('[%s, %s]', lower(v) - 1, upper(v) + 1)::floatspan) AS b
+SELECT tbox(format('[%s, %s]', lower(v) - 1::float, upper(v) + 1::float)::floatspan) AS b
 FROM tbl_tfloat_src
 UNION ALL
 SELECT tbox(format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::floatspan) AS b
@@ -88,7 +88,7 @@ UNION ALL
 SELECT tbox(v) AS b
 FROM tbl_tfloat_src
 UNION ALL
-SELECT tbox(format('[%s, %s]', upper(v), upper(v) + 1)::floatspan) AS b
+SELECT tbox(format('[%s, %s]', upper(v), upper(v) + 1::float)::floatspan) AS b
 FROM tbl_tfloat_src;
 ANALYZE tbl_tfloat_xbox;
 -- The values of a value of the fixture, the values of a value, a span around
@@ -100,13 +100,13 @@ SELECT valueSpan(temp) AS v, false AS knn FROM tbl_tfloat WHERE k % 20 = 0
 UNION ALL
 SELECT v, true FROM tbl_tfloat_src
 UNION ALL
-SELECT format('[%s, %s]', lower(v) - 1, upper(v) + 1)::floatspan, false
+SELECT format('[%s, %s]', lower(v) - 1::float, upper(v) + 1::float)::floatspan, false
 FROM tbl_tfloat_src
 UNION ALL
 SELECT format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::floatspan, false
 FROM tbl_tfloat_src
 UNION ALL
-SELECT format('[%s, %s]', upper(v), upper(v) + 1)::floatspan, false
+SELECT format('[%s, %s]', upper(v), upper(v) + 1::float)::floatspan, false
 FROM tbl_tfloat_src;
 ANALYZE tbl_tfloat_vspan;
 -- A period of the fixture, the period of a value, one around it, one inside it,
@@ -919,7 +919,7 @@ DROP INDEX tbl_tfloat_idx_kdtree;
 SELECT COUNT(*) FROM tbl_tfloat_idx;
  count 
 -------
- 10400
+ 10500
 (1 row)
 
 SELECT COUNT(*) FROM test_tfloat_idx;
@@ -931,77 +931,77 @@ SELECT COUNT(*) FROM test_tfloat_idx;
 SELECT op, no_idx FROM test_tfloat_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
          op          | no_idx 
 ---------------------+--------
- #&> tbox            | 234448
- #&> tfloat          | 131908
- #&> tstzspan        | 243247
- #>> tbox            | 233788
- #>> tfloat          | 131842
- #>> tstzspan        | 242604
- %&& tbox            | 267
- && floatspan        | 305550
- && tbox             | 624
- && tbox x           | 267529
- && tfloat           | 93
- && tstzspan         | 694
- &< floatspan        | 224550
- &< tbox             | 221151
- &< tbox x           | 189921
- &< tfloat           | 143605
- &<# tbox            | 215966
- &<# tfloat          | 118024
- &<# tstzspan        | 207155
- &> floatspan        | 150105
- &> tbox             | 190962
- &> tbox x           | 125476
- &> tfloat           | 121715
- -|- floatspan       | 20
- -|- tbox            | 20
- -|- tbox x          | 18
- -|- tfloat          | 16
- -|- tstzspan        | 20
- << floatspan        | 100540
- << tbox             | 55214
- << tbox x           | 91987
- << tfloat           | 26857
- <<# tbox            | 215319
- <<# tfloat          | 117960
- <<# tstzspan        | 206522
- <@ floatspan        | 93182
- <@ tbox             | 267
- <@ tbox x           | 73279
- <@ tfloat           | 43
- <@ tstzspan         | 620
- >> floatspan        | 43730
- >> tbox             | 44092
- >> tbox x           | 40324
- >> tfloat           | 18772
- ?&& tbox            | 578
- @> floatspan        | 168367
- @> tbox             | 52
- @> tbox x           | 157736
- @> tfloat           | 34
- @> tstzspan         | 54
- tbox #>> tfloat     | 215319
- tbox && tfloat      | 624
- tbox -|- tfloat     | 20
- tbox << tfloat      | 44092
- tbox <<# tfloat     | 233788
- tbox <@ tfloat      | 52
- tbox >> tfloat      | 55214
- tbox @> tfloat      | 267
- tbox ~= tfloat      | 18
- tstzspan #>> tfloat | 206522
- tstzspan && tfloat  | 694
- tstzspan -|- tfloat | 20
- tstzspan <<# tfloat | 242604
- tstzspan <@ tfloat  | 54
- tstzspan @> tfloat  | 620
- tstzspan ~= tfloat  | 16
- ~= floatspan        | 20
- ~= tbox             | 18
- ~= tbox x           | 14
- ~= tfloat           | 18
- ~= tstzspan         | 16
+ #&> tbox            | 255422
+ #&> tfloat          | 143228
+ #&> tstzspan        | 264550
+ #>> tbox            | 254776
+ #>> tfloat          | 143144
+ #>> tstzspan        | 263919
+ %&& tbox            | 207
+ && floatspan        | 226448
+ && tbox             | 523
+ && tbox x           | 190844
+ && tfloat           | 123
+ && tstzspan         | 725
+ &< floatspan        | 252931
+ &< tbox             | 251557
+ &< tbox x           | 211604
+ &< tfloat           | 155033
+ &<# tbox            | 217447
+ &<# tfloat          | 119197
+ &<# tstzspan        | 208312
+ &> floatspan        | 185329
+ &> tbox             | 219584
+ &> tbox x           | 156577
+ &> tfloat           | 133886
+ -|- floatspan       | 16
+ -|- tbox            | 16
+ -|- tbox x          | 14
+ -|- tfloat          | 14
+ -|- tstzspan        | 14
+ << floatspan        | 156069
+ << tbox             | 124110
+ << tbox x           | 144217
+ << tfloat           | 61626
+ <<# tbox            | 216802
+ <<# tfloat          | 119122
+ <<# tstzspan        | 207676
+ <@ floatspan        | 75233
+ <@ tbox             | 207
+ <@ tbox x           | 52054
+ <@ tfloat           | 45
+ <@ tstzspan         | 597
+ >> floatspan        | 89803
+ >> tbox             | 90415
+ >> tbox x           | 84779
+ >> tfloat           | 41644
+ ?&& tbox            | 476
+ @> floatspan        | 109311
+ @> tbox             | 58
+ @> tbox x           | 103725
+ @> tfloat           | 38
+ @> tstzspan         | 67
+ tbox #>> tfloat     | 216802
+ tbox && tfloat      | 523
+ tbox -|- tfloat     | 16
+ tbox << tfloat      | 90415
+ tbox <<# tfloat     | 254776
+ tbox <@ tfloat      | 58
+ tbox >> tfloat      | 124110
+ tbox @> tfloat      | 207
+ tbox ~= tfloat      | 17
+ tstzspan #>> tfloat | 207676
+ tstzspan && tfloat  | 725
+ tstzspan -|- tfloat | 14
+ tstzspan <<# tfloat | 263919
+ tstzspan <@ tfloat  | 67
+ tstzspan @> tfloat  | 597
+ tstzspan ~= tfloat  | 12
+ ~= floatspan        | 18
+ ~= tbox             | 17
+ ~= tbox x           | 12
+ ~= tfloat           | 17
+ ~= tstzspan         | 12
 (71 rows)
 
 -- The distances of the nearest values are compared, not stated
@@ -1036,7 +1036,7 @@ CREATE INDEX tbl_tfloat_allthesame_quadtree ON tbl_tfloat_allthesame USING spgis
 SELECT COUNT(*) AS rows_scan FROM tbl_tfloat_allthesame WHERE temp && tbox 'TBOXFLOAT X([5.5, 5.5])';
  rows_scan 
 -----------
-     12380
+     10100
 (1 row)
 
 SET enable_seqscan = off;
@@ -1049,7 +1049,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_allthesame WHE
 SELECT COUNT(*) AS rows_index FROM tbl_tfloat_allthesame WHERE temp && tbox 'TBOXFLOAT X([5.5, 5.5])';
  rows_index 
 ------------
-      12380
+      10100
 (1 row)
 
 RESET enable_seqscan;

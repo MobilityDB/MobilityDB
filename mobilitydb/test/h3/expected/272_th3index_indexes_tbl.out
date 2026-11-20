@@ -943,82 +943,82 @@ SELECT COUNT(*) FROM test_th3index_idx;
 SELECT op, no_idx FROM test_th3index_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
           op           | no_idx 
 -----------------------+--------
- #&> stbox             | 226516
- #&> th3index          | 122365
- #&> tstzspan          | 248575
- #>> stbox             | 225868
- #>> th3index          | 122324
- #>> tstzspan          | 247936
- %&& stbox             | 199
- && stbox              | 692
- && stbox x            | 346037
- && th3index           | 67
- && tstzspan           | 683
- &< stbox              | 266270
- &< stbox x            | 240023
- &< th3index           | 185018
- &<# stbox             | 246588
- &<# th3index          | 140151
- &<# tstzspan          | 224520
- &<| stbox             | 217556
- &<| stbox x           | 202365
- &<| th3index          | 147789
- &> stbox              | 267749
- &> stbox x            | 164256
- &> th3index           | 184781
- -|- stbox             | 12
- -|- stbox x           | 13902
- -|- th3index          | 13
- -|- tstzspan          | 11
- << stbox              | 2158
- << stbox x            | 67447
- << th3index           | 232
- <<# stbox             | 245939
- <<# th3index          | 140109
- <<# tstzspan          | 223881
- <<| stbox             | 3604
- <<| stbox x           | 3506
- <<| th3index          | 486
- <@ stbox              | 165
- <@ stbox x            | 53201
- <@ th3index           | 16
- <@ tstzspan           | 619
- >> stbox              | 2818
- >> stbox x            | 1787
- >> th3index           | 1124
- ?&& stbox             | 671
- @> stbox              | 35
- @> stbox x            | 119820
- @> th3index           | 17
- @> tstzspan           | 34
- stbox #>> th3index    | 245939
- stbox && th3index     | 692
- stbox -|- th3index    | 12
- stbox << th3index     | 2818
- stbox <<# th3index    | 225868
- stbox <<| th3index    | 3796
- stbox <@ th3index     | 35
- stbox >> th3index     | 2158
- stbox @> th3index     | 165
- stbox |>> th3index    | 3604
+ #&> stbox             | 273889
+ #&> th3index          | 145986
+ #&> tstzspan          | 295835
+ #>> stbox             | 273196
+ #>> th3index          | 145925
+ #>> tstzspan          | 295154
+ %&& stbox             | 278
+ && stbox              | 583
+ && stbox x            | 260053
+ && th3index           | 83
+ && tstzspan           | 723
+ &< stbox              | 190913
+ &< stbox x            | 162004
+ &< th3index           | 126142
+ &<# stbox             | 199253
+ &<# th3index          | 116546
+ &<# tstzspan          | 177299
+ &<| stbox             | 209704
+ &<| stbox x           | 188162
+ &<| th3index          | 132746
+ &> stbox              | 218303
+ &> stbox x            | 148675
+ &> th3index           | 139423
+ -|- stbox             | 20
+ -|- stbox x           | 8045
+ -|- th3index          | 15
+ -|- tstzspan          | 19
+ << stbox              | 40741
+ << stbox x            | 71694
+ << th3index           | 17102
+ <<# stbox             | 198568
+ <<# th3index          | 116491
+ <<# tstzspan          | 176623
+ <<| stbox             | 54424
+ <<| stbox x           | 52628
+ <<| th3index          | 22716
+ <@ stbox              | 258
+ <@ stbox x            | 62869
+ <@ th3index           | 43
+ <@ tstzspan           | 661
+ >> stbox              | 69678
+ >> stbox x            | 65958
+ >> th3index           | 32166
+ ?&& stbox             | 438
+ @> stbox              | 45
+ @> stbox x            | 140532
+ @> th3index           | 33
+ @> tstzspan           | 41
+ stbox #>> th3index    | 198568
+ stbox && th3index     | 583
+ stbox -|- th3index    | 20
+ stbox << th3index     | 69678
+ stbox <<# th3index    | 273196
+ stbox <<| th3index    | 51441
+ stbox <@ th3index     | 45
+ stbox >> th3index     | 40741
+ stbox @> th3index     | 258
+ stbox |>> th3index    | 54424
  stbox ~= th3index     | 15
- tstzspan #>> th3index | 223881
- tstzspan && th3index  | 683
- tstzspan -|- th3index | 11
- tstzspan <<# th3index | 247936
- tstzspan <@ th3index  | 34
- tstzspan @> th3index  | 619
- tstzspan ~= th3index  | 10
- |&> stbox             | 200450
- |&> stbox x           | 170668
- |&> th3index          | 141702
- |>> stbox             | 3796
- |>> stbox x           | 2927
- |>> th3index          | 1093
+ tstzspan #>> th3index | 176623
+ tstzspan && th3index  | 723
+ tstzspan -|- th3index | 19
+ tstzspan <<# th3index | 295154
+ tstzspan <@ th3index  | 41
+ tstzspan @> th3index  | 661
+ tstzspan ~= th3index  | 14
+ |&> stbox             | 216972
+ |&> stbox x           | 184471
+ |&> th3index          | 142679
+ |>> stbox             | 51441
+ |>> stbox x           | 46461
+ |>> th3index          | 23228
  ~= stbox              | 15
- ~= stbox x            | 10
- ~= th3index           | 15
- ~= tstzspan           | 10
+ ~= stbox x            | 188
+ ~= th3index           | 19
+ ~= tstzspan           | 14
 (76 rows)
 
 -- The distances of the nearest values are compared, not stated
@@ -1053,7 +1053,7 @@ CREATE INDEX tbl_th3index_allthesame_quadtree ON tbl_th3index_allthesame USING s
 SELECT COUNT(*) FROM tbl_th3index_allthesame WHERE temp && (SELECT temp::stbox FROM tbl_th3index_allthesame LIMIT 1);
  count 
 -------
-     0
+     1
 (1 row)
 
 SET enable_seqscan = off;
@@ -1066,7 +1066,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_th3index_allthesame W
 SELECT COUNT(*) FROM tbl_th3index_allthesame WHERE temp && (SELECT temp::stbox FROM tbl_th3index_allthesame LIMIT 1);
  count 
 -------
-     0
+     1
 (1 row)
 
 RESET enable_seqscan;

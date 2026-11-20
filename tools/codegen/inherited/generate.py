@@ -399,7 +399,8 @@ def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
 
 
 def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
-                      box: str = "stbox", valspan: str = None) -> str:
+                      box: str = "stbox", valspan: str = None,
+                      base: str = None) -> str:
     """The tables of one dimension of an index test over the fixtures
     `tbl_<stem>_*`, templates/indextest_tables.sql.tmpl with the coordinates
     of the boxes of that dimension, the keyword `boxkw` of their literals and
@@ -408,7 +409,9 @@ def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
     alone takes templates/indextest_tables_span.sql.tmpl, the same tables
     without the boxes of space, and a temporal number keyed by a tbox
     templates/indextest_tables_tbox.sql.tmpl, its boxes of values alone and
-    the spans `valspan` of its values in place of those of space. A fixture
+    the spans `valspan` of its values in place of those of space, the value
+    it expands a box by written in its `base` type, since a box takes a value of
+    its own type alone. A fixture
     stating `big: none` has no table of many values, its instants keeping
     their keys"""
     axes = ("x", "y", "z") if dim.get("z") else ("x", "y")
@@ -430,7 +433,8 @@ def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
     text = read_template({"stbox": "indextest_tables.sql.tmpl",
                           "tbox": "indextest_tables_tbox.sql.tmpl"}.get(
                               box, "indextest_tables_span.sql.tmpl"))
-    text = text.replace("{VSPAN}", valspan or "").replace("{D}", "1")
+    text = text.replace("{VSPAN}", valspan or "").replace(
+        "{D}", f"1::{base}" if box == "tbox" else "1")
     for k, v in (("{FIXTURE}", fixture), ("{SRCFILTER}", dim["srcfilter"]),
                  ("{XT}", "ZT" if dim.get("z") else "XT"),
                  ("{X}", "Z" if dim.get("z") else "X"),
@@ -498,7 +502,9 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
                                     "srcfilter": test["srcfilter"]}]
     cd = [i for i, d in enumerate(alldims) if d.get("dist", True)][-1]
     withsame = which == 0 and bool(test.get("same") or test.get("sameexpr"))
-    withcol = which == cd and box == "stbox"
+    # A column of boxes is queried by the members the subtype adds to the box
+    # family, so a subtype adding none has no such queries
+    withcol = which == cd and box == "stbox" and bool(sub.get("boxmembers"))
     dims = [alldims[which]]
     # Whether the class has a distance, which a cell's has not
     classdist = "|=|" in cls
@@ -509,9 +515,12 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
                                 f"{d['suffix']} " if len(dims) > 1 else "",
                                 bool(d.get("z")), d.get("dist", True) and classdist,
                                 d.get("ever", True), opnames, valspan)
-    # A cell bounded by great-circle arcs has a geodetic box
-    boxkw = "GEODSTBOX" if sub.get("geodetic_target") else "STBOX"
-    tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box, valspan)
+    # A cell bounded by great-circle arcs, and a value of a geography, has a
+    # geodetic box
+    boxkw = "GEODSTBOX" if sub.get("geodetic_target") or \
+        test.get("base") == "geography" else "STBOX"
+    tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box, valspan,
+                                          test.get("base"))
                        for d, stem in zip(dims, stems))
     out = []
     for idx, using in (("rtree", "gist(temp)"), ("quadtree", "spgist(temp)"),
@@ -6063,6 +6072,18 @@ _BOXGIST_BOUND = """
 """
 
 
+# A box type stating the lower bound its index reports (#stbox_index_distance)
+# reports it for an entry carrying a box and the operator's answer otherwise
+_BOXGIST_INDEXDISTANCE = """  /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
+   * box rather than the value, so what they report is a lower bound of the
+   * distance the ordering operator computes (#{INDEXFN}). The exact
+   * leaf of a column of boxes reports the operator's own answer */
+  double distance = (! GIST_LEAF(entry) || *recheck) ?
+    {INDEXDISTANCE} : {DISTANCE};
+
+"""
+
+
 def render_boxgist(box: dict, samekinds: dict) -> str:
     """The GiST support functions of a box type, rendered from its template as
     #render_indextree renders a tree's constructors"""
@@ -6070,7 +6091,13 @@ def render_boxgist(box: dict, samekinds: dict) -> str:
     same = textwrap.indent(samekinds[box["same"]].replace("{FIELDS}", fields),
                            "    ")
     bound = _BOXGIST_BOUND if box["bound"] else "\n"
-    text = read_template("boxgist.c.tmpl").replace("{BOUND}", bound)
+    text = read_template("boxgist.c.tmpl")
+    if box.get("indexdistance"):
+        text = text.replace("  double distance = {DISTANCE};\n{BOUND}",
+                            _BOXGIST_INDEXDISTANCE
+                            .replace("{INDEXFN}", box["indexdistance"].split("(")[0])
+                            .replace("{INDEXDISTANCE}", box["indexdistance"]))
+    text = text.replace("{BOUND}", bound)
     for key, val in (("{SAME}", same), ("{CONSISTENT}", box["consistent"]),
                      ("{TEMPDISTANCE}", box["tempdistance"]),
                      ("{GETBOX}", box["getbox"]), ("{DATUMGET}", box["datumget"]),
@@ -6157,7 +6184,11 @@ def _boxspgist_nodetest(test: str, box: dict) -> str:
 def render_boxspgist(box: dict, posaxes: list, posops: list) -> str:
     """The SP-GiST support functions of a box type, rendered from its template
     as #render_boxgist renders the GiST ones"""
-    if box["bound"]:
+    if box.get("indexdistance"):
+        distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
+                    "       * reports is a lower bound of the operator's own distance */\n"
+                    f"      distances[i] = {box['indexdistance']};")
+    elif box["bound"]:
         distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
                     "       * reports is lowered to stay under the operator's own distance */\n"
                     f"      distances[i] = {box['box']}_index_distance_bound(\n"

@@ -80,7 +80,8 @@
  *
  * @defgroup mobilitydb_pointcloud_base_srid Spatial reference system functions
  * @ingroup mobilitydb_pointcloud_base
- * @brief Spatial reference system functions for pcpoint / pcpatch
+ * @brief Spatial reference system functions for pcpoint / pcpatch and their
+ *   sets
  *
  * @defgroup mobilitydb_pointcloud_base_conversion Conversion functions
  * @ingroup mobilitydb_pointcloud_base

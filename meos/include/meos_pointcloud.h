@@ -189,6 +189,10 @@ extern bool pcpoint_get_dim(const Pcpoint *pt, const char *name, double *out);
 
 extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt);
 
+/* Transformation into the schema of another pcid, which states the SRID */
+
+extern Pcpoint *pcpoint_transform(const Pcpoint *pt, uint32_t pcid);
+
 /* Schema cache — process-global lookup table of parsed PCSCHEMA values
  * keyed by pcid.  In a PG backend the cache is populated lazily via the
  * hook installed by @c mobilitydb_init (catalog scan of
@@ -279,6 +283,10 @@ extern int pcpatch_mem_size(const Pcpatch *pa);
 extern GSERIALIZED *pcpatch_to_geom(const Pcpatch *pa);
 extern GSERIALIZED *pcpatch_to_geog(const Pcpatch *pa);
 
+/* Transformation into the schema of another pcid, which states the SRID */
+
+extern Pcpatch *pcpatch_transform(const Pcpatch *pa, uint32_t pcid);
+
 /* Comparison */
 
 extern int pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2);
@@ -365,6 +373,11 @@ extern Set *union_set_pcpatch(const Set *s, const Pcpatch *pa);
 
 extern Set *pcpatch_union_transfn(Set *state, const Pcpatch *pa);
 
+/* Transformation of a set of pcpoints or pcpatches into the schema of
+ * another pcid, which states the SRID */
+
+extern Set *pointcloudset_transform(const Set *s, uint32_t pcid);
+
 /******************************************************************************
  * Functions for the TPCBox bounding box
  ******************************************************************************/
@@ -392,6 +405,7 @@ extern TPCBox *tpcbox_copy(const TPCBox *box);
 
 extern TPCBox *pcpatch_to_tpcbox(const Pcpatch *pa);
 extern TPCBox *tpointcloud_to_tpcbox(const Temporal *temp);
+extern Temporal *tpointcloud_transform(const Temporal *temp, uint32_t pcid);
 extern TPCBox *tpointcloud_tpcboxes(const Temporal *temp, int *count);
 extern TPCBox *tpointcloud_split_n_tpcboxes(const Temporal *temp, int box_count, int *count);
 extern TPCBox *tpointcloud_split_each_n_tpcboxes(const Temporal *temp, int elem_count, int *count);
@@ -422,7 +436,7 @@ extern STBox *tpcbox_to_stbox(const TPCBox *box);
 /* Transformation */
 
 extern TPCBox *tpcbox_round(const TPCBox *box, int maxdd);
-extern TPCBox *tpcbox_set_srid(const TPCBox *box, int32_t srid);
+extern TPCBox *tpcbox_transform(const TPCBox *box, uint32_t pcid);
 
 /* Set operations (same-pcid / same-srid required) */
 
@@ -541,6 +555,10 @@ extern Temporal *tpcpoint_from_base_temp(const Pcpoint *pt, const Temporal *temp
 extern Pcpoint *tpcpoint_start_value(const Temporal *temp);
 extern Pcpoint *tpcpoint_end_value(const Temporal *temp);
 extern Pcpoint *tpcpoint_value(const Temporal *temp);
+extern Temporal *tpcpoint_get_x(const Temporal *temp);
+extern Temporal *tpcpoint_get_y(const Temporal *temp);
+extern Temporal *tpcpoint_get_z(const Temporal *temp);
+extern Temporal *tpcpoint_get_dim(const Temporal *temp, const char *name);
 extern bool tpcpoint_value_n(const Temporal *temp, int n, Pcpoint **result);
 extern Pcpoint **tpcpoint_values(const Temporal *temp, int *count);
 extern SpanSet **tpcpoint_unnest(const Temporal *temp, Pcpoint ***values, int *count);

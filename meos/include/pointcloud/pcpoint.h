@@ -40,6 +40,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <liblwgeom.h>
 #include <meos_pointcloud.h>
 
 /*****************************************************************************
@@ -88,6 +89,18 @@ extern void pc_wkb_int32_flip(uint8_t *ptr);
 extern uint8_t *pcpoint_to_wkb_bytes(const Pcpoint *pt, uint8_t variant,
   size_t *size_out);
 extern size_t pcpoint_meaningful_size(const Pcpoint *pt);
+
+/* The offset of the bytes stored after the pcid, a point and a patch both
+ * starting with the varlena header and the pcid */
+#define PC_BYTES_OFFSET (VARHDRSZ + sizeof(uint32_t))
+
+extern int pointcloud_bytes_cmp(uint32_t pcid1, const uint8_t *b1, size_t n1,
+  uint32_t pcid2, const uint8_t *b2, size_t n2);
+extern size_t pointcloud_sortkey_size(const uint8_t *b, size_t n);
+extern uint8_t *pointcloud_sortkey_put(uint32_t pcid, const uint8_t *b,
+  size_t n, uint8_t *out);
+extern size_t pcpoint_sortkey_size(const Pcpoint *pt);
+extern uint8_t *pcpoint_sortkey_put(const Pcpoint *pt, uint8_t *out);
 extern double *pcpoint_dims(const Pcpoint *pt, int *count);
 extern PCSCHEMA *pcpoint_schema(const Pcpoint *pt);
 
@@ -104,6 +117,10 @@ extern bool pcpoint_schema_get_z(const Pcpoint *pt, PCSCHEMA *schema,
 extern bool pcpoint_schema_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
   const char *name, double *out);
 extern TPCBox *pcpoint_schema_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
+extern bool pc_transform_lookup(uint32_t pcid_from, uint32_t pcid_to,
+  const PCSCHEMA **schema_to, LWPROJ **pj);
+extern Pcpoint *pcpoint_transf_pj(const Pcpoint *pt, uint32_t pcid_to,
+  const PCSCHEMA *to, const LWPROJ *pj);
 
 /*****************************************************************************/
 

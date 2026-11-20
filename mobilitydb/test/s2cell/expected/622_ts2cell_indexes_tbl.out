@@ -943,82 +943,82 @@ SELECT COUNT(*) FROM test_ts2cell_idx;
 SELECT op, no_idx FROM test_ts2cell_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
           op          | no_idx 
 ----------------------+--------
- #&> stbox            | 309251
- #&> ts2cell          | 177409
- #&> tstzspan         | 303699
- #>> stbox            | 308582
- #>> ts2cell          | 177359
- #>> tstzspan         | 303048
- %&& stbox            | 304
- && stbox             | 715
- && stbox x           | 374823
- && ts2cell           | 74
- && tstzspan          | 700
- &< stbox             | 310474
- &< stbox x           | 268408
- &< ts2cell           | 219701
- &<# stbox            | 163867
- &<# ts2cell          | 85114
- &<# tstzspan         | 169405
- &<| stbox            | 253150
- &<| stbox x          | 216142
- &<| ts2cell          | 178918
- &> stbox             | 232480
- &> stbox x           | 127317
- &> ts2cell           | 168180
- -|- stbox            | 13
- -|- stbox x          | 51334
- -|- ts2cell          | 12
- -|- tstzspan         | 13
- << stbox             | 1928
- << stbox x           | 39726
- << ts2cell           | 233
- <<# stbox            | 163195
- <<# ts2cell          | 85066
- <<# tstzspan         | 168752
- <<| stbox            | 4326
- <<| stbox x          | 3773
- <<| ts2cell          | 1059
- <@ stbox             | 202
- <@ stbox x           | 69681
- <@ ts2cell           | 25
- <@ tstzspan          | 628
- >> stbox             | 1466
- >> stbox x           | 1270
- >> ts2cell           | 260
- ?&& stbox            | 684
- @> stbox             | 37
- @> stbox x           | 137133
- @> ts2cell           | 15
- @> tstzspan          | 36
- stbox #>> ts2cell    | 163195
- stbox && ts2cell     | 715
- stbox -|- ts2cell    | 13
- stbox << ts2cell     | 1466
- stbox <<# ts2cell    | 308582
- stbox <<| ts2cell    | 1800
- stbox <@ ts2cell     | 37
- stbox >> ts2cell     | 1928
- stbox @> ts2cell     | 202
- stbox |>> ts2cell    | 4326
+ #&> stbox            | 301122
+ #&> ts2cell          | 173341
+ #&> tstzspan         | 295554
+ #>> stbox            | 300424
+ #>> ts2cell          | 173274
+ #>> tstzspan         | 294875
+ %&& stbox            | 346
+ && stbox             | 628
+ && stbox x           | 283579
+ && ts2cell           | 92
+ && tstzspan          | 718
+ &< stbox             | 261602
+ &< stbox x           | 218265
+ &< ts2cell           | 179237
+ &<# stbox            | 172025
+ &<# ts2cell          | 89197
+ &<# tstzspan         | 177579
+ &<| stbox            | 246797
+ &<| stbox x          | 206909
+ &<| ts2cell          | 164158
+ &> stbox             | 271287
+ &> stbox x           | 168910
+ &> ts2cell           | 181330
+ -|- stbox            | 19
+ -|- stbox x          | 31147
+ -|- ts2cell          | 15
+ -|- tstzspan         | 18
+ << stbox             | 25630
+ << stbox x           | 57677
+ << ts2cell           | 8629
+ <<# stbox            | 171333
+ <<# ts2cell          | 89134
+ <<# tstzspan         | 176907
+ <<| stbox            | 49346
+ <<| stbox x          | 46183
+ <<| ts2cell          | 20701
+ <@ stbox             | 315
+ <@ stbox x           | 80240
+ <@ ts2cell           | 50
+ <@ tstzspan          | 658
+ >> stbox             | 52891
+ >> stbox x           | 51013
+ >> ts2cell           | 22289
+ ?&& stbox            | 534
+ @> stbox             | 43
+ @> stbox x           | 137924
+ @> ts2cell           | 30
+ @> tstzspan          | 39
+ stbox #>> ts2cell    | 171333
+ stbox && ts2cell     | 628
+ stbox -|- ts2cell    | 19
+ stbox << ts2cell     | 52891
+ stbox <<# ts2cell    | 300424
+ stbox <<| ts2cell    | 40387
+ stbox <@ ts2cell     | 43
+ stbox >> ts2cell     | 25630
+ stbox @> ts2cell     | 315
+ stbox |>> ts2cell    | 49346
  stbox ~= ts2cell     | 15
- tstzspan #>> ts2cell | 168752
- tstzspan && ts2cell  | 700
- tstzspan -|- ts2cell | 13
- tstzspan <<# ts2cell | 303048
- tstzspan <@ ts2cell  | 36
- tstzspan @> ts2cell  | 628
- tstzspan ~= ts2cell  | 11
- |&> stbox            | 277838
- |&> stbox x          | 245154
- |&> ts2cell          | 194652
- |>> stbox            | 1800
- |>> stbox x          | 1753
- |>> ts2cell          | 113
+ tstzspan #>> ts2cell | 176907
+ tstzspan && ts2cell  | 718
+ tstzspan -|- ts2cell | 18
+ tstzspan <<# ts2cell | 294875
+ tstzspan <@ ts2cell  | 39
+ tstzspan @> ts2cell  | 658
+ tstzspan ~= ts2cell  | 14
+ |&> stbox            | 223845
+ |&> stbox x          | 188051
+ |&> ts2cell          | 149466
+ |>> stbox            | 40387
+ |>> stbox x          | 39233
+ |>> ts2cell          | 15924
  ~= stbox             | 15
- ~= stbox x           | 3023
- ~= ts2cell           | 15
- ~= tstzspan          | 11
+ ~= stbox x           | 6467
+ ~= ts2cell           | 19
+ ~= tstzspan          | 14
 (76 rows)
 
 -- The distances of the nearest values are compared, not stated
@@ -1053,7 +1053,7 @@ CREATE INDEX tbl_ts2cell_allthesame_quadtree ON tbl_ts2cell_allthesame USING spg
 SELECT COUNT(*) FROM tbl_ts2cell_allthesame WHERE temp && (SELECT temp::stbox FROM tbl_ts2cell_allthesame LIMIT 1);
  count 
 -------
-     0
+     1
 (1 row)
 
 SET enable_seqscan = off;
@@ -1066,7 +1066,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_allthesame WH
 SELECT COUNT(*) FROM tbl_ts2cell_allthesame WHERE temp && (SELECT temp::stbox FROM tbl_ts2cell_allthesame LIMIT 1);
  count 
 -------
-     0
+     1
 (1 row)
 
 RESET enable_seqscan;

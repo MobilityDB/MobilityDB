@@ -181,12 +181,6 @@ int main(void)
     tspatial_set_srid(tseq, invalid), MEOS_ERR_INVALID_ARG_VALUE);
   check_refused("spatialset_set_srid(geomset, SRID_INVALID)",
     spatialset_set_srid(gset, invalid), MEOS_ERR_INVALID_ARG_VALUE);
-  /* A negative SRID reads as the unknown one, which a spatiotemporal value
-   * and a spatial set do not take */
-  check_refused("tspatial_set_srid(tgeompoint, -5)",
-    tspatial_set_srid(tseq, -5), MEOS_ERR_INVALID_ARG_VALUE);
-  check_refused("spatialset_set_srid(geomset, -5)",
-    spatialset_set_srid(gset, -5), MEOS_ERR_INVALID_ARG_VALUE);
 
   int32_t srids[] = {-5, 0, 4326, 999999, 1000000, 999999999};
   for (int i = 0; i < (int) (sizeof(srids) / sizeof(srids[0])); i++)
@@ -211,11 +205,10 @@ int main(void)
     assert(q && posechain_srid(q) == expected);
     free(q);
     meos_errno_reset();
-    if (expected == 0)
-      continue;
 
     /* The components and the bounding box of a spatiotemporal value and of a
-     * spatial set state the SRID the setter answers */
+     * spatial set state the SRID the setter of a geometry answers, the
+     * unknown SRID a negative SRID reads as included */
     const Temporal *temps[] = {tseq, tss, tcb};
     for (int j = 0; j < 3; j++)
     {

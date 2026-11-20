@@ -576,7 +576,7 @@ check_intervalstyle(const char *newval, int *extra)
     newIntervalStyle = INTSTYLE_POSTGRES;
   else if (pg_strcasecmp(newval, "postgres_verbose") == 0)
     newIntervalStyle = INTSTYLE_POSTGRES_VERBOSE;
-  else if (pg_strncasecmp(newval, "sql_standard", 8) == 0)
+  else if (pg_strcasecmp(newval, "sql_standard") == 0)
     newIntervalStyle = INTSTYLE_SQL_STANDARD;
   else if (pg_strcasecmp(newval, "iso_8601") == 0)
     newIntervalStyle = INTSTYLE_ISO_8601;

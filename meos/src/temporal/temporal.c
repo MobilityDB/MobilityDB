@@ -62,6 +62,7 @@
 #include "temporal/tsequenceset.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -70,6 +71,9 @@
 #endif
 #if NPOINT
   #include "npoint/tnpoint.h"
+#endif
+#if POINTCLOUD
+  #include "pointcloud/tpcbox.h"
 #endif
 #if POSE
   #include "pose/pose.h"
@@ -667,6 +671,29 @@ ensure_positive_window(const Interval *interv)
  *****************************************************************************/
 
 /**
+ * @brief Return the reference geometry a temporal value carries, NULL for
+ * every type that carries none
+ * @details A temporal rigid geometry is a reference geometry moved by a
+ * temporal pose. Its value is the geometry and the poses together, so its
+ * equality, its comparison and its sort key read the geometry as well as the
+ * instants. This function is the one place that recognizes such a type; it
+ * reads the geometry in place, without copying the value
+ * @param[in] temp Temporal value
+ * @note The geometry is the argument's own, so it is read while the argument
+ * lives
+ */
+const GSERIALIZED *
+temporal_geom_p(const Temporal *temp)
+{
+  assert(temp);
+#if RGEO
+  if (temp->temptype == T_TRGEOMETRY)
+    return trgeometry_geom_p(temp);
+#endif /* RGEO */
+  return NULL;
+}
+
+/**
  * @brief Return the temporal value an operation is to be computed on, and the
  * reference geometry it carries
  * @details A temporal rigid geometry is a temporal pose with a reference
@@ -686,13 +713,10 @@ Temporal *
 temporal_strip_geom(const Temporal *temp, const GSERIALIZED **geom)
 {
   assert(temp); assert(geom);
-  *geom = NULL;
+  *geom = temporal_geom_p(temp);
 #if RGEO
-  if (temp->temptype == T_TRGEOMETRY)
-  {
-    *geom = trgeometry_geom_p(temp);
+  if (*geom)
     return trgeometry_to_tpose(temp);
-  }
 #endif /* RGEO */
   return (Temporal *) temp;
 }
@@ -5032,6 +5056,12 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
     return false;
   }
 
+  /* A value carrying a reference geometry is equal only where the geometry is
+   * equal by value (#temporal_geom_p, #geo_eq): the instants hold the poses */
+  const GSERIALIZED *geom1 = temporal_geom_p(temp1);
+  if (geom1 && ! geo_eq(geom1, temporal_geom_p(temp2)))
+    return false;
+
   /* Read each value through its one-element wrappers, so that the spelling
    * does not decide the answer */
   temp1 = temporal_unwrapped(temp1);
@@ -5191,6 +5221,16 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   if (result)
     return result;
 
+  /* Then the reference geometry of a value carrying one (#temporal_geom_p),
+   * by value (#geo_cmp), as #temporal_eq reads it */
+  const GSERIALIZED *geom1 = temporal_geom_p(temp1);
+  if (geom1)
+  {
+    result = geo_cmp(geom1, temporal_geom_p(temp2));
+    if (result)
+      return result;
+  }
+
   /* Read each value through its one-element wrappers, so that the spelling
    * does not decide the order */
   temp1 = temporal_unwrapped(temp1);
@@ -5272,20 +5312,13 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
 /**
  * @brief Return true if the values of a temporal type have a sort key
  * @details A temporal type has a key when its base type has one, as
- * #datum_sortkey_type answers, or when it is a temporal point, whose values
- * #datum_sortkey_put writes as points
+ * #datum_sortkey_type answers
  * @param[in] temptype Temporal type
  */
 bool
 temporal_sortkey_type(MeosType temptype)
 {
-  /* A temporal rigid geometry has poses as its values, but #temporal_cmp
-   * reads none of its reference geometry, so two values that #temporal_eq
-   * holds different can compare equal and have no key that agrees with both */
-  if (temptype == T_TRGEOMETRY)
-    return false;
-  return tpoint_type(temptype) ||
-    datum_sortkey_type(temptype_basetype(temptype));
+  return datum_sortkey_type(temptype_basetype(temptype));
 }
 
 /**
@@ -5314,6 +5347,12 @@ temporal_bbox_sortkey_put(const bboxunion *box, MeosType bboxtype,
       if (out)
         stbox_sortkey_put(&box->g, out);
       return stbox_sortkey_size(&box->g);
+#if POINTCLOUD
+    case T_TPCBOX:
+      if (out)
+        tpcbox_sortkey_put(&box->c, out);
+      return tpcbox_sortkey_size(&box->c);
+#endif
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Unknown bounding box type for a sort key: %s",
@@ -5348,9 +5387,12 @@ tinstant_sortkey_put(const TInstant *inst, uint8_t *out)
  * @brief Write the sort key of a temporal value, or count its bytes when the
  * buffer is NULL
  * @details The key holds the fields in the order #temporal_cmp compares them:
- * - the bounding box, as #tbox_sortkey_put, #stbox_sortkey_put or
+ * - the bounding box, as #tbox_sortkey_put, #stbox_sortkey_put,
+ *   #tpcbox_sortkey_put or
  *   #span_sortkey_body writes it, and for a temporal geography its period, as
  *   #span_sortkey_body writes it;
+ * - the reference geometry of a value carrying one, a temporal rigid
+ *   geometry, as #geo_sortkey_put writes it;
  * - each instant, as #tinstant_sortkey_put writes it;
  * - each run, as #temporal_run reads it: its number of instants, whether it
  *   holds its lower and its upper bound, an inclusive bound first, and its
@@ -5388,6 +5430,16 @@ temporal_sortkey_put(const Temporal *temp, uint8_t *out)
     temporal_set_bbox(temp, &box);
     result += temporal_bbox_sortkey_put(&box, type_bboxtype(temp->temptype),
       out ? out + result : NULL);
+  }
+
+  /* The reference geometry of a value carrying one, as #temporal_cmp reads
+   * it after the bounding box */
+  const GSERIALIZED *geom = temporal_geom_p(temp);
+  if (geom)
+  {
+    if (out)
+      geo_sortkey_put(geom, out + result);
+    result += geo_sortkey_size(geom);
   }
 
   const Temporal *utemp = temporal_unwrapped(temp);
@@ -5464,7 +5516,9 @@ temporal_sortkey_intl(const Temporal *temp, size_t *size)
  * @details The key is the bytes whose unsigned byte order is the order of
  * #temporal_cmp and whose byte equality is #temporal_eq. The temporal
  * Booleans, integers, big integers, floats, texts, points, cells, circular
- * buffers, network points, poses and pose chains have a sort key.
+ * buffers, network points, geometries, geographies, poses, pose chains,
+ * rigid geometries, point-cloud points, point-cloud patches and JSON values
+ * have a sort key.
  * @param[in] temp Temporal value
  * @param[out] size Number of bytes of the key
  * @errval NULL
