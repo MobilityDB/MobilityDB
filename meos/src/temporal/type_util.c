@@ -851,9 +851,12 @@ datum_sortkey_len(Datum d, MeosType type)
 
 /**
  * @brief Write the low `nbytes` bytes of an unsigned integer most significant
- * first
+ * first, so that comparing the bytes as unsigned values orders the integers
+ * @param[in] v Unsigned integer
+ * @param[in] nbytes Number of its low bytes written
+ * @param[out] out Buffer of `nbytes` bytes
  */
-static void
+void
 sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
 {
   for (int i = nbytes - 1; i >= 0; i--)
