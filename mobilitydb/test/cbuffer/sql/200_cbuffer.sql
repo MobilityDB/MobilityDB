@@ -87,6 +87,10 @@ SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
 SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
   'urn:ogc:def:coordinateOperation:EPSG::16031', 0, false);
 SELECT transform(cbufferset '{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}', 4326);
+-- A circular buffer states its SRID inside itself, which must be the SRID of
+-- its set
+SELECT asEWKT(cbufferset 'SRID=25832;{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}');
+SELECT asEWKT(cbufferset 'SRID=25832;{"Cbuffer(SRID=3857;Point(651337 6058377),10)"}');
 
 -------------------------------------------------------------------------------
 -- Modification functions

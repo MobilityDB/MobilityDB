@@ -203,6 +203,17 @@ SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E61000000000
 -- A component that states an SRID other than the one of its container
 SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E40E0000000000000000F03F000000000000F03F'));
 SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E40E0000000000000000F03F000000000000F03F0060885EC91C0000'));
+-- The same in text: a value stating the SRID of its set, a value stating
+-- none, and a value stating another
+SELECT asEWKT(geomset 'SRID=4326;{"SRID=4326;Point(1 1)", "Point(2 2)"}');
+SELECT asEWKT(geomset 'SRID=4326;{"SRID=3857;Point(1 1)", "Point(2 2)"}');
+SELECT asEWKT(geomset 'SRID=4326;{"Point(1 1)", "SRID=3857;Point(2 2)"}');
+SELECT asEWKT(tgeompoint 'SRID=4326;[SRID=3857;Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+-- A geography stating no SRID is in 4326, which the SRID of its set
+-- restates; one stating 4326 does not
+SELECT asEWKT(geogset 'SRID=4269;{"Point(1 1)"}');
+SELECT asEWKT(geogset 'SRID=4269;{"SRID=4269;Point(1 1)"}');
+SELECT asEWKT(geogset 'SRID=4269;{"SRID=4326;Point(1 1)"}');
 /* Errors */
 select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'ABCD');
 
