@@ -1756,11 +1756,7 @@ TGEOMETRY_CONFIG = dict(
         "geo_as_wkb":            {1: "geo_endian1"},
         "geo_as_hexwkb":         {1: "geo_endian1"},
         "geom_in":               {0: "geom_wkt1", 1: "-1"},
-        # geo_transform_pipeline's pipeline arg is a non-const char * (unlike
-        # its pose/cbuffer/stbox/tspatial siblings); geo_pipeline1 is a
-        # writable array rather than a string-literal pointer in case the
-        # callee ever mutates it in place.
-        "geo_transform_pipeline":     {1: "geo_pipeline1", 2: "4326"},
+        "geo_transform_pipeline":     {1: "pipeline1", 2: "4326"},
         "geom_buffer":                {2: "geom_buffer_params1"},
         # A pattern is nine symbols of the DE-9IM alphabet
         "geom_relate_pattern":        {2: "geom_relate_pattern1"},
@@ -1931,14 +1927,10 @@ TGEOMETRY_CONFIG = dict(
   char *geom_hexewkb1 = "01030000202C1600000100000005000000000000000000000000000000000000000000000000"
     "00F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F00000000000000000000000000000000";
   char *geog_hexewkb1 = "0101000020E6100000000000000000F03F000000000000F03F";
-  /* geo_transform_pipeline's pipeline arg is a non-const char *; use a
-   * writable array rather than a string-literal pointer. */
-  char geo_pipeline1[] = "+proj=pipeline +step +proj=noop";
   char *geom_buffer_params1 = "quad_segs=8";
   char *geom_relate_pattern1 = "t*****ff*";
   char *geomset_wkt1 = "{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}";
-  /* The const-char* pipeline siblings (spatialset/stbox/tspatial) share one
-   * literal; only geo_transform_pipeline needs its own writable copy. */
+  /* Every transformation by a pipeline reads the same pipeline */
   char *pipeline1 = "+proj=pipeline +step +proj=noop";
   char *stbox_hexwkb1 =
     "0119000100000000000000000000000000002440000000000000000000000000"
