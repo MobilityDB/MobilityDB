@@ -18070,6 +18070,27 @@ geopoint_hash(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return the 64-bit hash of a point under a seed
+ * @details The hash reads the coordinates #geopoint_hash reads, so that two
+ * points #geopoint_eq holds equal have one hash
+ * @param[in] gs Point
+ * @param[in] seed Seed
+ */
+uint64
+geopoint_hash_extended(const GSERIALIZED *gs, uint64 seed)
+{
+  double coords[3];
+  int n = geopoint_coords(gs, coords);
+  uint64 result = float8_hash_extended(coords[0], seed);
+  for (int i = 1; i < n; i++)
+  {
+    result = (result << 1) | (result >> 63);
+    result ^= float8_hash_extended(coords[i], seed);
+  }
+  return result;
+}
+
+/**
  * @brief Return the number of bytes of the sort key of a point
  * @param[in] gs Point
  */
