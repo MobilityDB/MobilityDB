@@ -3,7 +3,7 @@
 </p><pre class="programlisting">
 SRID(tspatial) → integer
 setSRID(tspatial,integer) → tspatial
-</pre><p>El SRID se establece como <a class="link" href="ch07.html#geo_srid"><code class="varname">setSRID</code></a> lo establece en una geometría, plegándose dentro del rango reservado un SRID que lo exceda, y los valores y la caja delimitadora toman ese mismo SRID. El SRID inválido se rechaza, así como el SRID desconocido 0, que es como se lee un SRID negativo.</p><pre class="programlisting">
+</pre><p>El SRID se establece como <a class="link" href="ch07.html#geo_srid"><code class="varname">setSRID</code></a> lo establece en una geometría, plegándose dentro del rango reservado un SRID que lo exceda, y los valores y la caja delimitadora toman ese mismo SRID. El SRID inválido se rechaza, y un SRID negativo se establece como el SRID desconocido 0, como en una geometría.</p><pre class="programlisting">
 SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');
 -- 0
 SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)', 4326));

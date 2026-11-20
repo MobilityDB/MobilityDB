@@ -106,7 +106,7 @@ SELECT height(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uin
 </pre></li><li class="listitem"><a name="raster_bandPixelType"></a><a class="indexterm" name="id14560"></a><p>Devuelve el nombre del tipo de dato de píxel de una banda de un ráster o de una tesela Raquet</p><pre class="programlisting">
 bandPixelType(raster,band integer=1) → text
 bandPixelType(raquet) → text
-</pre><p>El nombre devuelto es el que aceptan los constructores, es decir, uno de <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code> o <code class="varname">float64</code>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <code class="varname">type</code> de una tesela, tanto para una banda de PostGIS como para una tesela, de modo que una banda y una tesela del mismo tipo informan el mismo nombre.</p><pre class="programlisting">
+</pre><p>El nombre devuelto es el que aceptan los constructores, es decir, uno de <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code> o <code class="varname">float64</code>. Los constructores, y toda función que toma un tipo de píxel como <a class="link" href="ch16s24.html#raster_reclass"><code class="varname">reclass</code></a> y <a class="link" href="ch16s24.html#raster_slope"><code class="varname">slope</code></a>, leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual, y también el nombre devuelto aquí; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <code class="varname">type</code> de una tesela, tanto para una banda de PostGIS como para una tesela, de modo que una banda y una tesela del mismo tipo informan el mismo nombre.</p><pre class="programlisting">
 SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
 -- int16
 -- Read back the layout of a packaged tile
@@ -114,7 +114,7 @@ SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8')
   AS tile) t;
 -- 4817ffffffffffff | 2 | 2 | uint8
-</pre></li><li class="listitem"><a name="raster_bandHasNoDataValue"></a><a class="indexterm" name="id14580"></a><p>Devuelve si una banda de un ráster o una tesela Raquet establece un valor nodata</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_bandHasNoDataValue"></a><a class="indexterm" name="id14584"></a><p>Devuelve si una banda de un ráster o una tesela Raquet establece un valor nodata</p><pre class="programlisting">
 bandHasNoDataValue(raster,band integer=1) → boolean
 bandHasNoDataValue(raquet) → boolean
 </pre><p>Una banda que no establece ninguno no tiene píxel que excluir, de modo que cada píxel que contiene lleva un valor.</p><pre class="programlisting">
@@ -124,7 +124,7 @@ SELECT bandHasNoDataValue(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI':
 SELECT bandHasNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   'uint8'));
 -- false
-</pre></li><li class="listitem"><a name="raster_bandNoDataValue"></a><a class="indexterm" name="id14588"></a><p>Devuelve el valor nodata de una banda de un ráster o de una tesela Raquet</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_bandNoDataValue"></a><a class="indexterm" name="id14592"></a><p>Devuelve el valor nodata de una banda de un ráster o de una tesela Raquet</p><pre class="programlisting">
 bandNoDataValue(raster,band integer=1) → float
 bandNoDataValue(raquet) → float
 </pre><p>Una banda que no establece ningún valor nodata devuelve <code class="varname">NULL</code>.</p><pre class="programlisting">
@@ -138,7 +138,7 @@ SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffff
 SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
   'uint8'));
 -- NULL
-</pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id14597"></a><p>Devuelve los bytes de píxeles de una banda de un ráster o de una tesela Raquet</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raquet_pixels"></a><a class="indexterm" name="id14601"></a><p>Devuelve los bytes de píxeles de una banda de un ráster o de una tesela Raquet</p><pre class="programlisting">
 pixels(rast raster,nband integer=1) → bytea
 pixels(raquet) → bytea
 </pre><p>Los bytes están en orden de fila mayor y empaquetados, <code class="varname">width</code> × <code class="varname">height</code> píxeles del tamaño de <a class="link" href="ch16s05.html#raster_bandPixelType"><code class="varname">bandPixelType</code></a> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, una tesela y una banda de un ráster se reconstruyen a través de sus propios accesores, y cada valor que contiene la banda se conserva exactamente, allí donde <a class="link" href="ch16s24.html#raster_dumpValues"><code class="varname">dumpValues</code></a> devuelve sus valores como números de doble precisión. Una banda de un tipo que acota un píxel a menos de un byte ocupa un byte por píxel.</p><pre class="programlisting">
