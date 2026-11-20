@@ -1762,10 +1762,7 @@ TGEOMETRY_CONFIG = dict(
         # callee ever mutates it in place.
         "geo_transform_pipeline":     {1: "geo_pipeline1", 2: "4326"},
         "geom_buffer":                {2: "geom_buffer_params1"},
-        # geom_relate_pattern uppercases any lowercase 't'/'f' IN PLACE in its
-        # pattern argument, so it needs a writable buffer, not a string
-        # literal; geom_relate_pattern1 holds an all-digit DE-9IM pattern so
-        # no in-place write ever happens either way.
+        # A pattern is nine symbols of the DE-9IM alphabet
         "geom_relate_pattern":        {2: "geom_relate_pattern1"},
         "geomset_in":                 {0: "geomset_wkt1"},
         # A geography reads lon/lat, and the canned geomset and box are in the
@@ -1938,10 +1935,7 @@ TGEOMETRY_CONFIG = dict(
    * writable array rather than a string-literal pointer. */
   char geo_pipeline1[] = "+proj=pipeline +step +proj=noop";
   char *geom_buffer_params1 = "quad_segs=8";
-  /* geom_relate_pattern uppercases lowercase 't'/'f' in place; an all-digit
-   * DE-9IM pattern in a writable array avoids writing into literal storage
-   * either way. */
-  char geom_relate_pattern1[] = "212101212";
+  char *geom_relate_pattern1 = "t*****ff*";
   char *geomset_wkt1 = "{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}";
   /* The const-char* pipeline siblings (spatialset/stbox/tspatial) share one
    * literal; only geo_transform_pipeline needs its own writable copy. */

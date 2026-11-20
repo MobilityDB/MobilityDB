@@ -192,6 +192,28 @@ int main(void)
     rel_phs, errno_phs);
   assert(rel_phs == true);
   assert(errno_phs == 0);
+  /* A pattern is read in any case and left as the caller wrote it, so a
+   * string constant is a pattern like any other */
+  meos_errno_reset();
+  bool rel_lower = geom_relate_pattern(through, coll, "t********");
+  int errno_lower = meos_errno();
+  printf("geom_relate_pattern(through, collection, lower case): %d, errno %d\n",
+    rel_lower, errno_lower);
+  assert(rel_lower == true);
+  assert(errno_lower == 0);
+  /* A pattern of any length but nine, or with a symbol outside the DE-9IM
+   * alphabet, is refused */
+  const char *badpatts[] = {"T*F", "T********F", "T*******X", ""};
+  for (size_t i = 0; i < sizeof(badpatts) / sizeof(badpatts[0]); i++)
+  {
+    meos_errno_reset();
+    bool rel_bad = geom_relate_pattern(through, coll, badpatts[i]);
+    int errno_bad = meos_errno();
+    printf("geom_relate_pattern(through, collection, \"%s\"): %d, errno %d\n",
+      badpatts[i], rel_bad, errno_bad);
+    assert(rel_bad == false);
+    assert(errno_bad == MEOS_ERR_INVALID_ARG_VALUE);
+  }
   free(coll); free(away); free(through); free(tin); free(phs);
   meos_errno_reset();
 

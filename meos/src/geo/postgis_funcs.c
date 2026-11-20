@@ -6185,25 +6185,33 @@ geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2, size_t *size_out)
  * @param[in] p Pattern
  * @details The pattern is matched against the native DE-9IM intersection
  * matrix, so a circular arc is met on its own circle rather than on the chords
- * a linearization would put in its place, and an empty operand meets nothing
+ * a linearization would put in its place, and an empty operand meets nothing.
+ * The pattern is nine symbols among `T`, `F`, `*`, `0`, `1` and `2`, read in
+ * any case as PostGIS reads it; any other length or symbol is refused, as
+ * GEOS refuses it. The pattern of the caller is left as it is
  * @note PostGIS function: @p relate_pattern(PG_FUNCTION_ARGS)
- * Note also the the pattern may be modified in the function
  * @csqlfn #Geom_relate_pattern()
  */
 bool
-geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
+geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  const char *p)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(p, false);
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return false;
+  if (strlen(p) != 9 || strspn(p, "TtFf*012") != 9)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Invalid DE-9IM pattern \"%s\": nine symbols among T, F, *, 0, 1 and 2 "
+      "are expected", p);
+    return false;
+  }
 
   /* The pattern alphabet is upper case */
-  for (size_t i = 0; i < strlen(p); i++ )
-  {
-    if ( p[i] == 't' ) p[i] = 'T';
-    if ( p[i] == 'f' ) p[i] = 'F';
-  }
+  char patt[10];
+  for (int i = 0; i < 10; i++)
+    patt[i] = (p[i] == 't') ? 'T' : (p[i] == 'f') ? 'F' : p[i];
 
   /* A pattern is one of the entries PostGIS prepares its operands for, so it
    * reads the edges a geometry has already been read as rather than building
@@ -6219,12 +6227,13 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
   char matrix[10];
   bool covered = same && meos_relate_self_ctx(ctx1, matrix);
   if (covered)
-    result = de9im_match(matrix, p);
+    result = de9im_match(matrix, patt);
   else
   {
     if (same)
       relate_ctx_twin(gs2, &ctx2, &made2);
-    covered = ctx1 && ctx2 && meos_relate_pattern_ctx(ctx1, ctx2, p, &result);
+    covered = ctx1 && ctx2 &&
+      meos_relate_pattern_ctx(ctx1, ctx2, patt, &result);
   }
   relate_ctx_return(ctx1, ent1);
   relate_ctx_return(ctx2, ent2);
