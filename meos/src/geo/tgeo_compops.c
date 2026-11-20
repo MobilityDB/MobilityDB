@@ -38,7 +38,10 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include <liblwgeom.h>
+#include <lwgeodetic.h>
 #include "temporal/lifting.h"
+#include "temporal/tcellindex.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
@@ -265,6 +268,184 @@ always_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] box Spatiotemporal box
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
+/* The number of pieces of a great-circle arc inside a box, as
+ * #dggs_cell_meets_box allows them */
+#define GEOG_BOX_SPANS 4
+
+/**
+ * @brief Return true if a position lies within the closed bounds of a
+ * geodetic box
+ */
+static bool
+lonlat_in_box(double lon, double lat, const STBox *box)
+{
+  return lon >= box->xmin && lon <= box->xmax && lat >= box->ymin &&
+    lat <= box->ymax;
+}
+
+/**
+ * @brief Return in @p meets whether a point array of a geography shares a
+ * position with a geodetic box, and in @p inside whether it lies wholly in it,
+ * its vertices read by their degrees and its edges as the great-circle arcs a
+ * geography states, as #dggs_cell_meets_box reads the outline of a cell
+ */
+static void
+ptarray_lonlat_box(const POINTARRAY *pa, bool closed, const STBox *box,
+  bool *meets, bool *inside)
+{
+  uint32_t n = pa->npoints;
+  for (uint32_t k = 0; k < n; k++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, k);
+    if (lonlat_in_box(p->x, p->y, box))
+      *meets = true;
+    else
+      *inside = false;
+  }
+  uint32_t nedges = closed ? n : (n > 0 ? n - 1 : 0);
+  for (uint32_t k = 0; k < nedges; k++)
+  {
+    const POINT2D *p1 = getPoint2d_cp(pa, k);
+    const POINT2D *p2 = getPoint2d_cp(pa, (k + 1) % n);
+    DggsArc arc;
+    /* An edge of no length is its vertex, read above */
+    if (! dggs_arc_init(p1->x, p1->y, p2->x, p2->y, &arc))
+      continue;
+    double tin[GEOG_BOX_SPANS], tout[GEOG_BOX_SPANS];
+    bool tin_upper[GEOG_BOX_SPANS], tout_upper[GEOG_BOX_SPANS];
+    int count = dggs_arc_lonlat_box_spans(&arc, box->xmin, box->ymin,
+      box->xmax, box->ymax, true, tin, tout, tin_upper, tout_upper,
+      GEOG_BOX_SPANS);
+    if (count > 0)
+      *meets = true;
+    /* The edge lies in the box when one piece covers it from end to end */
+    if (count != 1 || tin[0] > 0.0 || tout[0] < 1.0)
+      *inside = false;
+  }
+  return;
+}
+
+/**
+ * @brief Return in @p meets whether a geography shares a position with a
+ * geodetic box and in @p inside whether it lies wholly in it
+ * @details A geodetic box is the region of its longitudes and latitudes,
+ * decided on its bounds and never on the geography of the box (Geodetic
+ * Operations, section 5), as #dggs_cell_meets_box decides it for a cell, whose
+ * three parts this reads for each part of the geography: a vertex in the box,
+ * an edge entering it, and, for a polygon, the middle of the box inside the
+ * polygon, which then meets a box no edge enters. A geography lies in the box
+ * when every vertex and every edge does, and a polygon whose rings lie in the
+ * box holds its interior there
+ */
+static void
+lwgeom_lonlat_box(const LWGEOM *geom, const STBox *box, bool *meets,
+  bool *inside)
+{
+  if (lwgeom_is_empty(geom))
+    return;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      ptarray_lonlat_box(((const LWPOINT *) geom)->point, false, box, meets,
+        inside);
+      return;
+    case LINETYPE:
+      ptarray_lonlat_box(((const LWLINE *) geom)->points, false, box, meets,
+        inside);
+      return;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        ptarray_lonlat_box(poly->rings[i], false, box, meets, inside);
+      if (! *meets)
+      {
+        POINT2D mid = { (box->xmin + box->xmax) / 2.0,
+          (box->ymin + box->ymax) / 2.0 };
+        if (lwpoly_covers_point2d(poly, &mid))
+          *meets = true;
+      }
+      return;
+    }
+    default:
+    {
+      /* A multi-geometry or a collection reads each of its parts */
+      const LWCOLLECTION *coll = lwgeom_as_lwcollection(geom);
+      if (! coll)
+        return;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        lwgeom_lonlat_box(coll->geoms[i], box, meets, inside);
+      return;
+    }
+  }
+}
+
+/**
+ * @brief Return 1 if a temporal geography ever (or always) lies in a geodetic
+ * box, 0 if not
+ * @details A geography of lines or polygons is not restricted to a geodetic
+ * box, since the piece inside it has edges along parallels, which no
+ * geography states (Geodetic Operations, section 4), but whether it meets the
+ * box or lies in it is decided on the bounds of the box
+ * (#lwgeom_lonlat_box). A temporal geography holds each value until its next
+ * instant, so its instants within the period of the box decide it: it ever
+ * lies in the box when the value of one of them meets the box, and always
+ * when its times lie in the period and the value of each of them lies in the
+ * box
+ */
+static int
+eaoverlaps_tgeog_stbox(const Temporal *temp, const STBox *box, bool ever)
+{
+  const Temporal *t = temp;
+  Temporal *rest = NULL;
+  if (MEOS_FLAGS_GET_T(box->flags))
+  {
+    if (! ever)
+    {
+      /* Times outside the period lie outside the box */
+      Temporal *out = temporal_restrict_tstzspan(temp, &box->period,
+        REST_MINUS);
+      if (out)
+      {
+        pfree(out);
+        return 0;
+      }
+    }
+    else
+    {
+      rest = temporal_restrict_tstzspan(temp, &box->period, REST_AT);
+      if (! rest)
+        return 0;
+      t = rest;
+    }
+  }
+  int count;
+  const TInstant **instants = temporal_insts_p(t, &count);
+  int result = ever ? 0 : 1;
+  for (int i = 0; i < count; i++)
+  {
+    const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(instants[i]));
+    LWGEOM *geom = lwgeom_from_gserialized(gs);
+    bool meets = false, inside = true;
+    lwgeom_lonlat_box(geom, box, &meets, &inside);
+    lwgeom_free(geom);
+    if (ever && meets)
+    {
+      result = 1;
+      break;
+    }
+    if (! ever && ! inside)
+    {
+      result = 0;
+      break;
+    }
+  }
+  pfree(instants);
+  if (rest)
+    pfree(rest);
+  return result;
+}
+
 static int
 eaoverlaps_tgeo_stbox(const Temporal *temp, const STBox *box, bool ever)
 {
@@ -280,6 +461,11 @@ eaoverlaps_tgeo_stbox(const Temporal *temp, const STBox *box, bool ever)
        (tgeo_type(temp->temptype) &&
         ! ensure_has_not_Z(temp->temptype, temp->flags))))
     return -1;
+
+  /* A geography of lines or polygons is read against the bounds of the box */
+  if (MEOS_FLAGS_GET_X(box->flags) && MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! tpoint_type(temp->temptype))
+    return eaoverlaps_tgeog_stbox(temp, box, ever);
 
   Temporal *rest = tgeo_restrict_stbox(temp, box, true,
     ever ? REST_AT : REST_MINUS);
