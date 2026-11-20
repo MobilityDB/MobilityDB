@@ -89,14 +89,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gacc2f2b860e548f07695e8a0275e22fe8.html#gacc2f2b860e548f07695e8a0275e22fe8">geom_dwithin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga1c91cbc35b697ebfecea28149a2d469f.html#ga1c91cbc35b697ebfecea28149a2d469f">geom_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gac233593ebf7716057226b99ef626c9e0.html#gac233593ebf7716057226b99ef626c9e0">geom_relate</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__rel_ga03c25b0533ce2ec1c3676d3a31a52834.html#ga03c25b0533ce2ec1c3676d3a31a52834">geom_relate_pattern</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__rel_ga77d6899e67ad1bf077ff043d91346412.html#ga77d6899e67ad1bf077ff043d91346412">geom_relate_pattern</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga13458da7bc846a1cb07c7218a5f21bd8.html#ga13458da7bc846a1cb07c7218a5f21bd8">geom_touches</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga03c25b0533ce2ec1c3676d3a31a52834" name="ga03c25b0533ce2ec1c3676d3a31a52834"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga03c25b0533ce2ec1c3676d3a31a52834">&#9670;&#160;</a></span>geom_relate_pattern()</h2>
+<a id="ga77d6899e67ad1bf077ff043d91346412" name="ga77d6899e67ad1bf077ff043d91346412"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga77d6899e67ad1bf077ff043d91346412">&#9670;&#160;</a></span>geom_relate_pattern()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -116,7 +116,7 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>p</em>&#160;</td>
         </tr>
         <tr>
@@ -135,7 +135,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<p>The pattern is matched against the native DE-9IM intersection matrix, so a circular arc is met on its own circle rather than on the chords a linearization would put in its place, and an empty operand meets nothing </p><dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a6f5ca95e4714d17e6c9bd48fc6298cdd.html#a6f5ca95e4714d17e6c9bd48fc6298cdd">relate_pattern(PG_FUNCTION_ARGS)</a></code> Note also the the pattern may be modified in the function @csqlfn <a class="el" href="group__mobilitydb__geo__base__rel_gae53a0ba6850166bf3d806fe2241ba095.html#gae53a0ba6850166bf3d806fe2241ba095" title="Return true if the DE-9IM intersection matrix of two geometries matches a pattern @sqlfn relate() @al...">Geom_relate_pattern()</a> </dd></dl>
+<p>The pattern is matched against the native DE-9IM intersection matrix, so a circular arc is met on its own circle rather than on the chords a linearization would put in its place, and an empty operand meets nothing. The pattern is nine symbols among <code>T</code>, <code>F</code>, <code>*</code>, <code>0</code>, <code>1</code> and <code>2</code>, read in any case as PostGIS reads it; any other length or symbol is refused, as GEOS refuses it. The pattern of the caller is left as it is </p><dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a6f5ca95e4714d17e6c9bd48fc6298cdd.html#a6f5ca95e4714d17e6c9bd48fc6298cdd">relate_pattern(PG_FUNCTION_ARGS)</a></code> @csqlfn <a class="el" href="group__mobilitydb__geo__base__rel_gae53a0ba6850166bf3d806fe2241ba095.html#gae53a0ba6850166bf3d806fe2241ba095" title="Return true if the DE-9IM intersection matrix of two geometries matches a pattern @sqlfn relate() @al...">Geom_relate_pattern()</a> </dd></dl>
 
 </div>
 </div>
