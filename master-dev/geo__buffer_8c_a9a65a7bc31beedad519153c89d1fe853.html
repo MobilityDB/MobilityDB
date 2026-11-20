@@ -274,8 +274,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a78dccd7bf1f52d1d639406a855e00709.html#a78dccd7bf1f52d1d639406a855e00709">buffer_rings_add_loops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aae062757d59d87019a3f22769789d981.html#aae062757d59d87019a3f22769789d981">buffer_rings_serialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4857aba9569f5c1bd58510c06f54e411.html#a4857aba9569f5c1bd58510c06f54e411">buffer_round_erosion</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5b1cba3bdd175c0d069a7edd46aeaae2.html#a5b1cba3bdd175c0d069a7edd46aeaae2">buffer_round_line_offsets</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a30c4d8978dc5ef5ba725d0832aef93cf.html#a30c4d8978dc5ef5ba725d0832aef93cf">buffer_round_line_rings</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aba8755a793e18a81bed3767551beb48f.html#aba8755a793e18a81bed3767551beb48f">buffer_round_line_offsets</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a08ec980a8779cceaa53774309f24a106.html#a08ec980a8779cceaa53774309f24a106">buffer_round_line_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa46a2b6801079429e46d2f641f6cec1d.html#aa46a2b6801079429e46d2f641f6cec1d">buffer_round_offsets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a8a423de91f0e11f23f14f99970ef7a0b.html#a8a423de91f0e11f23f14f99970ef7a0b">buffer_round_ring_offsets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6facf95816f35abc70304f8079a2c4a0.html#a6facf95816f35abc70304f8079a2c4a0">buffer_round_rings</a></td></tr>
@@ -292,6 +292,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_acaa0eb2e14a3073292098712c02fff83.html#acaa0eb2e14a3073292098712c02fff83">buffer_split_point_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a04a3909d9b922347def4e32da597a59d.html#a04a3909d9b922347def4e32da597a59d">buffer_split_point_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7f005f0cc523cf1a017c6c13bd397d9a.html#a7f005f0cc523cf1a017c6c13bd397d9a">buffer_split_segment</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a34863e868a332882931a1364b8f7b3ac.html#a34863e868a332882931a1364b8f7b3ac">buffer_strip_offsets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3060ffa740f5fbcff9902ac44c3bef89.html#a3060ffa740f5fbcff9902ac44c3bef89">buffer_surfaces_from_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaa1c6aa347ca4bf8f5cc1bf02b40d62f.html#aaa1c6aa347ca4bf8f5cc1bf02b40d62f">buffer_surfaces_from_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae13108b5948b92358b3d4f945ba9baf1.html#ae13108b5948b92358b3d4f945ba9baf1">buffer_sweep_assemble</a></td></tr>
@@ -395,7 +396,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return whether the written ends of every offset segment lie strictly on the side of the edge they offset that their tangent points take, which <a class="el" href="geo__dyadic_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> decides exactly on the doubles, as <a class="el" href="geo__buffer_8c_a5666e3a0bdd6beb4b5d95c69416d1452.html#a5666e3a0bdd6beb4b5d95c69416d1452">buffer_piece_writes_arc</a> reads the written points of a piece. </p>
+<p>Return whether the written ends of every segment between tangent points lie strictly on the side of the edge offset at each that its tangent point takes, which <a class="el" href="geo__dyadic_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a> decides exactly on the doubles, as <a class="el" href="geo__buffer_8c_a5666e3a0bdd6beb4b5d95c69416d1452.html#a5666e3a0bdd6beb4b5d95c69416d1452">buffer_piece_writes_arc</a> reads the written points of a piece: both ends of an offset on the side of the one edge it offsets, each end of a chord across an end of a strip (<a class="el" href="geo__buffer_8c_a34863e868a332882931a1364b8f7b3ac.html#a34863e868a332882931a1364b8f7b3ac" title="Add to an edge array the boundary of the strip of a segment, the points within a distance of its line...">buffer_strip_offsets</a>) on its own side, a corner of a square cap lying to the side of its point on the circle. </p>
 <p >An end is the tangent point rounded to doubles. Where the distance falls below the rounding of the coordinates of an edge, its end rounds onto the edge or across it, and no ring written in doubles holds the edge strictly inside </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">edges</td><td>Edges of the offset curves </td></tr>

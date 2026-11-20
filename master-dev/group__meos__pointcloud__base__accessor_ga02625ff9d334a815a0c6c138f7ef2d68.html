@@ -135,7 +135,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd><code>true</code> on success; <code>false</code> if the schema lacks the dimension or the byte read fails @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__accessor_ga2558fb1327067a86d79859151aaa2497.html#ga2558fb1327067a86d79859151aaa2497" title="Return an arbitrary dimension of a pcpoint by name @sqlfn getDim()">Pcpoint_get_dim()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd><code>true</code> on success; <code>false</code> if the byte read fails </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>A name the schema does not state is an error, as pgPointCloud's <code>PC_Get</code> raises it @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__accessor_ga2558fb1327067a86d79859151aaa2497.html#ga2558fb1327067a86d79859151aaa2497" title="Return an arbitrary dimension of a pcpoint by name @sqlfn getDim()">Pcpoint_get_dim()</a> </dd></dl>
 
 </div>
 </div>

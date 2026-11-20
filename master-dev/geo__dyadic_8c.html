@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">geo_dyadic.c File Reference</div></div>
 </div><!--header-->
@@ -100,6 +101,11 @@ $(function() {
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="geo__dyadic_8h_source.html">geo/geo_dyadic.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ae9bbf4fdf99dccdfc2f11853cf38b9f7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__dyadic_8c_ae9bbf4fdf99dccdfc2f11853cf38b9f7.html#ae9bbf4fdf99dccdfc2f11853cf38b9f7">POLY_EXACT_PAIRS_TOTAL</a>&#160;&#160;&#160;32</td></tr>
+<tr class="separator:ae9bbf4fdf99dccdfc2f11853cf38b9f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a0faf3d80dd8ab1ae382c476712562722"><td class="memItemLeft" align="right" valign="top">static double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__dyadic_8c_a0faf3d80dd8ab1ae382c476712562722.html#a0faf3d80dd8ab1ae382c476712562722">arcseg_arena_alloc</a> (<a class="el" href="structArcsegArena.html">ArcsegArena</a> *arena, int ndoubles)</td></tr>
@@ -343,6 +349,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a4b79671f8b7a9aaffe51295f1308c1ce"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__dyadic_8c_a4b79671f8b7a9aaffe51295f1308c1ce.html#a4b79671f8b7a9aaffe51295f1308c1ce">polynomial_sign_dyadic</a> (const <a class="el" href="structExactSum.html">ExactSum</a> *sums, const <a class="el" href="structPolyTerm.html">PolyTerm</a> *terms, int nterms)</td></tr>
 <tr class="memdesc:a4b79671f8b7a9aaffe51295f1308c1ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sign of a polynomial in exact sums on the expression ladder from its expansions on, exact for any finite sums.  <a href="geo__dyadic_8c_a4b79671f8b7a9aaffe51295f1308c1ce.html#a4b79671f8b7a9aaffe51295f1308c1ce">More...</a><br /></td></tr>
 <tr class="separator:a4b79671f8b7a9aaffe51295f1308c1ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b7e06d1fcf31ba0702cbe21d9722b48"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__dyadic_8c_a8b7e06d1fcf31ba0702cbe21d9722b48.html#a8b7e06d1fcf31ba0702cbe21d9722b48">polynomial_sign_exact_pairs</a> (const <a class="el" href="structExactSum.html">ExactSum</a> *sums, const <a class="el" href="structPolyTerm.html">PolyTerm</a> *terms, int nterms)</td></tr>
+<tr class="memdesc:a8b7e06d1fcf31ba0702cbe21d9722b48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sign of a polynomial in exact sums where each of its terms is exact in a pair of doubles, zero included, and 2 elsewhere.  <a href="geo__dyadic_8c_a8b7e06d1fcf31ba0702cbe21d9722b48.html#a8b7e06d1fcf31ba0702cbe21d9722b48">More...</a><br /></td></tr>
+<tr class="separator:a8b7e06d1fcf31ba0702cbe21d9722b48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f8c38f69c1049aba32ea80731429c72"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__dyadic_8c_a5f8c38f69c1049aba32ea80731429c72.html#a5f8c38f69c1049aba32ea80731429c72">polynomial_sign_pairs</a> (const <a class="el" href="structExactSum.html">ExactSum</a> *sums, const <a class="el" href="structPolyTerm.html">PolyTerm</a> *terms, int nterms)</td></tr>
 <tr class="memdesc:a5f8c38f69c1049aba32ea80731429c72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sign of a polynomial in exact sums where its evaluation in pairs of doubles carries it, and 2 where it cannot tell.  <a href="geo__dyadic_8c_a5f8c38f69c1049aba32ea80731429c72.html#a5f8c38f69c1049aba32ea80731429c72">More...</a><br /></td></tr>
 <tr class="separator:a5f8c38f69c1049aba32ea80731429c72"><td class="memSeparator" colspan="2">&#160;</td></tr>

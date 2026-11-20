@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_round_line_rings</title>
+<title>MobilityDB: buffer_strip_offsets</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -274,8 +274,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a78dccd7bf1f52d1d639406a855e00709.html#a78dccd7bf1f52d1d639406a855e00709">buffer_rings_add_loops</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aae062757d59d87019a3f22769789d981.html#aae062757d59d87019a3f22769789d981">buffer_rings_serialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4857aba9569f5c1bd58510c06f54e411.html#a4857aba9569f5c1bd58510c06f54e411">buffer_round_erosion</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5b1cba3bdd175c0d069a7edd46aeaae2.html#a5b1cba3bdd175c0d069a7edd46aeaae2">buffer_round_line_offsets</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a30c4d8978dc5ef5ba725d0832aef93cf.html#a30c4d8978dc5ef5ba725d0832aef93cf">buffer_round_line_rings</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aba8755a793e18a81bed3767551beb48f.html#aba8755a793e18a81bed3767551beb48f">buffer_round_line_offsets</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a08ec980a8779cceaa53774309f24a106.html#a08ec980a8779cceaa53774309f24a106">buffer_round_line_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa46a2b6801079429e46d2f641f6cec1d.html#aa46a2b6801079429e46d2f641f6cec1d">buffer_round_offsets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a8a423de91f0e11f23f14f99970ef7a0b.html#a8a423de91f0e11f23f14f99970ef7a0b">buffer_round_ring_offsets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6facf95816f35abc70304f8079a2c4a0.html#a6facf95816f35abc70304f8079a2c4a0">buffer_round_rings</a></td></tr>
@@ -292,6 +292,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_acaa0eb2e14a3073292098712c02fff83.html#acaa0eb2e14a3073292098712c02fff83">buffer_split_point_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a04a3909d9b922347def4e32da597a59d.html#a04a3909d9b922347def4e32da597a59d">buffer_split_point_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7f005f0cc523cf1a017c6c13bd397d9a.html#a7f005f0cc523cf1a017c6c13bd397d9a">buffer_split_segment</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a34863e868a332882931a1364b8f7b3ac.html#a34863e868a332882931a1364b8f7b3ac">buffer_strip_offsets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3060ffa740f5fbcff9902ac44c3bef89.html#a3060ffa740f5fbcff9902ac44c3bef89">buffer_surfaces_from_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaa1c6aa347ca4bf8f5cc1bf02b40d62f.html#aaa1c6aa347ca4bf8f5cc1bf02b40d62f">buffer_surfaces_from_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae13108b5948b92358b3d4f945ba9baf1.html#ae13108b5948b92358b3d4f945ba9baf1">buffer_sweep_assemble</a></td></tr>
@@ -371,8 +372,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a30c4d8978dc5ef5ba725d0832aef93cf" name="a30c4d8978dc5ef5ba725d0832aef93cf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a30c4d8978dc5ef5ba725d0832aef93cf">&#9670;&#160;</a></span>buffer_round_line_rings()</h2>
+<a id="a34863e868a332882931a1364b8f7b3ac" name="a34863e868a332882931a1364b8f7b3ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a34863e868a332882931a1364b8f7b3ac">&#9670;&#160;</a></span>buffer_strip_offsets()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -381,10 +382,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool buffer_round_line_rings </td>
+          <td class="memname">static void buffer_strip_offsets </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>geom</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> *&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -395,26 +402,32 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> ***&#160;</td>
-          <td class="paramname"><em>rings</em>, </td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>sa</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>sb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structTangentPoint.html">TangentPoint</a> *&#160;</td>
+          <td class="paramname"><em>tps</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint32_t *&#160;</td>
-          <td class="paramname"><em>nrings</em>, </td>
+          <td class="paramname"><em>ntp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int32_t **&#160;</td>
-          <td class="paramname"><em>owner</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>answered</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>edges</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -429,17 +442,18 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the rings bounding the buffer of a line or a multiline with round joins and round caps, the region the exact offset curves of its lines wind around, as <a class="el" href="geo__buffer_8c_a6facf95816f35abc70304f8079a2c4a0.html#a6facf95816f35abc70304f8079a2c4a0" title="Return the rings bounding the buffer of a polygon or a multipolygon with round joins,...">buffer_round_rings</a> answers a polygon. </p>
-<p >Every line is offset out and back (<a class="el" href="geo__buffer_8c_a5b1cba3bdd175c0d069a7edd46aeaae2.html#a5b1cba3bdd175c0d069a7edd46aeaae2" title="Add to an edge array the offset curve of a line with round joins and round caps, every piece of it ex...">buffer_round_line_offsets</a>), and the buffers of the lines of a multiline are united in one arrangement (<a class="el" href="geo__arrange_8h_a23790adeda82d5813f57ff0f9be3f6e3.html#a23790adeda82d5813f57ff0f9be3f6e3" title="Return the rings bounding the region closed curves of segments and arcs between tangent points wind a...">arrange_wound_tangent_surfaces</a>). Where an offset segment is written on or across the edge it offsets (<a class="el" href="geo__buffer_8c_a9a65a7bc31beedad519153c89d1fe853.html#a9a65a7bc31beedad519153c89d1fe853" title="Return whether the written ends of every offset segment lie strictly on the side of the edge they off...">buffer_offsets_keep_their_side</a>) the region is left unanswered </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Add to an edge array the boundary of the strip of a segment, the points within a distance of its line whose projection falls on it, every piece of it exact. </p>
+<p >The strip is bounded counterclockwise by the offset of the segment to its right from its start to its end, the chord of the circle about the end between the points where the two offsets touch it, the offset to its left back to the start and the chord of the circle about the start: two common tangents of the circles of the distance about its ends and two chords (<a class="el" href="geo__funcs_8h_a3944218df75cb0eac0489fa41523c2fb.html#a3944218df75cb0eac0489fa41523c2fb" title="Add to an edge array the segment between two points where tangents touch circles, which no double hol...">edges_add_tangent_segment</a>), its four corners the points where those tangents touch the circles, which the input doubles and the distance fix. Stretched by the distance past an end, the square cap there, the two corners at that end lie past those points by the distance along the segment (<a class="el" href="structTangentPoint.html" title="A point where a common tangent of two circles touches one of them, which no double holds in general: ...">TangentPoint</a>, member along), and the chord between them is the tangent of the circle about the end across the segment </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Line or multiline </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">a,b</td><td>Ends of the segment, distinct </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">radius</td><td>Distance, positive </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">rings,nrings,owner</td><td>The rings bounding the buffer and the shell owning each, as <a class="el" href="geo__arrange_8h_a23790adeda82d5813f57ff0f9be3f6e3.html#a23790adeda82d5813f57ff0f9be3f6e3" title="Return the rings bounding the region closed curves of segments and arcs between tangent points wind a...">arrange_wound_tangent_surfaces</a> answers them </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">answered</td><td>Whether the arrangement answers the region </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sa,sb</td><td>Whether the strip is stretched past <code>a</code>, past <code>b</code> </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">tps</td><td>The tangent points, four appended at <code>ntp</code> </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ntp</td><td>Number of tangent points </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">edges</td><td>Edges, appended to </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>False for another type or a line of fewer than two distinct points, which the caller answers otherwise; true with <code>answered</code> false where the arrangement leaves the region unanswered </dd></dl>
 
 </div>
 </div>

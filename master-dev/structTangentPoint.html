@@ -83,6 +83,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
+<tr class="memitem:a15668c0e59928dd07768f6a98b7f8b44"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTangentPoint_a15668c0e59928dd07768f6a98b7f8b44.html#a15668c0e59928dd07768f6a98b7f8b44">along</a></td></tr>
+<tr class="memdesc:a15668c0e59928dd07768f6a98b7f8b44"><td class="mdescLeft">&#160;</td><td class="mdescRight">0 for the point on the circle, 1 or -1 for the one past it by the radius along C2 - C1 or C1 - C2  <a href="structTangentPoint_a15668c0e59928dd07768f6a98b7f8b44.html#a15668c0e59928dd07768f6a98b7f8b44">More...</a><br /></td></tr>
+<tr class="separator:a15668c0e59928dd07768f6a98b7f8b44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75aaec6afdf70ed995df70240ac2b47a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTangentPoint_a75aaec6afdf70ed995df70240ac2b47a.html#a75aaec6afdf70ed995df70240ac2b47a">c1x</a></td></tr>
 <tr class="separator:a75aaec6afdf70ed995df70240ac2b47a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a50b8e6bd97171e3959f83afbe12cc5"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTangentPoint_a2a50b8e6bd97171e3959f83afbe12cc5.html#a2a50b8e6bd97171e3959f83afbe12cc5">c1y</a></td></tr>
@@ -106,6 +109,7 @@ Data Fields</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A point where a common tangent of two circles touches one of them, which no double holds in general: what defines it, exactly. </p>
+<p >With <code>along</code> nonzero, which two circles of one radius r alone carry, the point lies past that one by r along the line of the centres: Ck + r (along d + side rot(d)) / |d|, d = C2 - C1, a corner of the square cap of a buffer, where its offset meets the tangent across the end </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/include/geo/<a class="el" href="geo__funcs_8h_source.html">geo_funcs.h</a></li>
 </ul>
