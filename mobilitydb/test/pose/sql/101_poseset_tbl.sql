@@ -36,6 +36,10 @@ SELECT numValues(set(array_agg(DISTINCT pose ORDER BY pose))) FROM tbl_pose2d WH
 
 SELECT round(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)", "Pose(Point(3 3),0.5)"}'::stbox, 6);
 
+-- A pose states its SRID inside itself, which must be the SRID of its set
+SELECT asEWKT(poseset 'SRID=3857;{"Pose(SRID=3857;Point(1 1),0.5)"}');
+SELECT asEWKT(poseset 'SRID=3857;{"Pose(SRID=4326;Point(1 1),0.5)"}');
+
 SELECT COUNT(*) FROM tbl_pose2d WHERE pose::poseset IS NOT NULL;
 
 -------------------------------------------------------------------------------

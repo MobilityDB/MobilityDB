@@ -821,6 +821,44 @@ SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E40E00000000
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the geomset (3812)
 SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E40E0000000000000000F03F000000000000F03F0060885EC91C0000'));
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the tgeompoint (3812)
+-- The same in text: a value stating the SRID of its set, a value stating
+-- none, and a value stating another
+SELECT asEWKT(geomset 'SRID=4326;{"SRID=4326;Point(1 1)", "Point(2 2)"}');
+                 asewkt                 
+----------------------------------------
+ SRID=4326;{"POINT(1 1)", "POINT(2 2)"}
+(1 row)
+
+SELECT asEWKT(geomset 'SRID=4326;{"SRID=3857;Point(1 1)", "Point(2 2)"}');
+ERROR:  The SRID of the geometry (3857) does not match the SRID of the geomset (4326)
+LINE 1: SELECT asEWKT(geomset 'SRID=4326;{"SRID=3857;Point(1 1)", "P...
+                              ^
+SELECT asEWKT(geomset 'SRID=4326;{"Point(1 1)", "SRID=3857;Point(2 2)"}');
+ERROR:  The SRID of the geometry (3857) does not match the SRID of the geomset (4326)
+LINE 1: SELECT asEWKT(geomset 'SRID=4326;{"Point(1 1)", "SRID=3857;P...
+                              ^
+SELECT asEWKT(tgeompoint 'SRID=4326;[SRID=3857;Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+ERROR:  The SRID of the geometry (3857) does not match the SRID of the tgeompoint (4326)
+LINE 1: SELECT asEWKT(tgeompoint 'SRID=4326;[SRID=3857;Point(1 1)@20...
+                                 ^
+-- A geography stating no SRID is in 4326, which the SRID of its set
+-- restates; one stating 4326 does not
+SELECT asEWKT(geogset 'SRID=4269;{"Point(1 1)"}');
+          asewkt          
+--------------------------
+ SRID=4269;{"POINT(1 1)"}
+(1 row)
+
+SELECT asEWKT(geogset 'SRID=4269;{"SRID=4269;Point(1 1)"}');
+          asewkt          
+--------------------------
+ SRID=4269;{"POINT(1 1)"}
+(1 row)
+
+SELECT asEWKT(geogset 'SRID=4269;{"SRID=4326;Point(1 1)"}');
+ERROR:  The SRID of the geography (4326) does not match the SRID of the geogset (4269)
+LINE 1: SELECT asEWKT(geogset 'SRID=4269;{"SRID=4326;Point(1 1)"}');
+                              ^
 /* Errors */
 select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'ABCD');
 ERROR:  Invalid value for endian flag
