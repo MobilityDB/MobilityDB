@@ -79,6 +79,14 @@ jobs:
           make -j $(nproc)
           sudo make install
 
+      # The unit tests of meos/test/unit check the library against the
+      # answers of exact oracles, the H3 ones on the vertices MEOS states for
+      # the release this job installs, so they run on the library just built.
+      - name: Run the unit tests of the library
+        run: |
+          cd build
+          ctest --output-on-failure
+
       # GEOS stays installed because GDAL depends on it, so the libraries the
       # loader maps say nothing: what the library must not do is CALL it, nor
       # export a definition under a name of the GEOS C API, which a program
