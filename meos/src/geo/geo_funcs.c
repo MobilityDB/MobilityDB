@@ -13034,10 +13034,38 @@ tower_f_div(ArcsegFilter a, ArcsegFilter b, double *v, double *e)
   return isfinite(*v) && isfinite(*e);
 }
 
+/* The quotient of two pairs of doubles with bounds (#DDBound), as a double v
+ * and a bound e on its error: v = n / d rounded, and the exact quotient lies
+ * within |n - v d| / |d| of it, the residual formed in pairs of doubles and
+ * the bounds of both taken with it, so that the bound is as tight as the
+ * pairs hold the values, as #tower_f_div reads a quotient of filters in
+ * doubles; false where the bound on d holds zero */
+static bool
+tower_dd_quotient(DDBound n, DDBound d, double *v, double *e)
+{
+  double dlo = fabs(d.hi) - fabs(d.lo) - d.e;
+  if (! (dlo > 0.0) || ! isfinite(n.hi) || ! isfinite(d.hi))
+    return false;
+  double q = (n.hi + n.lo) / (d.hi + d.lo);
+  if (! isfinite(q))
+    return false;
+  DDBound qd = {q, 0.0, 0.0};
+  DDBound r = ddb_sub(n, ddb_mul(qd, d));
+  /* |r| bounds |n - q d| up to the errors of n and of the product, which
+   * r.e carries, and |q| d.e the error of d */
+  double rr = (fabs(r.hi) + fabs(r.lo) + r.e + fabs(q) * d.e) *
+    (1.0 + 4.0 * DBL_EPSILON);
+  *v = q;
+  *e = (rr / dlo) * (1.0 + 4.0 * DBL_EPSILON) + DBL_MIN;
+  return isfinite(*e);
+}
+
 typedef struct
 {
   const MeetPoint *m;
   double *x, *y, *box;
+  double *bracket;      /**< The bracket of each coordinate the steps of a
+                             tier told, which the next one goes on from */
 } TowerBoundsArg;
 
 /* A double as an unsigned integer whose order is that of the doubles */
@@ -13063,7 +13091,9 @@ tower_key_double(uint64_t key)
 /* Narrow [lo, hi], two doubles holding org + num / den of a tower, to two
  * consecutive doubles, or to one where it is a double: bisected in the order
  * of the doubles, each step decided exactly by the sign of
- * num - (m - org) den. False where a sign is not told */
+ * num - (m - org) den. False where a sign is not told, [lo, hi] then holding
+ * the bracket the steps told narrowed it to, every one of them exact, from
+ * which the next tier of the arithmetic goes on (#meet_point_bounds_pred) */
 static bool
 tower_bisect(DyadicCtx *ctx, const Tower *t, const DyadicX *num,
   const DyadicX *den, int k, double org, double *lo, double *hi)
@@ -13081,7 +13111,11 @@ tower_bisect(DyadicCtx *ctx, const Tower *t, const DyadicX *num,
     tower_sub_k(ctx, num, md, k, md);
     int s = tower_sign_k(ctx, t, md, k) * sd;
     if (dyadic_ctx_unsafe(ctx))
+    {
+      *lo = tower_key_double(klo);
+      *hi = tower_key_double(khi);
       return false;
+    }
     if (s == 0)
     {
       klo = khi = kmid;
@@ -13140,9 +13174,13 @@ meet_point_bounds_pred(DyadicCtx *ctx, const void *arg)
   double *val[2] = {o->x, o->y};
   for (int j = 0; j < 2; j++)
   {
-    ArcsegFilter f = tower_filter_k(ctx, &p.t, num[j], k);
+    /* In pairs of doubles the quotient is read to their precision
+     * (#tower_dd_quotient), else as a double with a bound */
     double v, e;
-    bool told = tower_f_div(f, fw, &v, &e);
+    bool told = ctx->dd ?
+      tower_dd_quotient(tower_dd_k(ctx, &p.t, num[j], k),
+        tower_dd_k(ctx, &p.t, p.w.c, k), &v, &e) :
+      tower_f_div(tower_filter_k(ctx, &p.t, num[j], k), fw, &v, &e);
     /* The coordinate is the origin plus the offset, the sum rounded once,
      * which adds half a unit in its last place to the bound */
     double c = 0.0, ce = 0.0;
@@ -13158,8 +13196,17 @@ meet_point_bounds_pred(DyadicCtx *ctx, const void *arg)
      * bounds nothing, as at the crossing of two nearly parallel segments */
     if (! told || ce > 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN)
     {
+      /* From the narrower of the filter's box and the bracket a cheaper
+       * tier left, each holding the coordinate exactly; a tier that cannot
+       * tell a step keeps what its steps told for the next one */
       double lo = told ? c - ce : - DBL_MAX, hi = told ? c + ce : DBL_MAX;
-      if (! tower_bisect(ctx, &p.t, num[j], p.w.c, k, org[j], &lo, &hi))
+      lo = Max(lo, o->bracket[2 * j]);
+      hi = Min(hi, o->bracket[2 * j + 1]);
+      bool done = tower_bisect(ctx, &p.t, num[j], p.w.c, k, org[j], &lo,
+        &hi);
+      o->bracket[2 * j] = lo;
+      o->bracket[2 * j + 1] = hi;
+      if (! done)
         return 2;
       c = lo;
       o->box[2 * j] = lo; o->box[2 * j + 1] = hi;
@@ -13697,7 +13744,8 @@ meet_point_bounds(const MeetPoint *m, double *x, double *y, double box[4])
     return true;
   if (m->kind == MEET_ARCARC && equal_circles_bounds(m, x, y, box))
     return true;
-  TowerBoundsArg arg = {m, x, y, box};
+  double bracket[4] = {- DBL_MAX, DBL_MAX, - DBL_MAX, DBL_MAX};
+  TowerBoundsArg arg = {m, x, y, box, bracket};
   return dyadic_pred_run(meet_point_bounds_pred, &arg) == 1;
 }
 
