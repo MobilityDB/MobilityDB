@@ -381,6 +381,207 @@ pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
     (JsonbContainer *) &jb2->root);
 }
 
+/*****************************************************************************
+ * Sort key
+ *****************************************************************************/
+
+/**
+ * @brief Write the sort key of a number, or count its bytes when the buffer
+ * is NULL
+ * @details The number is read in the form #numeric_normalize gives it, in
+ * which two numbers are spelled alike exactly when #pg_numeric_cmp holds them
+ * equal. The key is a byte stating the sign, 1 for a negative number, 2 for
+ * zero and 3 for a positive one, followed for a number other than zero by its
+ * decimal exponent e, the value being 0.d1d2... times 10 to the e, written as
+ * four bytes most significant first with the sign bit flipped, as
+ * #datum_sortkey_put writes an integer, then each significant digit d as
+ * d + 1, then a zero byte. Every byte after the sign is complemented for a
+ * negative number, so that a greater magnitude sorts first, and its ending
+ * byte is then 0xFF, which sorts after every complemented digit
+ * @param[in] num Number, neither NaN nor infinite
+ * @param[out] out Buffer @nullable
+ * @return The number of bytes of the key
+ */
+static size_t
+numeric_sortkey_write(Numeric num, uint8_t *out)
+{
+  char *str = numeric_normalize(num);
+  const char *s = str;
+  bool neg = (*s == '-');
+  if (neg)
+    s++;
+  /* The digits before the decimal point, then those after it */
+  const char *point = strchr(s, '.');
+  const char *intend = point ? point : s + strlen(s);
+  const char *frac = point ? point + 1 : intend;
+  /* Skip the leading zeros: those of the integer part, and when it is zero
+   * those of the fraction, each lowering the exponent by one */
+  long exponent;
+  const char *first = s;
+  while (first < intend && *first == '0')
+    first++;
+  if (first < intend)
+    exponent = intend - first;
+  else
+  {
+    first = frac;
+    while (*first == '0')
+      first++;
+    exponent = frac - first;
+  }
+  if (*first == '\0')
+  {
+    /* Zero */
+    if (out)
+      out[0] = 2;
+    pfree(str);
+    return 1;
+  }
+  /* The significant digits run from the first one to the last one that is
+   * not zero, the decimal point skipped */
+  const char *last = s + strlen(s) - 1;
+  while (*last == '0' || *last == '.')
+    last--;
+  size_t ndigits = 0;
+  for (const char *p = first; p <= last; p++)
+    if (*p != '.')
+      ndigits++;
+  size_t result = 1 + 4 + ndigits + 1;
+  if (out)
+  {
+    uint8_t flip = neg ? 0xFF : 0x00;
+    *out++ = neg ? 1 : 3;
+    uint32 e = ((uint32) exponent) ^ UINT32_C(0x80000000);
+    for (int i = 3; i >= 0; i--)
+      *out++ = ((uint8_t) (e >> (8 * i))) ^ flip;
+    for (const char *p = first; p <= last; p++)
+      if (*p != '.')
+        *out++ = ((uint8_t) (*p - '0' + 1)) ^ flip;
+    *out = flip;
+  }
+  pfree(str);
+  return result;
+}
+
+/**
+ * @brief Write the sort key of a JSON value, or count its bytes when the
+ * buffer is NULL
+ * @details The tokens are read as #pg_jsonb_hash_extended reads them, in the
+ * order compareJsonbContainers compares them, and each is written so that it
+ * ends where its bytes say it does: the type of a value as a byte, in the
+ * order of the type enumeration (null, string, number, Boolean, array,
+ * object), then for an array its number of elements, four bytes most
+ * significant first, and a byte that is 0 for a scalar standing alone and 1
+ * otherwise; for an object its number of pairs; for a string its bytes, a
+ * zero byte written as a zero byte followed by 0xFF, ended by two zero bytes,
+ * as #datum_sortkey_put writes a text; for a number the key
+ * #numeric_sortkey_write writes; for a Boolean a byte. The end of an array or
+ * of an object writes nothing: two values whose containers hold as many
+ * elements reach their ends together. So comparing two keys byte by byte
+ * orders the values as #pg_jsonb_cmp does, the first token that differs
+ * deciding, and two values have the same key exactly when #pg_jsonb_eq holds
+ * @param[in] jb JSON value
+ * @param[out] out Buffer @nullable
+ * @return The number of bytes of the key
+ */
+static size_t
+jsonb_sortkey_write(const Jsonb *jb, uint8_t *out)
+{
+  JsonbIterator *it = JsonbIteratorInit(&((Jsonb *) jb)->root);
+  JsonbValue v;
+  JsonbIteratorToken r;
+  size_t result = 0;
+  while ((r = JsonbIteratorNext(&it, &v, false)) != WJB_DONE)
+  {
+    if (r == WJB_END_ARRAY || r == WJB_END_OBJECT)
+      continue;
+    if (out)
+      out[result] = (uint8_t) v.type;
+    result++;
+    switch (v.type)
+    {
+      case jbvArray:
+        if (out)
+        {
+          uint32 n = (uint32) v.val.array.nElems;
+          for (int i = 0; i < 4; i++)
+            out[result + i] = (uint8_t) (n >> (8 * (3 - i)));
+          out[result + 4] = v.val.array.rawScalar ? 0 : 1;
+        }
+        result += 5;
+        break;
+      case jbvObject:
+        if (out)
+        {
+          uint32 n = (uint32) v.val.object.nPairs;
+          for (int i = 0; i < 4; i++)
+            out[result + i] = (uint8_t) (n >> (8 * (3 - i)));
+        }
+        result += 4;
+        break;
+      case jbvString:
+        for (int i = 0; i < v.val.string.len; i++)
+        {
+          if (out)
+            out[result] = (uint8_t) v.val.string.val[i];
+          result++;
+          if (v.val.string.val[i] == '\0')
+          {
+            if (out)
+              out[result] = 0xFF;
+            result++;
+          }
+        }
+        if (out)
+          out[result] = out[result + 1] = 0;
+        result += 2;
+        break;
+      case jbvNumeric:
+        result += numeric_sortkey_write(v.val.numeric,
+          out ? out + result : NULL);
+        break;
+      case jbvBool:
+        if (out)
+          out[result] = v.val.boolean ? 1 : 0;
+        result++;
+        break;
+      case jbvNull:
+        break;
+      default:
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "Unknown JSON value type for a sort key: %d", v.type);
+        return 0;
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a JSON value, which
+ * #jsonb_sortkey_write states
+ * @param[in] jb JSON value
+ */
+size_t
+jsonb_sortkey_size(const Jsonb *jb)
+{
+  assert(jb);
+  return jsonb_sortkey_write(jb, NULL);
+}
+
+/**
+ * @brief Write the sort key of a JSON value, which #jsonb_sortkey_write
+ * states
+ * @param[in] jb JSON value
+ * @param[out] out Buffer of #jsonb_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+jsonb_sortkey_put(const Jsonb *jb, uint8_t *out)
+{
+  assert(jb); assert(out);
+  return out + jsonb_sortkey_write(jb, out);
+}
+
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the 32-bit hash value of a JSONB value
