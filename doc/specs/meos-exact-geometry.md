@@ -436,6 +436,8 @@ arcs as arcs (a `CURVEPOLYGON`, or a `MULTISURFACE` of them).
 | line, multiline | positive | round joins, any cap | the same, each line walked out to its end and back under a round cap; under a flat or a square cap, the strips of its end segments and the buffer with round caps of the line between them |
 | polygon, multipolygon | negative | round joins | the region the offset curves of the complement wind around clockwise |
 | multipoint | positive | none | the region the circles about its points wind around at least once, a point repeating another dropped |
+| circular string, compound curve, multicurve | positive | round joins, round caps | the region the offset curves wind around at least once, each curve walked out to its end and back |
+| curve polygon, multisurface | positive | round joins | the region the offset curves of its rings wind around at least once |
 
 Round joins and round caps are the default style.
 
@@ -446,6 +448,21 @@ is the arc of the circle about that vertex. No point of the curves is
 constructed and then asked about: every crossing of two pieces is decided by
 the arrangement from the doubles that define them, and only the vertices of
 the answer are rounded, each once.
+
+**An arc is offset by an arc about its own centre.** The circle of an input
+arc through its start, middle and end, or on the diameter of a whole circle's
+half, has a centre `C` that is a rational of those doubles and a radius `R`
+whose square is one. Its offset to the right of the walk is the arc about `C`
+of radius `R + r` where it runs counterclockwise and `R - r` where it runs
+clockwise, between the points of the circles of radius `r` about its ends on
+the lines through `C`; where `R - r` is negative the offset runs on the far
+side of `C`. Its circle, its ends and every crossing it makes are held in the
+square root of `R^2` and the roots their meetings add, decided exactly. The
+join at a vertex turns as the walk does there, the direction of an arc being
+its tangent, and a whole circle is walked as its two halves. A ring of a curve
+polygon turns counterclockwise where the shoelace sum of the ring through
+every point fixing it, and the sense of every arc, agree on it: each arc adds
+to that sum two circular segments of its own sign.
 
 **The region is decided by the winding number.** The curves wind around a
 point as many times as the parts of the geometry within the distance of it,
@@ -483,7 +500,10 @@ enclosing circle is no larger than `r` holds no point of its erosion.
 built on the older path, whose answers read the tolerances of section 3 and
 are outside this document's guarantee; the buffer of a line is declined, since
 no other path answers it exactly; the erosion of a polygon holding a ring that
-encloses no area is built on the older path.
+encloses no area is built on the older path. So is the buffer of a curve under
+a flat or a square cap, of a curve polygon ring whose arcs turn against its
+shoelace sum, and of a curve polygon holding a hole of arcs, other than a whole
+circle, that the distance may cover.
 
 **The rings of a line's buffer carry a certificate.** The rings are written in
 doubles, and the written end of every offset segment, chord or corner of a
@@ -524,6 +544,8 @@ rests on a rounding.
 | lines with round joins and round, flat or square caps | 1712 lines at two distances, a grid about each and points along and across each end at 0.999 and 1.001 of the distance | 1021872 of 1021872, with no decline |
 | multipoints | 300 multipoints of two to eight points at two distances, a grid about each and points about every crossing of two circles at 0.999 and 1.001 of the distance | 44728 of 44728, with no decline |
 | erosions | 62800 points about 400 eroded squares and squares with holes; 12366 points about 192 natural areas | 62800 of 62800 and 12366 of 12366, with no decline |
+| circular strings, compound curves and curve polygons | 200 geometries of one to three arcs, whole circles among them, at three distances, a grid about each and points at 0.999 and 1.001 of the distance from every arc and every end | 41268 of 41268, with no decline |
+| curve polygons bounded by whole circles, with and without a circular hole | 60 discs at distances below and above the radius of the hole, points at 0.999 and 1.001 of the distance from either circle | 11087 of 11087, with no decline |
 
 Every query a line's certificate declines has a distance below the rounding of
 its coordinates, at most 0.32 of an ulp; answered instead, five of them are

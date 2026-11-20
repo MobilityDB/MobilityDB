@@ -91,25 +91,51 @@ typedef enum
 #define MEOS_GEOM_TOLERANCE 1e-12
 
 /**
+ * @brief The points that define an arc of a geometry, the doubles it holds
+ */
+typedef struct
+{
+  double s[2];       /**< Start */
+  double m[2];       /**< Middle, not read for a half circle */
+  double e[2];       /**< End */
+  bool half;         /**< The half of the circle on the diameter from the start
+                          to the end that runs counterclockwise between them */
+  double cx, cy, r;  /**< Its circle in doubles (#exact_arc_bound) */
+  double err;        /**< How far that circle may lie from the exact one, or
+                          negative where it is not read */
+} ExactArc;
+
+/**
  * @brief A point where a common tangent of two circles touches one of them,
  * which no double holds in general: what defines it, exactly
  * @details With @p along nonzero, which two circles of one radius r alone
  * carry, the point lies past that one by r along the line of the centres:
  * Ck + r (along d + side rot(d)) / |d|, d = C2 - C1, a corner of the square
  * cap of a buffer, where its offset meets the tangent across the end
+ *
+ * With @p arc given, it is instead the point where the offset of that input
+ * arc ends: the arc's points fix its circle, of centre C, and the point lies
+ * on the circle of radius r1 about its start (@p k 0) or its end (@p k 1), on
+ * the line through C, away from C for @p side 1 and toward it for -1: the end
+ * of the arc of radius R + side r1 about C. No double holds it in general.
+ * The arc is held out of line, as an edge holds its tangent points, so that
+ * a point where a tangent touches a circle keeps its size
  */
 typedef struct
 {
   double c1x, c1y, r1;           /**< The first circle */
   double c2x, c2y, r2;           /**< The second circle */
-  int side;                      /**< 1 for the tangent on the left of the
+  int8_t side;                   /**< 1 for the tangent on the left of the
                                       first centre to the second, -1 for the
                                       one on its right */
-  int k;                         /**< 0 for the point on the first circle, 1
+  int8_t k;                      /**< 0 for the point on the first circle, 1
                                       for the one on the second */
-  int along;                     /**< 0 for the point on the circle, 1 or -1
+  int8_t along;                  /**< 0 for the point on the circle, 1 or -1
                                       for the one past it by the radius along
                                       C2 - C1 or C1 - C2 */
+  const ExactArc *arc;           /**< The input arc whose offset ends at the
+                                      point, NULL for a point where a tangent
+                                      touches a circle */
 } TangentPoint;
 
 /**
@@ -141,6 +167,25 @@ typedef struct
                                       circle furthest along -x, rounded once,
                                       and it holds no (sx,sy), (mx,my) or
                                       (ex,ey) (#edges_add_circle) */
+  bool offset;                   /**< The arc is the offset by @p radius of
+                                      an input arc, between its ends @p from
+                                      and @p to (#TangentPoint, member
+                                      radial), which carry the three input
+                                      points fixing the circle of that arc:
+                                      the arc about its centre of radius
+                                      R + side radius, side that of its ends,
+                                      in the sense @p ccw. It is a centred
+                                      arc whose doubles do not hold its
+                                      circle: @p centred is set, (cx,cy)
+                                      hold its centre rounded once and
+                                      @p radius the distance, the input arc
+                                      is (sx,sy), (mx,my), (ex,ey) and its
+                                      side @p side, so every exact question
+                                      reads its circle in a tower from them
+                                      (#edges_add_offset_arc) */
+  int side;                      /**< For an offset, 1 where its radius is
+                                      that of the input arc plus the
+                                      distance, -1 where minus it */
   const TangentPoint *from, *to; /**< For a segment whose ends are points
                                       where tangents touch circles, which no
                                       double holds, those points, (x1,y1) and
@@ -302,20 +347,6 @@ extern void linesegm_crossing_exact(const double *a, const double *b,
   const double *c, const double *d, double *x, double *y);
 extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, int ndims, double r);
-/**
- * @brief The points that define an arc of a geometry, the doubles it holds
- */
-typedef struct
-{
-  double s[2];       /**< Start */
-  double m[2];       /**< Middle, not read for a half circle */
-  double e[2];       /**< End */
-  bool half;         /**< The half of the circle on the diameter from the start
-                          to the end that runs counterclockwise between them */
-  double cx, cy, r;  /**< Its circle in doubles (#exact_arc_bound) */
-  double err;        /**< How far that circle may lie from the exact one, or
-                          negative where it is not read */
-} ExactArc;
 
 extern void exact_arc_bound(ExactArc *arc, double box[4]);
 extern void exact_arc_from_edge(const Edge *e, ExactArc *arc);
@@ -570,12 +601,21 @@ extern void edges_add_tangent_segment(MeosArray *edges,
   const TangentPoint *from, const TangentPoint *to);
 extern void edges_add_tangent_arc(MeosArray *edges, double cx, double cy,
   double radius, bool ccw, const TangentPoint *from, const TangentPoint *to);
+extern void edges_add_offset_arc(MeosArray *edges, bool ccw,
+  const TangentPoint *from, const TangentPoint *to);
 extern int towerseg_meet(const Edge *p, const Edge *q, TowerMeet out[2]);
 extern int meets_order_tower(const Edge *e, bool ccw, const MeetPoint *a,
   const MeetPoint *b);
 extern int towerseg_side(const Edge *s, double px, double py);
 extern int meet_point_y_side(const MeetPoint *m, double py);
 extern int meet_point_x_side(const MeetPoint *m, double ox, double d);
+extern int meet_point_circle_side(const MeetPoint *m, const Edge *c,
+  bool alongx, int sr);
+extern int tower_circles_meet(const Edge *p, const Edge *q);
+extern int tower_circles_cmp(const Edge *p, const Edge *q, bool radius);
+extern int walk_turn_sign(const double *const in[3], int inarc,
+  const double *const out[3], int outarc, int *dot);
+extern int tower_circles_right_cmp(const Edge *p, const Edge *q);
 extern int meets_x_cmp(const MeetPoint *a, const MeetPoint *b);
 extern bool tangent_point_box(const TangentPoint *tp, double x, double y,
   double box[4]);

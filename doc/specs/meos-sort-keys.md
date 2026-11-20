@@ -143,8 +143,11 @@ them:
 2. the bounding box, as 4.4 writes it, and for a temporal geography its period
    instead, since one point of the sphere spelled with two longitudes is one
    value with two boxes but one period;
-3. each instant: its timestamp, then its value as 4.1 writes it;
-4. each run of instants: its number of instants as an integer, whether it holds
+3. for a temporal rigid geometry, its reference geometry, as section 7 orders
+   it (`geo_sortkey_put`), since its value is the geometry and the poses that
+   move it;
+4. each instant: its timestamp, then its value as 4.1 writes it;
+5. each run of instants: its number of instants as an integer, whether it holds
    its lower and its upper bound (an inclusive bound first), and its
    interpolation.
 
@@ -153,16 +156,18 @@ wrappers, so that the values `temporal_eq` holds equal have one key. Neither
 list needs an end mark: two values with one box have one period and therefore
 reach their last instant together.
 
-A temporal type has a key when its base type has one or when it is a temporal
-point. The temporal rigid geometry has none: `temporal_cmp` reads none of its
-reference geometry, so two values `temporal_eq` holds different can compare
-equal.
+Every temporal type has a key: its base type has one, and a temporal rigid
+geometry adds the key of its reference geometry, which `temporal_eq` and
+`temporal_cmp` read before its poses.
 
 ## 5. Coverage
 
-| Has a key | Has none |
-|---|---|
-| Booleans, integers, big integers, floats, dates, timestamps, texts; H3, quadbin and S2 cells; geometries and geographies; circular buffers; network points; poses and pose chains; point-cloud points and patches; JSON values; every set, span, span set and temporal type over them; temporal, spatiotemporal and point-cloud boxes | temporal rigid geometries |
+Every type has a key: Booleans, integers, big integers, floats, dates,
+timestamps, texts; H3, quadbin and S2 cells; geometries and geographies;
+circular buffers; network points; poses and pose chains; point-cloud points
+and patches; JSON values; every set, span, span set and temporal type over
+them, temporal rigid geometries included; temporal, spatiotemporal and
+point-cloud boxes.
 
 ## 6. The tests of a key
 
