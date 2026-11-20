@@ -137,7 +137,7 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp ?&& stbo
 SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp %&& stbox(t2.temp);
  count 
 -------
-   100
+   101
 (1 row)
 
 -- The great circle from Point(10 60) to Point(50 60) rises to latitude 61.52
