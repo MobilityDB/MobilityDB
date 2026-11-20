@@ -399,7 +399,8 @@ def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
 
 
 def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
-                      box: str = "stbox", valspan: str = None) -> str:
+                      box: str = "stbox", valspan: str = None,
+                      base: str = None) -> str:
     """The tables of one dimension of an index test over the fixtures
     `tbl_<stem>_*`, templates/indextest_tables.sql.tmpl with the coordinates
     of the boxes of that dimension, the keyword `boxkw` of their literals and
@@ -408,7 +409,9 @@ def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
     alone takes templates/indextest_tables_span.sql.tmpl, the same tables
     without the boxes of space, and a temporal number keyed by a tbox
     templates/indextest_tables_tbox.sql.tmpl, its boxes of values alone and
-    the spans `valspan` of its values in place of those of space. A fixture
+    the spans `valspan` of its values in place of those of space, the value
+    it expands a box by written in its `base` type, since a box takes a value of
+    its own type alone. A fixture
     stating `big: none` has no table of many values, its instants keeping
     their keys"""
     axes = ("x", "y", "z") if dim.get("z") else ("x", "y")
@@ -430,7 +433,8 @@ def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
     text = read_template({"stbox": "indextest_tables.sql.tmpl",
                           "tbox": "indextest_tables_tbox.sql.tmpl"}.get(
                               box, "indextest_tables_span.sql.tmpl"))
-    text = text.replace("{VSPAN}", valspan or "").replace("{D}", "1")
+    text = text.replace("{VSPAN}", valspan or "").replace(
+        "{D}", f"1::{base}" if box == "tbox" else "1")
     for k, v in (("{FIXTURE}", fixture), ("{SRCFILTER}", dim["srcfilter"]),
                  ("{XT}", "ZT" if dim.get("z") else "XT"),
                  ("{X}", "Z" if dim.get("z") else "X"),
@@ -511,7 +515,8 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
                                 d.get("ever", True), opnames, valspan)
     # A cell bounded by great-circle arcs has a geodetic box
     boxkw = "GEODSTBOX" if sub.get("geodetic_target") else "STBOX"
-    tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box, valspan)
+    tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box, valspan,
+                                          test.get("base"))
                        for d, stem in zip(dims, stems))
     out = []
     for idx, using in (("rtree", "gist(temp)"), ("quadtree", "spgist(temp)"),

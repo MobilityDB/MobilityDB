@@ -185,6 +185,15 @@ indextests:
     same: "5"
     sameq: tbox 'TBOXINT X([5, 5])'
     labels: true
+  - temp: tbigint
+    base: bigint
+    file: mobilitydb/test/temporal/sql/044_tbigint_indexes_tbl.sql
+    offset: 10100
+    copies: 0
+    srcfilter: k % 1000 = 0 AND temp IS NOT NULL
+    same: "5"
+    sameq: tbox 'TBOXBIGINT X([5, 5])'
+    labels: true
   - temp: tfloat
     base: float
     file: mobilitydb/test/temporal/sql/044_tfloat_indexes_tbl.sql
