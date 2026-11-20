@@ -197,6 +197,16 @@ SELECT contains(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),
 -- A circular string keeps its arcs, and so does the buffer of one
 SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+-- A disc with a circular hole the distance covers whole: the point in the
+-- hole lies within the distance of the hole's circle
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(5.813848 2.813777,
+  12.184346 5.166935,5.813848 2.813777),Circularstring(9.168692 2.718545,
+  8.696632 5.985608,9.168692 2.718545))', 2.1456446498870543),
+  ST_Point(8.599378402370817, 4.328579428763156)) AS in_hole;
+-- An arc is offset by an arc about its own centre: a point at 1.4 from the
+-- centre of the half circle of radius 1 lies in its buffer by 0.5
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5),
+  ST_Point(0, 1.4)) AS beside_arc;
 
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
