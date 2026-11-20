@@ -919,6 +919,25 @@ The arctangent in pairs of doubles that the row latitudes and the S2 corners rea
 the terms of its series by `ddb_div_int`, the division by an exact integer, merged as #3731: on the
 planar cover of 10 vessel-like tracks at zoom 18 it takes 0.62 of the instructions it took, the
 cover 0.91, the judges of `ea8m/` and of the S2 corners agreeing on every row.
+The vertices of an H3 cell, the points of its boundary and of a directed edge and its center are
+the doubles nearest the degrees of the values the formula of H3 4.6.0 gives them, every constant
+read on its decimal literal (decision D8 of the cell walks, `doc/specs/meos-cell-walks.md`). libh3
+computes them with the trigonometry of the C library, whose doubles differ from one machine to
+another: for one release, glibc and compiler, the GitHub runner reads other doubles than a
+workstation for 41 of 47 coordinates of the vertices of eight cells of resolutions 0 and 1.
+`h3_vertex.c` reads the integer inputs of the formula from the core library of H3 vendored under
+`h3lib/`: a face of the icosahedron, a resolution and a point of the lattice, or the crossing of a
+segment of the lattice with a face edge, whose existence it decides on the integers.
+`gnomonic_face_point_nearest` (`geo_trig.c`) rounds each longitude and latitude first in bounded
+pairs of doubles (`ddb_gnomonic_face_point_nearest`) and, where their bound cannot tell, on an
+exact enclosure through `nearest_double_exact`. On every cell of resolutions 0 to 3 (48008 cells),
+an interval evaluation of the formula in MPFI, its rounding read in `CGAL::Gmpq` (`d8_judge`),
+agrees with every outline the head states and refuses libh3's on 47987 cells; an mpmath
+transcription agrees with all 1 196 914 outline and 199 220 center coordinates of the census.
+Against libh3 called directly, by callgrind on the 6846 cells of resolutions 0 to 2, the outline
+and the center of a cell cost 113 thousand instructions against 9.3 thousand, 12.2 times,
+`ddb_atan_degrees` taking 22% of them. The vendored library is MobilityDB #3873; the vertices are
+MobilityDB #3875, a draft until that cost reaches parity or the owner accepts it.
 Left to the cell walks: the two `atan(sinh)` sites of `raster_quadbin.c`, which their raster walk
 rewrites.
 
