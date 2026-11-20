@@ -88,6 +88,7 @@ struct Raquet
  *****************************************************************************/
 
 extern void raquet_set_stbox(const Raquet *rq, STBox *box);
+extern uint8_t *raquet_sortkey_intl(const Raquet *rq, size_t *size);
 
 /*****************************************************************************
  * Pixel type catalog

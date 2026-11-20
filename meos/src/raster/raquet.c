@@ -897,6 +897,57 @@ raquet_cmp(const Raquet *rq1, const Raquet *rq2)
 }
 
 /**
+ * @brief Return the sort key of a Raquet tile
+ * @details The key holds the fields in the order #raquet_cmp compares them,
+ * as #npoint_sortkey_put writes those of a network point: the quadbin cell as
+ * an unsigned 8-byte integer, the pixel type as one byte, the width and the
+ * height as unsigned 2-byte integers, each most significant byte first, then
+ * the pixels as they are stored. Two tiles whose fields before the pixels are
+ * equal have pixels of one size, so comparing the keys byte by byte orders
+ * them as #raquet_cmp does, and the keys are identical exactly when
+ * #raquet_eq holds. The nodata value, which #raquet_cmp does not read, is not
+ * part of the key
+ * @param[in] rq Raquet tile
+ * @param[out] size Number of bytes of the key
+ * @see #raquet_sortkey
+ */
+uint8_t *
+raquet_sortkey_intl(const Raquet *rq, size_t *size)
+{
+  assert(rq); assert(size);
+  size_t npixels = raquet_pixels_size(rq);
+  *size = 8 + 1 + 2 + 2 + npixels;
+  uint8_t *result = palloc(*size);
+  uint8_t *out = result;
+  sortkey_put_uint64(rq->quadbin, 8, out);
+  out += 8;
+  sortkey_put_uint64(rq->pixtype, 1, out);
+  out += 1;
+  sortkey_put_uint64(rq->width, 2, out);
+  out += 2;
+  sortkey_put_uint64(rq->height, 2, out);
+  out += 2;
+  memcpy(out, rq->pixels, npixels);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return the sort key of a Raquet tile, the bytes whose unsigned byte
+ * order is the order of #raquet_cmp and whose byte equality is #raquet_eq
+ * @param[in] rq Raquet tile
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+raquet_sortkey(const Raquet *rq, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(size, NULL);
+  return raquet_sortkey_intl(rq, size);
+}
+
+/**
  * @ingroup meos_raster_base_comp
  * @brief Return true if two Raquet tiles are equal
  * @param[in] rq1,rq2 Raquet tiles

@@ -57,11 +57,15 @@ followed by other keys still orders as the string does.
 | `stbox_sortkey(const STBox *, size_t *size)` | a spatiotemporal box | `meos_geo.h` |
 | `tpcbox_sortkey(const TPCBox *, size_t *size)` | a point-cloud box | `meos_pointcloud.h` |
 | `temporal_sortkey(const Temporal *, size_t *size)` | a temporal value | `meos.h` |
+| `nsegment_sortkey(const Nsegment *, size_t *size)` | a network segment | `meos_npoint.h` |
+| `raquet_sortkey(const Raquet *, size_t *size)` | a Raquet tile | `meos_raster.h` |
 
 Each returns a newly allocated key and writes its length to `size`, or returns
 NULL with an error when the value's type has no key. Each has an `_intl` twin
 in the internal headers that asserts instead of testing. A base value has no
 public key of its own: its key is the body of the key of a one-value set.
+A network segment and a Raquet tile, which no set holds, have the two keys of
+their own above.
 
 ## 4. The encodings
 
@@ -84,6 +88,8 @@ length, and `datum_sortkey_type` answers whether a base type has a key.
 | pose chain | its flags, SRID and poses (`posechain_sortkey_put`) |
 | point-cloud point and patch | the pcid as 4 bytes big endian, then the bytes stored after it, escaped (`pcpoint_sortkey_put`, `pcpatch_sortkey_put`), so that values order by pcid as a number, then by their stored bytes as unsigned bytes |
 | JSON value | its tokens in the order `compareJsonbContainers` reads them (`jsonb_sortkey_put`), see 4.2 |
+| network segment | its route as a big integer, then its two positions as floats (`nsegment_sortkey_put`) |
+| Raquet tile | its quadbin cell as 8 bytes, its pixel type as one byte, its width and height as 2 bytes each, unsigned and big endian, then its pixels as stored (`raquet_sortkey`); the nodata value, which `raquet_cmp` does not read, is not part of it |
 
 The fixed-size keys have the length `datum_sortkey_size` gives; the others a
 length that depends on the value.
@@ -168,6 +174,9 @@ circular buffers; network points; poses and pose chains; point-cloud points
 and patches; JSON values; every set, span, span set and temporal type over
 them, temporal rigid geometries included; temporal, spatiotemporal and
 point-cloud boxes.
+Network segments and Raquet tiles, which no set holds, have
+the keys `nsegment_sortkey` and `raquet_sortkey`. A type MEOS does not compare,
+the PostGIS raster and the JSON path, has no order and so no key.
 
 ## 6. The tests of a key
 
@@ -181,6 +190,8 @@ arithmetic (floats, decimal numbers, coordinates) are
 also judged by an exact oracle that reads every field as a rational number and
 requires the comparison and the byte order of the keys to equal the
 lexicographic order of the fields on every row.
+`meos/test/raquet_nsegment_sortkey_test.c` checks the keys of network
+segments and Raquet tiles.
 
 ## 7. Geometry comparison
 

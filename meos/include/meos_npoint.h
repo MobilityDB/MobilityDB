@@ -210,6 +210,7 @@ extern bool nsegment_gt(const Nsegment *ns1, const Nsegment *ns2);
 extern bool nsegment_le(const Nsegment *ns1, const Nsegment *ns2);
 extern bool nsegment_lt(const Nsegment *ns1, const Nsegment *ns2);
 extern bool nsegment_ne(const Nsegment *ns1, const Nsegment *ns2);
+extern uint8_t *nsegment_sortkey(const Nsegment *ns, size_t *size);
 
 /******************************************************************************
  * Functions for network point sets
