@@ -59,19 +59,19 @@ getZ(pcpoint) → float
 WITH pt AS (SELECT pcpoint(1, 10.0, 20.0, 30.0) p)
   SELECT getX(p), getY(p), getZ(p) FROM pt;
 -- 10 | 20 | 30
-</pre></li><li class="listitem"><a name="pcpoint_getDim"></a><a class="indexterm" name="id17323"></a><p>Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_getDim"></a><a class="indexterm" name="id17323"></a><p>Return any named dimension of a pcpoint</p><pre class="programlisting">
 getDim(pcpoint,text) → float
-</pre><pre class="programlisting">
+</pre><p>The name is read without regard to case, and a name the schema of the point does not state raises an error, as pgPointCloud's <code class="varname">PC_Get</code> raises it.</p><pre class="programlisting">
 SELECT getDim(pcpoint(1, 10.0, 20.0, 30.0), 'X');
 -- 10
-</pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id17330"></a><p>Return the spatial reference identifier (inherited from the schema)</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_SRID"></a><a class="indexterm" name="id17332"></a><p>Return the spatial reference identifier (inherited from the schema)</p><pre class="programlisting">
 SRID({pcpoint,pcpatch}) → integer
 </pre><pre class="programlisting">
 SELECT SRID(pcpoint(1, 10.0, 20.0, 30.0));
 -- 0
 SELECT SRID(pcpatch(pcpoint(1, 10.0, 20.0, 30.0), pcpoint(1, 11.0, 21.0, 31.0)));
 -- 0
-</pre></li><li class="listitem"><a name="pcpoint_transform"></a><a class="indexterm" name="id17337"></a><p>Transform to the schema of another pcid</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpoint_transform"></a><a class="indexterm" name="id17339"></a><p>Transform to the schema of another pcid</p><pre class="programlisting">
 transform({pcpoint,pcpatch,pcpointset,pcpatchset},pcid integer) →
   {pcpoint,pcpatch,pcpointset,pcpatchset}
 </pre><p>A point cloud value takes its SRID from the schema its pcid names, so it is transformed into the schema of another pcid, which states the target SRID and how the transformed coordinates are stored. The X, Y and Z dimensions are reprojected from the SRID of the source schema to the SRID of the target schema; the other dimensions are matched by name, and a dimension of the target schema that the source schema lacks takes 0, as in the <code class="varname">PC_Transform</code> function of pgPointCloud. When both schemas state the same SRID, the coordinates are only stored again under the target schema. A patch and a set transform each of their points.</p><p>An error is raised when the target pcid names no schema, when either schema states no SRID, and when a transformed coordinate does not fit its dimension in the target schema at its scale and offset, rather than being clamped into it.</p><pre class="programlisting">
@@ -84,12 +84,12 @@ SELECT round(getX(p)::numeric, 3), round(getY(p)::numeric, 3), getZ(p),
 SELECT ST_AsText(geometry(transform(pcpatch(pcpoint(101, 4.35, 50.85, 10),
   pcpoint(101, 3.72, 51.05, 5)), 102)), 3);
 -- MULTIPOINT Z ((484239.785 6594803.227 10),(414108.506 6630142.914 5))
-</pre></li><li class="listitem"><a name="pcpatch_numPoints"></a><a class="indexterm" name="id17347"></a><p>Return the number of points of a pcpatch</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_numPoints"></a><a class="indexterm" name="id17349"></a><p>Return the number of points of a pcpatch</p><pre class="programlisting">
 numPoints(pcpatch) → integer
 </pre><pre class="programlisting">
 SELECT numPoints(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
 -- 2
-</pre></li><li class="listitem"><a name="pcpatch_pointN"></a><a class="indexterm" name="id17354"></a><p>Return the n-th point of a pcpatch</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_pointN"></a><a class="indexterm" name="id17356"></a><p>Return the n-th point of a pcpatch</p><pre class="programlisting">
 pointN(pcpatch,integer) → pcpoint
 </pre><p>Points are numbered from one, a negative integer counts from the end of the patch, and an integer addressing no point returns NULL.</p><pre class="programlisting">
 SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 2)
@@ -98,7 +98,7 @@ SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 2)
 SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 3)
   IS NULL;
 -- true
-</pre></li><li class="listitem"><a name="pcpatch_geometry"></a><a class="indexterm" name="id17362"></a><p>Return the multipoint of the positions the points of a patch occupy</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pcpatch_geometry"></a><a class="indexterm" name="id17364"></a><p>Return the multipoint of the positions the points of a patch occupy</p><pre class="programlisting">
 geometry(pcpatch) → geometry
 geography(pcpatch) → geography
 </pre><p>The schema the <code class="varname">pcid</code> names decides the SRID and whether the result carries a Z dimension</p><pre class="programlisting">
