@@ -243,7 +243,13 @@ SELECT relate(geometry 'Polyhedralsurface Z (
   geometry 'Linestring(0 0,2 2)');
 
 -- A pattern is matched against that matrix
-SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+-- A pattern is read in any case, and is nine symbols among T, F, *, 0, 1 and 2
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 't*fff*ff*');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(2 2)', 't*fff*ff*');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*F');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FF*F');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FFX');
 
 -------------------------------------------------------------------------------
 

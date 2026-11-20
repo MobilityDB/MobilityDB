@@ -553,12 +553,31 @@ SELECT relate(geometry 'Polyhedralsurface Z (
 (1 row)
 
 -- A pattern is matched against that matrix
-SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
- st_relate 
------------
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+ relate 
+--------
  t
 (1 row)
 
+-- A pattern is read in any case, and is nine symbols among T, F, *, 0, 1 and 2
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 't*fff*ff*');
+ relate 
+--------
+ t
+(1 row)
+
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(2 2)', 't*fff*ff*');
+ relate 
+--------
+ f
+(1 row)
+
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*F');
+ERROR:  Invalid DE-9IM pattern "T*F": nine symbols among T, F, *, 0, 1 and 2 are expected
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FF*F');
+ERROR:  Invalid DE-9IM pattern "T*FFF*FF*F": nine symbols among T, F, *, 0, 1 and 2 are expected
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FFX');
+ERROR:  Invalid DE-9IM pattern "T*FFF*FFX": nine symbols among T, F, *, 0, 1 and 2 are expected
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -- Spatial relationships

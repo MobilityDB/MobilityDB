@@ -252,7 +252,7 @@ Datum
 datum_geom_relate_pattern(Datum geom1, Datum geom2, Datum p)
 {
   return BoolGetDatum(geom_relate_pattern(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), (char *) DatumGetPointer(p)));
+    DatumGetGserializedP(geom2), (const char *) DatumGetPointer(p)));
 }
 
 /**
@@ -883,7 +883,8 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] ever True for one part, false for every part
  */
 static bool
-geo_traj_relate(const GSERIALIZED *gs, const GSERIALIZED *traj, char *patt,
+geo_traj_relate(const GSERIALIZED *gs, const GSERIALIZED *traj,
+  const char *patt,
   bool covers, bool ever)
 {
   if (gserialized_get_type(traj) != COLLECTIONTYPE)
