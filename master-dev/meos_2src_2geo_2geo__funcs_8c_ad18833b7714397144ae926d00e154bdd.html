@@ -202,6 +202,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1a12ade5425447f5c8ca8adb658e8908.html#a1a12ade5425447f5c8ca8adb658e8908">edge_scale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a03d86a1fb79e1b5e560d010f8c70d30d.html#a03d86a1fb79e1b5e560d010f8c70d30d">edges_add_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3447e88c4d062b09a86bdc612db3dde2.html#a3447e88c4d062b09a86bdc612db3dde2">edges_add_circle</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a025582afa493addd84a00cb734bd3a77.html#a025582afa493addd84a00cb734bd3a77">edges_add_offset_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae78a3d5ba7a6978d0f6ae2d12f29c758.html#ae78a3d5ba7a6978d0f6ae2d12f29c758">edges_add_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5e14e4bb2d168dfb7d0b80f3ea403f68.html#a5e14e4bb2d168dfb7d0b80f3ea403f68">edges_add_tangent_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3944218df75cb0eac0489fa41523c2fb.html#a3944218df75cb0eac0489fa41523c2fb">edges_add_tangent_segment</a></td></tr>
@@ -414,6 +415,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a22d2f2cecdf2a053637532ab3df9058d.html#a22d2f2cecdf2a053637532ab3df9058d">MEET_DOT</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a62a75f25874b7fd044d22434ba657d7b.html#a62a75f25874b7fd044d22434ba657d7b">meet_point_bounds</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a23e06ea77faed2712fdf827e422a1fed.html#a23e06ea77faed2712fdf827e422a1fed">meet_point_bounds_pred</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af3fd342377bdcf478f67e12f187ffdf0.html#af3fd342377bdcf478f67e12f187ffdf0">meet_point_circle_side</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a2e345c079686cec9f23e69545a0c2aec.html#a2e345c079686cec9f23e69545a0c2aec">meet_point_circle_side_pred</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5bc50ffcb7bdf6bbb08586008184eb47.html#a5bc50ffcb7bdf6bbb08586008184eb47">meet_point_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0043fc8cabcbad7d3fc952d176b2788b.html#a0043fc8cabcbad7d3fc952d176b2788b">meet_point_origin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1d469e308c173d1a15e6821c4e741de3.html#a1d469e308c173d1a15e6821c4e741de3">meet_point_x_side</a></td></tr>
@@ -838,7 +841,18 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3f11deb9195c12dc3fcc27d3be98bae0.html#a3f11deb9195c12dc3fcc27d3be98bae0">tower_arc_holds_xy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_afb3cf2fac01ae2f709481d4672480680.html#afb3cf2fac01ae2f709481d4672480680">tower_arc_read</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1e727c726bc2e871a33a30415eb39db0.html#a1e727c726bc2e871a33a30415eb39db0">tower_bisect</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af7557d5771ad3a3b0a091238815a4df4.html#af7557d5771ad3a3b0a091238815a4df4">tower_circle_of</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a70a949cdf96dd6da3258e355e42a3540.html#a70a949cdf96dd6da3258e355e42a3540">tower_circle_points</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab7213de0e23d9777750d0a15695181c3.html#ab7213de0e23d9777750d0a15695181c3">tower_circle_rho</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3228da4ee55d6cccfa6b70221648f54b.html#a3228da4ee55d6cccfa6b70221648f54b">tower_circles_cmp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a36cd3f90df16b74ab5aa50f72cce8b75.html#a36cd3f90df16b74ab5aa50f72cce8b75">tower_circles_cmp_pred</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aee621fe1b204a7ed85496ea02d8ad302.html#aee621fe1b204a7ed85496ea02d8ad302">tower_circles_meet</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a01d46c2ad9630d53c0a4dcd33c829e7d.html#a01d46c2ad9630d53c0a4dcd33c829e7d">tower_circles_meet_pred</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab03a8616f5ae9d45c5402a500eb58f60.html#ab03a8616f5ae9d45c5402a500eb58f60">tower_circles_radius_cmp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a25ce0706e3a1e07904be51270ba214d4.html#a25ce0706e3a1e07904be51270ba214d4">tower_circles_right_cmp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a791ef44fc29b4a7564dbf45f80c2820c.html#a791ef44fc29b4a7564dbf45f80c2820c">tower_circles_right_cmp_pred</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5fa69623d2ee4d8544fd8bba9e3aac22.html#a5fa69623d2ee4d8544fd8bba9e3aac22">tower_dd_k</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a9ee4504d46643edcd22331644f00a7ef.html#a9ee4504d46643edcd22331644f00a7ef">tower_dd_quotient</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a2e86f836affd83307e03a2c89ba07585.html#a2e86f836affd83307e03a2c89ba07585">tower_dd_sqrt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a29e6f3776123d74af4a945ae52c84298.html#a29e6f3776123d74af4a945ae52c84298">tower_dot</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a299fa9515bc5a4df31c6a861854456ff.html#a299fa9515bc5a4df31c6a861854456ff">tower_double_key</a></td></tr>
@@ -856,9 +870,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad2ce3cb8a9312af22031ec395c5df556.html#ad2ce3cb8a9312af22031ec395c5df556">tower_of_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3f43c65d0c6714a650c1fa475ac57cb0.html#a3f43c65d0c6714a650c1fa475ac57cb0">tower_on_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_adf495d2a0834403f397c5ff9c8403e09.html#adf495d2a0834403f397c5ff9c8403e09">tower_orient</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab28de94c7049dceb5da5d725cd0ae753.html#ab28de94c7049dceb5da5d725cd0ae753">tower_point_circles</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_adc3dc595ca93c1cd4ae5fc23e8033b54.html#adc3dc595ca93c1cd4ae5fc23e8033b54">tower_point_line_circle</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ac9ddcee5991c97376670f0960d668c46.html#ac9ddcee5991c97376670f0960d668c46">tower_point_circles</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a316d93d35bdd6bcce24d2cd2f73d4dd3.html#a316d93d35bdd6bcce24d2cd2f73d4dd3">tower_point_line_circle</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad18833b7714397144ae926d00e154bdd.html#ad18833b7714397144ae926d00e154bdd">tower_point_lines</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1b4f30777c36a596523b798a127c0604.html#a1b4f30777c36a596523b798a127c0604">tower_point_radial</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a70f4b22753e78b8252fc0cb6eb783afc.html#a70f4b22753e78b8252fc0cb6eb783afc">tower_point_tangent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0b769825a33ea7faa7fe4dc722b980af.html#a0b769825a33ea7faa7fe4dc722b980af">tower_point_xy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad8f92fa62642e6991220aac4101f5cfb.html#ad8f92fa62642e6991220aac4101f5cfb">tower_points_read</a></td></tr>
@@ -883,6 +898,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a15ee420aa08a28f3fd15712567afe867.html#a15ee420aa08a28f3fd15712567afe867">translation_is_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a78892b4cd44f2153a91189ea1bc83e3e.html#a78892b4cd44f2153a91189ea1bc83e3e">vector_cross_signs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad33d051b2dad82ee36074f1d48cba94b.html#ad33d051b2dad82ee36074f1d48cba94b">vertex_canon</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1fba2dfe95eb176f0521dabfb6b92a16.html#a1fba2dfe95eb176f0521dabfb6b92a16">walk_direction</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af278c2ce2de73ac21e88f17191ebb92e.html#af278c2ce2de73ac21e88f17191ebb92e">walk_turn_pred</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3e170aa124b74135ef46d0718ebf8fc0.html#a3e170aa124b74135ef46d0718ebf8fc0">walk_turn_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab4cc04d73efe97fb207cd5ac4dee96e5.html#ab4cc04d73efe97fb207cd5ac4dee96e5">wide_point_between</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6f75150dec5a3d924a30bd8a543efd08.html#a6f75150dec5a3d924a30bd8a543efd08">wide_point_in_convex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3f58046aa71768f47f2d725d34ea7f09.html#a3f58046aa71768f47f2d725d34ea7f09">wide_point_orient</a></td></tr>

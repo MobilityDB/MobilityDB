@@ -18,5 +18,6 @@ var searchData=
   ['bufferselected_15',['BufferSelected',['../structBufferSelected.html',1,'']]],
   ['buffersideask_16',['BufferSideAsk',['../structBufferSideAsk.html',1,'']]],
   ['buffersplitpoint_17',['BufferSplitPoint',['../structBufferSplitPoint.html',1,'']]],
-  ['buffersweepedge_18',['BufferSweepEdge',['../structBufferSweepEdge.html',1,'']]]
+  ['buffersweepedge_18',['BufferSweepEdge',['../structBufferSweepEdge.html',1,'']]],
+  ['bufferwalkelem_19',['BufferWalkElem',['../structBufferWalkElem.html',1,'']]]
 ];
