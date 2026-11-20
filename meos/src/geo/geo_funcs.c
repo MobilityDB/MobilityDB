@@ -11461,6 +11461,56 @@ typedef struct
   TowerNum x, y, w;
 } TowerPoint;
 
+/**
+ * @brief Set the circle of an arc exactly and return the sign of its turn
+ * @details The circle runs through the start S, middle M and end E of the
+ * arc, or, for a half circle, stands on the diameter from S to E. Its centre
+ * is (cx / w, cy / w) taken from an origin, w not negative, and r2 is the
+ * square of its radius times w^2. With a = S - M, b = E - M and D = 2 a x b,
+ * the centre is M + N / D, N = (|a|^2 b_y - |b|^2 a_y, |b|^2 a_x - |a|^2 b_x),
+ * as #arcarc_centre_exact forms it in the arithmetic of an arena: here
+ * w = |D|, the sign of D carried through N, and r2 = |w a - N|^2, the radius
+ * to S. The half circle has w 2, the centre S + E and r2 |S - E|^2, and its
+ * turn is 0. Three points on one line have w 0, which no circle has
+ */
+static int
+tower_arc_circle(DyadicCtx *ctx, const double *s, const double *m,
+  const double *e, bool half, double ox, double oy, DyadicX *cx, DyadicX *cy,
+  DyadicX *w, DyadicX *r2)
+{
+  if (half)
+  {
+    *w = dx_val(ctx, 2.0);
+    *cx = dx_add(ctx, dx_diff(ctx, s[0], ox), dx_diff(ctx, e[0], ox));
+    *cy = dx_add(ctx, dx_diff(ctx, s[1], oy), dx_diff(ctx, e[1], oy));
+    DyadicX dx = dx_diff(ctx, s[0], e[0]), dy = dx_diff(ctx, s[1], e[1]);
+    *r2 = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
+    return 0;
+  }
+  DyadicX ax = dx_diff(ctx, s[0], m[0]), ay = dx_diff(ctx, s[1], m[1]);
+  DyadicX bx = dx_diff(ctx, e[0], m[0]), by = dx_diff(ctx, e[1], m[1]);
+  DyadicX a2 = dx_add(ctx, dx_mul(ctx, ax, ax), dx_mul(ctx, ay, ay));
+  DyadicX b2 = dx_add(ctx, dx_mul(ctx, bx, bx), dx_mul(ctx, by, by));
+  DyadicX nx = dx_sub(ctx, dx_mul(ctx, a2, by), dx_mul(ctx, b2, ay));
+  DyadicX ny = dx_sub(ctx, dx_mul(ctx, b2, ax), dx_mul(ctx, a2, bx));
+  DyadicX d = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, ax, by),
+    dx_mul(ctx, ay, bx)), 2.0);
+  /* The sign of D is minus the turn of S, M, E, read on the doubles
+   * exactly whatever tier the arithmetic runs in (#cross_product_sign) */
+  int sd = - cross_product_sign(s[0], s[1], m[0], m[1], s[0], s[1], e[0],
+    e[1]);
+  double k = (sd < 0) ? -1.0 : 1.0;
+  nx = dx_scale(ctx, nx, k);
+  ny = dx_scale(ctx, ny, k);
+  *w = dx_scale(ctx, d, k);
+  *cx = dx_add(ctx, dx_mul(ctx, *w, dx_diff(ctx, m[0], ox)), nx);
+  *cy = dx_add(ctx, dx_mul(ctx, *w, dx_diff(ctx, m[1], oy)), ny);
+  DyadicX rx = dx_sub(ctx, dx_mul(ctx, *w, ax), nx);
+  DyadicX ry = dx_sub(ctx, dx_mul(ctx, *w, ay), ny);
+  *r2 = dx_add(ctx, dx_mul(ctx, rx, rx), dx_mul(ctx, ry, ry));
+  return sd;
+}
+
 /* A point given by doubles */
 static void
 tower_point_xy(DyadicCtx *ctx, double px, double py, double ox, double oy,
@@ -11902,52 +11952,31 @@ typedef struct
   int sab;           /**< Sign of A x B, 0 for a half circle */
 } TowerArc;
 
-/* The circle of an arc as #TowerArc holds it. With a = S - M and b = E - M the
- * centre is M + N / D, as #arcarc_centre_exact forms it, D = 2 a x b; the arc
- * turns counterclockwise where a x b is negative */
+/* The circle of an arc as #TowerArc holds it (#tower_arc_circle), the radii
+ * to its ends being w (P - O) - c; the arc turns counterclockwise where the
+ * turn of S, M, E is negative */
 static void
 tower_arc_read(DyadicCtx *ctx, const ExactArc *arc, double ox, double oy,
   TowerArc *out)
 {
+  int sd = tower_arc_circle(ctx, arc->s, arc->m, arc->e, arc->half, ox, oy,
+    &out->cx, &out->cy, &out->w, &out->r2);
+  DyadicX rax = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->s[0], ox)),
+    out->cx);
+  DyadicX ray = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->s[1], oy)),
+    out->cy);
+  DyadicX rbx = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->e[0], ox)),
+    out->cx);
+  DyadicX rby = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->e[1], oy)),
+    out->cy);
   if (arc->half)
   {
-    out->w = dx_val(ctx, 2.0);
-    out->cx = dx_add(ctx, dx_diff(ctx, arc->s[0], ox),
-      dx_diff(ctx, arc->e[0], ox));
-    out->cy = dx_add(ctx, dx_diff(ctx, arc->s[1], oy),
-      dx_diff(ctx, arc->e[1], oy));
-    out->ax = dx_diff(ctx, arc->s[0], arc->e[0]);
-    out->ay = dx_diff(ctx, arc->s[1], arc->e[1]);
-    out->bx = dx_diff(ctx, arc->e[0], arc->s[0]);
-    out->by = dx_diff(ctx, arc->e[1], arc->s[1]);
-    out->r2 = dx_add(ctx, dx_mul(ctx, out->ax, out->ax),
-      dx_mul(ctx, out->ay, out->ay));
+    /* The half circle runs counterclockwise from S to E */
+    out->ax = rax; out->ay = ray;
+    out->bx = rbx; out->by = rby;
     out->sab = 0;
     return;
   }
-  DyadicX ax = dx_diff(ctx, arc->s[0], arc->m[0]);
-  DyadicX ay = dx_diff(ctx, arc->s[1], arc->m[1]);
-  DyadicX bx = dx_diff(ctx, arc->e[0], arc->m[0]);
-  DyadicX by = dx_diff(ctx, arc->e[1], arc->m[1]);
-  DyadicX a2 = dx_add(ctx, dx_mul(ctx, ax, ax), dx_mul(ctx, ay, ay));
-  DyadicX b2 = dx_add(ctx, dx_mul(ctx, bx, bx), dx_mul(ctx, by, by));
-  DyadicX nx = dx_sub(ctx, dx_mul(ctx, a2, by), dx_mul(ctx, b2, ay));
-  DyadicX ny = dx_sub(ctx, dx_mul(ctx, b2, ax), dx_mul(ctx, a2, bx));
-  DyadicX d = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, ax, by),
-    dx_mul(ctx, ay, bx)), 2.0);
-  int sd = dx_sign(ctx, d);
-  /* With w = |D|, the sign carried through N */
-  double k = (sd < 0) ? -1.0 : 1.0;
-  nx = dx_scale(ctx, nx, k);
-  ny = dx_scale(ctx, ny, k);
-  out->w = dx_scale(ctx, d, k);
-  out->cx = dx_add(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->m[0], ox)), nx);
-  out->cy = dx_add(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->m[1], oy)), ny);
-  DyadicX rax = dx_sub(ctx, dx_mul(ctx, out->w, ax), nx);
-  DyadicX ray = dx_sub(ctx, dx_mul(ctx, out->w, ay), ny);
-  DyadicX rbx = dx_sub(ctx, dx_mul(ctx, out->w, bx), nx);
-  DyadicX rby = dx_sub(ctx, dx_mul(ctx, out->w, by), ny);
-  out->r2 = dx_add(ctx, dx_mul(ctx, rax, rax), dx_mul(ctx, ray, ray));
   /* Clockwise the arc is the sweep from E to S */
   out->ax = (sd < 0) ? rax : rbx;
   out->ay = (sd < 0) ? ray : rby;
@@ -15252,13 +15281,9 @@ typedef struct
 
 /**
  * @brief Set the centre and the square of the radius of a feature, exactly
- * @details The circle through S, M and E, with m = M - S, n = E - S and
- * D = m x n, has its centre at S + K / (2 D) for
- * K = (|m|^2 n_y - |n|^2 m_y, |n|^2 m_x - |m|^2 n_x), so that w = 2 |D| and
- * rw = |K|^2, the sign of D being the exact turn of the three points
- * (#cross_product_sign). The circle on the diameter from S to E has its
- * centre at S + n / 2, and a whole circle the centre and the radius it is
- * given
+ * @details The circle through S, M and E, or on the diameter from S to E,
+ * is the one #tower_arc_circle forms, and a whole circle the centre and the
+ * radius it is given
  */
 static void
 hull_exact(DyadicCtx *ctx, const HullAt *f, double ox, double oy,
@@ -15282,27 +15307,11 @@ hull_exact(DyadicCtx *ctx, const HullAt *f, double ox, double oy,
     out->rw = dx_mul(ctx, r, r);
     return;
   }
-  DyadicX nx = dx_diff(ctx, e->ex, e->sx), ny = dx_diff(ctx, e->ey, e->sy);
-  DyadicX kx = nx, ky = ny;
-  if (e->diameter)
-    out->w = dx_val(ctx, 2.0);
-  else
-  {
-    DyadicX mx = dx_diff(ctx, e->mx, e->sx), my = dx_diff(ctx, e->my, e->sy);
-    DyadicX mm = dx_add(ctx, dx_mul(ctx, mx, mx), dx_mul(ctx, my, my));
-    DyadicX nn = dx_add(ctx, dx_mul(ctx, nx, nx), dx_mul(ctx, ny, ny));
-    double turn = (double) cross_product_sign(e->sx, e->sy, e->mx, e->my,
-      e->sx, e->sy, e->ex, e->ey);
-    kx = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, mm, ny), dx_mul(ctx, nn, my)),
-      turn);
-    ky = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, nn, mx), dx_mul(ctx, mm, nx)),
-      turn);
-    out->w = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, mx, ny),
-      dx_mul(ctx, my, nx)), 2.0 * turn);
-  }
-  out->px = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, e->sx, ox), out->w), kx);
-  out->py = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, e->sy, oy), out->w), ky);
-  out->rw = dx_add(ctx, dx_mul(ctx, kx, kx), dx_mul(ctx, ky, ky));
+  /* The circle through the three points, or on the diameter */
+  const double sp[2] = {e->sx, e->sy}, mp[2] = {e->mx, e->my},
+    ep[2] = {e->ex, e->ey};
+  tower_arc_circle(ctx, sp, mp, ep, e->diameter, ox, oy, &out->px, &out->py,
+    &out->w, &out->rw);
   return;
 }
 
