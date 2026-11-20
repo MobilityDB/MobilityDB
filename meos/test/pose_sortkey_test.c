@@ -49,9 +49,9 @@
  *   of one and of two instants, that the byte order of the keys is the order
  *   of #set_cmp and #temporal_cmp over the pairs these comparisons accept;
  * - over pairs of temporal rigid geometries with the same poses and two
- *   reference geometries, whether #temporal_cmp and #temporal_eq agree,
- *   which it reports, and that a temporal rigid geometry has no sort key,
- *   since #temporal_cmp reads none of its reference geometry.
+ *   reference geometries, that #temporal_cmp and #temporal_eq agree and
+ *   that a temporal rigid geometry has a sort key, since both read its
+ *   reference geometry.
  *
  * The program can be built as follows
  * @code
@@ -404,9 +404,8 @@ main(void)
     free(temps[i]);
 
   /* Temporal rigid geometries with the same poses and two reference
-   * geometries: temporal_cmp reads no reference geometry, so it and
-   * temporal_eq disagree, which the program reports, and a temporal rigid
-   * geometry must have no sort key */
+   * geometries: temporal_cmp and temporal_eq both read the reference
+   * geometry, so they agree, and a temporal rigid geometry has a sort key */
   const char *shapes[] = {"Polygon((0 0, 1 0, 1 1, 0 1, 0 0))",
     "Polygon((0 0, 2 0, 2 2, 0 2, 0 0))"};
   const char *motions[] = {"Pose(Point(5 5), 0)@2001-01-01",
@@ -440,7 +439,7 @@ main(void)
   printf("trgeometry: %ld pairs of two reference geometries, %ld whose "
     "comparison answers 0 otherwise than their equality, %ld with a sort "
     "key\n", rpairs, rinconsistent, rkeyed);
-  failures += rkeyed;
+  failures += rinconsistent + (rpairs - rkeyed);
 
   for (int i = 0; i < nposes; i++)
     free(poses[i]);
