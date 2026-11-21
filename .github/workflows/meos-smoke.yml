@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/meos-smoke.yml'
       - '.github/actions/apt-resilient/**'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
       - 'core-math/**'
       - 'h3lib/**'
@@ -20,6 +21,7 @@ on:
     paths:
       - '.github/workflows/meos-smoke.yml'
       - '.github/actions/apt-resilient/**'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
       - 'core-math/**'
       - 'h3lib/**'
