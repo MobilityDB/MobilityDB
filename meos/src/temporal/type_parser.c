@@ -524,6 +524,26 @@ elem_parse(const char **str, MeosType basetype, Datum *result)
 }
 
 /**
+ * @brief Return true if the text of a set element, from @p start to @p end,
+ * states an SRID
+ * @details A value states its SRID before itself (a geometry) or inside
+ * itself (a circular buffer, a pose), so the whole text of the element is
+ * read. Only the text tells an element that wrote the SRID its type takes when
+ * none is written (4326 for a geography) from one that wrote nothing, as for
+ * the values of #spatial_parse_elem.
+ */
+static bool
+elem_text_states_srid(const char *start, const char *end)
+{
+  for (const char *p = start; p + 5 <= end; p++)
+  {
+    if (pg_strncasecmp(p, "SRID=", 5) == 0)
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Parse a set value from the buffer
  * @errval NULL
  */
@@ -532,6 +552,8 @@ set_parse(const char **str, MeosType settype)
 {
   MeosType basetype = settype_basetype(settype);
   MeosArray *array = meos_array_create(sizeof(Datum));
+  /* Whether the text of each value states an SRID of its own */
+  MeosArray *written = meos_array_create(sizeof(bool));
   const char *type_str = meostype_name(settype);
   Set *result = NULL;
 
@@ -548,14 +570,20 @@ set_parse(const char **str, MeosType settype)
     goto error;
 
   Datum d;
+  const char *start = *str;
   if (! elem_parse(str, basetype, &d))
     goto error;
   meos_array_add_intl(array, &d);
+  bool states = elem_text_states_srid(start, *str);
+  meos_array_add_intl(written, &states);
   while (p_comma(str))
   {
+    start = *str;
     if (! elem_parse(str, basetype, &d))
       goto error;
     meos_array_add_intl(array, &d);
+    states = elem_text_states_srid(start, *str);
+    meos_array_add_intl(written, &states);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -570,13 +598,31 @@ set_parse(const char **str, MeosType settype)
   {
     for (int i = 0; i < (int) array->count; i++)
     {
-      if (! spatial_set_srid(values[i], basetype, set_srid))
+      /* A value stating another SRID than the set is refused, as by
+       * #spatial_parse_elem: a value states its SRID in its text, or carries
+       * one that is neither unknown nor the SRID a type takes when none is
+       * written (4326 for a geography or a cell). A value stating none takes
+       * the SRID of the set, which a cell refuses unless it is its own. */
+      int base_srid = spatial_srid(values[i], basetype);
+      bool states_srid = *(bool *) meos_array_get(written, i) ||
+        (base_srid != SRID_UNKNOWN && base_srid != SRID_DEFAULT);
+      bool mismatch = states_srid && base_srid != set_srid;
+      if (mismatch || (! states_srid &&
+          ! spatial_set_srid(values[i], basetype, set_srid)))
       {
         if (! basetype_byvalue(basetype))
           pfree_array((void **) values, array->count);
         else
           pfree(values);
         meos_array_destroy(array);
+        meos_array_destroy(written);
+        if (mismatch)
+        {
+          meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+            "The SRID of the %s (%d) does not match the SRID of the %s (%d)",
+            meostype_name(basetype), base_srid, type_str, set_srid);
+          return NULL;
+        }
         meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
           "The SRID %d cannot be stated for the %s", set_srid,
           meostype_name(basetype));
@@ -596,6 +642,7 @@ set_parse(const char **str, MeosType settype)
 
 error:
   meos_array_destroy(array);
+  meos_array_destroy(written);
   return result;
 }
 

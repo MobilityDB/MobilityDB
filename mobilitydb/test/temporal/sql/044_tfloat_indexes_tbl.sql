@@ -25,14 +25,14 @@ CREATE TEMP TABLE tbl_tfloat_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tfloat_big
   UNION ALL
-  SELECT k + 10000, temp FROM tbl_tfloat_inst
+  SELECT k + 10100, temp FROM tbl_tfloat_inst
   UNION ALL
-  SELECT k + 10100, temp FROM tbl_tfloat_discseq
+  SELECT k + 10200, temp FROM tbl_tfloat_discseq
   UNION ALL
-  SELECT k + 10200, temp FROM tbl_tfloat_contseq
+  SELECT k + 10300, temp FROM tbl_tfloat_contseq
   UNION ALL
-  SELECT k + 10300, temp FROM tbl_tfloat_seqset )
-SELECT k + n * 10400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, temp FROM tbl_tfloat_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tfloat_idx;
 
@@ -64,7 +64,7 @@ SELECT temp::tbox AS b, false AS knn FROM tbl_tfloat WHERE k % 20 = 0
 UNION ALL
 SELECT b, true FROM tbl_tfloat_src
 UNION ALL
-SELECT expandTime(expandValue(b, 1), interval '1 day'), false FROM tbl_tfloat_src
+SELECT expandTime(expandValue(b, 1::float), interval '1 day'), false FROM tbl_tfloat_src
 UNION ALL
 SELECT tbox(format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::floatspan,
     tstzspan(format('[%s, %s]', lower(t) + (upper(t) - lower(t)) / 2,
@@ -80,7 +80,7 @@ ANALYZE tbl_tfloat_box;
 -- value, one inside it, the values of a value, and one that meets them
 DROP TABLE IF EXISTS tbl_tfloat_xbox;
 CREATE TEMP TABLE tbl_tfloat_xbox AS
-SELECT tbox(format('[%s, %s]', lower(v) - 1, upper(v) + 1)::floatspan) AS b
+SELECT tbox(format('[%s, %s]', lower(v) - 1::float, upper(v) + 1::float)::floatspan) AS b
 FROM tbl_tfloat_src
 UNION ALL
 SELECT tbox(format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::floatspan) AS b
@@ -89,7 +89,7 @@ UNION ALL
 SELECT tbox(v) AS b
 FROM tbl_tfloat_src
 UNION ALL
-SELECT tbox(format('[%s, %s]', upper(v), upper(v) + 1)::floatspan) AS b
+SELECT tbox(format('[%s, %s]', upper(v), upper(v) + 1::float)::floatspan) AS b
 FROM tbl_tfloat_src;
 ANALYZE tbl_tfloat_xbox;
 
@@ -101,13 +101,13 @@ SELECT valueSpan(temp) AS v, false AS knn FROM tbl_tfloat WHERE k % 20 = 0
 UNION ALL
 SELECT v, true FROM tbl_tfloat_src
 UNION ALL
-SELECT format('[%s, %s]', lower(v) - 1, upper(v) + 1)::floatspan, false
+SELECT format('[%s, %s]', lower(v) - 1::float, upper(v) + 1::float)::floatspan, false
 FROM tbl_tfloat_src
 UNION ALL
 SELECT format('[%s, %s]', (lower(v) + upper(v)) / 2, (lower(v) + upper(v)) / 2)::floatspan, false
 FROM tbl_tfloat_src
 UNION ALL
-SELECT format('[%s, %s]', upper(v), upper(v) + 1)::floatspan, false
+SELECT format('[%s, %s]', upper(v), upper(v) + 1::float)::floatspan, false
 FROM tbl_tfloat_src;
 ANALYZE tbl_tfloat_vspan;
 

@@ -1590,7 +1590,6 @@ tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, bool lift,
 }
 
 /**
- * @ingroup meos_internal_geo_transf
  * @brief Return the affine transformation of a temporal geo instant
  * @param[in] inst Temporal geo
  * @param[in] a Affine transformation
@@ -1605,7 +1604,6 @@ tgeoinst_affine(TInstant *inst, const AFFINE *a, bool lift)
 }
 
 /**
- * @ingroup meos_internal_geo_transf
  * @brief Return the affine transform a temporal geo sequence
  * @param[in] seq Temporal geo
  * @param[in] a Affine transformation
@@ -1623,7 +1621,6 @@ tgeoseq_affine(const TSequence *seq, const AFFINE *a, bool lift)
 }
 
 /**
- * @ingroup meos_internal_geo_transf
  * @brief Return the affine transformation of a temporal geo sequence set
  * @param[in] ss Temporal geo
  * @param[in] a Affine transformation
@@ -1700,7 +1697,6 @@ tgeoinst_scale_iter(const TInstant *inst, const POINT4D *factors,
 }
 
 /**
- * @ingroup meos_internal_geo_transf
  * @brief Return a temporal geo instant scaled by given factors
  * @param[in] inst Temporal geo
  * @param[in] factors Scale factors
@@ -1714,7 +1710,6 @@ tgeoinst_scale(const TInstant *inst, const POINT4D *factors)
 }
 
 /**
- * @ingroup meos_internal_geo_transf
  * @brief Return a temporal geo sequence scaled by given factors
  * @param[in] seq Temporal geo
  * @param[in] factors Scale factors
@@ -1731,7 +1726,6 @@ tgeoseq_scale(const TSequence *seq, const POINT4D *factors)
 }
 
 /**
- * @ingroup meos_internal_geo_transf
  * @brief Return a temporal geo sequence scaled by given factors
  * @param[in] ss Temporal geo
  * @param[in] factors Scale factors

@@ -269,7 +269,29 @@ SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
  POLYGON EMPTY
 (1 row)
 
--- The two offsets of a line, closed by a cap at each end
+-- The buffer of a multipoint is the union of the disks about its points: two
+-- overlapping disks are one surface, a point repeating another adds nothing
+SELECT ST_AsText(round(buffer(geometry 'Multipoint(0 0,1 0)', 1), 6));
+                                                                                                          st_astext                                                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0.5 -0.866025,1.5 -0.866025,2 0),CIRCULARSTRING(2 0,1.5 0.866025,0.5 0.866025),CIRCULARSTRING(0.5 0.866025,-0.5 0.866025,-1 0),CIRCULARSTRING(-1 0,-0.5 -0.866025,0.5 -0.866025)))
+(1 row)
+
+SELECT ST_AsText(round(buffer(geometry 'Multipoint(0 0,1 0,0 0)', 1), 6));
+                                                                                                          st_astext                                                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(0.5 -0.866025,1.5 -0.866025,2 0),CIRCULARSTRING(2 0,1.5 0.866025,0.5 0.866025),CIRCULARSTRING(0.5 0.866025,-0.5 0.866025,-1 0),CIRCULARSTRING(-1 0,-0.5 -0.866025,0.5 -0.866025)))
+(1 row)
+
+SELECT contains(buffer(geometry 'Multipoint(0 0,1 0)', 1), geometry 'Point(0.5 0.86)') AS lens,
+  contains(buffer(geometry 'Multipoint(0 0,1 0)', 1), geometry 'Point(0.5 0.87)') AS past;
+ lens | past 
+------+------
+ t    | f
+(1 row)
+
+-- The two offsets of a line, closed by a cap at each end: a half disc about
+-- each end, nothing past it, or a square stretching the line by the distance
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
                                                                                    st_astext                                                                                    
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -277,15 +299,38 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
 (1 row)
 
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
-                       st_astext                        
---------------------------------------------------------
- CURVEPOLYGON(COMPOUNDCURVE((0 1,10 1,10 -1,0 -1,0 1)))
+                        st_astext                        
+---------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((0 -1,10 -1,10 1,0 1,0 -1)))
 (1 row)
 
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
-               st_astext                
-----------------------------------------
- CURVEPOLYGON(COMPOUNDCURVE((0 1,0 1)))
+                         st_astext                          
+------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((-1 -1,11 -1,11 1,-1 1,-1 -1)))
+(1 row)
+
+-- A line turning back on itself keeps the disc about its turn and one ring,
+-- whatever its cap
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=flat'), 6));
+                                                                                           st_astext                                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(10 -1,10.999688 -0.024977,10.049938 0.998752),(10.049938 0.998752,0.049938 1.498752,0.025 1,0 1,0 0.5,-0.049938 -0.498752,0 -0.501249,0 -1,10 -1)))
+(1 row)
+
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=square'), 6));
+                                                                                                 st_astext                                                                                                 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(10 -1,10.999688 -0.024977,10.049938 0.998752),(10.049938 0.998752,-0.948815 1.54869,-0.976249 1,-1 1,-1 0.524984,-1.04869 -0.448815,-1 -0.451249,-1 -1,10 -1)))
+(1 row)
+
+-- Past the end of the line under a flat cap, a point within the distance of
+-- the vertex before it lies in the buffer
+SELECT contains(buffer(geometry 'Linestring(10 10,3 5,3 6)', 1.5, 'endcap=flat'),
+  geometry 'Point(3.66 6.24)');
+ contains 
+----------
+ t
 (1 row)
 
 -- A line from far away to a unit square holds, within half the root of two, a
@@ -327,6 +372,11 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mi
  CURVEPOLYGON(COMPOUNDCURVE((0 1,9 1,9 10),CIRCULARSTRING(9 10,10 11,11 10),(11 10,11 0,10 0,10 -1,0 -1),CIRCULARSTRING(0 -1,-1 0,0 1)))
 (1 row)
 
+-- A join or an end cap the parameters do not name is refused
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=pointy');
+ERROR:  Invalid buffer join style: pointy (accept: 'round', 'mitre', 'miter' or 'bevel')
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'endcap=pointy');
+ERROR:  Invalid buffer end cap style: pointy (accept: 'round', 'flat', 'butt' or 'square')
 -- A polygon grows outwards and its holes inwards
 SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
                                               st_astext                                              
@@ -400,15 +450,165 @@ SELECT contains(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),
 
 -- A circular string keeps its arcs, and so does the buffer of one
 SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
-                                                                                                  st_astext                                                                                                   
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,4 -1,3 0),CIRCULARSTRING(3 0,2 1,1 0),CIRCULARSTRING(1 0,0.707107 -0.707107,0 -1),CIRCULARSTRING(0 -1,-0.707107 -0.707107,-1 0)))
+                                                                    st_astext                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3 0,4 -1,5 0),CIRCULARSTRING(5 0,2 3,-1 0),CIRCULARSTRING(-1 0,0 -1,1 0),CIRCULARSTRING(1 0,2 1,3 0)))
 (1 row)
 
 SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
                                         st_astext                                        
 -----------------------------------------------------------------------------------------
  CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
+(1 row)
+
+-- A disc with a circular hole the distance covers whole: the point in the
+-- hole lies within the distance of the hole's circle
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(5.813848 2.813777,
+  12.184346 5.166935,5.813848 2.813777),Circularstring(9.168692 2.718545,
+  8.696632 5.985608,9.168692 2.718545))', 2.1456446498870543),
+  ST_Point(8.599378402370817, 4.328579428763156)) AS in_hole;
+ in_hole 
+---------
+ t
+(1 row)
+
+-- A ring whose arcs turn both ways turns as it does at its point furthest
+-- right: the square of side 4 whose bottom bulges out by 0.5 and whose top
+-- dips in by 0.5, the top an arc of radius 4.25 about (2 7.75), holds within
+-- 0.5 the points 0.3 above the dip and 0.4 below the bottom, and not 0.6
+-- below it
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, 3.8)) AS above_dip;
+ above_dip 
+-----------
+ t
+(1 row)
+
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -0.9)) AS below_bulge;
+ below_bulge 
+-------------
+ t
+(1 row)
+
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -1.1)) AS past_bulge;
+ past_bulge 
+------------
+ f
+(1 row)
+
+-- An arc is offset by an arc about its own centre: a point at 1.4 from the
+-- centre of the half circle of radius 1 lies in its buffer by 0.5
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5),
+  ST_Point(0, 1.4)) AS beside_arc;
+ beside_arc 
+------------
+ t
+(1 row)
+
+-- A flat cap cuts the strip of an end arc along the line through its end and
+-- its centre: the upper half of the ring from 0.5 to 1.5, without the point
+-- 0.22 from the end (1 0) below that line, which a round cap holds; a square
+-- cap stretches the strip by 0.5 past the end along the tangent there, and
+-- holds a point of that square 0.64 from the end
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), 6));
+                                                            st_astext                                                             
+----------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((0.5 0,1.5 0),CIRCULARSTRING(1.5 0,0 1.5,-1.5 0),(-1.5 0,-0.5 0),CIRCULARSTRING(-0.5 0,0 0.5,0.5 0)))
+(1 row)
+
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), ST_Point(1.2, -0.1)) AS past_flat_cap;
+ past_flat_cap 
+---------------
+ f
+(1 row)
+
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=square'), ST_Point(1.45, -0.45)) AS in_square_cap;
+ in_square_cap 
+---------------
+ t
+(1 row)
+
+-- The buffer of a collection is the union of the buffers of its members,
+-- each with its own cap: beside the half circle, the point (3 0) holds
+-- (2.6 0) at 0.4 from it, the square cap of the half circle holds the point
+-- of its square 0.64 from the end, and the flat cap leaves out the point
+-- below its cut
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=square'), ST_Point(1.45, -0.45))
+  AS member_square_cap;
+ member_square_cap 
+-------------------
+ t
+(1 row)
+
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(1.2, -0.1))
+  AS member_flat_cap;
+ member_flat_cap 
+-----------------
+ f
+(1 row)
+
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(2.6, 0)) AS member_point;
+ member_point 
+--------------
+ t
+(1 row)
+
+-- A line in a multicurve or a collection is walked as a curve of segments:
+-- the segment of length 2 buffered by 0.5 is its stadium, two half circles
+SELECT ST_AsText(round(buffer(geometry 'MultiCurve((0 0,2 0))', 0.5), 6));
+                                                                                            st_astext                                                                                            
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(2 -0.5,2.5 0,2 0.5),(2 0.5,0 0.5),CIRCULARSTRING(0 0.5,-0.353553 0.353553,-0.5 0),CIRCULARSTRING(-0.5 0,-0.353553 -0.353553,0 -0.5),(0 -0.5,2 -0.5)))
+(1 row)
+
+SELECT ST_AsText(round(buffer(geometry 'GeometryCollection(Linestring(0 0,
+  2 0),Point(5 0))', 0.5), 6));
+                                                                                                                                                    st_astext                                                                                                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ MULTISURFACE(CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(4.5 0,5 -0.5,5.5 0),CIRCULARSTRING(5.5 0,5 0.5,4.5 0))),CURVEPOLYGON(COMPOUNDCURVE((0 -0.5,2 -0.5),CIRCULARSTRING(2 -0.5,2.5 0,2 0.5),(2 0.5,0 0.5),CIRCULARSTRING(0 0.5,-0.353553 0.353553,-0.5 0),CIRCULARSTRING(-0.5 0,-0.353553 -0.353553,0 -0.5))))
+(1 row)
+
+-- Buffered by 1.5, more than its radius 1, the normal segment of the half
+-- circle runs through its centre: the strip is the upper half disc of radius
+-- 2.5 and the lower one of radius 0.5, holding (0 -0.4) and not (0 -0.6); a
+-- square cap adds the squares past both ends, which hold (2 -1)
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), 6));
+                                                             st_astext                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((0.5 0,2.5 0),CIRCULARSTRING(2.5 0,0 2.5,-2.5 0),(-2.5 0,-0.5 0),CIRCULARSTRING(-0.5 0,0 -0.5,0.5 0)))
+(1 row)
+
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.4)) AS in_far_lobe;
+ in_far_lobe 
+-------------
+ t
+(1 row)
+
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.6)) AS past_far_lobe;
+ past_far_lobe 
+---------------
+ f
+(1 row)
+
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=square'), ST_Point(2, -1)) AS in_square_past_centre;
+ in_square_past_centre 
+-----------------------
+ t
 (1 row)
 
 -- The buffer of a geometry of several components is their union
@@ -508,12 +708,31 @@ SELECT relate(geometry 'Polyhedralsurface Z (
 (1 row)
 
 -- A pattern is matched against that matrix
-SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
- st_relate 
------------
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+ relate 
+--------
  t
 (1 row)
 
+-- A pattern is read in any case, and is nine symbols among T, F, *, 0, 1 and 2
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 't*fff*ff*');
+ relate 
+--------
+ t
+(1 row)
+
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(2 2)', 't*fff*ff*');
+ relate 
+--------
+ f
+(1 row)
+
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*F');
+ERROR:  Invalid DE-9IM pattern "T*F": nine symbols among T, F, *, 0, 1 and 2 are expected
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FF*F');
+ERROR:  Invalid DE-9IM pattern "T*FFF*FF*F": nine symbols among T, F, *, 0, 1 and 2 are expected
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FFX');
+ERROR:  Invalid DE-9IM pattern "T*FFF*FFX": nine symbols among T, F, *, 0, 1 and 2 are expected
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -- Spatial relationships

@@ -167,6 +167,11 @@ if(POINTCLOUD)
     message(STATUS "pgPointCloud serialize helpers not in lib/pc_api.h — vendored shim active (pgsql_compat.c)")
   endif()
 
+  # The functions MEOS alone states are selected by file, as in meos/src/geo
+  if(MEOS)
+    list(APPEND POINTCLOUD_SRCS pcpatch_meos.c)
+  endif()
+
   add_library(pointcloud OBJECT ${POINTCLOUD_SRCS})
 
   # Include paths for pgpointcloud headers. The embedded

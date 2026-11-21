@@ -30,8 +30,8 @@
 # These programs test internal functions of meos/src/h3, so CMake builds
 # them against the internal headers; their names end in _unit.c, so that CI
 # does not take them for tests of the public API.  Run them with
-#   ctest -R 'h3_outline|h3_owner|h3_ring|h3_point|h3_walk|h3_cover|h3_geog'
-# The first four read every cell up to the resolution they take, 2 here, 1
+#   ctest -R 'h3_outline|h3_box|h3_owner|h3_ring|h3_point|h3_walk|h3_cover|h3_geog'
+# The first five read every cell up to the resolution they take, 2 here, 1
 # for h3_point_unit; run them with 3 or more for a deeper check (about a
 # minute at 3, at 2 for h3_point_unit). h3_walk_unit, h3_cover_unit and
 # h3_geog_cover_unit read the rows of an exact oracle.
@@ -40,6 +40,11 @@ add_executable(h3_outline_unit h3_outline_unit.c)
 target_link_libraries(h3_outline_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
   pgtypes m)
 add_test(NAME h3_outline_unit COMMAND h3_outline_unit)
+
+add_executable(h3_box_unit h3_box_unit.c)
+target_link_libraries(h3_box_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
+  pgtypes m)
+add_test(NAME h3_box_unit COMMAND h3_box_unit)
 
 add_executable(h3_owner_unit h3_owner_unit.c)
 target_link_libraries(h3_owner_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
@@ -76,3 +81,9 @@ target_include_directories(h3_geog_cover_unit PRIVATE
 target_link_libraries(h3_geog_cover_unit ${MEOS_LIB_NAME} ${H3_LIBRARY}
   postgis pgtypes m)
 add_test(NAME h3_geog_cover_unit COMMAND h3_geog_cover_unit)
+
+add_executable(h3_vertex_unit h3_vertex_unit.c)
+target_include_directories(h3_vertex_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(h3_vertex_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
+  pgtypes m)
+add_test(NAME h3_vertex_unit COMMAND h3_vertex_unit)

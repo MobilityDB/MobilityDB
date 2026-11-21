@@ -260,6 +260,9 @@ CREATE FUNCTION tMaxInc(tpcbox)
 CREATE FUNCTION SRID(tpcbox)
   RETURNS integer AS 'MODULE_PATHNAME', 'Tpcbox_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(tpcbox, pcid integer)
+  RETURNS tpcbox AS 'MODULE_PATHNAME', 'Tpcbox_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION pcid(tpcbox)
   RETURNS integer AS 'MODULE_PATHNAME', 'Tpcbox_pcid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -271,11 +274,6 @@ CREATE FUNCTION pcid(tpcbox)
 CREATE FUNCTION round(tpcbox, integer DEFAULT 0)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION setSRID(tpcbox, integer)
-  RETURNS tpcbox
-  AS 'MODULE_PATHNAME', 'Tpcbox_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

@@ -70,8 +70,8 @@ typedef Temporal *(*RasterSeriesRead)(const Temporal *traj,
  * period are the tiles of one raster in space, read together; two distinct
  * periods that overlap are refused, since two rasters valid at one time over
  * one place would give two values there
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of periods
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the array
  * @return The indexes of @p spans in the order of the periods, or @p NULL
  */
 static int *
@@ -115,8 +115,8 @@ raster_series_order(const Span *spans, int count)
 /**
  * @brief Ensure that the validity periods are those of a raster series: time
  * spans, at least one, no two of them overlapping
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of periods
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the array
  */
 static bool
 ensure_raster_series(const Span *spans, int count)
@@ -164,8 +164,8 @@ ensure_raster_series_agree(const Temporal *v1, const Temporal *v2)
  * refused
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] values Rasters of the series, a @p NULL one read as no raster
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of rasters
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Band number (1-based), passed to @p read
  * @param[in] read Function reading one raster along a trajectory
  * @return A temporal float, or @p NULL when the trajectory reads no value
@@ -278,7 +278,7 @@ raster_same_footprint(const Raster *r1, const Raster *r2)
  * refused where they read different values
  * @param[in] traj Part of the trajectory within the period
  * @param[in] values Rasters valid over the period
- * @param[in] count Number of rasters
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Band number (1-based)
  */
 static Temporal *
@@ -337,9 +337,9 @@ raster_series_read(const Temporal *traj, const void **values, int count,
  * period, in the order of the periods. A part of the trajectory within no
  * period reads no value, and periods that overlap are refused
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rasts Rasters of the series
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of rasters
+ * @param[in] rasts Array of the rasters of the series
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Band number (1-based)
  * @return A temporal float, or @p NULL when the trajectory reads no value
  * @errval NULL
@@ -361,9 +361,9 @@ raster_value_series(const Temporal *traj, const Raster **rasts,
  * @brief Return a trajectory restricted to the times where the value it reads
  * from a raster series falls inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rasts Rasters of the series
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of rasters
+ * @param[in] rasts Array of the rasters of the series
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range
  * @return A trajectory, or @p NULL when no time qualifies
@@ -385,9 +385,9 @@ raster_at_value_series(const Temporal *traj, const Raster **rasts,
  * @brief Return a trajectory restricted to the times where the value it reads
  * from a raster series falls outside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rasts Rasters of the series
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of rasters
+ * @param[in] rasts Array of the rasters of the series
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range
  * @return A trajectory, or @p NULL when no time qualifies
@@ -409,9 +409,9 @@ raster_minus_value_series(const Temporal *traj, const Raster **rasts,
  * @brief Return true if the value a trajectory reads from a raster series
  * ever falls inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rasts Rasters of the series
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of rasters
+ * @param[in] rasts Array of the rasters of the series
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range
  * @errval -1
@@ -437,9 +437,9 @@ eraster_value_series(const Temporal *traj, const Raster **rasts,
  * @brief Return true if every value a trajectory reads from a raster series
  * falls inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rasts Rasters of the series
- * @param[in] spans Validity periods of the rasters, one per raster
- * @param[in] count Number of rasters
+ * @param[in] rasts Array of the rasters of the series
+ * @param[in] spans Array of the validity periods of the rasters, one per raster
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Band number (1-based)
  * @param[in] vspan Float value range
  * @errval -1
@@ -470,7 +470,7 @@ araster_value_series(const Temporal *traj, const Raster **rasts,
  * reads them, the tile of the finest zoom answering where tiles overlap
  * @param[in] traj Part of the trajectory within the period
  * @param[in] values Raquet tiles valid over the period
- * @param[in] count Number of tiles
+ * @param[in] count Number of elements in the arrays
  * @param[in] band Unused, a tile holding one band
  * @note Mirrors #raster_series_read(), which refuses two rasters of one
  * footprint reading different values, a footprint of a tile being its cell
@@ -510,9 +510,9 @@ raster_tile_series_read(const Temporal *traj, const void **values, int count,
  * period, in the order of the periods. A part of the trajectory within no
  * period reads no value, and periods that overlap are refused
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rqarr Raquet tiles of the series
- * @param[in] spans Validity periods of the tiles, one per tile
- * @param[in] count Number of tiles
+ * @param[in] rqarr Array of the Raquet tiles of the series
+ * @param[in] spans Array of the validity periods of the tiles, one per tile
+ * @param[in] count Number of elements in the arrays
  * @return A temporal float, or @p NULL when the trajectory reads no value
  * @errval NULL
  * @csqlfn #Raster_tile_value_series()
@@ -533,9 +533,9 @@ raster_tile_value_series(const Temporal *traj, const Raquet **rqarr,
  * @brief Return a trajectory restricted to the times where the value it reads
  * from a series of Raquet tiles falls inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rqarr Raquet tiles of the series
- * @param[in] spans Validity periods of the tiles, one per tile
- * @param[in] count Number of tiles
+ * @param[in] rqarr Array of the Raquet tiles of the series
+ * @param[in] spans Array of the validity periods of the tiles, one per tile
+ * @param[in] count Number of elements in the arrays
  * @param[in] vspan Float value range
  * @return A trajectory, or @p NULL when no time qualifies
  * @errval NULL
@@ -556,9 +556,9 @@ raster_tile_at_value_series(const Temporal *traj, const Raquet **rqarr,
  * @brief Return a trajectory restricted to the times where the value it reads
  * from a series of Raquet tiles falls outside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rqarr Raquet tiles of the series
- * @param[in] spans Validity periods of the tiles, one per tile
- * @param[in] count Number of tiles
+ * @param[in] rqarr Array of the Raquet tiles of the series
+ * @param[in] spans Array of the validity periods of the tiles, one per tile
+ * @param[in] count Number of elements in the arrays
  * @param[in] vspan Float value range
  * @return A trajectory, or @p NULL when no time qualifies
  * @errval NULL
@@ -579,9 +579,9 @@ raster_tile_minus_value_series(const Temporal *traj, const Raquet **rqarr,
  * @brief Return true if the value a trajectory reads from a series of Raquet
  * tiles ever falls inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rqarr Raquet tiles of the series
- * @param[in] spans Validity periods of the tiles, one per tile
- * @param[in] count Number of tiles
+ * @param[in] rqarr Array of the Raquet tiles of the series
+ * @param[in] spans Array of the validity periods of the tiles, one per tile
+ * @param[in] count Number of elements in the arrays
  * @param[in] vspan Float value range
  * @errval -1
  * @csqlfn #Eraster_tile_value_series()
@@ -606,9 +606,9 @@ eraster_tile_value_series(const Temporal *traj, const Raquet **rqarr,
  * @brief Return true if every value a trajectory reads from a series of
  * Raquet tiles falls inside a float span
  * @param[in] traj Trajectory (temporal geometry point)
- * @param[in] rqarr Raquet tiles of the series
- * @param[in] spans Validity periods of the tiles, one per tile
- * @param[in] count Number of tiles
+ * @param[in] rqarr Array of the Raquet tiles of the series
+ * @param[in] spans Array of the validity periods of the tiles, one per tile
+ * @param[in] count Number of elements in the arrays
  * @param[in] vspan Float value range
  * @errval -1
  * @csqlfn #Araster_tile_value_series()

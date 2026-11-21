@@ -29,7 +29,10 @@ on:
   push:
     paths:
       - '.github/workflows/fedora.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -40,7 +43,10 @@ on:
   pull_request:
     paths:
       - '.github/workflows/fedora.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'

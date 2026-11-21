@@ -673,7 +673,8 @@ s2cell_corner_int(uint32_t face, uint32_t I, uint32_t J, int64 *v)
 
 /** @brief Number of entries of #s2_uv_cache and #s2_vertex_cache, a power
  * of 2 */
-#define S2_CORNER_CACHE 1024
+#define S2_CORNER_CACHE_BITS 10
+#define S2_CORNER_CACHE (1 << S2_CORNER_CACHE_BITS)
 
 /** @brief The cube coordinates of corners read last, per thread, by their
  * leaf index */
@@ -707,14 +708,13 @@ static MEOS_TLS struct
  * leaf index @p I (#s2cell_corner_num, #rational_nearest)
  * @details The coordinate is a function of the index alone, and a walk reads
  * the corners neighbouring cells share again and again, so the ones read
- * last are kept by their index and answer again, as #h3_lonlat_vector keeps
- * the geodetic positions of the H3 vertices
+ * last are kept by their index (#MEOS_CACHE_SLOT) and answer again, as
+ * #h3_point_cached keeps the geodetic positions of the H3 vertices
  */
 static double
 s2cell_corner_uv(uint32_t I)
 {
-  int k = (int) ((I * UINT64CONST(0x9E3779B97F4A7C15)) >> 54) &
-    (S2_CORNER_CACHE - 1);
+  int k = MEOS_CACHE_SLOT(I, S2_CORNER_CACHE_BITS);
   if (! s2_uv_cache[k].used || s2_uv_cache[k].I != I)
   {
     s2_uv_cache[k].u = rational_nearest(s2cell_corner_num(I),
@@ -741,8 +741,8 @@ s2cell_corner_lon(uint32_t face, uint32_t I, uint32_t J, const int64 *v)
   if (face == 2 || face == 5)
     return vector_lon_nearest(v);
   uint32_t index = face < 2 ? I : J;
-  int k = (int) (((index * UINT64CONST(0x9E3779B97F4A7C15)) ^ face) *
-    UINT64CONST(0xBF58476D1CE4E5B9) >> 54) & (S2_CORNER_CACHE - 1);
+  /* The face takes 3 bits below the index, so the key names both */
+  int k = MEOS_CACHE_SLOT(((uint64) index << 3) | face, S2_CORNER_CACHE_BITS);
   if (! s2_lon_cache[k].used || s2_lon_cache[k].face != face ||
       s2_lon_cache[k].index != index)
   {
@@ -768,8 +768,7 @@ s2cell_corner_lonlat(uint32_t face, uint32_t I, uint32_t J, double *lon,
    * an entry keeps the three and the hash only places it */
   uint64 h = ((I * UINT64CONST(0x9E3779B97F4A7C15)) ^ J) *
     UINT64CONST(0xBF58476D1CE4E5B9) + face;
-  int k = (int) ((h * UINT64CONST(0x9E3779B97F4A7C15)) >> 54) &
-    (S2_CORNER_CACHE - 1);
+  int k = MEOS_CACHE_SLOT(h, S2_CORNER_CACHE_BITS);
   if (! s2_vertex_cache[k].used || s2_vertex_cache[k].face != face ||
       s2_vertex_cache[k].I != I || s2_vertex_cache[k].J != J)
   {

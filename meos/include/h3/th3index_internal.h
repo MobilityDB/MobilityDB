@@ -62,6 +62,7 @@
 #include <meos.h>
 #include <meos_h3.h>  /* public h3 geometry-conversion declarations */
 #include "temporal/tcellindex.h"  /* DggsOutline, DggsEdgeCross */
+#include "h3/h3_vertex.h"  /* H3_BOUNDARY_MAX */
 
 /*****************************************************************************
  * Shared metrics enum
@@ -85,11 +86,11 @@ typedef enum
 
 /* Point / polygon conversions — bodies in th3index_latlng.c. */
 
-/* Shared helper: build an SRID 4326 polygon, geodetic or planar, from a
- * libh3 CellBoundary and serialise. Primary definition in
- * th3index_latlng.c; also called from th3index_edges.c and h3index.c. */
-extern GSERIALIZED *cell_boundary_to_gs(const CellBoundary *bnd,
-  bool geodetic);
+/* Shared helper: build an SRID 4326 polygon, geodetic or planar, from the
+ * points of a boundary in degrees and serialise. Primary definition in
+ * th3index_latlng.c; also called from th3index_edges.c. */
+extern GSERIALIZED *cell_boundary_to_gs(const double *lon, const double *lat,
+  int n, bool geodetic);
 
 /* Geodetic centroid and boundary of a cell, for the shared cell operations
  * whose temporal results are geodetic. Bodies in th3index_latlng.c. */
@@ -116,6 +117,14 @@ extern H3Index h3_latlng_deg_to_cell(double lat_deg, double lng_deg,
  * cells, so that two neighbours state every vertex they share with the same
  * doubles. Body in h3_geo.c. */
 extern bool h3_cell_outline(H3Index cell, DggsOutline *out);
+/* The points H3 states for a vertex, the boundary of a cell or of a directed
+ * edge and the center of a cell, each the doubles nearest the degrees of the
+ * value H3's formula gives it (decision D8 of the cell walks), the same on
+ * every machine. Bodies in h3_geo.c. */
+extern bool h3_vertex_point_lonlat(H3Index vertex, double *lon, double *lat);
+extern int h3_cell_boundary_lonlat(H3Index cell, double *lon, double *lat);
+extern int h3_edge_boundary_lonlat(H3Index edge, double *lon, double *lat);
+extern bool h3_cell_center_lonlat(H3Index cell, double *lon, double *lat);
 /* The owner of a boundary point: whether a cell holds an edge or a vertex of
  * its outline, by the exact signs of the rule of the cell walks (it holds its
  * north and west sides). Bodies in h3_geo.c. */

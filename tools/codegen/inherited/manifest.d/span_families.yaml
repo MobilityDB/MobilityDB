@@ -2297,7 +2297,7 @@ span_families:
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
   begin: "/******************************************************************************\n * pcpointset \u2014 Accessors\n ******************************************************************************/\n"
-  end: "/******************************************************************************\n * pcpointset \u2014 Aggregate"
+  end: "/******************************************************************************\n * pcpointset \u2014 SRID"
   order: [pcpoint]
   insts:
     pcpoint: {v: pcpoint, vs: pcpointset}
@@ -2317,7 +2317,7 @@ span_families:
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
   begin: "/******************************************************************************\n * pcpatchset \u2014 Accessors\n ******************************************************************************/\n"
-  end: "/******************************************************************************\n * pcpatchset \u2014 Aggregate"
+  end: "/******************************************************************************\n * pcpatchset \u2014 SRID"
   order: [pcpatch]
   insts:
     pcpatch: {v: pcpatch, vs: pcpatchset}

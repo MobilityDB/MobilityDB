@@ -24,14 +24,14 @@ CREATE TEMP TABLE tbl_ttext_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_ttext_big
   UNION ALL
-  SELECT k + 10000, temp FROM tbl_ttext_inst
+  SELECT k + 10100, temp FROM tbl_ttext_inst
   UNION ALL
-  SELECT k + 10100, temp FROM tbl_ttext_discseq
+  SELECT k + 10200, temp FROM tbl_ttext_discseq
   UNION ALL
-  SELECT k + 10200, temp FROM tbl_ttext_contseq
+  SELECT k + 10300, temp FROM tbl_ttext_contseq
   UNION ALL
-  SELECT k + 10300, temp FROM tbl_ttext_seqset )
-SELECT k + n * 10400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, temp FROM tbl_ttext_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_ttext_idx;
 

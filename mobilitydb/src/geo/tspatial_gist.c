@@ -411,15 +411,12 @@ stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
     PG_RETURN_FLOAT8(-get_float8_infinity());
   }
 
-  double distance = nad_stbox_stbox(key, &query, true);
-
   /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
-   * box rather than the value, so what they report is lowered to stay under
-   * the distance the ordering operator computes. The exact leaf of a column of
-   * boxes reports the operator's own answer and keeps it */
-  if (! GIST_LEAF(entry) || *recheck)
-    distance = stbox_index_distance_bound(distance, key,
-      &query);
+   * box rather than the value, so what they report is a lower bound of the
+   * distance the ordering operator computes (#stbox_index_distance). The exact
+   * leaf of a column of boxes reports the operator's own answer */
+  double distance = (! GIST_LEAF(entry) || *recheck) ?
+    stbox_index_distance(key, &query) : nad_stbox_stbox(key, &query, true);
 
   PG_RETURN_FLOAT8(distance);
 }

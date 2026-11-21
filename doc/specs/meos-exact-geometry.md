@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.4.0 |
+| Version | v0.4.2 |
 | Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates, relationships, areas and buffers |
 | Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/src/geo/geo_buffer.c` and `meos/src/geo/geo_arrange.c` (the buffer and the arrangement it is read off), `meos/test/distance_point_test.c`, `meos/test/geo_test.c` and `mobilitydb/test/geo/sql/049_geo_funcs.sql` (the witnesses quoted below) |
 
@@ -433,8 +433,12 @@ arcs as arcs (a `CURVEPOLYGON`, or a `MULTISURFACE` of them).
 | Input | Distance | Style | Answer |
 |---|---|---|---|
 | polygon, multipolygon | positive | round joins | the region the offset curves wind around at least once |
-| line, multiline | positive | round joins and round caps | the same, each line walked out to its end and back |
+| line, multiline | positive | round joins, any cap | the same, each line walked out to its end and back under a round cap; under a flat or a square cap, the strips of its end segments and the buffer with round caps of the line between them |
 | polygon, multipolygon | negative | round joins | the region the offset curves of the complement wind around clockwise |
+| multipoint | positive | none | the region the circles about its points wind around at least once, a point repeating another dropped |
+| circular string, compound curve, multicurve | positive | round joins, any cap | the region the offset curves wind around at least once, each curve walked out to its end and back, or, under a flat or a square cap, the strips of its end elements and the curve between them |
+| curve polygon, multisurface | positive | round joins | the region the offset curves of its rings wind around at least once |
+| geometry collection of points, lines, polygons, curve polygons and curves, a multisurface of polygons and curve polygons | positive | round joins, any cap | the region the offset curves of its members wind around at least once, each member offset as it is alone |
 
 Round joins and round caps are the default style.
 
@@ -446,6 +450,25 @@ constructed and then asked about: every crossing of two pieces is decided by
 the arrangement from the doubles that define them, and only the vertices of
 the answer are rounded, each once.
 
+**An arc is offset by an arc about its own centre.** The circle of an input
+arc through its start, middle and end, or on the diameter of a whole circle's
+half, has a centre `C` that is a rational of those doubles and a radius `R`
+whose square is one. Its offset to the right of the walk is the arc about `C`
+of radius `R + r` where it runs counterclockwise and `R - r` where it runs
+clockwise, between the points of the circles of radius `r` about its ends on
+the lines through `C`; where `R - r` is negative the offset runs on the far
+side of `C`. Its circle, its ends and every crossing it makes are held in the
+square root of `R^2` and the roots their meetings add, decided exactly. The
+join at a vertex turns as the walk does there, the direction of an arc being
+its tangent, and a whole circle is walked as its two halves. A ring of a curve
+polygon turns counterclockwise where the shoelace sum of the ring through
+every point fixing it, and the sense of every arc, agree on it: each arc adds
+to that sum two circular segments of its own sign. Where they disagree, the
+ring, being simple, turns as it does at its point furthest along x, the one
+furthest along y among those: a vertex, where the walk's turn there decides,
+or the point `(cx + R, cy)` of the circle of an arc holding it, where the arc's
+sense decides, the vertices and those points compared exactly.
+
 **The region is decided by the winding number.** The curves wind around a
 point as many times as the parts of the geometry within the distance of it,
 less the holes lying within that distance whole, so the buffer is the set of
@@ -455,6 +478,32 @@ and of the lines of a multiline, are united in the one arrangement. A hole
 whose smallest enclosing circle is no larger than `r` lies within the
 distance of its own ring and is covered whole, the radius of that circle
 compared with `r` exactly from the points that define it.
+
+**A flat or a square cap is read off strips.** A flat cap leaves out the half
+disc about an end, part of which the disc about the vertex before it may
+cover; a curve turning back across the end would take that part from the
+winding number too. The buffer is instead the union of three curves, each
+winding a positive number of times around every point it covers: the strip of
+each end segment, bounded by its two offsets and the chords across its ends,
+and the buffer with round caps of the line between them, whose caps are the
+discs of the joins at its second and its last but one vertices. A square cap
+stretches the strip by `r` past the free end; its corners lie past the points
+where the offsets touch the circle about the end by `r` along the segment,
+`Ck + r (d + side rot(d)) / |d|`, which the arrangement holds as exactly as the
+points where a tangent touches a circle. A closed line has no end and keeps
+its round walk whatever the cap. A curve is read the same way, its end
+elements segments or arcs. The strip of an arc of centre `C` and radius `R`
+is the region its normal segment of half length `r` sweeps, bounded by its
+two offsets about `C` and the segments across its ends on the lines through
+`C`; a square cap moves the segment across the free end by `r` along the
+tangent of the circle there, its corners `A + r (side n + along rot(n))`,
+`n` the unit vector from `C` to the end `A`, in the root of the circle as the
+ends of the offsets are. Where `r` exceeds `R` the normal segment sweeps
+through `C`, and the strip is two sectors with their apex at `C`, of radius
+`R + r` over the sweep of the arc and `r - R` over the opposite one, each
+bounded by one curve, `C` a point of the same root; an arc of a half turn has
+its two radii on one line, and the union of its two half discs is bounded by
+one curve along it.
 
 **The erosion is what the buffer of the complement leaves.** The exterior of
 every polygon is offset clockwise into it and every hole counterclockwise out
@@ -468,11 +517,18 @@ enclosing circle is no larger than `r` holds no point of its erosion.
 built on the older path, whose answers read the tolerances of section 3 and
 are outside this document's guarantee; the buffer of a line is declined, since
 no other path answers it exactly; the erosion of a polygon holding a ring that
-encloses no area is built on the older path.
+encloses no area is built on the older path. So is the buffer of a lone point,
+whose disc that path writes as its whole circle, of a curve under
+a flat or a square cap ending in an arc whose radius is not told apart from
+the distance, of a curve polygon ring whose point furthest right is not told,
+an arc's end within the bound of its circle in doubles of the point
+`(cx + R, cy)` or a tie, and of a curve polygon holding a hole of arcs, other
+than a whole circle, that the distance may cover.
 
 **The rings of a line's buffer carry a certificate.** The rings are written in
-doubles, and the written end of every offset segment must lie strictly on the
-side of the edge it offsets: where the distance falls below the rounding of
+doubles, and the written end of every offset segment, chord or corner of a
+strip must lie strictly on the side of the edge at that end that its exact
+point takes: where the distance falls below the rounding of
 the coordinates, an end rounds onto the edge or across it, and the buffer is
 declined rather than answered. The rings of a polygon's buffer are written
 with no such certificate.
@@ -486,6 +542,9 @@ with no such certificate.
 | the square of side 10 with the hole from 3.75 to 6.25, eroded by 2 | four surfaces; `(2.1 2.1)` in it, `(2.1 5)` not | the grown hole reaches 1.75 from the sides, past the contracted exterior at 2, and leaves its four corners, which lie `1.75 sqrt(2)` from the hole's corners |
 | the line from `(2^40, 2^40)` to the corners of a unit square, buffered by `sqrt(1/2)` | holds `(2^39, 2^39)`, not the point 1024 above it | the exact distances decide both, at coordinates near `1e12` |
 | the same line from `(2^60, 2^60)` | declined | the coordinates round by 256, more than the distance |
+| `LINESTRING(0 0,10 0)` buffered by 1 with a flat cap, and with a square cap | the rectangles from `(0 -1)` to `(10 1)` and from `(-1 -1)` to `(11 1)` | the strip of the one segment, stretched by 1 past both ends for the square cap |
+| `LINESTRING(0 0,10 0,0 0.5)` buffered by 1 with a flat cap, and with a square cap | one curve polygon each | the line turns back; the disc about the turn and the two strips unite in one ring |
+| `LINESTRING(10 10,3 5,3 6)` buffered by 1.5 with a flat cap, the point `(3.66 6.24)` past its end | in the buffer | the point lies within the distance of the vertex before the end |
 | a multipolygon of two polygons buffered by `316.42868675352696`, a point within the distance of the first | in the buffer | the answer is two curve polygons, and the point is located in the union of section 6.3 |
 
 ### 8.3 What CGAL measured
@@ -493,15 +552,24 @@ with no such certificate.
 A buffer is judged as the set it is (section 10): a point lies in it exactly
 where its distance to the geometry is at most the radius, and in an erosion
 exactly where it lies inside the geometry at least the radius from its
-boundary. Each query point stands clear of the boundary by a factor of two, at
-half and at twice its distance, so no verdict rests on a rounding.
+boundary. Unless its row says otherwise, each query point stands clear of the
+boundary by a factor of two, at half and at twice its distance, so no verdict
+rests on a rounding.
 
 | Buffers | Queries | CGAL agrees with |
 |---|---|---|
 | polygons with round joins | sharp shapes and 1313 points about natural areas | 3979820 of 3979820 and 1313 of 1313 |
 | polygons with round joins, points about multipolygons | 15402 points about 192 natural-area multipolygons | 15402 of 15402 |
 | lines with round joins and caps | 36960 straight queries; 336 lines with a first vertex from `2^20` to `2^60`; 1576 queries along vessel tracks | 36960 of 36960; 274 answered, 62 declined; 1530 answered, 11 declined, 35 past 60 s |
+| lines with round joins and round, flat or square caps | 1712 lines at two distances, a grid about each and points along and across each end at 0.999 and 1.001 of the distance | 1021872 of 1021872, with no decline |
+| multipoints | 300 multipoints of two to eight points at two distances, a grid about each and points about every crossing of two circles at 0.999 and 1.001 of the distance | 44728 of 44728, with no decline |
 | erosions | 62800 points about 400 eroded squares and squares with holes; 12366 points about 192 natural areas | 62800 of 62800 and 12366 of 12366, with no decline |
+| circular strings, compound curves and curve polygons | 200 geometries of one to three arcs, whole circles among them, at three distances, a grid about each and points at 0.999 and 1.001 of the distance from every arc and every end | 41268 of 41268, with no decline |
+| curve polygons bounded by whole circles, with and without a circular hole | 60 discs at distances below and above the radius of the hole, points at 0.999 and 1.001 of the distance from either circle | 11087 of 11087, with no decline |
+| circular strings and compound curves under a flat or a square cap | 120 curves of one to three arcs, ending in segments or arcs, at 0.3 and 0.97 of the smallest radius of their end arcs, a grid about each, points at 0.999 and 1.001 of the distance from every arc, segment and end, and on both sides of every cut and of every side and corner of a square | 57760 of 57760, with no decline |
+| geometry collections of points, multipoints, lines, multilines, polygons with and without a hole, curve polygons and curves, nested at times | 80 collections of two to five members about one centre, 41 holding a line, under the round, flat and square caps at 0.3 and 0.9 of the smallest radius of their curves' end arcs, a grid about each and points at 0.999 and 1.001 of the distance from every edge, arc and point | 46392 of 46392, with no decline |
+| curve polygons whose rings hold arcs turning both ways | 100 convex polygons of three to six vertices whose edges are arcs bulging out by up to a quarter of their chord or in by up to 0.12 of it, counterclockwise and clockwise, at 0.1, 0.5 and 1.5 of their radius, a grid about each and points at 0.999 and 1.001 of the distance from every arc, segment and vertex | 44638 of 44638, with no decline |
+| circular strings and compound curves under a flat or a square cap, the distance above the radius of their end arcs | 40 curves at 1.6 of the smallest radius of their end arcs, a grid about each, points at 0.999 and 1.001 of the distance from every arc, segment and end, and on both sides of every cut and of every side and corner of a square | 8548 of 8548, with no decline |
 
 Every query a line's certificate declines has a distance below the rounding of
 its coordinates, at most 0.32 of an ulp; answered instead, five of them are
@@ -548,7 +616,7 @@ chords miss the closed form by up to 2.6%; measured by `area`, none of the
   (see [Finite Values](meos-finite-values.md)); the exact answer is defined
   for finite doubles.
 - **Buffers in other styles and of other inputs.** Bevel and mitre joins,
-  square and flat caps, a geometry holding circular arcs, a point, and a
+  a geometry holding circular arcs, a single point, and a
   collection of mixed dimension are buffered on the older path, as is a
   polygon whose arrangement leaves a question open (section 8.1); their
   answers are outside this document's guarantee.

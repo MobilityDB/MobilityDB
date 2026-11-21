@@ -50,8 +50,8 @@ t AS (SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)) AS expected,
 SELECT srid, expected, SRID(box), SRID(temp), SRID(temp::stbox),
   ST_SRID(endValue(temp)), SRID(gs), SRID(gs::stbox), ST_SRID(endValue(gs))
 FROM t;
--- The invalid SRID is refused, and so is the unknown SRID a negative SRID
--- reads as where a temporal point or a set does not take it
+-- The invalid SRID is refused, and a negative SRID is set as the unknown SRID
+-- 0, on a temporal point and a set as on a geometry
 SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 1000001);
 SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', 1000001);
 SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', -1);

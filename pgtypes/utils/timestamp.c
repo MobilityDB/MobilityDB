@@ -1357,6 +1357,7 @@ time_of_day(void)
   char buf[128];
   gettimeofday(&tp, NULL);
   pg_time_t tt = (pg_time_t) tp.tv_sec;
+  meos_ensure_timezone();
   pg_strftime(templ, sizeof(templ), "%a %b %d %H:%M:%S.%%06d %Y %Z",
     pg_localtime(&tt, session_timezone));
   snprintf(buf, sizeof(buf), templ, tp.tv_usec);
@@ -3104,7 +3105,10 @@ timestamptz_pl_interval_internal(TimestampTz timestamp,
   {
     /* Use session timezone if caller asks for default */
     if (attimezone == NULL)
+    {
+      meos_ensure_timezone();
       attimezone = session_timezone;
+    }
 
     if (interval->month != 0)
     {
@@ -4534,12 +4538,14 @@ timestamptz_trunc_internal(TimestampTz ts, const text *units, pg_tz *tzp)
 TimestampTz
 timestamptz_trunc(TimestampTz ts, const text *units)
 {
+  meos_ensure_timezone();
   return timestamptz_trunc_internal(ts, units, session_timezone);
 }
 #endif
 TimestampTz
 pg_timestamptz_trunc(TimestampTz ts, const text *units)
 {
+  meos_ensure_timezone();
   return timestamptz_trunc_internal(ts, (text *) units, session_timezone);
 }
 
@@ -5913,6 +5919,7 @@ bool
 TimestampTimestampTzRequiresRewrite(void)
 {
   long offset;
+  meos_ensure_timezone();
   if (pg_get_timezone_offset(session_timezone, &offset) && offset == 0)
     return false;
   return true;
@@ -5954,6 +5961,7 @@ timestamp2timestamptz_opt_overflow(Timestamp ts, int *overflow)
   /* We don't expect this to fail, but check it pro forma */
   if (timestamp2tm(ts, NULL, tm, &fsec, NULL, NULL) == 0)
   {
+    meos_ensure_timezone();
     tz = DetermineTimeZoneOffset(tm, session_timezone);
     TimestampTz result = dt2local(ts, -tz);
 

@@ -71,4 +71,37 @@
 #define MEOS_TLS  /* not supported; falls back to non-thread-safe globals */
 #endif
 
+/*
+ * The slot of a key in a per-thread cache of 2^bits entries, direct-mapped
+ * by the high bits of the key times 2^64 over the golden ratio (Fibonacci
+ * hashing), which spread keys differing in their low bits, as the indices
+ * of neighbouring cells do. Every per-thread cache of values a key alone
+ * determines places its entries by it, a key of several words mixed into
+ * one first (the specification of the caches, doc/specs/meos-caches.md,
+ * rule 7). A macro, so the header names no integer type: the key is read as
+ * the uint64 of the unit expanding it, PostgreSQL's or pg_basetypes.h's.
+ */
+#define MEOS_CACHE_SLOT(key, bits) \
+  ((int) (((uint64) (key) * (uint64) 0x9E3779B97F4A7C15ULL) >> (64 - (bits))))
+
+/*
+ * A function `name` returning the address of the per-thread variable `var`
+ * of type `type`. The address of a per-thread variable is a constant to the
+ * compiler, which reads it again wherever it is used, inlined copies and
+ * specialized clones included, and each reading in the standalone library
+ * is one lookup of the thread (`__tls_get_addr`) whenever the library is
+ * loaded at run time, as the bindings load it. A function the compiler does
+ * not inline (pg_noinline, of c.h or pg_basetypes.h) returns it as a value,
+ * which a caller reads once and passes to what it calls. In the PostgreSQL
+ * extension a per-thread variable is a plain global, read with no lookup,
+ * so the function is inlined there.
+ */
+#if defined(MEOS) && ! MEOS
+#define MEOS_TLS_ADDRESS(type, name, var) \
+  static inline type *name(void) { return &(var); }
+#else
+#define MEOS_TLS_ADDRESS(type, name, var) \
+  static pg_noinline type *name(void) { return &(var); }
+#endif
+
 #endif /* __MEOS_TLS_H__ */

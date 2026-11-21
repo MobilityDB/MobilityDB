@@ -867,7 +867,7 @@ SELECT height(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uin
 bandPixelType(raster,band integer=1) → text
 bandPixelType(raquet) → text
 </programlisting>
-				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela, tanto para una banda de PostGIS como para una tesela, de modo que una banda y una tesela del mismo tipo informan el mismo nombre.</para>
+				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores, y toda función que toma un tipo de píxel como <link linkend="raster_reclass"><varname>reclass</varname></link> y <link linkend="raster_slope"><varname>slope</varname></link>, leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual, y también el nombre devuelto aquí; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela, tanto para una banda de PostGIS como para una tesela, de modo que una banda y una tesela del mismo tipo informan el mismo nombre.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '16BSI'));
 -- int16
@@ -2492,7 +2492,7 @@ SELECT isValidIndex(quadbin '504b5fffffffffff');
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 quadbinCellSibling(quadbin,text) → quadbin
 </programlisting>
-				<para><varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>. La respuesta es NULL para una celda vecina más allá de un borde de la cuadrícula, que no tiene celdas allí: una columna no da la vuelta en el antimeridiano y una fila no cruza un polo.</para>
+				<para><varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>, en mayúsculas o minúsculas, como <varname>cell_sibling</varname> de la referencia de CARTO lee la dirección; otra dirección produce un error. La respuesta es NULL para una celda vecina más allá de un borde de la cuadrícula, que no tiene celdas allí: una columna no da la vuelta en el antimeridiano y una fila no cruza un polo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quadbinCellSibling(
   quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')

@@ -1418,6 +1418,24 @@ SELECT encode(substring(asPNG(r) from 1 for 8), 'hex') AS png_signature,
     dumpValues(r, 1) AS png_values
 FROM rast;
 
+-- A format whose library writes only through the operating system, as
+-- netCDF's, is written as any other: the file opens with the signature of
+-- netCDF, and reading it back answers the values and the grid of the raster.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 4326),
+    '16BSI'::text, 0::float8, -1::float8), 1, 1, 1,
+    ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]) AS r),
+back AS (
+  SELECT r, asGDALRaster(r, 'netCDF') AS f FROM rast)
+SELECT encode(substring(f from 1 for 3), 'escape') AS netcdf_signature,
+  dumpValues(rasterFromGDALRaster(f), 1) = dumpValues(r, 1) AS values_kept,
+  width(rasterFromGDALRaster(f)) = width(r) AND
+    height(rasterFromGDALRaster(f)) = height(r) AND
+    upperLeftX(rasterFromGDALRaster(f)) = upperLeftX(r) AND
+    upperLeftY(rasterFromGDALRaster(f)) = upperLeftY(r) AS grid_kept
+FROM back;
+
 -- The creation options reach the driver as PostGIS hands them, one option an
 -- element: a level of compression, a quality, a value holding spaces and
 -- quotes, written into the file; an element NULL and an empty array state no
@@ -1769,6 +1787,20 @@ SELECT (s).count AS n, (s).sum AS total
 FROM (SELECT ST_SummaryStats(
   reclass(r, 1, '[0-50):1, [50-100]:2', '32BF', -9999)) AS s FROM rast) t;
 
+-- The pixel type is named in either vocabulary and in any case, the name
+-- bandPixelType answers included, so every spelling gives the band one type.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT t, bandPixelType(reclass(r, 1, '0-50:1, 51-100:2', t, 0))
+FROM rast, unnest(ARRAY['8BUI', '8bui', 'uint8', 'UINT8',
+  bandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '8BUI'))]) AS t;
+
 -- A band the raster does not have, and an expression stating no mapping, are
 -- both errors.
 WITH rast AS (
@@ -1783,6 +1815,12 @@ WITH rast AS (
     '32BF'::text, 0.0::float8, NULL::float8) AS r
 )
 SELECT reclass(r, 1, '0-50', '32BF') FROM rast;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT reclass(r, 1, '0-50:1', '8bit') FROM rast;
 
 -------------------------------------------------------------------------------
 -- clip
@@ -1809,6 +1847,31 @@ SELECT ST_DumpValues(clip(r, g), 1) AS cropped,
   ST_DumpValues(clip(r, g, false), 1) = ST_DumpValues(ST_Clip(r, g, false), 1)
     AS kept_as_postgis
 FROM rast, g;
+
+-- A geometry away from the upper left corner of the raster keeps the pixels it
+-- covers there, at their place: the lower right 2x2 pixels, holding 50, 60 /
+-- 80, 90, and the middle column, holding 20 / 50 / 80. PostGIS's ST_Clip is the
+-- oracle for the values and for the corner of the result.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,50,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+), g(name, g) AS (VALUES
+  ('lower right', ST_GeomFromText('POLYGON((1 0,3 0,3 2,1 2,1 0))', 4326)),
+  ('middle column', ST_GeomFromText('POLYGON((1 0,2 0,2 3,1 3,1 0))', 4326))
+)
+SELECT name, ST_DumpValues(clip(r, g), 1) AS cropped,
+  ST_UpperLeftX(clip(r, g)) AS ulx, ST_UpperLeftY(clip(r, g)) AS uly,
+  ST_DumpValues(clip(r, g), 1) = ST_DumpValues(ST_Clip(r, g), 1) AND
+    ST_UpperLeftX(clip(r, g)) = ST_UpperLeftX(ST_Clip(r, g)) AND
+    ST_UpperLeftY(clip(r, g)) = ST_UpperLeftY(ST_Clip(r, g))
+    AS cropped_as_postgis,
+  ST_DumpValues(clip(r, g, false), 1) = ST_DumpValues(ST_Clip(r, g, false), 1)
+    AS kept_as_postgis
+FROM rast, g ORDER BY name;
 
 -- A geometry in another reference system is refused rather than read as if
 -- its coordinates were the raster's.
@@ -2507,6 +2570,21 @@ SELECT
     ST_DumpValues(ST_TRI(r, 1, '64BF'), 1) AS tri,
   ST_DumpValues(tpi(r, 1, '64BF', true), 1) =
     ST_DumpValues(ST_TPI(r, 1, '64BF', true), 1) AS tpi_interpolated
+FROM dem;
+
+-- The terrain functions read the pixel type in either vocabulary
+WITH dem AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(4, 4, 0.0, 4.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[10, 20, 30, 40], [15, 25, -9999, 45], [20, 30, 40, 50],
+          [25, 35, 45, 55]]::double precision[][]) AS r
+)
+SELECT
+  ST_DumpValues(slope(r, 1, 'float64'), 1) =
+    ST_DumpValues(slope(r, 1, '64BF'), 1) AS slope,
+  ST_DumpValues(tri(r, 1, 'Float64'), 1) =
+    ST_DumpValues(tri(r, 1, '64bf'), 1) AS tri
 FROM dem;
 
 -- A plane rising by 1 for each pixel to the east: 45 degrees, 100 percent,

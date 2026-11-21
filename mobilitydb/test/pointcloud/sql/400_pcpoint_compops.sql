@@ -104,3 +104,42 @@ SELECT (SELECT count(*) FROM ordered) = 3
 FROM ordered a JOIN ordered b ON b.rn = a.rn + 1;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Values of different pcids
+-------------------------------------------------------------------------------
+
+-- Two more pcids with the schema of the pcid 1. The pcid 256 has a low byte
+-- of zero, so its bytes in memory, least significant first on a
+-- little-endian machine, are below those of the pcids 1 and 2.
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 256, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+
+-- Values of different pcids are ordered as their pcids, whatever the
+-- dimension values they store.
+SELECT pcpoint(2, 9.0, 9.0, 9.0) < pcpoint(256, 1.0, 1.0, 1.0);
+SELECT cmp(pcpoint(256, 1.0, 1.0, 1.0), pcpoint(1, 9.0, 9.0, 9.0));
+SELECT pcpatch(pcpoint(2, 9.0, 9.0, 9.0), pcpoint(2, 9.0, 9.0, 9.0)) <
+  pcpatch(pcpoint(256, 1.0, 1.0, 1.0), pcpoint(256, 1.0, 1.0, 1.0));
+SELECT cmp(pcpatch(pcpoint(256, 1.0, 1.0, 1.0), pcpoint(256, 1.0, 1.0, 1.0)),
+  pcpatch(pcpoint(1, 9.0, 9.0, 9.0), pcpoint(1, 9.0, 9.0, 9.0)));
+
+-- ORDER BY over values of the three pcids, and over the values of one pcid
+-- by the dimension values they store.
+WITH v(pt) AS (
+  VALUES (pcpoint(256, 1.0, 1.0, 1.0)), (pcpoint(2, 5.0, 5.0, 5.0)),
+    (pcpoint(1, 9.0, 9.0, 9.0)), (pcpoint(2, 4.0, 4.0, 4.0))
+)
+SELECT array_agg(pcid(pt) ORDER BY pt) FROM v;
+WITH v(pa) AS (
+  VALUES (pcpatch(pcpoint(256, 1.0, 1.0, 1.0), pcpoint(256, 2.0, 2.0, 2.0))),
+    (pcpatch(pcpoint(2, 5.0, 5.0, 5.0), pcpoint(2, 6.0, 6.0, 6.0))),
+    (pcpatch(pcpoint(1, 9.0, 9.0, 9.0), pcpoint(1, 9.0, 9.0, 9.0)))
+)
+SELECT array_agg(pcid(pa) ORDER BY pa) FROM v;
+
+DELETE FROM pointcloud_formats WHERE pcid IN (2, 256);
+
+-------------------------------------------------------------------------------

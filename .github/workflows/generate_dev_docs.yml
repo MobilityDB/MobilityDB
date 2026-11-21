@@ -7,6 +7,8 @@ on:
   push:
     paths:
       - '.github/workflows/generate_dev_docs.yml'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'

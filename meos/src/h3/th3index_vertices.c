@@ -62,11 +62,10 @@
 GSERIALIZED *
 h3_vertex_to_gs_point(H3Index vertex)
 {
-  LatLng ll;
-  if (! ensure_h3_success(vertexToLatLng(vertex, &ll)))
+  double lon, lat;
+  if (! h3_vertex_point_lonlat(vertex, &lon, &lat))
     return NULL;
-  return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
-    false, true, SRID_DEFAULT);
+  return geopoint_make(lon, lat, 0.0, false, true, SRID_DEFAULT);
 }
 
 /*****************************************************************************

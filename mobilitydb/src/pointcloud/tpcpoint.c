@@ -60,8 +60,6 @@
 #include "temporal/tsequenceset.h"
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/tpcbox.h"     /* PG_GETARG_TPCBOX_P */
-/* MobilityDB */
-#include "pg_pointcloud/schema_cache.h"
 
 /*****************************************************************************
  * Per-type pcid accessor
@@ -85,162 +83,62 @@ Tpcpoint_pcid(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Per-dimension projection — tpcpoint → tfloat
- *
- * Walks the Temporal structure and replaces each pcpoint instant with a
- * @c float8 derived from the pcpoint's value for the requested
- * dimension. Because the dimension-read path is schema-aware (lives in
- * libpc.a and needs a PCSCHEMA), the projection is expressed as a
- * function pointer (pcpoint → double) that the caller binds against
- * @c pc_point_get_x / _y / _z / _get_double_by_name.
- *
- * The schema cache is warmed on the first instant (all subsequent
- * instants share the same pcid by construction — enforced at
- * construction time by set_make_exp's same-pcid check).
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpcpoint_get_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpoint_get_x);
 /**
- * @brief Per-dimension extractor signature used by the projection helper
- * @param[in] pt PCPOINT to read from
- * @param[in] extra Optional context (e.g. dimension name as @c const char *)
- * @param[out] out Extracted scalar value
- * @return @p true on success
+ * @ingroup mobilitydb_pointcloud_accessor
+ * @brief Return the X coordinate of a tpcpoint as a tfloat
+ * @sqlfn getX()
  */
-typedef bool (*pcpoint_dim_fn)(const PCPOINT *pt, void *extra, double *out);
-
-/** @brief Dimension extractor: X coordinate. */
-static bool
-dim_get_x(const PCPOINT *pt, void *extra, double *out)
-{ (void) extra; return pc_point_get_x((PCPOINT *) pt, out); }
-
-/** @brief Dimension extractor: Y coordinate. */
-static bool
-dim_get_y(const PCPOINT *pt, void *extra, double *out)
-{ (void) extra; return pc_point_get_y((PCPOINT *) pt, out); }
-
-/** @brief Dimension extractor: Z coordinate (NULL if schema lacks Z). */
-static bool
-dim_get_z(const PCPOINT *pt, void *extra, double *out)
-{ (void) extra; return pc_point_get_z((PCPOINT *) pt, out); }
-
-/** @brief Dimension extractor: any named schema dimension. */
-static bool
-dim_get_by_name(const PCPOINT *pt, void *extra, double *out)
+Datum
+Tpcpoint_get_x(PG_FUNCTION_ARGS)
 {
-  const char *name = (const char *) extra;
-  return pc_point_get_double_by_name((PCPOINT *) pt, name, out) != 0;
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpcpoint_get_x(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
-static TInstant *
-tpcpointinst_project_with_schema(const TInstant *inst,
-  PCSCHEMA *schema, pcpoint_dim_fn fn, void *extra)
-{
-  const Pcpoint *pt =
-    (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
-  PCPOINT pcpt;
-  pcpt.readonly = 1;
-  pcpt.schema = schema;
-  pcpt.data = (uint8_t *) pt->data;
-  double v;
-  if (! fn(&pcpt, extra, &v))
-    return NULL;
-  return tinstant_make(Float8GetDatum(v), T_TFLOAT, inst->t);
-}
-
-static TSequence *
-tpcpointseq_project_with_schema(const TSequence *seq,
-  PCSCHEMA *schema, pcpoint_dim_fn fn, void *extra)
-{
-  TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
-  int n = 0;
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *out = tpcpointinst_project_with_schema(
-      TSEQUENCE_INST_N(seq, i), schema, fn, extra);
-    if (! out) continue;
-    insts[n++] = out;
-  }
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  return tsequence_make_free(insts, n, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
-}
-
-static TSequenceSet *
-tpcpointseqset_project_with_schema(const TSequenceSet *ss,
-  PCSCHEMA *schema, pcpoint_dim_fn fn, void *extra)
-{
-  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
-  int n = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    TSequence *out = tpcpointseq_project_with_schema(
-      TSEQUENCESET_SEQ_N(ss, i), schema, fn, extra);
-    if (! out) continue;
-    seqs[n++] = out;
-  }
-  return tsequenceset_make_free(seqs, n, NORMALIZE);
-}
-
+PGDLLEXPORT Datum Tpcpoint_get_y(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpoint_get_y);
 /**
- * @brief Dispatch to the right per-subtype walker
- * @pre Schema must be pre-resolved by the caller. See the per-wrapper
- *   comment on why the schema lookup is hoisted all the way up.
+ * @ingroup mobilitydb_pointcloud_accessor
+ * @brief Return the Y coordinate of a tpcpoint as a tfloat
+ * @sqlfn getY()
  */
-static Temporal *
-tpcpoint_project(const Temporal *temp, PCSCHEMA *schema,
-  pcpoint_dim_fn fn, void *extra)
+Datum
+Tpcpoint_get_y(PG_FUNCTION_ARGS)
 {
-  assert(temp->temptype == T_TPCPOINT);
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tpcpointinst_project_with_schema(
-        (TInstant *) temp, schema, fn, extra);
-    case TSEQUENCE:
-      return (Temporal *) tpcpointseq_project_with_schema(
-        (TSequence *) temp, schema, fn, extra);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tpcpointseqset_project_with_schema(
-        (TSequenceSet *) temp, schema, fn, extra);
-  }
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpcpoint_get_y(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tpcpoint_get_z(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpoint_get_z);
 /**
- * @brief Resolve the PCSCHEMA for a tpcpoint's common pcid before doing any
- * other work
- * @note This must be called AT THE TOP of the PG V1 wrapper — not
- *   deeper in the call stack. On PG 17, calling
- *   @c mobilitydb_pc_schema from a deeper static function during a
- *   SELECT over a table with a tpcpoint column triggers a
- *   @c SPI_connect crash; calling it directly from the PG V1 wrapper
- *   (before any Temporal walking) works. Same code, different
- *   executor-stack-depth sensitivity. Pcpoint_get_x (single-arg V1)
- *   demonstrates the working pattern; Tpcpoint_get_x (Temporal-arg V1
- *   that walks) must therefore hoist its schema lookup to match.
+ * @ingroup mobilitydb_pointcloud_accessor
+ * @brief Return the Z coordinate of a tpcpoint as a tfloat, NULL where its
+ * schema has no Z dimension
+ * @sqlfn getZ()
  */
-static PCSCHEMA *
-tpcpoint_schema(const Temporal *temp)
+Datum
+Tpcpoint_get_z(PG_FUNCTION_ARGS)
 {
-  const Pcpoint *first =
-    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
-  return mobilitydb_pc_schema(first->pcid);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpcpoint_get_z(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
-
-#define TPCPOINT_PROJ(fn_name, dim_fn) \
-  PGDLLEXPORT Datum fn_name(PG_FUNCTION_ARGS); \
-  PG_FUNCTION_INFO_V1(fn_name); \
-  Datum fn_name(PG_FUNCTION_ARGS) \
-  { \
-    Temporal *temp = PG_GETARG_TEMPORAL_P(0); \
-    PCSCHEMA *schema = tpcpoint_schema(temp); \
-    Temporal *result = tpcpoint_project(temp, schema, dim_fn, NULL); \
-    PG_FREE_IF_COPY(temp, 0); \
-    if (! result) PG_RETURN_NULL(); \
-    PG_RETURN_POINTER(result); \
-  }
-
-TPCPOINT_PROJ(Tpcpoint_get_x, dim_get_x)
-TPCPOINT_PROJ(Tpcpoint_get_y, dim_get_y)
-TPCPOINT_PROJ(Tpcpoint_get_z, dim_get_z)
 
 /*****************************************************************************
  * Projection to tgeompoint
@@ -337,14 +235,37 @@ Tpcpoint_get_dim(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *name_txt = PG_GETARG_TEXT_P(1);
-  PCSCHEMA *schema = tpcpoint_schema(temp);
   char *name = text_to_cstring(name_txt);
-  Temporal *result = tpcpoint_project(temp, schema, dim_get_by_name, name);
+  Temporal *result = tpcpoint_get_dim(temp, name);
   pfree(name);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(name_txt, 1);
-  if (! result) PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpointcloud_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpointcloud_transform);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return a temporal pcpoint or pcpatch transformed into the schema of
+ * another pcid, which states the target SRID
+ * @sqlfn transform()
+ * @altsqlfn pcpointTransform(), pcpatchTransform()
+ */
+Datum
+Tpointcloud_transform(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(1);
+  Temporal *result = tpointcloud_transform(temp, pcid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}

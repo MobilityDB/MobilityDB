@@ -24,14 +24,14 @@ CREATE TEMP TABLE tbl_tbool_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tbool_big
   UNION ALL
-  SELECT k + 10000, temp FROM tbl_tbool_inst
+  SELECT k + 10100, temp FROM tbl_tbool_inst
   UNION ALL
-  SELECT k + 10100, temp FROM tbl_tbool_discseq
+  SELECT k + 10200, temp FROM tbl_tbool_discseq
   UNION ALL
-  SELECT k + 10200, temp FROM tbl_tbool_contseq
+  SELECT k + 10300, temp FROM tbl_tbool_contseq
   UNION ALL
-  SELECT k + 10300, temp FROM tbl_tbool_seqset )
-SELECT k + n * 10400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, temp FROM tbl_tbool_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tbool_idx;
 

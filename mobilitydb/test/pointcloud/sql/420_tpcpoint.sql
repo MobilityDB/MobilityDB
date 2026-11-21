@@ -92,6 +92,16 @@ SELECT startValue(getX(:inst1));
 SELECT startValue(getY(:inst1));
 SELECT startValue(getZ(:inst1));
 
+-- A named dimension, in any case, projects a sequence as its getter does, and
+-- a name the schema does not state is an error, as PC_Get raises it
+SELECT getDim(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 'z') =
+  getZ(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3])),
+  getDim(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 'X') =
+  getX(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]));
+/* Errors */
+SELECT getDim(:inst1, 'Intensity');
+SELECT getDim(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), 'Intensity');
+
 -------------------------------------------------------------------------------
 -- Time accessors on a sequence
 -------------------------------------------------------------------------------

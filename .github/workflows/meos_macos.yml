@@ -8,7 +8,10 @@ on:
   push:
     paths:
       - '.github/workflows/meos_macos.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'pgtypes/**'
       - 'postgis/**'
@@ -19,7 +22,10 @@ on:
   pull_request:
     paths:
       - '.github/workflows/meos_macos.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'pgtypes/**'
       - 'postgis/**'

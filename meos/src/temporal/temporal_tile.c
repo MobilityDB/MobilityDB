@@ -520,6 +520,59 @@ datum_bin(Datum value, Datum size, Datum origin, MeosType type)
 }
 
 /**
+ * @brief Return true when the bin starting at a value ends within the range of
+ * its integer type, otherwise raise an error, as #intspan_get_bin refuses a
+ * bin whose upper bound exceeds the integer range and with the messages of
+ * #ensure_span_bound_has_next
+ * @param[in] bin Start of the bin
+ * @param[in] size Size of the bin, positive
+ * @param[in] basetype Type of the values of the bin
+ */
+static bool
+bin_end_in_range(Datum bin, Datum size, MeosType basetype)
+{
+  switch (basetype)
+  {
+    case T_INT4:
+      if (DatumGetInt32(bin) > PG_INT32_MAX - DatumGetInt32(size))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "integer out of range");
+        return false;
+      }
+      return true;
+    case T_DATE:
+      if (DatumGetDateADT(bin) > PG_INT32_MAX - DatumGetInt32(size))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "date out of range");
+        return false;
+      }
+      return true;
+    case T_INT8:
+      if (DatumGetInt64(bin) > PG_INT64_MAX - DatumGetInt64(size))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "bigint out of range");
+        return false;
+      }
+      return true;
+    case T_TIMESTAMPTZ:
+      if (DatumGetTimestampTz(bin) > PG_INT64_MAX - DatumGetInt64(size))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return false;
+      }
+      return true;
+    case T_FLOAT8:
+      /* A float bin ends at an infinity at worst, which the count refuses */
+      return true;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown bin function for type: %s", meostype_name(basetype));
+      return false;
+  }
+}
+
+/**
  * @brief Get the bins of a span
  * @details The bins are half-open and the last one holds the greatest value
  * of the span. A grid that does not contain the upper border of the span
@@ -548,7 +601,11 @@ span_num_bins(const Span *s, Datum size, Datum origin, bool border_inc,
    * starting at an exclusive upper bound holds no value of the span */
   *end_bin = datum_bin(s->upper, size, origin, s->basetype);
   if (s->upper_inc || ! datum_eq(*end_bin, s->upper, s->basetype))
+  {
+    if (! bin_end_in_range(*end_bin, size, s->basetype))
+      return 0;
     *end_bin = datum_add(*end_bin, size, s->basetype);
+  }
   if (! border_inc)
   {
     /* The greatest value of the span: the upper bound of a discrete span in
@@ -569,14 +626,29 @@ span_num_bins(const Span *s, Datum size, Datum origin, bool border_inc,
           DatumGetInt64(size)) :
         datum_sub(*end_bin, size, s->basetype);
   }
+  /* The width between the two bins of an integer grid is taken unsigned,
+   * which holds it exactly where the difference of the signed bins would
+   * overflow, and the number of bins is refused past the largest integer as
+   * the one of a float grid is below */
+  uint64 width, usize;
   switch (s->basetype)
   {
     case T_INT4:
-      return (DatumGetInt32(*end_bin) - DatumGetInt32(*start_bin)) /
-        DatumGetInt32(size);
+      width = (uint64) ((int64) DatumGetInt32(*end_bin) -
+        (int64) DatumGetInt32(*start_bin));
+      usize = (uint64) DatumGetInt32(size);
+      break;
+    case T_DATE:
+      width = (uint64) ((int64) DatumGetDateADT(*end_bin) -
+        (int64) DatumGetDateADT(*start_bin));
+      usize = (uint64) DatumGetInt32(size);
+      break;
     case T_INT8:
-      return (DatumGetInt64(*end_bin) - DatumGetInt64(*start_bin)) /
-        DatumGetInt64(size);
+    case T_TIMESTAMPTZ:
+      width = (uint64) DatumGetInt64(*end_bin) -
+        (uint64) DatumGetInt64(*start_bin);
+      usize = (uint64) DatumGetInt64(size);
+      break;
     case T_FLOAT8:
     {
       /* The width between two finite bins can exceed the largest float while
@@ -595,18 +667,46 @@ span_num_bins(const Span *s, Datum size, Datum origin, bool border_inc,
       }
       return (int) result;
     }
-    case T_DATE:
-      return (DatumGetDateADT(*end_bin) - DatumGetDateADT(*start_bin)) /
-          DatumGetInt32(size);
-    case T_TIMESTAMPTZ:
-      return (DatumGetInt64(*end_bin) - DatumGetInt64(*start_bin)) /
-        DatumGetInt64(size);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "Unknown number of bins function for type: %s",
         meostype_name(s->basetype));
       return 0;
   }
+  if (width / usize > INT_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "value out of range: too many bins");
+    return 0;
+  }
+  return (int) (width / usize);
+}
+
+/**
+ * @brief Multiply the number of tiles of a grid by the number of its tiles
+ * along one more dimension, with an error where the product exceeds the
+ * largest integer, as #span_num_bins refuses a number of bins
+ * @param[in,out] ntiles Number of tiles of the grid
+ * @param[in] count Number of tiles along the dimension, a whole number
+ * @param[out] dimcount The number of tiles along the dimension as an integer
+ */
+bool
+tile_count_mult(int *ntiles, double count, int *dimcount)
+{
+  assert(ntiles); assert(dimcount);
+  /* The product of two integers is exact in a double up to 2^53 and rounds
+   * above it to a double past the largest integer, so the comparison is
+   * exact; a count that is not a number fails it */
+  double result = (double) *ntiles * count;
+  if (! (count <= INT_MAX && result <= INT_MAX))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "value out of range: too many tiles");
+    return false;
+  }
+  *dimcount = (int) count;
+  *ntiles = (int) result;
+  return true;
 }
 
 /*****************************************************************************/
@@ -1187,9 +1287,14 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
     /* The given vsize is greater than 0 */
     state->valuegrid = true;
     state->vsize = vsize;
-    state->max_coords[0] = span_num_bins(&box->span, vsize, vorigin,
-      border_inc, &start_bin, &end_bin) - 1;
-    state->ntiles *= (state->max_coords[0] + 1);
+    int count = span_num_bins(&box->span, vsize, vorigin, border_inc,
+      &start_bin, &end_bin);
+    if (! count || ! tile_count_mult(&state->ntiles, count, &count))
+    {
+      pfree(state);
+      return NULL;
+    }
+    state->max_coords[0] = count - 1;
     span_set(start_bin, end_bin, true, false, box->span.basetype,
       box->span.spantype, &state->box.span);
   }
@@ -1207,10 +1312,14 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
   if (duration)
   {
     state->tunits = interval_units(duration);
-    state->max_coords[1] = span_num_bins(&box->period,
-      Int64GetDatum(state->tunits), TimestampTzGetDatum(torigin),
-      border_inc, &start_bin, &end_bin) - 1;
-    state->ntiles *= (state->max_coords[1] + 1);
+    int count = span_num_bins(&box->period, Int64GetDatum(state->tunits),
+      TimestampTzGetDatum(torigin), border_inc, &start_bin, &end_bin);
+    if (! count || ! tile_count_mult(&state->ntiles, count, &count))
+    {
+      pfree(state);
+      return NULL;
+    }
+    state->max_coords[1] = count - 1;
     span_set(start_bin, end_bin, true, false, T_TIMESTAMPTZ, T_TSTZSPAN,
       &state->box.period);
     MEOS_FLAGS_SET_T(state->box.flags, true);
@@ -1503,6 +1612,11 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
 
   TboxGridState *state = tbox_tile_state_make(NULL, box, vsize, duration,
     vorigin, torigin, border_inc);
+  if (! state)
+  {
+    *count = 0;
+    return NULL;
+  }
   int count1 = state->ntiles;
 
   /* Compute the tiles */
@@ -1855,6 +1969,8 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
   /* Create function state */
   TboxGridState *state = tbox_tile_state_make(temp, &bounds, vsize, duration,
     vorigin, torigin, border_inc);
+  if (! state)
+    return NULL;
   *ntiles = state->ntiles;
   return state;
 }
@@ -1955,6 +2071,8 @@ tbox_value_time_tile_init(const TBox *box, Datum vsize,
   /* Create function state */
   TboxGridState *state = tbox_tile_state_make(NULL, box, size, duration,
     origin, torigin, border_inc);
+  if (! state)
+    return NULL;
   *ntiles = state->ntiles;
   return state;
 }
@@ -3221,7 +3339,17 @@ tnumber_value_time_split(const Temporal *temp, Datum vsize,
   TimestampTz start_time = DatumGetTimestampTz(start_time_bin);
   TimestampTz end_time = DatumGetTimestampTz(end_time_bin);
   /* Total number of tiles */
-  int ntiles = value_count * time_count;
+  int ntiles = 1, dimcount;
+  if (! value_count || ! time_count ||
+      ! tile_count_mult(&ntiles, value_count, &dimcount) ||
+      ! tile_count_mult(&ntiles, time_count, &dimcount))
+  {
+    if (value_bins)
+      *value_bins = NULL;
+    *time_bins = NULL;
+    *count = 0;
+    return NULL;
+  }
 
   /* Split the temporal value */
   Datum *v_bins = NULL;
@@ -3421,6 +3549,13 @@ tint_value_time_split(const Temporal *temp, int vsize, const Interval *duration,
     duration, Int32GetDatum(vorigin), torigin, border_inc, &datum_bins,
     time_bins,
     count);
+  if (! result)
+  {
+    pfree(datum_bins);
+    if (value_bins)
+      *value_bins = NULL;
+    return NULL;
+  }
 
   /* Transform the datum bins into integer bins and return */
   int *values = palloc(sizeof(int) * *count);
@@ -3469,6 +3604,13 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
     duration, Int64GetDatum(vorigin), torigin, border_inc, &datum_bins,
     time_bins,
     count);
+  if (! result)
+  {
+    pfree(datum_bins);
+    if (value_bins)
+      *value_bins = NULL;
+    return NULL;
+  }
 
   /* Transform the datum bins into big integer bins and return */
   int64 *values = palloc(sizeof(int64) * *count);
@@ -3518,6 +3660,13 @@ tfloat_value_time_split(const Temporal *temp, double vsize,
     duration, Float8GetDatum(vorigin), torigin, border_inc, &datum_bins,
     time_bins,
     count);
+  if (! result)
+  {
+    pfree(datum_bins);
+    if (value_bins)
+      *value_bins = NULL;
+    return NULL;
+  }
 
   /* Transform the datum bins into float bins and return */
   double *values = palloc(sizeof(double) * *count);

@@ -64,12 +64,23 @@ cmake -S "$work/src" -B "$work/build" \
   "$@"
 cmake --build "$work/build" -j
 cmake --install "$work/build"
-if [ "$(uname -s)" = Linux ] && command -v ldconfig > /dev/null; then
+# The loader cache lists the system prefixes alone; a library in another prefix
+# is found through LD_LIBRARY_PATH or the run path of what links it, so the
+# cache is left as it is and a user who may not write it installs there
+case "$prefix" in
+  /usr | /usr/local) system=1 ;;
+  *) system=0 ;;
+esac
+if [ "$system" = 1 ] && [ "$(uname -s)" = Linux ] && command -v ldconfig > /dev/null; then
   ldconfig 2> /dev/null || sudo ldconfig
   # A package may install another libh3.so.1 (pgdg's libh3-1); the loader
   # takes the first its cache lists, which must be this one
   if [ "$prefix" = /usr/local ]; then
-    first=$(ldconfig -p | grep -m1 'libh3\.so\.1 ' | sed 's/.* => //')
+    # The cache is read whole before it is searched: a reader leaving the
+    # pipe at its first match would end ldconfig by SIGPIPE, which pipefail
+    # makes the exit of this script
+    cache=$(ldconfig -p)
+    first=$(grep -m1 'libh3\.so\.1 ' <<< "$cache" | sed 's/.* => //')
     case "$first" in
       "$prefix"/*) echo "libh3.so.1 resolves to $first" ;;
       *) echo "::error::libh3.so.1 resolves to '$first', not to $prefix" >&2

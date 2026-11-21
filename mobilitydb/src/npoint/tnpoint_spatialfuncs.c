@@ -201,7 +201,6 @@ Tnpoint_minus_geom(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup mobilitydb_npoint_restrict
  * @brief Return a temporal network point restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */

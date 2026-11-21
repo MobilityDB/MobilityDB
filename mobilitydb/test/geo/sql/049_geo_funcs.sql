@@ -113,11 +113,26 @@ SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', 0), 6));
 SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
+-- The buffer of a multipoint is the union of the disks about its points: two
+-- overlapping disks are one surface, a point repeating another adds nothing
+SELECT ST_AsText(round(buffer(geometry 'Multipoint(0 0,1 0)', 1), 6));
+SELECT ST_AsText(round(buffer(geometry 'Multipoint(0 0,1 0,0 0)', 1), 6));
+SELECT contains(buffer(geometry 'Multipoint(0 0,1 0)', 1), geometry 'Point(0.5 0.86)') AS lens,
+  contains(buffer(geometry 'Multipoint(0 0,1 0)', 1), geometry 'Point(0.5 0.87)') AS past;
 
--- The two offsets of a line, closed by a cap at each end
+-- The two offsets of a line, closed by a cap at each end: a half disc about
+-- each end, nothing past it, or a square stretching the line by the distance
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
+-- A line turning back on itself keeps the disc about its turn and one ring,
+-- whatever its cap
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=flat'), 6));
+SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,0 0.5)', 1, 'endcap=square'), 6));
+-- Past the end of the line under a flat cap, a point within the distance of
+-- the vertex before it lies in the buffer
+SELECT contains(buffer(geometry 'Linestring(10 10,3 5,3 6)', 1.5, 'endcap=flat'),
+  geometry 'Point(3.66 6.24)');
 
 -- A line from far away to a unit square holds, within half the root of two, a
 -- point at half that distance from its long edge, and not one a thousand times
@@ -142,6 +157,9 @@ SELECT buffer(geometry 'Linestring(12.272387 57.059013,12.272383 57.059013,
 -- The outer side of a turn is filled by the join the style names
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mitre'), 6));
+-- A join or an end cap the parameters do not name is refused
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=pointy');
+SELECT buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'endcap=pointy');
 
 -- A polygon grows outwards and its holes inwards
 SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
@@ -179,6 +197,71 @@ SELECT contains(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),
 -- A circular string keeps its arcs, and so does the buffer of one
 SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+-- A disc with a circular hole the distance covers whole: the point in the
+-- hole lies within the distance of the hole's circle
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(5.813848 2.813777,
+  12.184346 5.166935,5.813848 2.813777),Circularstring(9.168692 2.718545,
+  8.696632 5.985608,9.168692 2.718545))', 2.1456446498870543),
+  ST_Point(8.599378402370817, 4.328579428763156)) AS in_hole;
+-- A ring whose arcs turn both ways turns as it does at its point furthest
+-- right: the square of side 4 whose bottom bulges out by 0.5 and whose top
+-- dips in by 0.5, the top an arc of radius 4.25 about (2 7.75), holds within
+-- 0.5 the points 0.3 above the dip and 0.4 below the bottom, and not 0.6
+-- below it
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, 3.8)) AS above_dip;
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -0.9)) AS below_bulge;
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -1.1)) AS past_bulge;
+-- An arc is offset by an arc about its own centre: a point at 1.4 from the
+-- centre of the half circle of radius 1 lies in its buffer by 0.5
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5),
+  ST_Point(0, 1.4)) AS beside_arc;
+-- A flat cap cuts the strip of an end arc along the line through its end and
+-- its centre: the upper half of the ring from 0.5 to 1.5, without the point
+-- 0.22 from the end (1 0) below that line, which a round cap holds; a square
+-- cap stretches the strip by 0.5 past the end along the tangent there, and
+-- holds a point of that square 0.64 from the end
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), 6));
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), ST_Point(1.2, -0.1)) AS past_flat_cap;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=square'), ST_Point(1.45, -0.45)) AS in_square_cap;
+-- The buffer of a collection is the union of the buffers of its members,
+-- each with its own cap: beside the half circle, the point (3 0) holds
+-- (2.6 0) at 0.4 from it, the square cap of the half circle holds the point
+-- of its square 0.64 from the end, and the flat cap leaves out the point
+-- below its cut
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=square'), ST_Point(1.45, -0.45))
+  AS member_square_cap;
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(1.2, -0.1))
+  AS member_flat_cap;
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(2.6, 0)) AS member_point;
+-- A line in a multicurve or a collection is walked as a curve of segments:
+-- the segment of length 2 buffered by 0.5 is its stadium, two half circles
+SELECT ST_AsText(round(buffer(geometry 'MultiCurve((0 0,2 0))', 0.5), 6));
+SELECT ST_AsText(round(buffer(geometry 'GeometryCollection(Linestring(0 0,
+  2 0),Point(5 0))', 0.5), 6));
+-- Buffered by 1.5, more than its radius 1, the normal segment of the half
+-- circle runs through its centre: the strip is the upper half disc of radius
+-- 2.5 and the lower one of radius 0.5, holding (0 -0.4) and not (0 -0.6); a
+-- square cap adds the squares past both ends, which hold (2 -1)
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), 6));
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.4)) AS in_far_lobe;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.6)) AS past_far_lobe;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=square'), ST_Point(2, -1)) AS in_square_past_centre;
 
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));
@@ -228,7 +311,13 @@ SELECT relate(geometry 'Polyhedralsurface Z (
   geometry 'Linestring(0 0,2 2)');
 
 -- A pattern is matched against that matrix
-SELECT ST_Relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', '0FFFFFFF2');
+-- A pattern is read in any case, and is nine symbols among T, F, *, 0, 1 and 2
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 't*fff*ff*');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(2 2)', 't*fff*ff*');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*F');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FF*F');
+SELECT relate(geometry 'Point(1 1)', geometry 'Point(1 1)', 'T*FFF*FFX');
 
 -------------------------------------------------------------------------------
 

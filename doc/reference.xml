@@ -3750,10 +3750,13 @@
 						<para><link linkend="pcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</para>
+						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Return any named dimension of a pcpoint</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier (inherited from the schema)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpoint_transform"><varname>transform</varname></link>: Transform to the schema of another pcid</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpatch_numPoints"><varname>numPoints</varname></link>: Return the number of points of a pcpatch</para>
@@ -3852,7 +3855,7 @@
 						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Return a tpcbox with coordinates rounded to a given number of decimal digits</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Return a tpcbox stating a reference system its schema does not state</para>
+						<para><link linkend="tpcbox_transform"><varname>transform</varname></link>: Transform to the schema of another pcid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3941,6 +3944,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_SRID"><varname>SRID</varname></link>: Return the SRID inherited from the schema</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_transform"><varname>transform</varname></link>: Transform to the schema of another pcid</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Project a tpcpoint onto a spatial dimension, yielding a tfloat</para>

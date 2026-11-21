@@ -736,17 +736,7 @@ pose_parse(const char **str, bool end)
   const char *kw = geodetic ? "GEODPOSE" : "POSE";
   int kwlen = geodetic ? 8 : 4;
 
-  /* Determine whether the pose has a geometry */
-  int32_t srid_geo = SRID_UNKNOWN;
-  GSERIALIZED *geo = NULL;
-  if (pg_strncasecmp(*str, kw, kwlen) != 0)
-  {
-    if (! geo_parse(str, T_GEOMETRY, ',', &srid_geo, &geo))
-      return NULL;
-    /* The value is read past and not kept */
-    pfree(geo);
-  }
-
+  /* The keyword follows the SRID: any other text before it is refused */
   if (pg_strncasecmp(*str, kw, kwlen) == 0)
   {
     *str += kwlen;

@@ -42,3 +42,12 @@ SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"pos
 SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2001-01-01T00:00:00+01"],"interpolation":"XXX"}');
 
 -------------------------------------------------------------------------------
+
+-- The crs of a document states the SRID of the network: stating that SRID
+-- reads the value, and stating another one contradicts it, as the SRID of an
+-- EWKT or of an EWKB does
+SELECT SRID(tnpointFromMFJSON(asMFJSON(tnpoint 'Npoint(1, 0.5)@2001-01-01')))
+  = SRID(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+SELECT tnpointFromMFJSON(regexp_replace(asMFJSON(
+  tnpoint 'Npoint(1, 0.5)@2001-01-01'), '"name":"EPSG:[0-9]+"',
+  '"name":"EPSG:3857"'));

@@ -2845,6 +2845,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
             tm.tm_hour = 0;
             tm.tm_min = 0;
             tm.tm_sec = 0;
+            meos_ensure_timezone();
             tz = DetermineTimeZoneOffset(&tm, session_timezone);
             value = date_to_timestamptz(value);
             break;
@@ -2867,7 +2868,10 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
              */
             if (timestamp2tm(DatumGetTimestamp(value), NULL, &tm, &fsec,
                 NULL, NULL) == 0)
+            {
+              meos_ensure_timezone();
               tz = DetermineTimeZoneOffset(&tm, session_timezone);
+            }
             value = timestamp_to_timestamptz(value);
             break;
           case TIMESTAMPTZOID:  /* Nothing to do for TIMESTAMPTZ */
