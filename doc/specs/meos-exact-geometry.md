@@ -498,9 +498,12 @@ two offsets about `C` and the segments across its ends on the lines through
 `C`; a square cap moves the segment across the free end by `r` along the
 tangent of the circle there, its corners `A + r (side n + along rot(n))`,
 `n` the unit vector from `C` to the end `A`, in the root of the circle as the
-ends of the offsets are. Where `R` does not exceed `r` the normal segment
-sweeps through `C` into points beyond it that no one curve winds around with
-the rest of the strip.
+ends of the offsets are. Where `r` exceeds `R` the normal segment sweeps
+through `C`, and the strip is two sectors with their apex at `C`, of radius
+`R + r` over the sweep of the arc and `r - R` over the opposite one, each
+bounded by one curve, `C` a point of the same root; an arc of a half turn has
+its two radii on one line, and the union of its two half discs is bounded by
+one curve along it.
 
 **The erosion is what the buffer of the complement leaves.** The exterior of
 every polygon is offset clockwise into it and every hole counterclockwise out
@@ -516,7 +519,7 @@ are outside this document's guarantee; the buffer of a line is declined, since
 no other path answers it exactly; the erosion of a polygon holding a ring that
 encloses no area is built on the older path. So is the buffer of a lone point,
 whose disc that path writes as its whole circle, of a curve under
-a flat or a square cap ending in an arc whose radius is not shown to exceed
+a flat or a square cap ending in an arc whose radius is not told apart from
 the distance, of a curve polygon ring whose point furthest right is not told,
 an arc's end within the bound of its circle in doubles of the point
 `(cx + R, cy)` or a tie, and of a curve polygon holding a hole of arcs, other
@@ -566,6 +569,7 @@ rests on a rounding.
 | circular strings and compound curves under a flat or a square cap | 120 curves of one to three arcs, ending in segments or arcs, at 0.3 and 0.97 of the smallest radius of their end arcs, a grid about each, points at 0.999 and 1.001 of the distance from every arc, segment and end, and on both sides of every cut and of every side and corner of a square | 57760 of 57760, with no decline |
 | geometry collections of points, multipoints, lines, multilines, polygons with and without a hole, curve polygons and curves, nested at times | 80 collections of two to five members about one centre, 41 holding a line, under the round, flat and square caps at 0.3 and 0.9 of the smallest radius of their curves' end arcs, a grid about each and points at 0.999 and 1.001 of the distance from every edge, arc and point | 46392 of 46392, with no decline |
 | curve polygons whose rings hold arcs turning both ways | 100 convex polygons of three to six vertices whose edges are arcs bulging out by up to a quarter of their chord or in by up to 0.12 of it, counterclockwise and clockwise, at 0.1, 0.5 and 1.5 of their radius, a grid about each and points at 0.999 and 1.001 of the distance from every arc, segment and vertex | 44638 of 44638, with no decline |
+| circular strings and compound curves under a flat or a square cap, the distance above the radius of their end arcs | 40 curves at 1.6 of the smallest radius of their end arcs, a grid about each, points at 0.999 and 1.001 of the distance from every arc, segment and end, and on both sides of every cut and of every side and corner of a square | 8548 of 8548, with no decline |
 
 Every query a line's certificate declines has a distance below the rounding of
 its coordinates, at most 0.32 of an ulp; answered instead, five of them are
