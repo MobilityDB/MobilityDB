@@ -154,10 +154,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a raster written in a format of GDAL. </p>
-<p >The raster is written as PostGIS's <code>ST_AsGDALRaster</code> writes it. Each call writes into a virtual file of its own, so that calls in several threads never write into one another's file </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The raster is written as PostGIS's <code>ST_AsGDALRaster</code> writes it. Each call writes into a virtual file of its own, so that calls in several threads never write into one another's file. A format whose library cannot write into memory, as netCDF, is written to a file of the call's own in GDAL's scratch directory, deleted before the call returns </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Short name of the GDAL driver, as <code>GTiff</code>, <code>PNG</code> or <code>JPEG</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Short name of the GDAL driver, as <code>GTiff</code>, <code>PNG</code>, <code>JPEG</code> or <code>netCDF</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">options</td><td>Creation options of the driver, one <code>KEY=VALUE</code> an element, a NULL element stating none, as GDAL takes them (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements of the options </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference system the file states, or 0 for the raster's own; the pixels are not reprojected </td></tr>
