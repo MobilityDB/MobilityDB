@@ -11,7 +11,8 @@
 The user document `doc/specs/mobilityapi-ogc-api.md` (v1.0.0) states in its
 section 12 what MobilityAPI leaves out of scope: the EDR 1.1 classes
 `collections`, `queries` and `covjson`; the Part 4 operations over a temporal
-geometry and its Kafka and WebSocket channels; a newer Part 4 draft; and the
+geometry and its Kafka and WebSocket channels (MobilityAPI extensions, since
+OGC holds no draft of a Stream part); a newer Part 4 draft (none exists); and the
 Coverages encodings beyond GeoTIFF and CoverageJSON. This plan takes each one
 in, row by row, in `IMPLEMENTATION-PLAN.md`.
 
