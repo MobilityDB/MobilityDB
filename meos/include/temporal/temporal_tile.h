@@ -60,6 +60,7 @@ typedef struct TboxGridState
 
 extern int span_num_bins(const Span *s, Datum size, Datum origin,
   bool border_inc, Datum *start_bin, Datum *end_bin);
+extern bool tile_count_mult(int *ntiles, double count, int *dimcount);
 
 extern Span *span_bins(const Span *s, Datum vsize, Datum vorigin, bool border_inc, int *count);
 extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc, int *count);
