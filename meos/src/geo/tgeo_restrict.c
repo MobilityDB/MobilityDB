@@ -891,6 +891,21 @@ stbox_holds_lonlat(double lon, double lat, const STBox *box,
 }
 
 /**
+ * @brief Return true if a height lies in the Z dimension of a box, as
+ * #stbox_holds_lonlat states a position in its spatial dimensions
+ * @param[in] z Height
+ * @param[in] box Bounding box with Z
+ * @param[in] border_inc True when the box contains the upper border
+ */
+static bool
+stbox_holds_z(double z, const STBox *box, bool border_inc)
+{
+  if (z < box->zmin)
+    return false;
+  return border_inc ? z <= box->zmax : z < box->zmax;
+}
+
+/**
  * @brief Restrict a geodetic temporal point to the spatial dimensions of a
  * spatiotemporal box
  * @details A geodetic point travels the great circle between two positions,
@@ -926,55 +941,62 @@ tpointseq_linear_at_stbox_geodetic(const TSequence *seq, const STBox *box,
     const POINT2D *q1 = GSERIALIZED_POINT2D_P(p1);
     const POINT2D *q2 = GSERIALIZED_POINT2D_P(p2);
     double lon1 = q1->x, lat1 = q1->y, lon2 = q2->x, lat2 = q2->y;
+    /* The height of a geodetic point runs linearly in time, so the bounds of
+     * the box admit one stretch of the segment, which every span meets in */
+    double zlo = 0.0, zhi = 1.0, z1 = 0.0, z2 = 0.0;
+    bool zlo_upper = false, zhi_upper = false, zempty = false;
+    if (hasz)
+    {
+      z1 = GSERIALIZED_POINT3DZ_P(p1)->z;
+      z2 = GSERIALIZED_POINT3DZ_P(p2)->z;
+      if (z1 == z2)
+        zempty = ! stbox_holds_z(z1, box, border_inc);
+      else
+      {
+        double a = (box->zmin - z1) / (z2 - z1);
+        double b = (box->zmax - z1) / (z2 - z1);
+        zlo = Min(a, b); zhi = Max(a, b);
+        zlo_upper = (zlo == b); zhi_upper = (zhi == b);
+        if (zlo < 0.0) zlo = 0.0;
+        if (zhi > 1.0) zhi = 1.0;
+        zempty = (zlo > zhi);
+      }
+    }
     DggsArc arc;
     if (geopoint_eq(p1, p2) || ! dggs_arc_init(lon1, lat1, lon2, lat2, &arc))
     {
-      /* A segment holding one position is in the box when that position is */
-      if (stbox_holds_lonlat(lon1, lat1, box, border_inc))
-        span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
-          true, (i == seq->count - 1) ? seq->period.upper_inc : false,
-          T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+      /* A segment holding one position is in the box for the stretch its
+       * height spends in the Z dimension of the box, when the position is in
+       * its spatial dimensions */
+      if (! zempty && stbox_holds_lonlat(lon1, lat1, box, border_inc))
+      {
+        bool last = (i == seq->count - 1);
+        TimestampTz t1 = tgeogpointsegm_timestamp_at_param(inst1, inst2, zlo);
+        TimestampTz t2 = tgeogpointsegm_timestamp_at_param(inst1, inst2, zhi);
+        bool lower_inc = (zlo <= 0.0) ? true : (border_inc || ! zlo_upper);
+        bool upper_inc = (zhi >= 1.0) ? (last && seq->period.upper_inc) :
+          (border_inc || ! zhi_upper);
+        if (t1 == t2)
+          lower_inc = upper_inc = true;
+        span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), lower_inc,
+          upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans++]);
+      }
       inst1 = inst2;
       continue;
     }
     double tin[8], tout[8];
     bool tin_upper[8], tout_upper[8];
-    int count = dggs_arc_lonlat_box_spans(&arc, box->xmin, box->ymin,
-      box->xmax, box->ymax, border_inc, tin, tout, tin_upper, tout_upper,
-      8);
-    /* The height of a geodetic point runs linearly in time, so the bounds of
-     * the box admit one stretch of the segment, which every span meets in */
-    double zlo = 0.0, zhi = 1.0;
-    bool zlo_upper = false, zhi_upper = false;
-    if (hasz)
-    {
-      const POINT3DZ *r1 = GSERIALIZED_POINT3DZ_P(p1);
-      const POINT3DZ *r2 = GSERIALIZED_POINT3DZ_P(p2);
-      if (r1->z == r2->z)
-      {
-        if (r1->z < box->zmin || (border_inc ? r1->z > box->zmax :
-              r1->z >= box->zmax))
-          count = 0;
-      }
-      else
-      {
-        double a = (box->zmin - r1->z) / (r2->z - r1->z);
-        double b = (box->zmax - r1->z) / (r2->z - r1->z);
-        zlo = Min(a, b); zhi = Max(a, b);
-        zlo_upper = (zlo == b); zhi_upper = (zhi == b);
-        if (zlo < 0.0) zlo = 0.0;
-        if (zhi > 1.0) zhi = 1.0;
-        if (zlo > zhi)
-          count = 0;
-      }
-    }
+    int count = zempty ? 0 : dggs_arc_lonlat_box_spans(&arc, box->xmin,
+      box->ymin, box->xmax, box->ymax, border_inc, tin, tout, tin_upper,
+      tout_upper, 8);
     /* The ends of the segment are the positions the trip states, so the box
-     * holds each by its own coordinates, and one the box holds is part of the
-     * answer though the path leaves the box at once */
+     * holds each by its own coordinates, its height among them, and one the
+     * box holds is part of the answer though the path leaves the box at
+     * once */
     bool hold1 = stbox_holds_lonlat(lon1, lat1, box, border_inc) && (! hasz ||
-      zlo == 0.0);
+      stbox_holds_z(z1, box, border_inc));
     bool hold2 = stbox_holds_lonlat(lon2, lat2, box, border_inc) && (! hasz ||
-      zhi == 1.0);
+      stbox_holds_z(z2, box, border_inc));
     bool span1 = false, span2 = false;
     for (int k = 0; k < count; k++)
     {
