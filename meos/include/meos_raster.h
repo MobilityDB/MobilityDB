@@ -234,6 +234,8 @@ typedef struct
   double max;           /**< Largest of their values */
   double mean;          /**< Running mean of their values */
   double q;             /**< Running sum of squared deviations from the mean */
+  int32 scale;          /**< Power of two the sum, the mean and the deviations
+                             are divided by, 0 unless the values reach 2^448 */
 } RasterStatsState;
 
 /* Input and output functions for PostGIS rasters */
