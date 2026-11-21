@@ -17,6 +17,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | Row | Task | State |
 |---|---|---|
 | TG1 | State every refusal and every wrong answer of a 3D value in `doc/temporal_rigid_geometries.xml` and its Spanish twin, each where its function is documented, state what the type accepts in place of "2D" there and in `doc/contributing/trgeometry_design_notes.md`, and make the examples of the chapter run | merged as #3443 |
+| TG39 | Name the point `tgeompoint`, `points`, `length`, `cumulativeLength`, `speed` and `twCentroid` read the position of the pose, the point `trgeometry_to_tgeompoint` lifts, where the chapter, its reference appendix and the MEOS and PostgreSQL comments named it the centroid, which `centroid(trgeometry)` answers; state that `spaceBoxes`, `timeBoxes` and `spaceTimeBoxes` answer the boxes the body intersects, as `trgeometry_restrict_stbox` reads them, where the chapter read them on the centroid trajectory; the comment of the 3D operand test of `meos/test/trgeo_test.c` states the value it tests is in 2D | branch `docs/trgeometry-pose-position` (`4a9697bd95`), receipts running |
 
 ## Wrong answers
 
