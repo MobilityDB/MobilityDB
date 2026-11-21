@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>.  
+<p>The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, or of the longitude or latitude of a point of a face of a gnomonic grid, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>.  
  <a href="structDegreeAngle.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -93,9 +93,15 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a3d4c3b447be0ceb7afd950b80fa11f9f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a3d4c3b447be0ceb7afd950b80fa11f9f.html#a3d4c3b447be0ceb7afd950b80fa11f9f">exp</a></td></tr>
 <tr class="memdesc:a3d4c3b447be0ceb7afd950b80fa11f9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weight of the lowest bit of the bounds.  <a href="structDegreeAngle_a3d4c3b447be0ceb7afd950b80fa11f9f.html#a3d4c3b447be0ceb7afd950b80fa11f9f">More...</a><br /></td></tr>
 <tr class="separator:a3d4c3b447be0ceb7afd950b80fa11f9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaebe92674e947000c9f56480cb83db7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGnomonicExact.html">GnomonicExact</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_abaebe92674e947000c9f56480cb83db7.html#abaebe92674e947000c9f56480cb83db7">gnomonic</a></td></tr>
+<tr class="memdesc:abaebe92674e947000c9f56480cb83db7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The angle of a point of a face, not s and c.  <a href="structDegreeAngle_abaebe92674e947000c9f56480cb83db7.html#abaebe92674e947000c9f56480cb83db7">More...</a><br /></td></tr>
+<tr class="separator:abaebe92674e947000c9f56480cb83db7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b434c5b9f7cb8706aa6e7ee0727d73c"><td class="memItemLeft" align="right" valign="top">uint64 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a8b434c5b9f7cb8706aa6e7ee0727d73c.html#a8b434c5b9f7cb8706aa6e7ee0727d73c">hi64</a></td></tr>
 <tr class="memdesc:a8b434c5b9f7cb8706aa6e7ee0727d73c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The bounds of the magnitude.  <a href="structDegreeAngle_a8b434c5b9f7cb8706aa6e7ee0727d73c.html#a8b434c5b9f7cb8706aa6e7ee0727d73c">More...</a><br /></td></tr>
 <tr class="separator:a8b434c5b9f7cb8706aa6e7ee0727d73c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53009b9844bbbe400783a0cc2784f7d8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a53009b9844bbbe400783a0cc2784f7d8.html#a53009b9844bbbe400783a0cc2784f7d8">lat</a></td></tr>
+<tr class="memdesc:a53009b9844bbbe400783a0cc2784f7d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The latitude of that point, not its longitude.  <a href="structDegreeAngle_a53009b9844bbbe400783a0cc2784f7d8.html#a53009b9844bbbe400783a0cc2784f7d8">More...</a><br /></td></tr>
+<tr class="separator:a53009b9844bbbe400783a0cc2784f7d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5247a69eae6fae712e435f31bb73e16"><td class="memItemLeft" align="right" valign="top">uint64 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_ab5247a69eae6fae712e435f31bb73e16.html#ab5247a69eae6fae712e435f31bb73e16">lo64</a></td></tr>
 <tr class="separator:ab5247a69eae6fae712e435f31bb73e16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c1fbb1248764ed7edffdd1362bc8ea"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDegreeAngle_a88c1fbb1248764ed7edffdd1362bc8ea.html#a88c1fbb1248764ed7edffdd1362bc8ea">mercator</a></td></tr>
@@ -117,7 +123,7 @@ Data Fields</h2></td></tr>
 <tr class="separator:a3b4b8ebc17ba024670d48f49c4dc1a23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>. </p>
+<div class="textblock"><p >The degrees of an angle atan2(sqrt(s), c) in [0, 180], or 90 less it, or of the latitude atan(sinh(pi r)) of a Web Mercator row, or of the longitude or latitude of a point of a face of a gnomonic grid, and an enclosure of their magnitude, the twin of <a class="el" href="structTrigProduct.html">TrigProduct</a>. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/src/geo/<a class="el" href="geo__trig_8c.html">geo_trig.c</a></li>
 </ul>

@@ -90,6 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2s2cell_8c_a7972334534f68166121a6e51b0aac2d6.html#a7972334534f68166121a6e51b0aac2d6">lat</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2s2cell_8c_aa96391e04b5977c50b96d77bea86a01d.html#aa96391e04b5977c50b96d77bea86a01d">lon</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2s2cell_2s2cell_8c_a6ce4e5758ce35c67243ade68e0c3f87b.html#a6ce4e5758ce35c67243ade68e0c3f87b">S2_CORNER_CACHE</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2s2cell_8c_a48dac881711a9564dcb6f8b8159c6781.html#a48dac881711a9564dcb6f8b8159c6781">S2_CORNER_CACHE_BITS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2s2cell_8c_a8799a01004e97aa23b9e7f83f8c7de32.html#a8799a01004e97aa23b9e7f83f8c7de32">S2_CORNER_DEN</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2s2cell_8c_aade45a48d2d48bcd5ecc2a57f15de9df.html#aade45a48d2d48bcd5ecc2a57f15de9df">S2_EARTH_RADIUS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2s2cell_2s2cell_8c_a7b605ade6d7f922ce64fe9779e23b4b5.html#a7b605ade6d7f922ce64fe9779e23b4b5">S2_GEO_POINT_CELL_RINGS</a></td></tr>
@@ -203,12 +204,10 @@ $(function() {
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define S2_CORNER_CACHE&#160;&#160;&#160;1024</td>
+          <td class="memname">#define S2_CORNER_CACHE&#160;&#160;&#160;(1 &lt;&lt; <a class="el" href="meos_2src_2s2cell_2s2cell_8c_a48dac881711a9564dcb6f8b8159c6781.html#a48dac881711a9564dcb6f8b8159c6781">S2_CORNER_CACHE_BITS</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Number of entries of <a class="el" href="meos_2src_2s2cell_2s2cell_8c_a32f6dbb90a1754283d66643b6fd01f0f.html#a32f6dbb90a1754283d66643b6fd01f0f" title="The cube coordinates of corners read last, per thread, by their leaf index.">s2_uv_cache</a> and <a class="el" href="meos_2src_2s2cell_2s2cell_8c_a565c59596b53a950f2836a8ee55ec536.html#a565c59596b53a950f2836a8ee55ec536" title="The degrees of corners read last, per thread, by their face and leaf indices.">s2_vertex_cache</a>, a power of 2. </p>
 
 </div>
 </div>

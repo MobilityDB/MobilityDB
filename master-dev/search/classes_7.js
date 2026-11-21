@@ -17,7 +17,9 @@ var searchData=
   ['geomval_14',['GeomVal',['../structGeomVal.html',1,'']]],
   ['geoposeanchor_15',['GeoPoseAnchor',['../structGeoPoseAnchor.html',1,'']]],
   ['geoposeframe_16',['GeoPoseFrame',['../structGeoPoseFrame.html',1,'']]],
-  ['grid_17',['Grid',['../structGrid.html',1,'']]],
-  ['gridsearch_18',['GridSearch',['../structGridSearch.html',1,'']]],
-  ['gserialized_19',['GSERIALIZED',['../structGSERIALIZED.html',1,'']]]
+  ['gnomonicexact_17',['GnomonicExact',['../structGnomonicExact.html',1,'']]],
+  ['gnomonicfacepoint_18',['GnomonicFacePoint',['../structGnomonicFacePoint.html',1,'']]],
+  ['grid_19',['Grid',['../structGrid.html',1,'']]],
+  ['gridsearch_20',['GridSearch',['../structGridSearch.html',1,'']]],
+  ['gserialized_21',['GSERIALIZED',['../structGSERIALIZED.html',1,'']]]
 ];
