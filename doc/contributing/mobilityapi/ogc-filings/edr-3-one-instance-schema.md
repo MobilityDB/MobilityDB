@@ -8,7 +8,7 @@
 
 # One instance is held to the schema of the list of instances
 
-Filed once the implementation it cites is merged: MobilityAPI row U3.
+Its evidence is MobilityAPI row U3; it is filed with that row merged.
 
 **Defect.** `/req/instances/src-md-success` is the requirement of
 `GET /collections/{collectionId}/instances/{instanceId}`, one instance. Its B:
