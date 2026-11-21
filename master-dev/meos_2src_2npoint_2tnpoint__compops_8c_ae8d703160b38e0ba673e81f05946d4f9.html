@@ -151,7 +151,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a temporal network point ever (or always) lies in a spatiotemporal box, 0 if not, and -1 on error, as <a class="el" href="meos_2src_2geo_2tgeo__compops_8c_af44f89172cf2814bf4aa237298926af6.html#af44f89172cf2814bf4aa237298926af6" title="Return 1 if a temporal geo ever (or always) lies in a spatiotemporal box, 0 if not,...">eaoverlaps_tgeo_stbox</a> answers it for a temporal geo. </p>
+<p>Return 1 if a temporal network point ever (or always) lies in a spatiotemporal box, 0 if not, and -1 on error, as <a class="el" href="meos_2src_2geo_2tgeo__compops_8c_af44f89172cf2814bf4aa237298926af6.html#af44f89172cf2814bf4aa237298926af6">eaoverlaps_tgeo_stbox</a> answers it for a temporal geo. </p>
 <p >The value ever lies in the box when its restriction to the box by <a class="el" href="group__meos__internal__npoint__restrict_ga2b873a6476107f1ff9c8cc338d573927.html#ga2b873a6476107f1ff9c8cc338d573927" title="Return a temporal network point restricted to (the complement of) a spatiotemporal box.">tnpoint_restrict_stbox</a> is not empty, and always lies in it when its restriction to the complement of the box is empty; a box with only the T dimension restricts the value to its period </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> network point </td></tr>
