@@ -531,6 +531,16 @@ raster_gdal_writer(const char *format)
       "or into a file", format);
     return NULL;
   }
+  /* A VRT copies no pixel: it states where the pixels of its source are, and
+   * the source of #raster_as_gdal is a dataset in memory that is gone when the
+   * call returns, so the file would name nothing a reader can open */
+  if (strcmp(GDALGetDriverShortName(drv), "VRT") == 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The format VRT states where the pixels of a raster are and writes none "
+      "of them, so it cannot write a raster");
+    return NULL;
+  }
   return drv;
 }
 
@@ -646,11 +656,13 @@ raster_as_gdal(const Raster *rast, const char *format, text **options,
     GDALCreateCopy(drv, path, src, FALSE, opts, NULL, NULL) : NULL;
   if (dst)
   {
+    /* The copy is closed before its source, as closing a copy may read the
+     * source it was made from */
     CSLDestroy(opts);
+    GDALClose(dst);
     GDALClose(src);
     if (destroy_src_drv)
       GDALDestroyDriver(src_drv);
-    GDALClose(dst);
     vsi_l_offset len = 0;
     GByte *buf = VSIGetMemFileBuffer(path, &len, TRUE);
     if (! buf)
@@ -691,6 +703,9 @@ raster_as_gdal(const Raster *rast, const char *format, text **options,
   CPLErrorReset();
   dst = GDALCreateCopy(drv, file, src, FALSE, opts, NULL, NULL);
   CSLDestroy(opts);
+  /* The copy is closed before its source, as in the write into memory */
+  if (dst)
+    GDALClose(dst);
   GDALClose(src);
   if (destroy_src_drv)
     GDALDestroyDriver(src_drv);
@@ -707,7 +722,6 @@ raster_as_gdal(const Raster *rast, const char *format, text **options,
     return NULL;
   }
   pfree(errmem);
-  GDALClose(dst);
   uint8_t *result = NULL;
   size_t len = 0;
   VSILFILE *fp = VSIFOpenL(file, "rb");
