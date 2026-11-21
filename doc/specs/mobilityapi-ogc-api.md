@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.0.0 |
+| Version | v1.1.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`02d8595`](https://github.com/MobilityDB/MobilityAPI/tree/02d8595): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`baf7261`](https://github.com/MobilityDB/MobilityAPI/tree/baf7261): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -203,6 +203,25 @@ CoverageJSON:
 
 A collection's description carries `data_queries`, one link per query with its
 variables. The format is selected by `f`, and `Accept` is not read.
+
+The description of a raster collection carries what
+`/req/edr/rc-collection-info` and the schema `collection.yaml` of EDR 1.1 ask of
+it, and `/collections` lists it with the description `/collections/{collectionId}`
+writes, as `/req/collections/src-md-success` C requires:
+
+| member | content |
+|---|---|
+| `links` | every link with its `rel` and `type`: the description, the coverage in each encoding, the schema, and one `data` link per query |
+| `extent` | the bounds of the rasters in CRS84 and the span of the periods |
+| `output_formats` | `CoverageJSON` |
+| `parameter_names` | one `Parameter` per band, keyed `band1`, `band2`, ... as `parameter-name` reads them, its `data-type` `integer` or `float` by the band's pixel type, its `observedProperty` labelled as `asCoverageJSON` labels the band |
+| `keywords` | `coverage` and the raster type of the collection |
+
+An `observedProperty` carries a `label` and no `id`: `/req/edr/rc-parameters` F
+requires the two, the schema `observedPropertyCollection.yaml` requires the
+`label` alone, and the schema is followed. The class `collections` is not
+declared: it binds every collection of `/collections`, and a collection of
+moving features answers no EDR query.
 
 CoverageJSON is written `application/vnd.cov+json`, the type OGC CoverageJSON
 (OGC 21-069r2) states. EDR 1.1 as published writes `application/prs.coverage+json`;
