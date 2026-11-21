@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v1.0.0 |
+| Version | v1.0.1 |
 | Scope | The functions that read a MEOS or MobilityDB value from a format and write it back, in SQL, in MEOS and in every binding, their names, the SRID they carry, the size of the strings they return, and the conversion of the JSON numbers a temporal JSON value holds |
 | Reference | `mobilitydb/sql/` (the `<type>From<Format>` and `as<Format>` functions), `meos/include/meos.h` and the family headers beside it (the readers and writers), `meos/src/json/tjsonb_jsonfuncs.c` (`numeric_to_alphanum`), `mobilitydb/test/io/sql/700_io_every_type_tbl.sql`, `tools/io_matrix.py` |
 
@@ -151,14 +151,16 @@ from the source.
    the text forms are what a user reads and writes.
 4. **Plain WKB without the SRID, the `E` forms with it,** in every binding as
    in PostgreSQL (section 3.2).
-5. **The types a binding holds in its own language.** PostgreSQL's date and
-   time types (`date`, `time`, `timetz`, `timestamp`, `timestamptz`,
-   `interval`) are held as the language's own types, converted at the
-   boundary through MEOS's readers and writers of those types; `numeric` and
-   PostGIS's `box2d` and `box3d` have no class in a binding. The MEOS-API
-   catalog marks the first `bindingScope: host` and the second
-   `bindingScope: none`, and a binding's generator refuses to emit a class for
-   a type so marked.
+5. **The time types are MEOS values, cast to the host's.** A binding holds
+   PostgreSQL's date and time types (`date`, `time`, `timetz`, `timestamp`,
+   `timestamptz`, `interval`) as MEOS values and reaches the time types of its
+   language only through a cast, explicit, converting through a MEOS function
+   and exact or an error (`meos-bindings-algebra.md`, sections 3 and 5).
+   `numeric` and PostGIS's `box2d` and `box3d` have no class in a binding,
+   whose boxes are `STBox` values (`meos-bindings-algebra.md`, section 6). The
+   MEOS-API catalog marks the time types `bindingScope: host` and the other
+   three `bindingScope: none`, and a binding's generator refuses to emit a
+   class of the object model for a type so marked.
 
 ## 6. The numbers of a JSON value
 
