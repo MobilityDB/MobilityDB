@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.10.0 |
+| Version | v0.11.0 |
 | Scope | The two raster types of MEOS, how a raster is read and written, the values a trajectory reads from a raster, a Raquet tile or an array of tiles, and the restriction of a trajectory to where those values lie in a range, in SQL, in MEOS and in every binding |
 | Reference | `meos/include/meos_raster.h`, `meos/src/raster/raster_rtcore.c` (the PostGIS raster), `meos/src/raster/raquet.c` and `meos/src/raster/raquet_gdal.c` (the Raquet tile), `meos/src/raster/raster_quadbin.c` (the pixel walk), `mobilitydb/sql/raster/500_raster.in.sql`, `mobilitydb/test/raster/` |
 
@@ -56,6 +56,15 @@ it: `clip`, `transform`, `rescale`, `reclass`, `setValues`, `mapAlgebra`,
 `slope`, `tpi`, `tri`, `summaryStats`, `valueCount`, `dumpAsPolygons` and the
 others of `500_raster.in.sql`, each the PostGIS function of the same name
 without its `ST_` prefix.
+
+`summaryStats` answers PostGIS's `summarystats` record, which every engine reads
+and writes in the text PostgreSQL writes for it, `(count,sum,mean,stddev,min,max)`
+and `(0,,,,,)` where no pixel is counted (`bandstats_in`, `bandstats_out`), and
+reads field by field with `summarystatsCount`, `summarystatsSum`,
+`summarystatsMean`, `summarystatsStddev`, `summarystatsMin` and
+`summarystatsMax`. The statistics of finite pixels are answered however large
+the sums and squares they are taken from, and a sum beyond the largest double
+is an overflow ([Finite values](meos-finite-values.md)).
 
 ## 4. Reading and writing a raster
 
@@ -219,7 +228,53 @@ with `array_agg`. In MEOS: `raster_value_series`, `raster_tile_value_series`
 and their restrictions, `raster_at_value_series` and the others, each taking
 the rasters, a `Span` array of their periods and the count.
 
-## 8. Versioning and stability
+## 8. Why the interface is what it is
+
+### 8.1 One raster core in every engine
+
+The processing of a `raster` is the PostGIS raster core, which MEOS carries,
+rather than a reimplementation per engine. A query over a raster therefore
+answers in DuckDB, in a stream of NebulaStream or in a program calling MEOS
+what it answers in PostgreSQL, and a correction to the core reaches every
+engine at once. What MEOS adds is what the core lacks: the reading of a raster
+along a trajectory, the restrictions, the series of section 7, and the
+writers of section 4.
+
+### 8.2 A raster that changes in time is rows, not a temporal type
+
+A temporal type interpolates between its instants and holds every instant in
+one value. Neither fits a raster archive: nothing interpolates between two
+acquisitions, and one value would carry the pixels of every acquisition. A
+series of rows keeps each raster its own value, indexed by its period and its
+extent, and the query passes only the rows the trajectory meets (section 7).
+
+### 8.3 A Raquet file is read by the engine that reads Parquet
+
+MEOS decodes one row of a Raquet file into a tile (`raquetFromRow`) and does
+not read or write a whole file. Every engine that holds Raquet data already
+scans Parquet, DuckDB's Parquet reader, Spark's, PostgreSQL through a foreign
+table, and a reader in MEOS would add a dependency, Apache Arrow, that no
+engine needs to read the file. The row is the boundary every engine shares.
+
+### 8.4 The writers are safe to call at the same time
+
+The PostGIS core writes a raster through GDAL to one fixed in-memory file,
+which two calls running at the same time would overwrite. MEOS writes each
+call to a file of its own in GDAL's in-memory file system, named by the
+address of a local of the call, and holds GDAL's error handler only for the
+duration of each GDAL call (`meos_gdal_enter`, `meos_gdal_leave`), so a host
+that uses GDAL itself keeps its own handler. The creation options are an array
+of `KEY=VALUE` texts in SQL and in MEOS, as GDAL takes them.
+
+### 8.5 Every engine writes the same documents
+
+The CoverageJSON writers, of a raster, a tile and the values a trajectory reads,
+are MEOS functions, so every engine writes the same document for the same
+value, and the service publishing a raster collection writes it through them.
+The `summarystats` record is read and written in the text PostgreSQL writes, so
+the statistics print alike in every engine.
+
+## 9. Versioning and stability
 
 The minor number rises with each part of the interface master gains, the
 patch number with corrections of wording.
@@ -236,23 +291,15 @@ patch number with corrections of wording.
 | v0.8.0 | The values read at one place written as a CoverageJSON `Point` or `PointSeries` |
 | v0.9.0 | The creation options of the GDAL writers taken in MEOS as an array of texts, as SQL and GDAL take them |
 | v0.10.0 | The CoverageJSON writers in MEOS write the size of their string, the terminating null character included, as every string MEOS returns |
+| v0.11.0 | The `summarystats` record read and written in every engine and its statistics answered for every finite pixel; why the interface is what it is (section 8); the consumers named |
 
-## 9. Out of scope
-
-Future: each of these is added here with its version.
-
-- A Raquet file read as its tiles and written from them, through GDAL's
-  Parquet driver.
-
-- MobilityAPI publishing a raster collection through OGC API – Coverages,
-  its queries along a path through OGC API – Environmental Data Retrieval,
-  and the values a moving feature reads as a temporal property of OGC API –
-  Moving Features.
+## 10. Out of scope
 
 Not specified: the processing functions of section 3 beyond their PostGIS
-definitions, which PostGIS's documentation states.
+definitions, which PostGIS's documentation states; the reading and writing of
+a whole Raquet file, which the engine reading Parquet does (section 8.3).
 
-## 10. References
+## 11. References
 
 - [Cells and trajectories](meos-cell-walks.md), the pixel of a position and
   the dating of a crossing.
@@ -264,13 +311,20 @@ definitions, which PostGIS's documentation states.
 - [Raquet](https://github.com/CartoDB/raquet), CARTO's specification of a
   raster as Parquet rows over QUADBIN cells.
 
-## 11. Consumers
+## 12. Consumers
 
 Every binding generated from the MEOS catalog inherits the raster functions
 without code of its own: a `raster` and a `raquet` travel as their WKB, and
-the values a trajectory reads are answered by MEOS.
+the values a trajectory reads are answered by MEOS. MobilityDuck, GoMEOS,
+MEOS.js, MEOS.NET, PyMEOS, JMEOS and the MEOS plugin of MobilityNebula carry
+them; meos-rs carries them once its FFI over MEOS 1.4 is chosen (meos-rs #6).
+MobilityAPI publishes a raster collection as a coverage of OGC API – Coverages
+and answers the queries of OGC API – Environmental Data Retrieval over it
+([MobilityAPI and the OGC APIs](mobilityapi-ogc-api.md), sections 7 and 8), and
+answers the values a moving feature reads from a raster collection beside the
+other measures it derives from the feature's temporal geometry.
 
-## 12. References to the implementation
+## 13. References to the implementation
 
 The source files of the reference line are authoritative. A disagreement
 between this document and the code is a defect of one of them, reported as an

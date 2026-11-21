@@ -69,7 +69,8 @@
 #include "temporal/span.h"
 #include "temporal/tcellindex.h"
 #include "h3/h3index.h"
-#include "h3/th3index_internal.h"  /* h3_cell_boundary_lonlat */
+#include "h3/th3index_internal.h"  /* h3_cell_outline,
+                                     h3_cell_boundary_lonlat */
 
 /*****************************************************************************
  * Static helper: convert a single H3 cell to a geodetic STBox (XY only,
@@ -121,22 +122,29 @@ h3index_pole_cells(int32_t res, H3Index *north, H3Index *south)
 /**
  * @brief Return in the last argument the bounds of the box of an H3 cell:
  * xmin, ymin, xmax, ymax, in degrees
+ * @details The box bounds the region of the cell, the one its canonical
+ * outline encloses (#h3_cell_outline), which decides the cell holding a
+ * point and whether the cell meets a box: the outline states a vertex two
+ * neighbours share once for both, where the boundary of a cell
+ * (#h3_cell_boundary_lonlat, the points of `cellToBoundary`) states it
+ * for each cell from the formula of that cell
  * @return False on an error of the H3 library, which it raises
  */
 static bool
 th3index_cell_bounds(H3Index cell, double *bounds)
 {
-  double lons[H3_BOUNDARY_MAX], lats[H3_BOUNDARY_MAX];
-  int n = h3_cell_boundary_lonlat(cell, lons, lats);
-  if (n < 0)
+  DggsOutline o;
+  if (! h3_cell_outline(cell, &o))
+  {
+    /* The error the library gives an index that is not a cell */
+    double lons[H3_BOUNDARY_MAX], lats[H3_BOUNDARY_MAX];
+    h3_cell_boundary_lonlat(cell, lons, lats);
     return false;
+  }
   /* A cell holding a pole reaches it and spans every longitude, which its
-   * boundary vertices do not state */
-  H3Index north, south;
-  h3index_pole_cells(getResolution(cell), &north, &south);
-  /* cppcheck-suppress uninitvar */
-  dggs_lonlat_boundary_set_box(lons, lats, n, north == cell,
-    south == cell, &bounds[0], &bounds[1], &bounds[2], &bounds[3]);
+   * vertices do not state */
+  dggs_lonlat_boundary_set_box(o.lon, o.lat, o.count, o.pole == 1,
+    o.pole == -1, &bounds[0], &bounds[1], &bounds[2], &bounds[3]);
   return true;
 }
 

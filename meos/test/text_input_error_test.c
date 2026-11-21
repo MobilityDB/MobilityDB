@@ -165,6 +165,31 @@ int main(void)
   check(pose_in_v, "Point(1 1),Pose Point(1 1), 0.5)", false);
   check(pose_in_v, "Point(1 1),Pose(Point(1 1), 0.5)", false);
 
+  /* Any text before the keyword, a geometry of each kind followed by each
+   * separator and a well-formed planar or spatial pose, is refused */
+  const char *prefixes[] = {"Point(1 1)", "SRID=4326;Point(1 1)",
+    "Point Z(1 1 1)", "Linestring(0 0, 1 1)",
+    "Polygon((0 0, 1 0, 1 1, 0 0))", "abc", ""};
+  const char *separators[] = {",", ", ", ";", " ", ""};
+  const char *poses[] = {"Pose(Point(1 1), 0.5)",
+    "GeodPose(Point(1 1), 0.5)", "Pose(Point Z(1 1 1), 1, 0, 0, 0)"};
+  char str[256];
+  for (int p = 0; p < 7; p++)
+    for (int s = 0; s < 5; s++)
+      for (int k = 0; k < 3; k++)
+      {
+        /* With nothing before it but white space, the pose itself is read,
+         * as white space may start any value */
+        if (p == 6 && (s == 3 || s == 4))
+          continue;
+        snprintf(str, sizeof(str), "%s%s%s", prefixes[p], separators[s],
+          poses[k]);
+        check(pose_in_v, str, false);
+      }
+  check(pose_in_v, "GeodPose(Point(1 1), 0.5)", true);
+  check(pose_in_v, "SRID=4326;Pose(Point Z(1 1 1), 1, 0, 0, 0)", true);
+  check(pose_in_v, " Pose(Point(1 1), 0.5)", true);
+
   /* The span set, after its spans are read: the closing brace missing, input
    * after it */
   check(intspanset_in_v, "{[1, 2]", false);

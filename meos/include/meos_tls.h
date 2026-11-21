@@ -75,9 +75,10 @@
  * The slot of a key in a per-thread cache of 2^bits entries, direct-mapped
  * by the high bits of the key times 2^64 over the golden ratio (Fibonacci
  * hashing), which spread keys differing in their low bits, as the indices
- * of neighbouring cells do. The caches of the latitudes of QUADBIN rows, of
- * the corners of S2 cells and of the points of H3 cells place their entries
- * by it. A macro, so the header names no integer type: the key is read as
+ * of neighbouring cells do. Every per-thread cache of values a key alone
+ * determines places its entries by it, a key of several words mixed into
+ * one first (the specification of the caches, doc/specs/meos-caches.md,
+ * rule 7). A macro, so the header names no integer type: the key is read as
  * the uint64 of the unit expanding it, PostgreSQL's or pg_basetypes.h's.
  */
 #define MEOS_CACHE_SLOT(key, bits) \
