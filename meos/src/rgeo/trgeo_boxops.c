@@ -275,7 +275,10 @@ trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
  * of a temporal rigid geometry sequence
  * @details The box is the one #trgeoinstarr_compute_bbox gives the sequence,
  * so a segment where the geometry turns holds the geometry at every instant
- * of the segment, not only at its ends
+ * of the segment, not only at its ends. Its period is that of the slice as
+ * #tsequence_set_bbox_slice states it: a bound interior to the sequence is
+ * inclusive, and a bound at an end of the sequence carries the inclusivity
+ * the sequence gives that end, so the box lies in the box of the sequence
  * @param[in] geom Reference geometry of the sequence
  * @param[in] seq Temporal sequence
  * @param[in] first,last Positions of the first and last instants
@@ -296,6 +299,9 @@ trgeoseq_slice_stbox(const GSERIALIZED *geom, const TSequence *seq, int first,
   memset(box, 0, sizeof(STBox));
   trgeoinstarr_compute_bbox(geom, (TInstant **) instants, count,
     MEOS_FLAGS_GET_INTERP(seq->flags), box);
+  box->period.lower_inc = (first == 0) ? seq->period.lower_inc : true;
+  box->period.upper_inc = (last == seq->count - 1) ?
+    seq->period.upper_inc : true;
   pfree(instants);
   return;
 }
