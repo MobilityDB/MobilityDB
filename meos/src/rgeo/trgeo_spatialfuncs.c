@@ -1154,8 +1154,8 @@ trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_rgeo_accessor
- * @brief Return the length traversed by the centroid of a temporal rigid
- * geometry
+ * @brief Return the length traversed by the position of the pose of a
+ * temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  * @errval DBL_MAX
  * @csqlfn #Trgeometry_length()
@@ -1174,8 +1174,8 @@ trgeometry_length(const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_accessor
- * @brief Return the cumulative length traversed by the centroid of a temporal
- * rigid geometry
+ * @brief Return the cumulative length traversed by the position of the pose
+ * of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  * @csqlfn #Trgeometry_cumulative_length()
  */
@@ -1193,7 +1193,8 @@ trgeometry_cumulative_length(const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_accessor
- * @brief Return the speed of the centroid of a temporal rigid geometry
+ * @brief Return the speed of the position of the pose of a temporal rigid
+ * geometry
  * @param[in] temp Temporal rigid geometry
  * @csqlfn #Trgeometry_speed()
  */
@@ -1233,8 +1234,8 @@ trgeometry_angular_speed(const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_accessor
- * @brief Return the time-weighted centroid of the centroid trajectory of a
- * temporal rigid geometry
+ * @brief Return the time-weighted centroid of the trajectory of the position
+ * of the pose of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  * @csqlfn #Trgeometry_twcentroid()
  */
