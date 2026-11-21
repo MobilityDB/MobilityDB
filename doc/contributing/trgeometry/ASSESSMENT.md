@@ -131,16 +131,17 @@ refuse, as the rule states for an operation comparing values. A comment of
 
 ## Defects, which the manual should not state
 
-Each is a call that should answer, or an error that misleads, so its pull request fixes it.
+Each row is a call that should answer, or an error that misleads, with the pull request that fixes
+it on master and the regression test of `mobilitydb/test/rgeo` that holds the fix.
 
-| Call | What happens |
-|---|---|
-| A literal with an SRID before the pose | `Polygon(...);SRID=25832;Pose(...)` answers with no SRID, and a line break after the SRID is a parse error |
-| `atStbox`, `minusStbox` with a box of time alone | "The stbox must have X dimension" |
-| `stops` | All 29 calls fail: "Sequence must have a spatial point base type", or the interpolation error, and over a `tpose` too; `CREATE FUNCTION` declares it |
-| `tIntersects`, `tDisjoint` of a 3D surface | 208 calls fail with an internal message: "lwgeom_set_geodetic: unsupported geom type: PolyhedralSurface" |
-| `round(x, 1)` of a 3D rotation | "Rotation quaternion must be of unit norm", since each coordinate is rounded alone; 6 digits answer |
-| `tDistance` of a 3D value and a 3D `tgeompoint` | "The arguments must be of the same dimensionality", although both have Z |
+| Call | The defect | Fixed by |
+|---|---|---|
+| A literal with an SRID before the pose | `Polygon(...);SRID=25832;Pose(...)` answers with no SRID, and a line break after the SRID is a parse error | TG6, #3521 (`150_trgeo`) |
+| `atStbox`, `minusStbox` with a box of time alone | "The stbox must have X dimension" | TG6, #3522 (`153_trgeo_spatialfuncs`) |
+| `stops` | All 29 calls fail: "Sequence must have a spatial point base type", or the interpolation error, and over a `tpose` too | TG7, #3540 |
+| `tIntersects`, `tDisjoint` of a 3D surface | 208 calls fail with an internal message: "lwgeom_set_geodetic: unsupported geom type: PolyhedralSurface" | TG8, #3543 |
+| `round(x, 1)` of a 3D rotation | "Rotation quaternion must be of unit norm", since each coordinate is rounded alone | TG9, #3520 (`150_trgeo`: the rotation is normalized) |
+| `tDistance` of a 3D value and a 3D `tgeompoint` | "The arguments must be of the same dimensionality", although both have Z | TG10, #3519 (`172_trgeo_distance_tpoint`: "The trgeometry cannot have Z dimension", the refusal of TG19) |
 
 ## Related subjects
 
