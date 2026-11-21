@@ -66,6 +66,8 @@
 #include <meos_raster.h>
 #include <miscadmin.h>
 #include <pgtypes.h>
+#include <pg_int.h>
+#include <utils/float.h>
 #include <utils/datetime.h>
 #include <stringbuffer.h>
 #include "geo/geo_funcs.h"
@@ -2785,6 +2787,140 @@ raster_set_values(const Raster *rast, int band, int x, int y, int width,
   return result;
 }
 
+/* The magnitude, as a power of two, below which the values of the statistics
+ * are read: their deviations then square below 2^898, and summed over as many
+ * pixels as a 64-bit count holds they stay below 2^962, within the doubles */
+#define BANDSTATS_SCALED_EXP 448
+
+/**
+ * @brief Return the power of two by which values of magnitude up to @p maxabs
+ * are divided so that the statistics taken from them stay within the doubles,
+ * 0 where they do as they are
+ * @param[in] maxabs Largest magnitude of the values, a finite double
+ */
+static int
+bandstats_scale(double maxabs)
+{
+  if (! (maxabs > 0.0))
+    return 0;
+  int scale = ilogb(maxabs) - BANDSTATS_SCALED_EXP;
+  return scale > 0 ? scale : 0;
+}
+
+/**
+ * @brief Read every pixel of a band as rt_band_get_summary_stats reads all of
+ * them, each value divided by 2^scale
+ * @details The same pixels in the same order, the same one-pass sum, mean and
+ * sum of squared deviations, and the same cases of an empty band and of a band
+ * whose every pixel is nodata, so that the statistics are those the raster
+ * core takes, divided by a power of two, which is exact. The running count,
+ * mean and sum of squared deviations of the rasters read before are carried
+ * on where @p cK is not NULL, as the raster core carries its coverage ones
+ * @param[in] band Band
+ * @param[in] exclude_nodata True to leave the nodata pixels out
+ * @param[in] scale Power of two the values are divided by
+ * @param[in,out] cK,cM,cQ Running count, mean and sum of squared deviations,
+ * or NULL
+ * @param[out] count,sum,q,min,max Count, sum and sum of squared deviations of
+ * the pixels of the band, the sum and the deviations divided by 2^scale, and
+ * the smallest and largest of their values as they are
+ */
+static void
+band_stats_scaled(rt_band band, bool exclude_nodata, int scale, uint64_t *cK,
+  double *cM, double *cQ, uint32_t *count, double *sum, double *q,
+  double *min, double *max)
+{
+  *count = 0;
+  *sum = *q = *min = *max = 0.0;
+  uint16_t width = rt_band_get_width(band), height = rt_band_get_height(band);
+  if (width < 1 || height < 1)
+    return;
+  double nodata = 0.0;
+  if (rt_band_get_hasnodata_flag(band))
+    rt_band_get_nodata(band, &nodata);
+  else
+    exclude_nodata = false;
+  if (rt_band_get_isnodata_flag(band))
+  {
+    if (! exclude_nodata)
+    {
+      *count = (uint32_t) width * height;
+      *min = *max = nodata;
+      *sum = *count * ldexp(nodata, -scale);
+    }
+    return;
+  }
+  uint32_t k = 0;
+  double M = 0.0, Q = 0.0;
+  for (uint16_t x = 0; x < width; x++)
+  {
+    for (uint16_t y = 0; y < height; y++)
+    {
+      double value;
+      int isnodata = 0;
+      if (rt_band_get_pixel(band, x, y, &value, &isnodata) != ES_NONE ||
+          (exclude_nodata && isnodata))
+        continue;
+      double v = ldexp(value, -scale);
+      k++;
+      *sum += v;
+      if (k == 1)
+      {
+        Q = 0.0;
+        M = v;
+      }
+      else
+      {
+        Q += (((k - 1) * pow(v - M, 2)) / k);
+        M += ((v - M) / k);
+      }
+      if (cK)
+      {
+        (*cK)++;
+        if (*cK == 1)
+        {
+          *cQ = 0.0;
+          *cM = v;
+        }
+        else
+        {
+          *cQ += (((*cK - 1) * pow(v - *cM, 2)) / *cK);
+          *cM += ((v - *cM) / *cK);
+        }
+      }
+      if (k == 1)
+        *min = *max = value;
+      else
+      {
+        if (value < *min)
+          *min = value;
+        if (value > *max)
+          *max = value;
+      }
+    }
+  }
+  *count = k;
+  *q = Q;
+}
+
+/**
+ * @brief Bring the sum, the mean and the sum of squared deviations of the
+ * state of the statistics aggregate to a larger power of two, exactly
+ * @param[in,out] state State
+ * @param[in] scale Power of two, kept where it is not larger than the state's
+ */
+static void
+rasterstatsstate_rescale(RasterStatsState *state, int scale)
+{
+  if (scale <= state->scale)
+    return;
+  int shift = scale - state->scale;
+  state->sum = ldexp(state->sum, -shift);
+  state->mean = ldexp(state->mean, -shift);
+  state->q = ldexp(state->q, -2 * shift);
+  state->scale = scale;
+}
+
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return what the pixels of a raster band amount to
@@ -2842,9 +2978,9 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
    * across rasters, so the three coverage accumulators are unstated */
   rt_bandstats stats = rt_band_get_summary_stats(rtband,
     exclude_nodata ? 1 : 0, 1.0, 0, NULL, NULL, NULL);
-  raster_destroy(raster);
   if (! stats)
   {
+    raster_destroy(raster);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Could not summarize band %d of the raster", band);
     return NULL;
@@ -2858,6 +2994,7 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
    * an answer rather than an error; the statistics of no pixels have no mean */
   if (stats->count < 1)
   {
+    raster_destroy(raster);
     rtdealloc(stats);
     return NULL;
   }
@@ -2869,6 +3006,26 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
   result->stddev = stats->stddev;
   result->min = stats->min;
   result->max = stats->max;
+  /* Finite pixels whose sum or squared deviations leave the doubles are read
+   * again divided by a power of two, and the statistics multiplied back: a
+   * finite answer is answered, and a sum beyond DBL_MAX is an overflow */
+  if (! isfinite(stats->sum) || ! isfinite(stats->stddev))
+  {
+    int scale = bandstats_scale(fmax(fabs(stats->min), fabs(stats->max)));
+    uint32_t count;
+    double sum, q, min, max;
+    band_stats_scaled(rtband, exclude_nodata, scale, NULL, NULL, NULL, &count,
+      &sum, &q, &min, &max);
+    result->sum = ldexp(sum, scale);
+    result->mean = ldexp(sum / count, scale);
+    result->stddev = ldexp(sqrt(q / count), scale);
+    if (! ensure_finite_result(result->sum))
+    {
+      pfree(result);
+      result = NULL;
+    }
+  }
+  raster_destroy(raster);
   rtdealloc(stats);
   return result;
 }
@@ -2979,6 +3136,213 @@ bandstats_max(const BandStats *stats, double *result)
     return false;
   *result = stats->max;
   return true;
+}
+
+/**
+ * @brief Read one field of a summarystats record into a buffer, as the
+ * PostgreSQL function @p record_in reads a column: up to the next comma or
+ * closing parenthesis outside double quotes, a backslash taking the next
+ * character as it is and a doubled double quote inside quotes standing for one
+ * @param[in,out] str Text, advanced past the field
+ * @param[out] buf Buffer as long as the text, which receives the field
+ * @param[out] isnull True where the field is empty, a NULL column
+ * @return False where the text ends inside the field
+ */
+static bool
+bandstats_field(const char **str, char *buf, bool *isnull)
+{
+  const char *ptr = *str;
+  *isnull = (*ptr == ',' || *ptr == ')');
+  if (*isnull)
+    return true;
+  bool inquote = false;
+  size_t n = 0;
+  while (inquote || ! (*ptr == ',' || *ptr == ')'))
+  {
+    char ch = *ptr++;
+    if (ch == '\0')
+      return false;
+    if (ch == '\\')
+    {
+      if (*ptr == '\0')
+        return false;
+      buf[n++] = *ptr++;
+    }
+    else if (ch == '"')
+    {
+      if (! inquote)
+        inquote = true;
+      else if (*ptr == '"')
+        buf[n++] = *ptr++;
+      else
+        inquote = false;
+    }
+    else
+      buf[n++] = ch;
+  }
+  buf[n] = '\0';
+  *str = ptr;
+  return true;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return raster band statistics from the text of their summarystats
+ * record
+ * @details The text is read as PostgreSQL reads the @p summarystats record of
+ * PostGIS: its six columns count, sum, mean, stddev, min and max are read by
+ * the rule of the PostgreSQL function @p record_in, the count by #int64_in and
+ * the others by #float8_in, and a NULL column, or every column but the count
+ * where it counts no pixel, reads 0, as MobilityDB reads the record of
+ * #raster_summary_stats. As every input of MEOS, a NaN or an infinity is
+ * refused, and so is a count outside the 32 bits of the statistics
+ * @param[in] str String, as #bandstats_out writes it
+ * @errval NULL
+ */
+BandStats *
+bandstats_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  const char *ptr = str;
+  while (*ptr && isspace((unsigned char) *ptr))
+    ptr++;
+  if (*ptr != '(')
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse summarystats value: Missing left parenthesis");
+    return NULL;
+  }
+  ptr++;
+  char *buf = palloc(strlen(str) + 1);
+  int64 count = 0;
+  double fields[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+  bool isnull;
+  for (int i = 0; i < 6; i++)
+  {
+    if (i > 0)
+    {
+      if (*ptr != ',')
+      {
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "Could not parse summarystats value: Too few columns");
+        pfree(buf);
+        return NULL;
+      }
+      ptr++;
+    }
+    if (! bandstats_field(&ptr, buf, &isnull))
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse summarystats value: Unexpected end of input");
+      pfree(buf);
+      return NULL;
+    }
+    if (isnull)
+      continue;
+    /* The largest values are values of the domain, so a failed read is told
+     * by the error number */
+    int last_errno = meos_errno_reset();
+    if (i == 0)
+      count = int64_in(buf);
+    else
+      fields[i - 1] = float8_in(buf);
+    if (meos_errno() || (i > 0 && ! ensure_finite(fields[i - 1])))
+    {
+      pfree(buf);
+      return NULL;
+    }
+    meos_errno_restore(last_errno);
+  }
+  pfree(buf);
+  if (*ptr != ')')
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse summarystats value: Too many columns");
+    return NULL;
+  }
+  ptr++;
+  while (*ptr && isspace((unsigned char) *ptr))
+    ptr++;
+  if (*ptr)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse summarystats value: Junk after right parenthesis");
+    return NULL;
+  }
+  if (count < 0 || count > UINT32_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "The count of the statistics must lie between 0 and %u", UINT32_MAX);
+    return NULL;
+  }
+  BandStats *result = palloc(sizeof(BandStats));
+  result->count = (uint32_t) count;
+  double *dest[] = {&result->sum, &result->mean, &result->stddev,
+    &result->min, &result->max};
+  for (int i = 0; i < 5; i++)
+    *dest[i] = count == 0 ? 0.0 : fields[i];
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return the text of the summarystats record of raster band
+ * statistics
+ * @details The text PostgreSQL writes for the @p summarystats record of
+ * PostGIS, by the rule of the PostgreSQL function @p record_out, each value
+ * written by #float8out_internal as PostgreSQL writes a double precision
+ * column, and the five statistics NULL where no pixel is counted, as in
+ * `(8,430,53.75,24.968730444297723,10,90)` and `(0,,,,,)`. #bandstats_in
+ * reads it
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
+ * @errval NULL
+ */
+char *
+bandstats_out(const BandStats *stats, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  VALIDATE_NOT_NULL(stats, NULL);
+  if (stats->count == 0)
+    return cstring_size(pstrdup("(0,,,,,)"), size_out);
+  const double fields[5] = {stats->sum, stats->mean, stats->stddev,
+    stats->min, stats->max};
+  /* No value float8out_internal writes holds a character record_out quotes */
+  char *strs[5];
+  size_t len = 0;
+  for (int i = 0; i < 5; i++)
+  {
+    strs[i] = float8out_internal(fields[i]);
+    len += strlen(strs[i]);
+  }
+  /* The count, five commas, the parentheses and the terminating null */
+  size_t total = len + 10 + 8;
+  char *result = palloc(total);
+  snprintf(result, total, "(%u,%s,%s,%s,%s,%s)", stats->count, strs[0],
+    strs[1], strs[2], strs[3], strs[4]);
+  for (int i = 0; i < 5; i++)
+    pfree(strs[i]);
+  return cstring_size(result, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a copy of raster band statistics
+ * @details The copy mirrors #raster_copy over the fixed size of the statistics
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @errval NULL
+ */
+BandStats *
+bandstats_copy(const BandStats *stats)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, NULL);
+  BandStats *result = palloc(sizeof(BandStats));
+  memcpy(result, stats, sizeof(BandStats));
+  return result;
 }
 
 /**
@@ -5899,11 +6263,15 @@ raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
   /* A sample of one is every pixel, and the running mean and sum of squared
    * deviations continue from those of the rasters read before */
   uint64_t count = state->count;
-  rt_bandstats stats = rt_band_get_summary_stats(rtband,
-    state->exclude_nodata ? 1 : 0, 1.0, 0, &count, &state->mean, &state->q);
-  raster_destroy(raster);
+  double mean = state->mean, q = state->q;
+  rt_bandstats stats = (state->scale == 0) ?
+    rt_band_get_summary_stats(rtband, state->exclude_nodata ? 1 : 0, 1.0, 0,
+      &count, &mean, &q) :
+    rt_band_get_summary_stats(rtband, state->exclude_nodata ? 1 : 0, 1.0, 0,
+      NULL, NULL, NULL);
   if (! stats)
   {
+    raster_destroy(raster);
     int nband = state->band;
     if (created)
       pfree(created);
@@ -5911,6 +6279,25 @@ raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
       "Could not summarize band %d of the raster", nband);
     return NULL;
   }
+  double sum = stats->sum;
+  /* Finite pixels whose sum or squared deviations would leave the doubles are
+   * read divided by a power of two, the state brought to it first */
+  if (stats->count > 0 && (state->scale > 0 || ! isfinite(sum) ||
+      ! isfinite(mean) || ! isfinite(q) || ! isfinite(state->sum + sum)))
+  {
+    double maxabs = fmax(fabs(stats->min), fabs(stats->max));
+    if (state->count > 0)
+      maxabs = fmax(maxabs, fmax(fabs(state->min), fabs(state->max)));
+    rasterstatsstate_rescale(state, bandstats_scale(maxabs));
+    count = state->count;
+    mean = state->mean;
+    q = state->q;
+    uint32_t n;
+    double bq, bmin, bmax;
+    band_stats_scaled(rtband, state->exclude_nodata, state->scale, &count,
+      &mean, &q, &n, &sum, &bq, &bmin, &bmax);
+  }
+  raster_destroy(raster);
   /* The values of a band with no pixel to count leave the state as it is */
   if (stats->count > 0)
   {
@@ -5926,8 +6313,10 @@ raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
       if (stats->max > state->max)
         state->max = stats->max;
     }
-    state->sum += stats->sum;
+    state->sum += sum;
     state->count = (uint64) count;
+    state->mean = mean;
+    state->q = q;
   }
   /* The statistics are allocated by the raster core, so its own deallocator
    * releases them */
@@ -5979,12 +6368,20 @@ raster_summary_stats_combinefn(RasterStatsState *state1,
     memcpy(state1, state2, sizeof(RasterStatsState));
     return state1;
   }
-  double n1 = (double) state1->count, n2 = (double) state2->count;
+  /* Both states are brought to the power of two that keeps the combination
+   * within the doubles */
+  double maxabs = fmax(fmax(fabs(state1->min), fabs(state1->max)),
+    fmax(fabs(state2->min), fabs(state2->max)));
+  int scale = Max(Max(state1->scale, state2->scale), bandstats_scale(maxabs));
+  RasterStatsState other = *state2;
+  rasterstatsstate_rescale(state1, scale);
+  rasterstatsstate_rescale(&other, scale);
+  double n1 = (double) state1->count, n2 = (double) other.count;
   double n = n1 + n2;
-  double delta = state2->mean - state1->mean;
+  double delta = other.mean - state1->mean;
   state1->mean += delta * n2 / n;
-  state1->q += state2->q + delta * delta * n1 * n2 / n;
-  state1->sum += state2->sum;
+  state1->q += other.q + delta * delta * n1 * n2 / n;
+  state1->sum += other.sum;
   if (state2->min < state1->min)
     state1->min = state2->min;
   if (state2->max > state1->max)
@@ -6021,11 +6418,20 @@ raster_summary_stats_finalfn(RasterStatsState *state)
   BandStats *result = NULL;
   if (state->count > 0)
   {
+    /* The statistics are multiplied back by the power of two of the state; a
+     * sum beyond DBL_MAX is an overflow */
+    double sum = ldexp(state->sum, state->scale);
+    if (! ensure_finite_result(sum))
+    {
+      pfree(state);
+      return NULL;
+    }
     result = palloc0(sizeof(BandStats));
     result->count = (uint32_t) state->count;
-    result->sum = state->sum;
-    result->mean = state->sum / (double) state->count;
-    result->stddev = sqrt(state->q / (double) state->count);
+    result->sum = sum;
+    result->mean = ldexp(state->sum / (double) state->count, state->scale);
+    result->stddev = ldexp(sqrt(state->q / (double) state->count),
+      state->scale);
     result->min = state->min;
     result->max = state->max;
   }
@@ -6038,9 +6444,10 @@ raster_summary_stats_finalfn(RasterStatsState *state)
  * @brief Return the bytes of the state of the aggregate summarizing the pixels
  * of rasters, read back by #rasterstatsstate_deserialize
  * @details The bytes are the band and whether nodata is left out, followed by
- * the count, the sum, the smallest and largest value, the running mean and
- * the sum of squared deviations, each in the byte order of the machine, as
- * the state crosses only between workers of one server
+ * the count, the sum, the smallest and largest value, the running mean, the
+ * sum of squared deviations and the power of two they are divided by, each in
+ * the byte order of the machine, as the state crosses only between workers of
+ * one server
  * @param[in] state State
  * @param[out] size_out Size of the result in bytes
  * @errval NULL
@@ -6054,7 +6461,9 @@ rasterstatsstate_serialize(const RasterStatsState *state, size_t *size_out)
   int32 band = state->band;
   double values[5] = {state->sum, state->min, state->max, state->mean,
     state->q};
-  size_t size = sizeof(int32) + 1 + sizeof(uint64) + sizeof(values);
+  int32 scale = state->scale;
+  size_t size = sizeof(int32) + 1 + sizeof(uint64) + sizeof(values) +
+    sizeof(int32);
   uint8_t *result = palloc(size);
   uint8_t *ptr = result;
   memcpy(ptr, &band, sizeof(int32));
@@ -6063,6 +6472,8 @@ rasterstatsstate_serialize(const RasterStatsState *state, size_t *size_out)
   memcpy(ptr, &state->count, sizeof(uint64));
   ptr += sizeof(uint64);
   memcpy(ptr, values, sizeof(values));
+  ptr += sizeof(values);
+  memcpy(ptr, &scale, sizeof(int32));
   *size_out = size;
   return result;
 }
@@ -6083,7 +6494,8 @@ rasterstatsstate_deserialize(const uint8_t *bytes, size_t size)
   VALIDATE_NOT_NULL(bytes, NULL);
   int32 band;
   double values[5];
-  if (size != sizeof(int32) + 1 + sizeof(uint64) + sizeof(values))
+  if (size != sizeof(int32) + 1 + sizeof(uint64) + sizeof(values) +
+      sizeof(int32))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The bytes of a statistics state are not of its size");
@@ -6108,6 +6520,15 @@ rasterstatsstate_deserialize(const uint8_t *bytes, size_t size)
   result->max = values[2];
   result->mean = values[3];
   result->q = values[4];
+  ptr += sizeof(values);
+  memcpy(&result->scale, ptr, sizeof(int32));
+  if (result->scale < 0 || result->scale > DBL_MAX_EXP)
+  {
+    pfree(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes of a statistics state are invalid");
+    return NULL;
+  }
   return result;
 }
 
