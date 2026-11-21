@@ -5726,15 +5726,22 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
 }
 
 /*
- * The box of a ring's pieces, an arc's taken as its circle's: a filter that
- * only admits the rings that may hold another (rule 5 of the exact lane)
+ * The two boxes of a ring that tell which rings may lie within others (rule
+ * 5 of the exact lane). The box of its pieces, an arc's taken as its
+ * circle's, holds the ring, so it holds every ring lying within it. The box
+ * of its nodes, along each axis from the smallest upper bound of their
+ * intervals to the largest lower bound, lies within the box of every ring
+ * holding it: each node of a ring lying within another lies within that
+ * one's box and within its own intervals, which therefore reach into that
+ * box. The box of the pieces cannot stand for the ring held, since the
+ * circle of an arc may reach beyond the ring holding the arc
  */
 static void
 arr_ring_box(const Arr *a, const uint32_t *rp, uint32_t from, uint32_t to,
-  double box[4])
+  double box[4], double nodes[4])
 {
-  box[0] = box[2] = INFINITY;
-  box[1] = box[3] = -INFINITY;
+  box[0] = box[2] = nodes[0] = nodes[2] = INFINITY;
+  box[1] = box[3] = nodes[1] = nodes[3] = -INFINITY;
   for (uint32_t k = from; k < to; k++)
   {
     const ArrPiece *pk = &a->pieces[rp[k]];
@@ -5744,6 +5751,14 @@ arr_ring_box(const Arr *a, const uint32_t *rp, uint32_t from, uint32_t to,
       ArrPiece q;
       const ArrPiece *p = arr_piece_at(a, pk, l, &q);
       const Edge *e = &a->e[p->edge];
+      const ArrNode *ends[2] = {&a->nodes[p->from], &a->nodes[p->to]};
+      for (int m = 0; m < 2; m++)
+      {
+        nodes[0] = arr_fmin(nodes[0], ends[m]->bx.hi);
+        nodes[1] = arr_fmax(nodes[1], ends[m]->bx.lo);
+        nodes[2] = arr_fmin(nodes[2], ends[m]->by.hi);
+        nodes[3] = arr_fmax(nodes[3], ends[m]->by.lo);
+      }
       if (arr_is_arc(e))
       {
         Ival r = ival_sqrt(a->cr2[p->edge]);
@@ -5756,7 +5771,6 @@ arr_ring_box(const Arr *a, const uint32_t *rp, uint32_t from, uint32_t to,
       {
         /* The piece's ends, the intervals holding a crossing: the edge of
          * a stretch is the whole of its segment */
-        const ArrNode *ends[2] = {&a->nodes[p->from], &a->nodes[p->to]};
         for (int m = 0; m < 2; m++)
         {
           box[0] = arr_fmin(box[0], ends[m]->bx.lo);
@@ -5931,16 +5945,18 @@ arr_ring_within(const Arr *a, const uint32_t *rp, const uint32_t *roff,
  * The surfaces the rings bound: a ring lying within an odd number of the
  * others is a hole of the innermost of them, which lies within one ring
  * fewer; every other ring is a shell. A ring lies within another only where
- * its box lies within the other's, so the rings asked of each other are the
- * pairs whose boxes meet (#arr_box_pairs), each asked both ways
+ * the box of its nodes lies within the box of the other's pieces
+ * (#arr_ring_box), so the rings asked of each other are the pairs whose
+ * boxes of pieces meet (#arr_box_pairs), each asked both ways
  */
 static ArrangeStatus
 arr_surfaces(const Arr *a, uint32_t nrings, const uint32_t *rp,
   const uint32_t *roff, int32_t *owner)
 {
   double (*box)[4] = palloc(sizeof(double[4]) * Max(nrings, 1u));
+  double (*nbox)[4] = palloc(sizeof(double[4]) * Max(nrings, 1u));
   for (uint32_t i = 0; i < nrings; i++)
-    arr_ring_box(a, rp, roff[i], roff[i + 1], box[i]);
+    arr_ring_box(a, rp, roff[i], roff[i + 1], box[i], nbox[i]);
   uint32_t npairs;
   ArrPair *pairs = arr_box_pairs((const double (*)[4]) box, nrings, &npairs);
   bool *mark = palloc0(sizeof(bool) * Max(a->nnodes, 1u));
@@ -5955,7 +5971,7 @@ arr_surfaces(const Arr *a, uint32_t nrings, const uint32_t *rp,
     {
       uint32_t x = way ? pairs[k].j : pairs[k].i;
       uint32_t y = way ? pairs[k].i : pairs[k].j;
-      const double *bx = box[x], *by = box[y];
+      const double *bx = nbox[x], *by = box[y];
       if (bx[0] < by[0] || bx[1] > by[1] || bx[2] < by[2] || bx[3] > by[3])
         continue;
       int r = arr_ring_within(a, rp, roff, x, y, mark);
@@ -5984,7 +6000,8 @@ arr_surfaces(const Arr *a, uint32_t nrings, const uint32_t *rp,
   for (uint32_t i = 0; i < nrings && st == ARR_ANSWERED; i++)
     if (depth[i] % 2 == 1 && owner[i] < 0)
       st = ARR_SHELLS;
-  pfree(box); pfree(pairs); pfree(mark); pfree(depth); pfree(in_x);
+  pfree(box); pfree(nbox); pfree(pairs); pfree(mark); pfree(depth);
+  pfree(in_x);
   pfree(in_y);
   return st;
 }
