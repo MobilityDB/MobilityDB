@@ -253,7 +253,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `tcbuffer_tempspatialrels.c`, `schema_hook.c`, `tgeo_spatialfuncs.c` and
   `tnpoint_spatialfuncs.c`,
   branch `docs/static-doc-groups` (`1021416be1`),
-  MobilityDB #3882, open.
+  MERGED as MobilityDB #3882 (`944354c396`).
   Every SRID setter reads an SRID as `geo_set_srid` does, refusing `SRID_INVALID` and clamping any
   other as PostGIS does, a value and its box stating one SRID and a cell refusing any SRID but 4326,
   MERGED as MobilityDB #3834 (`4ab3823366`, census `srid-setters-kit` of claude-kits: 39 and 17 of 126
