@@ -11050,6 +11050,112 @@ buffer_curve_walk_back(BufferWalkElem *w, uint32_t n)
 }
 
 /**
+ * @brief Add to an edge array the boundary of the strip of an arc whose
+ * radius R the distance r exceeds, every piece of it exact
+ * @details The segment normal to the arc of half length r runs through the
+ * centre C of the arc, so the strip is two sectors with their apex at C: of
+ * radius R + r over the sweep of the arc, and of radius r - R over the
+ * opposite sweep. Each is bounded counterclockwise by its two radii and its
+ * arc about C, the offset of the arc away from C for the first and the one
+ * toward C, which runs on the far side of C, for the second
+ * (#edges_add_offset_arc), C a point of the root of the circle
+ * (#TangentPoint, member k 2); an arc of a half turn has its two radii on one
+ * line and the union of its two half discs is bounded by one curve along it.
+ * Stretched by r past an end, the square cap
+ * there, the rectangle between the ends of the two offsets there and those
+ * ends pushed by r along the tangent of the circle is added, turning
+ * counterclockwise too. Each of these curves winds once around the points
+ * it bounds and around no other point
+ * @param[in] ea The input arc, its circle read (#exact_arc_bound)
+ * @param[in] ccw Whether the arc runs counterclockwise
+ * @param[in] radius Distance, positive
+ * @param[in] sa,sb Whether the strip is stretched past the start, past the
+ * end
+ * @param[in,out] tps The tangent points, at most thirteen appended at @p ntp
+ * @param[in,out] ntp Number of tangent points
+ * @param[in,out] edges Edges, appended to
+ */
+static void
+buffer_arc_strip_past_centre(const ExactArc *ea, bool ccw, double radius,
+  bool sa, bool sb, TangentPoint *tps, uint32_t *ntp, MeosArray *edges)
+{
+  const double *a = ea->s, *mid = ea->m;
+  TangentPoint *t = &tps[*ntp];
+  uint32_t n = 0;
+  /* C, then the ends of the two offsets at the end of the arc, the second
+   * and third points as #buffer_elem_strip_offsets states them, then those
+   * at its start */
+  TangentPoint *c = &t[n++], *eo = &t[n++], *ei = &t[n++], *so = &t[n++],
+    *si = &t[n++];
+  *c = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 0, 2, 0, ea};
+  *eo = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, 1, 0, ea};
+  *ei = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, 1, 0,
+    ea};
+  *so = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, 0, 0, ea};
+  *si = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, 0, 0,
+    ea};
+  /* The ends in the counterclockwise order of the arc */
+  const TangentPoint *po = ccw ? so : eo, *qo = ccw ? eo : so;
+  const TangentPoint *pi = ccw ? si : ei, *qi = ccw ? ei : si;
+  /* An arc of a half turn, the half circle on its diameter or an arc whose
+   * middle sees its chord at a right angle, (s - m).(e - m) = 0 as
+   * #cert_arc_minor reads it, has its two radii on one line through C, and
+   * the union of its two half discs is bounded by one curve along that line:
+   * the outer offset, the line to the inner one, which runs on the far side
+   * of C, and the line back */
+  const double *e = ea->e;
+  bool diameter = ea->half ||
+    certa_sum2_sign(a[0], mid[0], e[0], mid[0], a[1], mid[1], e[1],
+      mid[1]) == 0;
+  if (diameter)
+  {
+    edges_add_offset_arc(edges, true, po, qo);
+    edges_add_tangent_segment(edges, qo, pi);
+    edges_add_offset_arc(edges, true, pi, qi);
+    edges_add_tangent_segment(edges, qi, po);
+  }
+  else
+  {
+    /* The sector of the sweep, and the one of the opposite sweep */
+    edges_add_tangent_segment(edges, c, po);
+    edges_add_offset_arc(edges, true, po, qo);
+    edges_add_tangent_segment(edges, qo, c);
+    edges_add_tangent_segment(edges, c, pi);
+    edges_add_offset_arc(edges, true, pi, qi);
+    edges_add_tangent_segment(edges, qi, c);
+  }
+  for (int8_t k = 0; k < 2; k++)
+  {
+    if (! (k ? sb : sa))
+      continue;
+    /* Out of the curve along the tangent: counterclockwise past the end of
+     * an arc running so, clockwise past its start */
+    int8_t along = (int8_t) ((k ? 1 : -1) * (ccw ? 1 : -1));
+    TangentPoint *u = &t[n++], *up = &t[n++], *vp = &t[n++], *v = &t[n++];
+    *u = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, k, 0,
+      ea};
+    *up = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, k,
+      along, ea};
+    *vp = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, k,
+      along, ea};
+    *v = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, k, 0,
+      ea};
+    /* From the end away from C past the cap and back: counterclockwise where
+     * the cap lies counterclockwise of the line through the end and C */
+    TangentPoint *r[4] = {u, up, vp, v};
+    for (int i = 0; i < 4; i++)
+    {
+      if (along > 0)
+        edges_add_tangent_segment(edges, r[i], r[(i + 1) % 4]);
+      else
+        edges_add_tangent_segment(edges, r[(i + 1) % 4], r[i]);
+    }
+  }
+  *ntp += n;
+  return;
+}
+
+/**
  * @brief Add to an edge array the boundary of the strip of an arc, the
  * points the segment normal to it of half length the distance sweeps, every
  * piece of it exact: the sibling of #buffer_strip_offsets for an arc
@@ -11062,19 +11168,21 @@ buffer_curve_walk_back(BufferWalkElem *w, uint32_t n)
  * distance past an end, the square cap there, the segment across moves past
  * the end by the distance along the tangent of the circle there and two
  * segments along that tangent join it to the offsets (#TangentPoint, member
- * along). Where the radius R of the arc does not exceed the distance, the
- * normal segment sweeps through C into the points beyond it, which no one
- * curve winds around once with the rest of the strip, so R must exceed the
- * distance by more than the bound on the circle in doubles
+ * along). Where the distance exceeds the radius R of the arc, the normal
+ * segment sweeps through C into the points beyond it, which no one curve
+ * winds around once with the rest of the strip: the strip is then two
+ * sectors about C (#buffer_arc_strip_past_centre). R and the distance must
+ * differ by more than the bound on the circle in doubles
  * @param[in] w The arc
  * @param[in] radius Distance, positive
  * @param[in] sa,sb Whether the strip is stretched past the start, past the
  * end
- * @param[in,out] tps The tangent points, at most eight appended at @p ntp
+ * @param[in,out] tps The tangent points, at most thirteen appended at
+ * @p ntp
  * @param[in,out] arcs The input arcs, one stored where @p ntp halved points
  * @param[in,out] ntp Number of tangent points
  * @param[in,out] edges Edges, appended to
- * @return False where R is not told to exceed the distance, nothing then
+ * @return False where R and the distance are not told apart, nothing then
  * appended
  */
 static bool
@@ -11088,14 +11196,22 @@ buffer_arc_strip_offsets(const BufferWalkElem *w, double radius, bool sa,
     w->half != 0, 0.0, 0.0, 0.0, 0.0};
   double box[4];
   exact_arc_bound(ea, box);
-  if (ea->err < 0.0 ||
-      ! (ea->r - radius > ea->err + 0x1p-50 * (ea->r + radius)))
+  if (ea->err < 0.0)
     return false;
   /* The right of an arc running counterclockwise lies outside it, and
    * running on past its end is running counterclockwise */
   bool ccw = w->half ? w->half > 0 :
     cross_product_sign(a[0], a[1], mid[0], mid[1], a[0], a[1], b[0],
       b[1]) > 0;
+  /* R and the distance told apart by more than the bound on the circle */
+  double margin = ea->err + 0x1p-50 * (ea->r + radius);
+  if (radius - ea->r > margin)
+  {
+    buffer_arc_strip_past_centre(ea, ccw, radius, sa, sb, tps, ntp, edges);
+    return true;
+  }
+  if (! (ea->r - radius > margin))
+    return false;
   int8_t sr = ccw ? 1 : -1;
   TangentPoint *t = &tps[*ntp];
   uint32_t n = 0;
@@ -11206,6 +11322,161 @@ buffer_capped_curve_offsets(const BufferWalkElem *w, uint32_t n,
   return true;
 }
 
+/* The circle of an input arc of the walk of a curve as the tower holds it:
+ * the offset of the arc by a distance of 0 (#tower_circle_of) */
+static void
+buffer_arc_circle_edge(const BufferWalkElem *w, Edge *e)
+{
+  memset(e, 0, sizeof(Edge));
+  e->etype = EDGE_POLYARC;
+  e->centred = true;
+  e->offset = true;
+  e->side = 1;
+  e->radius = 0.0;
+  e->sx = w->p[0][0]; e->sy = w->p[0][1];
+  e->mx = w->p[1][0]; e->my = w->p[1][1];
+  e->ex = w->p[2][0]; e->ey = w->p[2][1];
+  e->diameter = w->half != 0;
+  return;
+}
+
+/**
+ * @brief Return the sense a simple ring of segments and arcs turns in, read
+ * at its point furthest along x, the one furthest along y among those, 1
+ * counterclockwise and -1 clockwise, 0 where it is not told
+ * @details A simple closed curve turns at that point as its interior lies:
+ * to its left where it runs counterclockwise. The point is a vertex of the
+ * ring or the point E = (cx + R, cy) of the circle of an arc holding E
+ * within it. Vertices are compared in their doubles, a vertex and E by the
+ * side of the vertical line through E the vertex lies on and the
+ * horizontal one through the centre (#meet_point_circle_side), two such
+ * points by #tower_circles_right_cmp, every comparison exact. Whether E lies
+ * within its arc is whether it lies on the side of the chord the middle
+ * point does, read on the circle in doubles and its bound
+ * (#exact_arc_bound), and not told within that bound. At E the ring turns
+ * as its arc; at a vertex, as the walk turns there (#walk_turn_sign), a
+ * straight turn or a tie not told
+ */
+static int
+buffer_curve_ring_right_sense(const BufferWalkElem *w, uint32_t n)
+{
+  Edge *circ = palloc(sizeof(Edge) * n);
+  int best = -1;            /* Element whose start vertex or E is best */
+  bool barc = false;        /* The best is the E of an arc */
+  bool tied = false;
+  int result = 0;
+  for (uint32_t k = 0; k < n; k++)
+  {
+    /* The start vertex of element k */
+    const double *v = w[k].p[0];
+    int c;
+    if (best < 0)
+      c = 1;
+    else if (! barc)
+    {
+      const double *b = w[best].p[0];
+      c = (v[0] != b[0]) ? (v[0] > b[0] ? 1 : -1) :
+        (v[1] != b[1]) ? (v[1] > b[1] ? 1 : -1) : 0;
+    }
+    else
+    {
+      MeetPoint m = {MEET_VERTEX, NULL, NULL, 0, v[0], v[1], NULL};
+      c = meet_point_circle_side(&m, &circ[best], true, 1);
+      if (c == 0)
+        c = meet_point_circle_side(&m, &circ[best], false, 0);
+      if (c == 2)
+        goto done;
+    }
+    if (c > 0)
+    {
+      best = (int) k; barc = false; tied = false;
+    }
+    else if (c == 0)
+      tied = true;
+    if (! w[k].arc)
+      continue;
+    /* The point E of the circle of arc k, where the arc holds it */
+    buffer_arc_circle_edge(&w[k], &circ[k]);
+    ExactArc ea = {{w[k].p[0][0], w[k].p[0][1]}, {w[k].p[1][0], w[k].p[1][1]},
+      {w[k].p[2][0], w[k].p[2][1]}, w[k].half != 0, 0.0, 0.0, 0.0, 0.0};
+    double box[4];
+    exact_arc_bound(&ea, box);
+    if (ea.err < 0.0)
+      goto done;
+    /* The centre in doubles, the origin the exact tests measure from */
+    circ[k].cx = ea.cx;
+    circ[k].cy = ea.cy;
+    double ex = ea.cx + ea.r, ey = ea.cy;
+    const double *a = w[k].p[0], *b = w[k].p[2];
+    int within;
+    if (w[k].half)
+      /* A half circle on its diameter from a to b, counterclockwise for 1,
+       * holds the points to the right of a -> b */
+      within = - w[k].half;
+    else
+      within = cross_product_sign(a[0], a[1], b[0], b[1], a[0], a[1],
+        w[k].p[1][0], w[k].p[1][1]);
+    double dx = b[0] - a[0], dy = b[1] - a[1];
+    double crs = dx * (ey - a[1]) - dy * (ex - a[0]);
+    double bound = 2.0 * ea.err * (fabs(dx) + fabs(dy)) +
+      8.0 * DBL_EPSILON * (fabs(dx) + fabs(dy)) *
+      (fabs(ex - a[0]) + fabs(ey - a[1]) + ea.r);
+    if (fabs(crs) <= bound)
+      goto done;
+    if ((crs > 0.0 ? 1 : -1) != within)
+      continue;
+    if (best < 0)
+      c = 1;
+    else if (barc)
+    {
+      c = tower_circles_right_cmp(&circ[k], &circ[best]);
+      if (c == 0)
+        goto done;
+    }
+    else
+    {
+      const double *bv = w[best].p[0];
+      MeetPoint m = {MEET_VERTEX, NULL, NULL, 0, bv[0], bv[1], NULL};
+      int s = meet_point_circle_side(&m, &circ[k], true, 1);
+      if (s == 0)
+        s = meet_point_circle_side(&m, &circ[k], false, 0);
+      c = (s == 2) ? 2 : - s;
+    }
+    if (c == 2)
+      goto done;
+    if (c > 0)
+    {
+      best = (int) k; barc = true; tied = false;
+    }
+    else if (c == 0)
+      tied = true;
+  }
+  if (best < 0 || tied)
+    goto done;
+  if (barc)
+  {
+    /* An arc turns counterclockwise where it runs so */
+    const BufferWalkElem *e = &w[best];
+    result = e->half ? e->half :
+      cross_product_sign(e->p[0][0], e->p[0][1], e->p[1][0], e->p[1][1],
+        e->p[0][0], e->p[0][1], e->p[2][0], e->p[2][1]);
+  }
+  else
+  {
+    uint32_t in = ((uint32_t) best + n - 1) % n, out = (uint32_t) best;
+    const double *pin[3] = {w[in].p[0], w[in].p[1], w[in].p[2]};
+    const double *pout[3] = {w[out].p[0], w[out].p[1], w[out].p[2]};
+    int kin = w[in].arc ? (w[in].half ? 2 * w[in].half : 1) : 0;
+    int kout = w[out].arc ? (w[out].half ? 2 * w[out].half : 1) : 0;
+    int dot;
+    int turn = walk_turn_sign(pin, kin, pout, kout, &dot);
+    result = (turn == 1 || turn == -1) ? turn : 0;
+  }
+done:
+  pfree(circ);
+  return result;
+}
+
 /**
  * @brief Return the sense a ring of segments and arcs turns in, decided
  * exactly, 1 counterclockwise and -1 clockwise, or 0 where it is not told
@@ -11218,7 +11489,8 @@ buffer_capped_curve_offsets(const BufferWalkElem *w, uint32_t n,
  * (#cross_product_sign): where the sum and every arc agree, or the sum is 0
  * and the arcs agree, the area has that sign; elsewhere the segments, whose
  * measures are no rationals of the coordinates, could outweigh the sum, and
- * the sense is not told
+ * the sense is the one the ring turns in at its point furthest right
+ * (#buffer_curve_ring_right_sense)
  */
 static int
 buffer_curve_ring_sense(const BufferWalkElem *w, uint32_t n)
@@ -11250,11 +11522,12 @@ buffer_curve_ring_sense(const BufferWalkElem *w, uint32_t n)
   ptarray_append_point(pa, &p, LW_TRUE);
   int sp = ring_area_sign(pa);
   ptarray_free(pa);
-  if (arcs == 2)
-    return 0;
-  if (sp == 0)
+  if (arcs != 2 && sp == 0)
     return arcs;
-  return (arcs == 0 || arcs == sp) ? sp : 0;
+  if (arcs != 2 && (arcs == 0 || arcs == sp))
+    return sp;
+  /* The sum and the arcs disagree: the sense at the point furthest right */
+  return buffer_curve_ring_right_sense(w, n);
 }
 
 /**

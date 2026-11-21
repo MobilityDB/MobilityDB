@@ -69,6 +69,7 @@
 #include "temporal/span.h"
 #include "temporal/tcellindex.h"
 #include "h3/h3index.h"
+#include "h3/th3index_internal.h"  /* h3_cell_boundary_lonlat */
 
 /*****************************************************************************
  * Static helper: convert a single H3 cell to a geodetic STBox (XY only,
@@ -125,21 +126,16 @@ h3index_pole_cells(int32_t res, H3Index *north, H3Index *south)
 static bool
 th3index_cell_bounds(H3Index cell, double *bounds)
 {
-  CellBoundary bnd;
-  if (! ensure_h3_success(cellToBoundary(cell, &bnd)))
+  double lons[H3_BOUNDARY_MAX], lats[H3_BOUNDARY_MAX];
+  int n = h3_cell_boundary_lonlat(cell, lons, lats);
+  if (n < 0)
     return false;
-  double lons[MAX_CELL_BNDRY_VERTS], lats[MAX_CELL_BNDRY_VERTS];
-  for (int i = 0; i < bnd.numVerts; i++)
-  {
-    lons[i] = radsToDegs(bnd.verts[i].lng);
-    lats[i] = radsToDegs(bnd.verts[i].lat);
-  }
   /* A cell holding a pole reaches it and spans every longitude, which its
    * boundary vertices do not state */
   H3Index north, south;
   h3index_pole_cells(getResolution(cell), &north, &south);
   /* cppcheck-suppress uninitvar */
-  dggs_lonlat_boundary_set_box(lons, lats, bnd.numVerts, north == cell,
+  dggs_lonlat_boundary_set_box(lons, lats, n, north == cell,
     south == cell, &bounds[0], &bounds[1], &bounds[2], &bounds[3]);
   return true;
 }

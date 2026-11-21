@@ -117,7 +117,9 @@ typedef struct
  * arc ends: the arc's points fix its circle, of centre C, and the point lies
  * on the circle of radius r1 about its start (@p k 0) or its end (@p k 1), on
  * the line through C, away from C for @p side 1 and toward it for -1: the end
- * of the arc of radius R + side r1 about C. No double holds it in general.
+ * of the arc of radius R + side r1 about C. With @p k 2 it is C itself, the
+ * apex of the strip of an arc no larger than the distance. No double holds it
+ * in general.
  * The arc is held out of line, as an edge holds its tangent points, so that
  * a point where a tangent touches a circle keeps its size
  */
@@ -129,7 +131,9 @@ typedef struct
                                       first centre to the second, -1 for the
                                       one on its right */
   int8_t k;                      /**< 0 for the point on the first circle, 1
-                                      for the one on the second */
+                                      for the one on the second; for the end
+                                      of the offset of an arc, 0 its start, 1
+                                      its end and 2 the centre of the arc */
   int8_t along;                  /**< 0 for the point on the circle, 1 or -1
                                       for the one past it by the radius along
                                       C2 - C1 or C1 - C2; for the end of the
@@ -1772,6 +1776,30 @@ extern double vector_lon_nearest(const int64 *v);
 extern double vector_lat_nearest(const int64 *v);
 extern double rational_nearest(int64 num, int64 den);
 extern double mercator_lat_nearest(double r);
+
+/**
+ * @brief A point of a face of an icosahedral gnomonic grid, the vertex of an
+ * H3 cell of decision D8 of the cell walks (geo_trig.c)
+ * @details The constants are the decimal literals of the grid read exactly;
+ * a point of the lattice is (2x, 2y / sqrt 3) of its planar point (x, y)
+ */
+typedef struct
+{
+  const char *center[3];  /**< Center of the face, a vector */
+  const char *axis;       /**< Azimuth of its first axis, in radians */
+  const char *rotation;   /**< Turn of the angle of the point, or NULL */
+  const char *gnomonic;   /**< Gnomonic length of the unit at resolution 0 */
+  int res;                /**< Resolution, each one a factor 1 / sqrt 7 */
+  bool substrate;         /**< The grid is the substrate, a third of it */
+  int64 p0[2], p1[2];     /**< Points of the lattice */
+  int64 e0[2], e1[2];     /**< Ends of a face edge, on the lattice */
+  bool crossing;          /**< The point is the crossing of p0 p1 with e0 e1 */
+} GnomonicFacePoint;
+
+extern void gnomonic_face_point_nearest(const GnomonicFacePoint *p,
+  double *lon, double *lat);
+extern void ddb_gnomonic_face_point_nearest(const GnomonicFacePoint *p,
+  double *lon, double *lat, bool *decided);
 extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den);
 

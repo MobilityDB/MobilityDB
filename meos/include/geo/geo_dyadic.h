@@ -746,6 +746,21 @@ two_sum(double a, double b, double *x, double *y)
 }
 
 /**
+ * @brief Split the sum of two doubles, the first at least the second in
+ * magnitude, into its rounded value and the error of that rounding, which
+ * together are the sum exactly
+ * @details Dekker's sum in three operations, where #two_sum takes six and
+ * needs no order, as #dx_filter reads the rounding error of a pair: exact
+ * when |a| >= |b| or a is 0
+ */
+static inline void
+fast_two_sum(double a, double b, double *x, double *y)
+{
+  *x = a + b;
+  *y = b - (*x - a);
+}
+
+/**
  * @brief Set the three coordinates of `q - p`, exact as two doubles
  */
 static pg_attribute_always_inline void
@@ -779,9 +794,56 @@ ddb_is_double(DDBound a)
 }
 
 /**
+ * @brief Return the product of two pairs of doubles, the value of #ddb_mul
+ * without its bound, which is left 0: the error is the caller's to state
+ */
+static pg_attribute_always_inline DDBound
+dd_mul(DDBound a, DDBound b)
+{
+  DDBound r;
+  double p, pe;
+  two_product(a.hi, b.hi, &p, &pe);
+  pe += a.hi * b.lo + a.lo * b.hi;
+  /* |pe| is at most about 2^-52 |p|, and 0 where p is: p leads */
+  fast_two_sum(p, pe, &r.hi, &r.lo);
+  r.e = 0.0;
+  return r;
+}
+
+/**
+ * @brief Return the sum of two pairs of doubles, the value of #ddb_add
+ * without its bound, which is left 0: the error is the caller's to state
+ */
+static pg_attribute_always_inline DDBound
+dd_add(DDBound a, DDBound b)
+{
+  DDBound r;
+  double s, se;
+  two_sum(a.hi, b.hi, &s, &se);
+  se += a.lo + b.lo;
+  two_sum(s, se, &r.hi, &r.lo);
+  r.e = 0.0;
+  return r;
+}
+
+/**
+ * @brief Return the difference of two pairs of doubles, the value of
+ * #ddb_sub without its bound (#dd_add)
+ */
+static pg_attribute_always_inline DDBound
+dd_sub(DDBound a, DDBound b)
+{
+  b.hi = - b.hi;
+  b.lo = - b.lo;
+  return dd_add(a, b);
+}
+
+/**
  * @brief Return the product of two bounded values, with its bound
  * @details A product with an exact zero is an exact zero, and the product of
- * two doubles held exactly is exact as two doubles (#two_product)
+ * two doubles held exactly is exact as two doubles (#two_product); otherwise
+ * the value is #dd_mul's and the rounding of its last sum lies within
+ * DDB_EPS of the product held
  */
 static pg_attribute_always_inline DDBound
 ddb_mul(DDBound a, DDBound b)
@@ -799,18 +861,16 @@ ddb_mul(DDBound a, DDBound b)
     r.e = (fabs(r.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
     return r;
   }
-  double p, pe;
-  two_product(a.hi, b.hi, &p, &pe);
-  pe += a.hi * b.lo + a.lo * b.hi;
-  two_sum(p, pe, &r.hi, &r.lo);
+  r = dd_mul(a, b);
   double ma = fabs(a.hi) + fabs(a.lo), mb = fabs(b.hi) + fabs(b.lo);
   r.e = ma * b.e + mb * a.e + a.e * b.e + fabs(a.lo * b.lo) +
-    DDB_EPS * fabs(p) + DDB_TINY;
+    DDB_EPS * fabs(r.hi) * DDB_UP + DDB_TINY;
   return r;
 }
 
 /**
  * @brief Return the sum of two bounded values, with its bound
+ * @details The value is #dd_add's
  */
 static pg_attribute_always_inline DDBound
 ddb_add(DDBound a, DDBound b)
@@ -821,18 +881,14 @@ ddb_add(DDBound a, DDBound b)
     return a;
   if (ddb_is_zero(a))
     return b;
-  double s, se;
-  two_sum(a.hi, b.hi, &s, &se);
   DDBound r;
   if (ddb_is_double(a) && ddb_is_double(b))
   {
-    r.hi = s;
-    r.lo = se;
+    two_sum(a.hi, b.hi, &r.hi, &r.lo);
     r.e = 0.0;
     return r;
   }
-  se += a.lo + b.lo;
-  two_sum(s, se, &r.hi, &r.lo);
+  r = dd_add(a, b);
   r.e = a.e + b.e + DDB_EPS * (fabs(a.hi) + fabs(b.hi)) + DDB_TINY;
   return r;
 }

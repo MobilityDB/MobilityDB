@@ -789,7 +789,8 @@ quadbin_tile_index(double f, double n)
 }
 
 /** @brief Number of entries of #quadbin_lat_cache, a power of 2 */
-#define QUADBIN_LAT_CACHE 1024
+#define QUADBIN_LAT_CACHE_BITS 10
+#define QUADBIN_LAT_CACHE (1 << QUADBIN_LAT_CACHE_BITS)
 
 /** @brief The latitudes of rows read last, per thread, by the bits of their
  * row */
@@ -818,8 +819,7 @@ quadbin_row_latitude(double y, double n)
   double r = 1.0 - 2.0 * y / n;
   uint64_t bits;
   memcpy(&bits, &r, sizeof(bits));
-  int k = (int) ((bits * UINT64CONST(0x9E3779B97F4A7C15)) >> 54) &
-    (QUADBIN_LAT_CACHE - 1);
+  int k = MEOS_CACHE_SLOT(bits, QUADBIN_LAT_CACHE_BITS);
   if (! quadbin_lat_cache[k].used || quadbin_lat_cache[k].bits != bits)
   {
     quadbin_lat_cache[k].lat = mercator_lat_nearest(r);

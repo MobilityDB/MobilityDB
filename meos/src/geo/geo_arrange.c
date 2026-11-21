@@ -2118,6 +2118,9 @@ arr_tangent_on(const TangentPoint *tp, const Edge *c)
    * distance about that end of the arc (#TangentPoint, member arc) */
   if (tp->arc)
   {
+    /* The centre of an arc lies on no circle of the distance */
+    if (tp->k == 2)
+      return false;
     const double *a = tp->k ? tp->arc->e : tp->arc->s;
     return tp->r1 == c->radius && a[0] == c->cx && a[1] == c->cy;
   }
