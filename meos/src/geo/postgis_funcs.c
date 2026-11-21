@@ -11023,7 +11023,8 @@ mec_points(POINT2D *pts, int count)
 /**
  * @brief Return how the radius of the smallest circle enclosing an array of
  * points, which it shuffles, compares with a distance, decided exactly: -1
- * where it is smaller, 0 where they are equal, 1 where it is larger
+ * where it is smaller, 0 where they are equal, 1 where it is larger, and
+ * the points defining that circle
  * @details The circle is held as the points defining it (#mec_welzl_support)
  * and never constructed: a single point has radius zero, the radius of a
  * diameter from A to B is compared through |B - A|^2 - 4 r^2, and that of
@@ -11033,15 +11034,22 @@ mec_points(POINT2D *pts, int count)
  * @param[in,out] pts Points, shuffled
  * @param[in] count Number of points, at least one
  * @param[in] radius Distance, not negative
+ * @param[out] support The points defining the circle: one point, the two
+ * ends of a diameter, or three points that turn
+ * @param[out] nsupport Number of those points
  * @note Exact where no product of six coordinate differences overflows or
  * underflows
  */
 int
-mec_radius_cmp(POINT2D *pts, int count, double radius)
+mec_radius_cmp_support(POINT2D *pts, int count, double radius,
+  POINT2D *support, int *nsupport)
 {
-  assert(pts); assert(count > 0); assert(radius >= 0.0);
+  assert(pts); assert(count > 0); assert(radius >= 0.0); assert(support);
+  assert(nsupport);
   mec_shuffle(pts, count);
   MecSupport S = mec_welzl_support(pts, count);
+  memcpy(support, S.p, sizeof(POINT2D) * S.n);
+  *nsupport = S.n;
   if (S.n == 1)
     return (radius > 0.0) ? -1 : 0;
   if (S.n == 2)
@@ -11060,6 +11068,19 @@ mec_radius_cmp(POINT2D *pts, int count, double radius)
   const double m[1] = {radius};
   exact_sum_set(&e.s[6], m, 1);
   return polynomial_sign_exact(e.s, MEC_RADIUS_TERMS, 11);
+}
+
+/**
+ * @brief Return how the radius of the smallest circle enclosing an array of
+ * points, which it shuffles, compares with a distance, decided exactly
+ * (#mec_radius_cmp_support)
+ */
+int
+mec_radius_cmp(POINT2D *pts, int count, double radius)
+{
+  POINT2D support[3];
+  int nsupport;
+  return mec_radius_cmp_support(pts, count, radius, support, &nsupport);
 }
 
 /**
