@@ -37,15 +37,64 @@
 
 /******************************************************************************/
 
+CREATE FUNCTION ts2cell_mgist_consistent(internal, ts2cell, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS ts2cell_mrtree_equisplit_ops
   DEFAULT FOR TYPE ts2cell USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (ts2cell, stbox),
+  OPERATOR  1    << (ts2cell, ts2cell),
+  -- overlaps or left
+  OPERATOR  2    &< (ts2cell, stbox),
+  OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps or right
+  OPERATOR  4    &> (ts2cell, stbox),
+  OPERATOR  4    &> (ts2cell, ts2cell),
+  -- strictly right
+  OPERATOR  5    >> (ts2cell, stbox),
+  OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contained by
+  OPERATOR  8    <@ (ts2cell, tstzspan),
+  OPERATOR  8    <@ (ts2cell, stbox),
+  OPERATOR  8    <@ (ts2cell, ts2cell),
+  -- overlaps or below
+  OPERATOR  9    &<| (ts2cell, stbox),
+  OPERATOR  9    &<| (ts2cell, ts2cell),
+  -- strictly below
+  OPERATOR  10    <<| (ts2cell, stbox),
+  OPERATOR  10    <<| (ts2cell, ts2cell),
+  -- strictly above
+  OPERATOR  11    |>> (ts2cell, stbox),
+  OPERATOR  11    |>> (ts2cell, ts2cell),
+  -- overlaps or above
+  OPERATOR  12    |&> (ts2cell, stbox),
+  OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- overlaps or before
+  OPERATOR  28    &<# (ts2cell, tstzspan),
+  OPERATOR  28    &<# (ts2cell, stbox),
+  OPERATOR  28    &<# (ts2cell, ts2cell),
+  -- strictly before
+  OPERATOR  29    <<# (ts2cell, tstzspan),
+  OPERATOR  29    <<# (ts2cell, stbox),
+  OPERATOR  29    <<# (ts2cell, ts2cell),
+  -- strictly after
+  OPERATOR  30    #>> (ts2cell, tstzspan),
+  OPERATOR  30    #>> (ts2cell, stbox),
+  OPERATOR  30    #>> (ts2cell, ts2cell),
+  -- overlaps or after
+  OPERATOR  31    #&> (ts2cell, tstzspan),
+  OPERATOR  31    #&> (ts2cell, stbox),
+  OPERATOR  31    #&> (ts2cell, ts2cell),
   -- ever overlaps
   OPERATOR  36    ?&& (ts2cell, stbox),
   -- always overlaps
   OPERATOR  37    %&& (ts2cell, stbox),
   -- functions
-  FUNCTION  1 ts2cell_gist_consistent(internal, ts2cell, smallint, oid, internal),
+  FUNCTION  1 ts2cell_mgist_consistent(internal, ts2cell, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -57,12 +106,56 @@ CREATE OPERATOR CLASS ts2cell_mrtree_equisplit_ops
 CREATE OPERATOR CLASS ts2cell_mrtree_segsplit_ops
   FOR TYPE ts2cell USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (ts2cell, stbox),
+  OPERATOR  1    << (ts2cell, ts2cell),
+  -- overlaps or left
+  OPERATOR  2    &< (ts2cell, stbox),
+  OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps or right
+  OPERATOR  4    &> (ts2cell, stbox),
+  OPERATOR  4    &> (ts2cell, ts2cell),
+  -- strictly right
+  OPERATOR  5    >> (ts2cell, stbox),
+  OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contained by
+  OPERATOR  8    <@ (ts2cell, tstzspan),
+  OPERATOR  8    <@ (ts2cell, stbox),
+  OPERATOR  8    <@ (ts2cell, ts2cell),
+  -- overlaps or below
+  OPERATOR  9    &<| (ts2cell, stbox),
+  OPERATOR  9    &<| (ts2cell, ts2cell),
+  -- strictly below
+  OPERATOR  10    <<| (ts2cell, stbox),
+  OPERATOR  10    <<| (ts2cell, ts2cell),
+  -- strictly above
+  OPERATOR  11    |>> (ts2cell, stbox),
+  OPERATOR  11    |>> (ts2cell, ts2cell),
+  -- overlaps or above
+  OPERATOR  12    |&> (ts2cell, stbox),
+  OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- overlaps or before
+  OPERATOR  28    &<# (ts2cell, tstzspan),
+  OPERATOR  28    &<# (ts2cell, stbox),
+  OPERATOR  28    &<# (ts2cell, ts2cell),
+  -- strictly before
+  OPERATOR  29    <<# (ts2cell, tstzspan),
+  OPERATOR  29    <<# (ts2cell, stbox),
+  OPERATOR  29    <<# (ts2cell, ts2cell),
+  -- strictly after
+  OPERATOR  30    #>> (ts2cell, tstzspan),
+  OPERATOR  30    #>> (ts2cell, stbox),
+  OPERATOR  30    #>> (ts2cell, ts2cell),
+  -- overlaps or after
+  OPERATOR  31    #&> (ts2cell, tstzspan),
+  OPERATOR  31    #&> (ts2cell, stbox),
+  OPERATOR  31    #&> (ts2cell, ts2cell),
   -- ever overlaps
   OPERATOR  36    ?&& (ts2cell, stbox),
   -- always overlaps
   OPERATOR  37    %&& (ts2cell, stbox),
   -- functions
-  FUNCTION  1 ts2cell_gist_consistent(internal, ts2cell, smallint, oid, internal),
+  FUNCTION  1 ts2cell_mgist_consistent(internal, ts2cell, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -74,12 +167,56 @@ CREATE OPERATOR CLASS ts2cell_mrtree_segsplit_ops
 CREATE OPERATOR CLASS ts2cell_mrtree_mergesplit_ops
   FOR TYPE ts2cell USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (ts2cell, stbox),
+  OPERATOR  1    << (ts2cell, ts2cell),
+  -- overlaps or left
+  OPERATOR  2    &< (ts2cell, stbox),
+  OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps or right
+  OPERATOR  4    &> (ts2cell, stbox),
+  OPERATOR  4    &> (ts2cell, ts2cell),
+  -- strictly right
+  OPERATOR  5    >> (ts2cell, stbox),
+  OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contained by
+  OPERATOR  8    <@ (ts2cell, tstzspan),
+  OPERATOR  8    <@ (ts2cell, stbox),
+  OPERATOR  8    <@ (ts2cell, ts2cell),
+  -- overlaps or below
+  OPERATOR  9    &<| (ts2cell, stbox),
+  OPERATOR  9    &<| (ts2cell, ts2cell),
+  -- strictly below
+  OPERATOR  10    <<| (ts2cell, stbox),
+  OPERATOR  10    <<| (ts2cell, ts2cell),
+  -- strictly above
+  OPERATOR  11    |>> (ts2cell, stbox),
+  OPERATOR  11    |>> (ts2cell, ts2cell),
+  -- overlaps or above
+  OPERATOR  12    |&> (ts2cell, stbox),
+  OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- overlaps or before
+  OPERATOR  28    &<# (ts2cell, tstzspan),
+  OPERATOR  28    &<# (ts2cell, stbox),
+  OPERATOR  28    &<# (ts2cell, ts2cell),
+  -- strictly before
+  OPERATOR  29    <<# (ts2cell, tstzspan),
+  OPERATOR  29    <<# (ts2cell, stbox),
+  OPERATOR  29    <<# (ts2cell, ts2cell),
+  -- strictly after
+  OPERATOR  30    #>> (ts2cell, tstzspan),
+  OPERATOR  30    #>> (ts2cell, stbox),
+  OPERATOR  30    #>> (ts2cell, ts2cell),
+  -- overlaps or after
+  OPERATOR  31    #&> (ts2cell, tstzspan),
+  OPERATOR  31    #&> (ts2cell, stbox),
+  OPERATOR  31    #&> (ts2cell, ts2cell),
   -- ever overlaps
   OPERATOR  36    ?&& (ts2cell, stbox),
   -- always overlaps
   OPERATOR  37    %&& (ts2cell, stbox),
   -- functions
-  FUNCTION  1 ts2cell_gist_consistent(internal, ts2cell, smallint, oid, internal),
+  FUNCTION  1 ts2cell_mgist_consistent(internal, ts2cell, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -91,12 +228,56 @@ CREATE OPERATOR CLASS ts2cell_mrtree_mergesplit_ops
 CREATE OPERATOR CLASS ts2cell_mrtree_linearsplit_ops
   FOR TYPE ts2cell USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (ts2cell, stbox),
+  OPERATOR  1    << (ts2cell, ts2cell),
+  -- overlaps or left
+  OPERATOR  2    &< (ts2cell, stbox),
+  OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps or right
+  OPERATOR  4    &> (ts2cell, stbox),
+  OPERATOR  4    &> (ts2cell, ts2cell),
+  -- strictly right
+  OPERATOR  5    >> (ts2cell, stbox),
+  OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contained by
+  OPERATOR  8    <@ (ts2cell, tstzspan),
+  OPERATOR  8    <@ (ts2cell, stbox),
+  OPERATOR  8    <@ (ts2cell, ts2cell),
+  -- overlaps or below
+  OPERATOR  9    &<| (ts2cell, stbox),
+  OPERATOR  9    &<| (ts2cell, ts2cell),
+  -- strictly below
+  OPERATOR  10    <<| (ts2cell, stbox),
+  OPERATOR  10    <<| (ts2cell, ts2cell),
+  -- strictly above
+  OPERATOR  11    |>> (ts2cell, stbox),
+  OPERATOR  11    |>> (ts2cell, ts2cell),
+  -- overlaps or above
+  OPERATOR  12    |&> (ts2cell, stbox),
+  OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- overlaps or before
+  OPERATOR  28    &<# (ts2cell, tstzspan),
+  OPERATOR  28    &<# (ts2cell, stbox),
+  OPERATOR  28    &<# (ts2cell, ts2cell),
+  -- strictly before
+  OPERATOR  29    <<# (ts2cell, tstzspan),
+  OPERATOR  29    <<# (ts2cell, stbox),
+  OPERATOR  29    <<# (ts2cell, ts2cell),
+  -- strictly after
+  OPERATOR  30    #>> (ts2cell, tstzspan),
+  OPERATOR  30    #>> (ts2cell, stbox),
+  OPERATOR  30    #>> (ts2cell, ts2cell),
+  -- overlaps or after
+  OPERATOR  31    #&> (ts2cell, tstzspan),
+  OPERATOR  31    #&> (ts2cell, stbox),
+  OPERATOR  31    #&> (ts2cell, ts2cell),
   -- ever overlaps
   OPERATOR  36    ?&& (ts2cell, stbox),
   -- always overlaps
   OPERATOR  37    %&& (ts2cell, stbox),
   -- functions
-  FUNCTION  1 ts2cell_gist_consistent(internal, ts2cell, smallint, oid, internal),
+  FUNCTION  1 ts2cell_mgist_consistent(internal, ts2cell, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -108,12 +289,56 @@ CREATE OPERATOR CLASS ts2cell_mrtree_linearsplit_ops
 CREATE OPERATOR CLASS ts2cell_mrtree_adaptsplit_ops
   FOR TYPE ts2cell USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (ts2cell, stbox),
+  OPERATOR  1    << (ts2cell, ts2cell),
+  -- overlaps or left
+  OPERATOR  2    &< (ts2cell, stbox),
+  OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps or right
+  OPERATOR  4    &> (ts2cell, stbox),
+  OPERATOR  4    &> (ts2cell, ts2cell),
+  -- strictly right
+  OPERATOR  5    >> (ts2cell, stbox),
+  OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contained by
+  OPERATOR  8    <@ (ts2cell, tstzspan),
+  OPERATOR  8    <@ (ts2cell, stbox),
+  OPERATOR  8    <@ (ts2cell, ts2cell),
+  -- overlaps or below
+  OPERATOR  9    &<| (ts2cell, stbox),
+  OPERATOR  9    &<| (ts2cell, ts2cell),
+  -- strictly below
+  OPERATOR  10    <<| (ts2cell, stbox),
+  OPERATOR  10    <<| (ts2cell, ts2cell),
+  -- strictly above
+  OPERATOR  11    |>> (ts2cell, stbox),
+  OPERATOR  11    |>> (ts2cell, ts2cell),
+  -- overlaps or above
+  OPERATOR  12    |&> (ts2cell, stbox),
+  OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- overlaps or before
+  OPERATOR  28    &<# (ts2cell, tstzspan),
+  OPERATOR  28    &<# (ts2cell, stbox),
+  OPERATOR  28    &<# (ts2cell, ts2cell),
+  -- strictly before
+  OPERATOR  29    <<# (ts2cell, tstzspan),
+  OPERATOR  29    <<# (ts2cell, stbox),
+  OPERATOR  29    <<# (ts2cell, ts2cell),
+  -- strictly after
+  OPERATOR  30    #>> (ts2cell, tstzspan),
+  OPERATOR  30    #>> (ts2cell, stbox),
+  OPERATOR  30    #>> (ts2cell, ts2cell),
+  -- overlaps or after
+  OPERATOR  31    #&> (ts2cell, tstzspan),
+  OPERATOR  31    #&> (ts2cell, stbox),
+  OPERATOR  31    #&> (ts2cell, ts2cell),
   -- ever overlaps
   OPERATOR  36    ?&& (ts2cell, stbox),
   -- always overlaps
   OPERATOR  37    %&& (ts2cell, stbox),
   -- functions
-  FUNCTION  1 ts2cell_gist_consistent(internal, ts2cell, smallint, oid, internal),
+  FUNCTION  1 ts2cell_mgist_consistent(internal, ts2cell, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),

@@ -57,70 +57,319 @@ CREATE FUNCTION trgeometry_mest_adaptsplit(internal, internal, internal)
   AS 'MODULE_PATHNAME', 'Trgeometry_mest_adaptsplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION trgeometry_mgist_consistent(internal, trgeometry, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS trgeometry_mrtree_equisplit_ops
   DEFAULT FOR TYPE trgeometry USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (trgeometry, stbox),
+  OPERATOR  1    << (trgeometry, trgeometry),
+  -- overlaps or left
+  OPERATOR  2    &< (trgeometry, stbox),
+  OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps or right
+  OPERATOR  4    &> (trgeometry, stbox),
+  OPERATOR  4    &> (trgeometry, trgeometry),
+  -- strictly right
+  OPERATOR  5    >> (trgeometry, stbox),
+  OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contained by
+  OPERATOR  8    <@ (trgeometry, tstzspan),
+  OPERATOR  8    <@ (trgeometry, stbox),
+  OPERATOR  8    <@ (trgeometry, trgeometry),
+  -- overlaps or below
+  OPERATOR  9    &<| (trgeometry, stbox),
+  OPERATOR  9    &<| (trgeometry, trgeometry),
+  -- strictly below
+  OPERATOR  10    <<| (trgeometry, stbox),
+  OPERATOR  10    <<| (trgeometry, trgeometry),
+  -- strictly above
+  OPERATOR  11    |>> (trgeometry, stbox),
+  OPERATOR  11    |>> (trgeometry, trgeometry),
+  -- overlaps or above
+  OPERATOR  12    |&> (trgeometry, stbox),
+  OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- nearest approach distance
+  OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (trgeometry, tstzspan),
+  OPERATOR  28    &<# (trgeometry, stbox),
+  OPERATOR  28    &<# (trgeometry, trgeometry),
+  -- strictly before
+  OPERATOR  29    <<# (trgeometry, tstzspan),
+  OPERATOR  29    <<# (trgeometry, stbox),
+  OPERATOR  29    <<# (trgeometry, trgeometry),
+  -- strictly after
+  OPERATOR  30    #>> (trgeometry, tstzspan),
+  OPERATOR  30    #>> (trgeometry, stbox),
+  OPERATOR  30    #>> (trgeometry, trgeometry),
+  -- overlaps or after
+  OPERATOR  31    #&> (trgeometry, tstzspan),
+  OPERATOR  31    #&> (trgeometry, stbox),
+  OPERATOR  31    #&> (trgeometry, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (trgeometry, stbox),
+  OPERATOR  32    &</ (trgeometry, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (trgeometry, stbox),
+  OPERATOR  33    <</ (trgeometry, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (trgeometry, stbox),
+  OPERATOR  34    />> (trgeometry, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (trgeometry, stbox),
+  OPERATOR  35    /&> (trgeometry, trgeometry),
   -- ever overlaps
   OPERATOR  36    ?&& (trgeometry, stbox),
   -- always overlaps
   OPERATOR  37    %&& (trgeometry, stbox),
   -- functions
-  FUNCTION  1 trgeometry_gist_consistent(internal, trgeometry, smallint, oid, internal),
+  FUNCTION  1 trgeometry_mgist_consistent(internal, trgeometry, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 trgeometry_gist_distance(internal, trgeometry, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 trgeometry_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS trgeometry_mrtree_segsplit_ops
   FOR TYPE trgeometry USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (trgeometry, stbox),
+  OPERATOR  1    << (trgeometry, trgeometry),
+  -- overlaps or left
+  OPERATOR  2    &< (trgeometry, stbox),
+  OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps or right
+  OPERATOR  4    &> (trgeometry, stbox),
+  OPERATOR  4    &> (trgeometry, trgeometry),
+  -- strictly right
+  OPERATOR  5    >> (trgeometry, stbox),
+  OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contained by
+  OPERATOR  8    <@ (trgeometry, tstzspan),
+  OPERATOR  8    <@ (trgeometry, stbox),
+  OPERATOR  8    <@ (trgeometry, trgeometry),
+  -- overlaps or below
+  OPERATOR  9    &<| (trgeometry, stbox),
+  OPERATOR  9    &<| (trgeometry, trgeometry),
+  -- strictly below
+  OPERATOR  10    <<| (trgeometry, stbox),
+  OPERATOR  10    <<| (trgeometry, trgeometry),
+  -- strictly above
+  OPERATOR  11    |>> (trgeometry, stbox),
+  OPERATOR  11    |>> (trgeometry, trgeometry),
+  -- overlaps or above
+  OPERATOR  12    |&> (trgeometry, stbox),
+  OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- nearest approach distance
+  OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (trgeometry, tstzspan),
+  OPERATOR  28    &<# (trgeometry, stbox),
+  OPERATOR  28    &<# (trgeometry, trgeometry),
+  -- strictly before
+  OPERATOR  29    <<# (trgeometry, tstzspan),
+  OPERATOR  29    <<# (trgeometry, stbox),
+  OPERATOR  29    <<# (trgeometry, trgeometry),
+  -- strictly after
+  OPERATOR  30    #>> (trgeometry, tstzspan),
+  OPERATOR  30    #>> (trgeometry, stbox),
+  OPERATOR  30    #>> (trgeometry, trgeometry),
+  -- overlaps or after
+  OPERATOR  31    #&> (trgeometry, tstzspan),
+  OPERATOR  31    #&> (trgeometry, stbox),
+  OPERATOR  31    #&> (trgeometry, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (trgeometry, stbox),
+  OPERATOR  32    &</ (trgeometry, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (trgeometry, stbox),
+  OPERATOR  33    <</ (trgeometry, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (trgeometry, stbox),
+  OPERATOR  34    />> (trgeometry, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (trgeometry, stbox),
+  OPERATOR  35    /&> (trgeometry, trgeometry),
   -- ever overlaps
   OPERATOR  36    ?&& (trgeometry, stbox),
   -- always overlaps
   OPERATOR  37    %&& (trgeometry, stbox),
   -- functions
-  FUNCTION  1 trgeometry_gist_consistent(internal, trgeometry, smallint, oid, internal),
+  FUNCTION  1 trgeometry_mgist_consistent(internal, trgeometry, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 trgeometry_gist_distance(internal, trgeometry, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 trgeometry_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS trgeometry_mrtree_mergesplit_ops
   FOR TYPE trgeometry USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (trgeometry, stbox),
+  OPERATOR  1    << (trgeometry, trgeometry),
+  -- overlaps or left
+  OPERATOR  2    &< (trgeometry, stbox),
+  OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps or right
+  OPERATOR  4    &> (trgeometry, stbox),
+  OPERATOR  4    &> (trgeometry, trgeometry),
+  -- strictly right
+  OPERATOR  5    >> (trgeometry, stbox),
+  OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contained by
+  OPERATOR  8    <@ (trgeometry, tstzspan),
+  OPERATOR  8    <@ (trgeometry, stbox),
+  OPERATOR  8    <@ (trgeometry, trgeometry),
+  -- overlaps or below
+  OPERATOR  9    &<| (trgeometry, stbox),
+  OPERATOR  9    &<| (trgeometry, trgeometry),
+  -- strictly below
+  OPERATOR  10    <<| (trgeometry, stbox),
+  OPERATOR  10    <<| (trgeometry, trgeometry),
+  -- strictly above
+  OPERATOR  11    |>> (trgeometry, stbox),
+  OPERATOR  11    |>> (trgeometry, trgeometry),
+  -- overlaps or above
+  OPERATOR  12    |&> (trgeometry, stbox),
+  OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- nearest approach distance
+  OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (trgeometry, tstzspan),
+  OPERATOR  28    &<# (trgeometry, stbox),
+  OPERATOR  28    &<# (trgeometry, trgeometry),
+  -- strictly before
+  OPERATOR  29    <<# (trgeometry, tstzspan),
+  OPERATOR  29    <<# (trgeometry, stbox),
+  OPERATOR  29    <<# (trgeometry, trgeometry),
+  -- strictly after
+  OPERATOR  30    #>> (trgeometry, tstzspan),
+  OPERATOR  30    #>> (trgeometry, stbox),
+  OPERATOR  30    #>> (trgeometry, trgeometry),
+  -- overlaps or after
+  OPERATOR  31    #&> (trgeometry, tstzspan),
+  OPERATOR  31    #&> (trgeometry, stbox),
+  OPERATOR  31    #&> (trgeometry, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (trgeometry, stbox),
+  OPERATOR  32    &</ (trgeometry, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (trgeometry, stbox),
+  OPERATOR  33    <</ (trgeometry, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (trgeometry, stbox),
+  OPERATOR  34    />> (trgeometry, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (trgeometry, stbox),
+  OPERATOR  35    /&> (trgeometry, trgeometry),
   -- ever overlaps
   OPERATOR  36    ?&& (trgeometry, stbox),
   -- always overlaps
   OPERATOR  37    %&& (trgeometry, stbox),
   -- functions
-  FUNCTION  1 trgeometry_gist_consistent(internal, trgeometry, smallint, oid, internal),
+  FUNCTION  1 trgeometry_mgist_consistent(internal, trgeometry, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 trgeometry_gist_distance(internal, trgeometry, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 trgeometry_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS trgeometry_mrtree_adaptsplit_ops
   FOR TYPE trgeometry USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (trgeometry, stbox),
+  OPERATOR  1    << (trgeometry, trgeometry),
+  -- overlaps or left
+  OPERATOR  2    &< (trgeometry, stbox),
+  OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps or right
+  OPERATOR  4    &> (trgeometry, stbox),
+  OPERATOR  4    &> (trgeometry, trgeometry),
+  -- strictly right
+  OPERATOR  5    >> (trgeometry, stbox),
+  OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contained by
+  OPERATOR  8    <@ (trgeometry, tstzspan),
+  OPERATOR  8    <@ (trgeometry, stbox),
+  OPERATOR  8    <@ (trgeometry, trgeometry),
+  -- overlaps or below
+  OPERATOR  9    &<| (trgeometry, stbox),
+  OPERATOR  9    &<| (trgeometry, trgeometry),
+  -- strictly below
+  OPERATOR  10    <<| (trgeometry, stbox),
+  OPERATOR  10    <<| (trgeometry, trgeometry),
+  -- strictly above
+  OPERATOR  11    |>> (trgeometry, stbox),
+  OPERATOR  11    |>> (trgeometry, trgeometry),
+  -- overlaps or above
+  OPERATOR  12    |&> (trgeometry, stbox),
+  OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- nearest approach distance
+  OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (trgeometry, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (trgeometry, tstzspan),
+  OPERATOR  28    &<# (trgeometry, stbox),
+  OPERATOR  28    &<# (trgeometry, trgeometry),
+  -- strictly before
+  OPERATOR  29    <<# (trgeometry, tstzspan),
+  OPERATOR  29    <<# (trgeometry, stbox),
+  OPERATOR  29    <<# (trgeometry, trgeometry),
+  -- strictly after
+  OPERATOR  30    #>> (trgeometry, tstzspan),
+  OPERATOR  30    #>> (trgeometry, stbox),
+  OPERATOR  30    #>> (trgeometry, trgeometry),
+  -- overlaps or after
+  OPERATOR  31    #&> (trgeometry, tstzspan),
+  OPERATOR  31    #&> (trgeometry, stbox),
+  OPERATOR  31    #&> (trgeometry, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (trgeometry, stbox),
+  OPERATOR  32    &</ (trgeometry, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (trgeometry, stbox),
+  OPERATOR  33    <</ (trgeometry, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (trgeometry, stbox),
+  OPERATOR  34    />> (trgeometry, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (trgeometry, stbox),
+  OPERATOR  35    /&> (trgeometry, trgeometry),
   -- ever overlaps
   OPERATOR  36    ?&& (trgeometry, stbox),
   -- always overlaps
   OPERATOR  37    %&& (trgeometry, stbox),
   -- functions
-  FUNCTION  1 trgeometry_gist_consistent(internal, trgeometry, smallint, oid, internal),
+  FUNCTION  1 trgeometry_mgist_consistent(internal, trgeometry, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 trgeometry_gist_distance(internal, trgeometry, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 trgeometry_mest_adaptsplit(internal, internal, internal);

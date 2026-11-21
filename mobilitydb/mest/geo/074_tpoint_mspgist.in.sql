@@ -37,8 +37,73 @@
 
 /******************************************************************************/
 
+CREATE FUNCTION stbox_mspgist_leaf_consistent(internal, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_mspgist_leaf_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tgeompoint_mquadtree_equisplit_ops
   DEFAULT FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -48,13 +113,73 @@ CREATE OPERATOR CLASS tgeompoint_mquadtree_equisplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mquadtree_segsplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -64,13 +189,73 @@ CREATE OPERATOR CLASS tgeompoint_mquadtree_segsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mquadtree_tilesplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -80,13 +265,73 @@ CREATE OPERATOR CLASS tgeompoint_mquadtree_tilesplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_tilesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mquadtree_mergesplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -96,13 +341,73 @@ CREATE OPERATOR CLASS tgeompoint_mquadtree_mergesplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mquadtree_linearsplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -112,13 +417,73 @@ CREATE OPERATOR CLASS tgeompoint_mquadtree_linearsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mquadtree_adaptsplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -128,13 +493,73 @@ CREATE OPERATOR CLASS tgeompoint_mquadtree_adaptsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mkdtree_equisplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -144,13 +569,73 @@ CREATE OPERATOR CLASS tgeompoint_mkdtree_equisplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mkdtree_segsplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -160,13 +645,73 @@ CREATE OPERATOR CLASS tgeompoint_mkdtree_segsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mkdtree_tilesplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -176,13 +721,73 @@ CREATE OPERATOR CLASS tgeompoint_mkdtree_tilesplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_tilesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mkdtree_mergesplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -192,13 +797,73 @@ CREATE OPERATOR CLASS tgeompoint_mkdtree_mergesplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mkdtree_linearsplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -208,13 +873,73 @@ CREATE OPERATOR CLASS tgeompoint_mkdtree_linearsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeompoint_mkdtree_adaptsplit_ops
   FOR TYPE tgeompoint USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeompoint, stbox),
   -- always overlaps
@@ -224,13 +949,37 @@ CREATE OPERATOR CLASS tgeompoint_mkdtree_adaptsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mquadtree_equisplit_ops
   DEFAULT FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -240,13 +989,37 @@ CREATE OPERATOR CLASS tgeogpoint_mquadtree_equisplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mquadtree_segsplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -256,13 +1029,37 @@ CREATE OPERATOR CLASS tgeogpoint_mquadtree_segsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mquadtree_tilesplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -272,13 +1069,37 @@ CREATE OPERATOR CLASS tgeogpoint_mquadtree_tilesplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_tilesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mquadtree_mergesplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -288,13 +1109,37 @@ CREATE OPERATOR CLASS tgeogpoint_mquadtree_mergesplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mquadtree_linearsplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -304,13 +1149,37 @@ CREATE OPERATOR CLASS tgeogpoint_mquadtree_linearsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mquadtree_adaptsplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -320,13 +1189,37 @@ CREATE OPERATOR CLASS tgeogpoint_mquadtree_adaptsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mkdtree_equisplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -336,13 +1229,37 @@ CREATE OPERATOR CLASS tgeogpoint_mkdtree_equisplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mkdtree_segsplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -352,13 +1269,37 @@ CREATE OPERATOR CLASS tgeogpoint_mkdtree_segsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mkdtree_tilesplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -368,13 +1309,37 @@ CREATE OPERATOR CLASS tgeogpoint_mkdtree_tilesplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_tilesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mkdtree_mergesplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -384,13 +1349,37 @@ CREATE OPERATOR CLASS tgeogpoint_mkdtree_mergesplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mkdtree_linearsplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -400,13 +1389,37 @@ CREATE OPERATOR CLASS tgeogpoint_mkdtree_linearsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tgeogpoint_mkdtree_adaptsplit_ops
   FOR TYPE tgeogpoint USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@ (tgeogpoint, tstzspan),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, tstzspan),
+  OPERATOR  28    &<# (tgeogpoint, stbox),
+  OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, tstzspan),
+  OPERATOR  29    <<# (tgeogpoint, stbox),
+  OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, tstzspan),
+  OPERATOR  30    #>> (tgeogpoint, stbox),
+  OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, tstzspan),
+  OPERATOR  31    #&> (tgeogpoint, stbox),
+  OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tgeogpoint, stbox),
   -- always overlaps
@@ -416,7 +1429,7 @@ CREATE OPERATOR CLASS tgeogpoint_mkdtree_adaptsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);

@@ -37,87 +37,397 @@
 
 /******************************************************************************/
 
+CREATE FUNCTION tposechain_mgist_consistent(internal, tposechain, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tposechain_mrtree_equisplit_ops
   DEFAULT FOR TYPE tposechain USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tposechain, stbox),
+  OPERATOR  1    << (tposechain, tposechain),
+  -- overlaps or left
+  OPERATOR  2    &< (tposechain, stbox),
+  OPERATOR  2    &< (tposechain, tposechain),
+  -- overlaps or right
+  OPERATOR  4    &> (tposechain, stbox),
+  OPERATOR  4    &> (tposechain, tposechain),
+  -- strictly right
+  OPERATOR  5    >> (tposechain, stbox),
+  OPERATOR  5    >> (tposechain, tposechain),
+  -- contained by
+  OPERATOR  8    <@ (tposechain, tstzspan),
+  OPERATOR  8    <@ (tposechain, stbox),
+  OPERATOR  8    <@ (tposechain, tposechain),
+  -- overlaps or below
+  OPERATOR  9    &<| (tposechain, stbox),
+  OPERATOR  9    &<| (tposechain, tposechain),
+  -- strictly below
+  OPERATOR  10    <<| (tposechain, stbox),
+  OPERATOR  10    <<| (tposechain, tposechain),
+  -- strictly above
+  OPERATOR  11    |>> (tposechain, stbox),
+  OPERATOR  11    |>> (tposechain, tposechain),
+  -- overlaps or above
+  OPERATOR  12    |&> (tposechain, stbox),
+  OPERATOR  12    |&> (tposechain, tposechain),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tposechain, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, tposechain) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tposechain, tstzspan),
+  OPERATOR  28    &<# (tposechain, stbox),
+  OPERATOR  28    &<# (tposechain, tposechain),
+  -- strictly before
+  OPERATOR  29    <<# (tposechain, tstzspan),
+  OPERATOR  29    <<# (tposechain, stbox),
+  OPERATOR  29    <<# (tposechain, tposechain),
+  -- strictly after
+  OPERATOR  30    #>> (tposechain, tstzspan),
+  OPERATOR  30    #>> (tposechain, stbox),
+  OPERATOR  30    #>> (tposechain, tposechain),
+  -- overlaps or after
+  OPERATOR  31    #&> (tposechain, tstzspan),
+  OPERATOR  31    #&> (tposechain, stbox),
+  OPERATOR  31    #&> (tposechain, tposechain),
+  -- overlaps or front
+  OPERATOR  32    &</ (tposechain, stbox),
+  OPERATOR  32    &</ (tposechain, tposechain),
+  -- strictly front
+  OPERATOR  33    <</ (tposechain, stbox),
+  OPERATOR  33    <</ (tposechain, tposechain),
+  -- strictly back
+  OPERATOR  34    />> (tposechain, stbox),
+  OPERATOR  34    />> (tposechain, tposechain),
+  -- overlaps or back
+  OPERATOR  35    /&> (tposechain, stbox),
+  OPERATOR  35    /&> (tposechain, tposechain),
   -- ever overlaps
   OPERATOR  36    ?&& (tposechain, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tposechain, stbox),
   -- functions
-  FUNCTION  1 tposechain_gist_consistent(internal, tposechain, smallint, oid, internal),
+  FUNCTION  1 tposechain_mgist_consistent(internal, tposechain, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tposechain_gist_distance(internal, tposechain, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tposechain_mrtree_segsplit_ops
   FOR TYPE tposechain USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tposechain, stbox),
+  OPERATOR  1    << (tposechain, tposechain),
+  -- overlaps or left
+  OPERATOR  2    &< (tposechain, stbox),
+  OPERATOR  2    &< (tposechain, tposechain),
+  -- overlaps or right
+  OPERATOR  4    &> (tposechain, stbox),
+  OPERATOR  4    &> (tposechain, tposechain),
+  -- strictly right
+  OPERATOR  5    >> (tposechain, stbox),
+  OPERATOR  5    >> (tposechain, tposechain),
+  -- contained by
+  OPERATOR  8    <@ (tposechain, tstzspan),
+  OPERATOR  8    <@ (tposechain, stbox),
+  OPERATOR  8    <@ (tposechain, tposechain),
+  -- overlaps or below
+  OPERATOR  9    &<| (tposechain, stbox),
+  OPERATOR  9    &<| (tposechain, tposechain),
+  -- strictly below
+  OPERATOR  10    <<| (tposechain, stbox),
+  OPERATOR  10    <<| (tposechain, tposechain),
+  -- strictly above
+  OPERATOR  11    |>> (tposechain, stbox),
+  OPERATOR  11    |>> (tposechain, tposechain),
+  -- overlaps or above
+  OPERATOR  12    |&> (tposechain, stbox),
+  OPERATOR  12    |&> (tposechain, tposechain),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tposechain, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, tposechain) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tposechain, tstzspan),
+  OPERATOR  28    &<# (tposechain, stbox),
+  OPERATOR  28    &<# (tposechain, tposechain),
+  -- strictly before
+  OPERATOR  29    <<# (tposechain, tstzspan),
+  OPERATOR  29    <<# (tposechain, stbox),
+  OPERATOR  29    <<# (tposechain, tposechain),
+  -- strictly after
+  OPERATOR  30    #>> (tposechain, tstzspan),
+  OPERATOR  30    #>> (tposechain, stbox),
+  OPERATOR  30    #>> (tposechain, tposechain),
+  -- overlaps or after
+  OPERATOR  31    #&> (tposechain, tstzspan),
+  OPERATOR  31    #&> (tposechain, stbox),
+  OPERATOR  31    #&> (tposechain, tposechain),
+  -- overlaps or front
+  OPERATOR  32    &</ (tposechain, stbox),
+  OPERATOR  32    &</ (tposechain, tposechain),
+  -- strictly front
+  OPERATOR  33    <</ (tposechain, stbox),
+  OPERATOR  33    <</ (tposechain, tposechain),
+  -- strictly back
+  OPERATOR  34    />> (tposechain, stbox),
+  OPERATOR  34    />> (tposechain, tposechain),
+  -- overlaps or back
+  OPERATOR  35    /&> (tposechain, stbox),
+  OPERATOR  35    /&> (tposechain, tposechain),
   -- ever overlaps
   OPERATOR  36    ?&& (tposechain, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tposechain, stbox),
   -- functions
-  FUNCTION  1 tposechain_gist_consistent(internal, tposechain, smallint, oid, internal),
+  FUNCTION  1 tposechain_mgist_consistent(internal, tposechain, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tposechain_gist_distance(internal, tposechain, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tposechain_mrtree_mergesplit_ops
   FOR TYPE tposechain USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tposechain, stbox),
+  OPERATOR  1    << (tposechain, tposechain),
+  -- overlaps or left
+  OPERATOR  2    &< (tposechain, stbox),
+  OPERATOR  2    &< (tposechain, tposechain),
+  -- overlaps or right
+  OPERATOR  4    &> (tposechain, stbox),
+  OPERATOR  4    &> (tposechain, tposechain),
+  -- strictly right
+  OPERATOR  5    >> (tposechain, stbox),
+  OPERATOR  5    >> (tposechain, tposechain),
+  -- contained by
+  OPERATOR  8    <@ (tposechain, tstzspan),
+  OPERATOR  8    <@ (tposechain, stbox),
+  OPERATOR  8    <@ (tposechain, tposechain),
+  -- overlaps or below
+  OPERATOR  9    &<| (tposechain, stbox),
+  OPERATOR  9    &<| (tposechain, tposechain),
+  -- strictly below
+  OPERATOR  10    <<| (tposechain, stbox),
+  OPERATOR  10    <<| (tposechain, tposechain),
+  -- strictly above
+  OPERATOR  11    |>> (tposechain, stbox),
+  OPERATOR  11    |>> (tposechain, tposechain),
+  -- overlaps or above
+  OPERATOR  12    |&> (tposechain, stbox),
+  OPERATOR  12    |&> (tposechain, tposechain),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tposechain, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, tposechain) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tposechain, tstzspan),
+  OPERATOR  28    &<# (tposechain, stbox),
+  OPERATOR  28    &<# (tposechain, tposechain),
+  -- strictly before
+  OPERATOR  29    <<# (tposechain, tstzspan),
+  OPERATOR  29    <<# (tposechain, stbox),
+  OPERATOR  29    <<# (tposechain, tposechain),
+  -- strictly after
+  OPERATOR  30    #>> (tposechain, tstzspan),
+  OPERATOR  30    #>> (tposechain, stbox),
+  OPERATOR  30    #>> (tposechain, tposechain),
+  -- overlaps or after
+  OPERATOR  31    #&> (tposechain, tstzspan),
+  OPERATOR  31    #&> (tposechain, stbox),
+  OPERATOR  31    #&> (tposechain, tposechain),
+  -- overlaps or front
+  OPERATOR  32    &</ (tposechain, stbox),
+  OPERATOR  32    &</ (tposechain, tposechain),
+  -- strictly front
+  OPERATOR  33    <</ (tposechain, stbox),
+  OPERATOR  33    <</ (tposechain, tposechain),
+  -- strictly back
+  OPERATOR  34    />> (tposechain, stbox),
+  OPERATOR  34    />> (tposechain, tposechain),
+  -- overlaps or back
+  OPERATOR  35    /&> (tposechain, stbox),
+  OPERATOR  35    /&> (tposechain, tposechain),
   -- ever overlaps
   OPERATOR  36    ?&& (tposechain, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tposechain, stbox),
   -- functions
-  FUNCTION  1 tposechain_gist_consistent(internal, tposechain, smallint, oid, internal),
+  FUNCTION  1 tposechain_mgist_consistent(internal, tposechain, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tposechain_gist_distance(internal, tposechain, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tposechain_mrtree_linearsplit_ops
   FOR TYPE tposechain USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tposechain, stbox),
+  OPERATOR  1    << (tposechain, tposechain),
+  -- overlaps or left
+  OPERATOR  2    &< (tposechain, stbox),
+  OPERATOR  2    &< (tposechain, tposechain),
+  -- overlaps or right
+  OPERATOR  4    &> (tposechain, stbox),
+  OPERATOR  4    &> (tposechain, tposechain),
+  -- strictly right
+  OPERATOR  5    >> (tposechain, stbox),
+  OPERATOR  5    >> (tposechain, tposechain),
+  -- contained by
+  OPERATOR  8    <@ (tposechain, tstzspan),
+  OPERATOR  8    <@ (tposechain, stbox),
+  OPERATOR  8    <@ (tposechain, tposechain),
+  -- overlaps or below
+  OPERATOR  9    &<| (tposechain, stbox),
+  OPERATOR  9    &<| (tposechain, tposechain),
+  -- strictly below
+  OPERATOR  10    <<| (tposechain, stbox),
+  OPERATOR  10    <<| (tposechain, tposechain),
+  -- strictly above
+  OPERATOR  11    |>> (tposechain, stbox),
+  OPERATOR  11    |>> (tposechain, tposechain),
+  -- overlaps or above
+  OPERATOR  12    |&> (tposechain, stbox),
+  OPERATOR  12    |&> (tposechain, tposechain),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tposechain, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, tposechain) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tposechain, tstzspan),
+  OPERATOR  28    &<# (tposechain, stbox),
+  OPERATOR  28    &<# (tposechain, tposechain),
+  -- strictly before
+  OPERATOR  29    <<# (tposechain, tstzspan),
+  OPERATOR  29    <<# (tposechain, stbox),
+  OPERATOR  29    <<# (tposechain, tposechain),
+  -- strictly after
+  OPERATOR  30    #>> (tposechain, tstzspan),
+  OPERATOR  30    #>> (tposechain, stbox),
+  OPERATOR  30    #>> (tposechain, tposechain),
+  -- overlaps or after
+  OPERATOR  31    #&> (tposechain, tstzspan),
+  OPERATOR  31    #&> (tposechain, stbox),
+  OPERATOR  31    #&> (tposechain, tposechain),
+  -- overlaps or front
+  OPERATOR  32    &</ (tposechain, stbox),
+  OPERATOR  32    &</ (tposechain, tposechain),
+  -- strictly front
+  OPERATOR  33    <</ (tposechain, stbox),
+  OPERATOR  33    <</ (tposechain, tposechain),
+  -- strictly back
+  OPERATOR  34    />> (tposechain, stbox),
+  OPERATOR  34    />> (tposechain, tposechain),
+  -- overlaps or back
+  OPERATOR  35    /&> (tposechain, stbox),
+  OPERATOR  35    /&> (tposechain, tposechain),
   -- ever overlaps
   OPERATOR  36    ?&& (tposechain, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tposechain, stbox),
   -- functions
-  FUNCTION  1 tposechain_gist_consistent(internal, tposechain, smallint, oid, internal),
+  FUNCTION  1 tposechain_mgist_consistent(internal, tposechain, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tposechain_gist_distance(internal, tposechain, smallint, oid, internal),
   FUNCTION 10 mest_stbox_options(internal),
   FUNCTION 13 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tposechain_mrtree_adaptsplit_ops
   FOR TYPE tposechain USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tposechain, stbox),
+  OPERATOR  1    << (tposechain, tposechain),
+  -- overlaps or left
+  OPERATOR  2    &< (tposechain, stbox),
+  OPERATOR  2    &< (tposechain, tposechain),
+  -- overlaps or right
+  OPERATOR  4    &> (tposechain, stbox),
+  OPERATOR  4    &> (tposechain, tposechain),
+  -- strictly right
+  OPERATOR  5    >> (tposechain, stbox),
+  OPERATOR  5    >> (tposechain, tposechain),
+  -- contained by
+  OPERATOR  8    <@ (tposechain, tstzspan),
+  OPERATOR  8    <@ (tposechain, stbox),
+  OPERATOR  8    <@ (tposechain, tposechain),
+  -- overlaps or below
+  OPERATOR  9    &<| (tposechain, stbox),
+  OPERATOR  9    &<| (tposechain, tposechain),
+  -- strictly below
+  OPERATOR  10    <<| (tposechain, stbox),
+  OPERATOR  10    <<| (tposechain, tposechain),
+  -- strictly above
+  OPERATOR  11    |>> (tposechain, stbox),
+  OPERATOR  11    |>> (tposechain, tposechain),
+  -- overlaps or above
+  OPERATOR  12    |&> (tposechain, stbox),
+  OPERATOR  12    |&> (tposechain, tposechain),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tposechain, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, tposechain) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tposechain, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tposechain, tstzspan),
+  OPERATOR  28    &<# (tposechain, stbox),
+  OPERATOR  28    &<# (tposechain, tposechain),
+  -- strictly before
+  OPERATOR  29    <<# (tposechain, tstzspan),
+  OPERATOR  29    <<# (tposechain, stbox),
+  OPERATOR  29    <<# (tposechain, tposechain),
+  -- strictly after
+  OPERATOR  30    #>> (tposechain, tstzspan),
+  OPERATOR  30    #>> (tposechain, stbox),
+  OPERATOR  30    #>> (tposechain, tposechain),
+  -- overlaps or after
+  OPERATOR  31    #&> (tposechain, tstzspan),
+  OPERATOR  31    #&> (tposechain, stbox),
+  OPERATOR  31    #&> (tposechain, tposechain),
+  -- overlaps or front
+  OPERATOR  32    &</ (tposechain, stbox),
+  OPERATOR  32    &</ (tposechain, tposechain),
+  -- strictly front
+  OPERATOR  33    <</ (tposechain, stbox),
+  OPERATOR  33    <</ (tposechain, tposechain),
+  -- strictly back
+  OPERATOR  34    />> (tposechain, stbox),
+  OPERATOR  34    />> (tposechain, tposechain),
+  -- overlaps or back
+  OPERATOR  35    /&> (tposechain, stbox),
+  OPERATOR  35    /&> (tposechain, tposechain),
   -- ever overlaps
   OPERATOR  36    ?&& (tposechain, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tposechain, stbox),
   -- functions
-  FUNCTION  1 tposechain_gist_consistent(internal, tposechain, smallint, oid, internal),
+  FUNCTION  1 tposechain_mgist_consistent(internal, tposechain, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tposechain_gist_distance(internal, tposechain, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_adaptsplit(internal, internal, internal);

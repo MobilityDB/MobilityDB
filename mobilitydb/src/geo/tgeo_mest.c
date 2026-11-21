@@ -43,6 +43,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/reloptions.h>
+#include <access/spgist.h>
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
@@ -296,3 +297,45 @@ Tgeo_mest_adaptsplit(PG_FUNCTION_ARGS)
 }
 
 /* GENERATED-BOXMEST-END tgeo */
+
+/* GENERATED-MESTCONSISTENT-BEGIN geo — tools/codegen/inherited/generate.py from templates/mestconsistent.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
+
+extern PGDLLEXPORT Datum Stbox_gist_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_mgist_consistent);
+/**
+ * @brief Multi-entry GiST consistent method of the classes keyed by the boxes
+ * of the pieces of a value, as #Stbox_gist_consistent answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator: a predicate of the box of a piece is not that of the value
+ */
+Datum
+Stbox_mgist_consistent(PG_FUNCTION_ARGS)
+{
+  Datum result = Stbox_gist_consistent(fcinfo);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  *recheck = true;
+  return result;
+}
+
+extern PGDLLEXPORT Datum Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_mspgist_leaf_consistent);
+/**
+ * @brief Multi-entry SP-GiST leaf consistent method of the classes keyed by
+ * the boxes of the pieces of a value, as #Stbox_spgist_leaf_consistent answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator, and its distance by the distance of the value: the distance to a
+ * piece bounds that of the value from below
+ */
+Datum
+Stbox_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
+{
+  Datum result = Stbox_spgist_leaf_consistent(fcinfo);
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  out->recheck = true;
+  if (out->distances)
+    out->recheckDistances = true;
+  return result;
+}
+
+/* GENERATED-MESTCONSISTENT-END geo */

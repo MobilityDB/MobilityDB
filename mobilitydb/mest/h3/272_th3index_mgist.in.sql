@@ -37,15 +37,64 @@
 
 /******************************************************************************/
 
+CREATE FUNCTION th3index_mgist_consistent(internal, th3index, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS th3index_mrtree_equisplit_ops
   DEFAULT FOR TYPE th3index USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
   OPERATOR  37    %&& (th3index, stbox),
   -- functions
-  FUNCTION  1 th3index_gist_consistent(internal, th3index, smallint, oid, internal),
+  FUNCTION  1 th3index_mgist_consistent(internal, th3index, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -57,12 +106,56 @@ CREATE OPERATOR CLASS th3index_mrtree_equisplit_ops
 CREATE OPERATOR CLASS th3index_mrtree_segsplit_ops
   FOR TYPE th3index USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
   OPERATOR  37    %&& (th3index, stbox),
   -- functions
-  FUNCTION  1 th3index_gist_consistent(internal, th3index, smallint, oid, internal),
+  FUNCTION  1 th3index_mgist_consistent(internal, th3index, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -74,12 +167,56 @@ CREATE OPERATOR CLASS th3index_mrtree_segsplit_ops
 CREATE OPERATOR CLASS th3index_mrtree_mergesplit_ops
   FOR TYPE th3index USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
   OPERATOR  37    %&& (th3index, stbox),
   -- functions
-  FUNCTION  1 th3index_gist_consistent(internal, th3index, smallint, oid, internal),
+  FUNCTION  1 th3index_mgist_consistent(internal, th3index, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -91,12 +228,56 @@ CREATE OPERATOR CLASS th3index_mrtree_mergesplit_ops
 CREATE OPERATOR CLASS th3index_mrtree_linearsplit_ops
   FOR TYPE th3index USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
   OPERATOR  37    %&& (th3index, stbox),
   -- functions
-  FUNCTION  1 th3index_gist_consistent(internal, th3index, smallint, oid, internal),
+  FUNCTION  1 th3index_mgist_consistent(internal, th3index, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
@@ -108,12 +289,56 @@ CREATE OPERATOR CLASS th3index_mrtree_linearsplit_ops
 CREATE OPERATOR CLASS th3index_mrtree_adaptsplit_ops
   FOR TYPE th3index USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
   OPERATOR  37    %&& (th3index, stbox),
   -- functions
-  FUNCTION  1 th3index_gist_consistent(internal, th3index, smallint, oid, internal),
+  FUNCTION  1 th3index_mgist_consistent(internal, th3index, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),

@@ -52,15 +52,35 @@ CREATE FUNCTION temporal_mest_binsplit(internal, internal, internal)
   AS 'MODULE_PATHNAME', 'Temporal_mest_binsplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tbool_mgist_consistent(internal, tbool, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tbool_mrtree_equisplit_ops
   DEFAULT FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@ (tbool, tstzspan),
+  OPERATOR  8    <@ (tbool, tbool),
+  -- overlaps or before
+  OPERATOR  28    &<# (tbool, tstzspan),
+  OPERATOR  28    &<# (tbool, tbool),
+  -- strictly before
+  OPERATOR  29    <<# (tbool, tstzspan),
+  OPERATOR  29    <<# (tbool, tbool),
+  -- strictly after
+  OPERATOR  30    #>> (tbool, tstzspan),
+  OPERATOR  30    #>> (tbool, tbool),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbool, tstzspan),
+  OPERATOR  31    #&> (tbool, tbool),
   -- ever overlaps
   OPERATOR  36    ?&& (tbool, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (tbool, tstzspan),
   -- functions
-  FUNCTION  1 tbool_gist_consistent(internal, tbool, smallint, oid, internal),
+  FUNCTION  1 tbool_mgist_consistent(internal, tbool, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -72,12 +92,27 @@ CREATE OPERATOR CLASS tbool_mrtree_equisplit_ops
 CREATE OPERATOR CLASS tbool_mrtree_segsplit_ops
   FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@ (tbool, tstzspan),
+  OPERATOR  8    <@ (tbool, tbool),
+  -- overlaps or before
+  OPERATOR  28    &<# (tbool, tstzspan),
+  OPERATOR  28    &<# (tbool, tbool),
+  -- strictly before
+  OPERATOR  29    <<# (tbool, tstzspan),
+  OPERATOR  29    <<# (tbool, tbool),
+  -- strictly after
+  OPERATOR  30    #>> (tbool, tstzspan),
+  OPERATOR  30    #>> (tbool, tbool),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbool, tstzspan),
+  OPERATOR  31    #&> (tbool, tbool),
   -- ever overlaps
   OPERATOR  36    ?&& (tbool, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (tbool, tstzspan),
   -- functions
-  FUNCTION  1 tbool_gist_consistent(internal, tbool, smallint, oid, internal),
+  FUNCTION  1 tbool_mgist_consistent(internal, tbool, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -89,12 +124,27 @@ CREATE OPERATOR CLASS tbool_mrtree_segsplit_ops
 CREATE OPERATOR CLASS tbool_mrtree_binsplit_ops
   FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@ (tbool, tstzspan),
+  OPERATOR  8    <@ (tbool, tbool),
+  -- overlaps or before
+  OPERATOR  28    &<# (tbool, tstzspan),
+  OPERATOR  28    &<# (tbool, tbool),
+  -- strictly before
+  OPERATOR  29    <<# (tbool, tstzspan),
+  OPERATOR  29    <<# (tbool, tbool),
+  -- strictly after
+  OPERATOR  30    #>> (tbool, tstzspan),
+  OPERATOR  30    #>> (tbool, tbool),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbool, tstzspan),
+  OPERATOR  31    #&> (tbool, tbool),
   -- ever overlaps
   OPERATOR  36    ?&& (tbool, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (tbool, tstzspan),
   -- functions
-  FUNCTION  1 tbool_gist_consistent(internal, tbool, smallint, oid, internal),
+  FUNCTION  1 tbool_mgist_consistent(internal, tbool, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -103,15 +153,35 @@ CREATE OPERATOR CLASS tbool_mrtree_binsplit_ops
   FUNCTION 10 mest_bin_options(internal),
   FUNCTION 13 temporal_mest_binsplit(internal, internal, internal);
 
+CREATE FUNCTION ttext_mgist_consistent(internal, ttext, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS ttext_mrtree_equisplit_ops
   DEFAULT FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@ (ttext, tstzspan),
+  OPERATOR  8    <@ (ttext, ttext),
+  -- overlaps or before
+  OPERATOR  28    &<# (ttext, tstzspan),
+  OPERATOR  28    &<# (ttext, ttext),
+  -- strictly before
+  OPERATOR  29    <<# (ttext, tstzspan),
+  OPERATOR  29    <<# (ttext, ttext),
+  -- strictly after
+  OPERATOR  30    #>> (ttext, tstzspan),
+  OPERATOR  30    #>> (ttext, ttext),
+  -- overlaps or after
+  OPERATOR  31    #&> (ttext, tstzspan),
+  OPERATOR  31    #&> (ttext, ttext),
   -- ever overlaps
   OPERATOR  36    ?&& (ttext, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (ttext, tstzspan),
   -- functions
-  FUNCTION  1 ttext_gist_consistent(internal, ttext, smallint, oid, internal),
+  FUNCTION  1 ttext_mgist_consistent(internal, ttext, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -123,12 +193,27 @@ CREATE OPERATOR CLASS ttext_mrtree_equisplit_ops
 CREATE OPERATOR CLASS ttext_mrtree_segsplit_ops
   FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@ (ttext, tstzspan),
+  OPERATOR  8    <@ (ttext, ttext),
+  -- overlaps or before
+  OPERATOR  28    &<# (ttext, tstzspan),
+  OPERATOR  28    &<# (ttext, ttext),
+  -- strictly before
+  OPERATOR  29    <<# (ttext, tstzspan),
+  OPERATOR  29    <<# (ttext, ttext),
+  -- strictly after
+  OPERATOR  30    #>> (ttext, tstzspan),
+  OPERATOR  30    #>> (ttext, ttext),
+  -- overlaps or after
+  OPERATOR  31    #&> (ttext, tstzspan),
+  OPERATOR  31    #&> (ttext, ttext),
   -- ever overlaps
   OPERATOR  36    ?&& (ttext, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (ttext, tstzspan),
   -- functions
-  FUNCTION  1 ttext_gist_consistent(internal, ttext, smallint, oid, internal),
+  FUNCTION  1 ttext_mgist_consistent(internal, ttext, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -140,12 +225,27 @@ CREATE OPERATOR CLASS ttext_mrtree_segsplit_ops
 CREATE OPERATOR CLASS ttext_mrtree_binsplit_ops
   FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@ (ttext, tstzspan),
+  OPERATOR  8    <@ (ttext, ttext),
+  -- overlaps or before
+  OPERATOR  28    &<# (ttext, tstzspan),
+  OPERATOR  28    &<# (ttext, ttext),
+  -- strictly before
+  OPERATOR  29    <<# (ttext, tstzspan),
+  OPERATOR  29    <<# (ttext, ttext),
+  -- strictly after
+  OPERATOR  30    #>> (ttext, tstzspan),
+  OPERATOR  30    #>> (ttext, ttext),
+  -- overlaps or after
+  OPERATOR  31    #&> (ttext, tstzspan),
+  OPERATOR  31    #&> (ttext, ttext),
   -- ever overlaps
   OPERATOR  36    ?&& (ttext, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (ttext, tstzspan),
   -- functions
-  FUNCTION  1 ttext_gist_consistent(internal, ttext, smallint, oid, internal),
+  FUNCTION  1 ttext_mgist_consistent(internal, ttext, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -169,155 +269,548 @@ CREATE FUNCTION tnumber_mest_tilesplit(internal, internal, internal)
   AS 'MODULE_PATHNAME', 'Tnumber_mest_tilesplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tint_mgist_consistent(internal, tint, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Tnumber_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tint_mrtree_equisplit_ops
   DEFAULT FOR TYPE tint USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tint, intspan),
+  OPERATOR  1    << (tint, tbox),
+  OPERATOR  1    << (tint, tint),
+  -- overlaps or left
+  OPERATOR  2    &< (tint, intspan),
+  OPERATOR  2    &< (tint, tbox),
+  OPERATOR  2    &< (tint, tint),
+  -- overlaps or right
+  OPERATOR  4    &> (tint, intspan),
+  OPERATOR  4    &> (tint, tbox),
+  OPERATOR  4    &> (tint, tint),
+  -- strictly right
+  OPERATOR  5    >> (tint, intspan),
+  OPERATOR  5    >> (tint, tbox),
+  OPERATOR  5    >> (tint, tint),
+  -- contained by
+  OPERATOR  8    <@ (tint, tstzspan),
+  OPERATOR  8    <@ (tint, intspan),
+  OPERATOR  8    <@ (tint, tbox),
+  OPERATOR  8    <@ (tint, tint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tint, tstzspan),
+  OPERATOR  28    &<# (tint, tbox),
+  OPERATOR  28    &<# (tint, tint),
+  -- strictly before
+  OPERATOR  29    <<# (tint, tstzspan),
+  OPERATOR  29    <<# (tint, tbox),
+  OPERATOR  29    <<# (tint, tint),
+  -- strictly after
+  OPERATOR  30    #>> (tint, tstzspan),
+  OPERATOR  30    #>> (tint, tbox),
+  OPERATOR  30    #>> (tint, tint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tint, tstzspan),
+  OPERATOR  31    #&> (tint, tbox),
+  OPERATOR  31    #&> (tint, tint),
   -- ever overlaps
   OPERATOR  36    ?&& (tint, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tint, tbox),
   -- functions
-  FUNCTION  1 tint_gist_consistent(internal, tint, smallint, oid, internal),
+  FUNCTION  1 tint_mgist_consistent(internal, tint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tint_gist_distance(internal, tint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tnumber_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tint_mrtree_segsplit_ops
   FOR TYPE tint USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tint, intspan),
+  OPERATOR  1    << (tint, tbox),
+  OPERATOR  1    << (tint, tint),
+  -- overlaps or left
+  OPERATOR  2    &< (tint, intspan),
+  OPERATOR  2    &< (tint, tbox),
+  OPERATOR  2    &< (tint, tint),
+  -- overlaps or right
+  OPERATOR  4    &> (tint, intspan),
+  OPERATOR  4    &> (tint, tbox),
+  OPERATOR  4    &> (tint, tint),
+  -- strictly right
+  OPERATOR  5    >> (tint, intspan),
+  OPERATOR  5    >> (tint, tbox),
+  OPERATOR  5    >> (tint, tint),
+  -- contained by
+  OPERATOR  8    <@ (tint, tstzspan),
+  OPERATOR  8    <@ (tint, intspan),
+  OPERATOR  8    <@ (tint, tbox),
+  OPERATOR  8    <@ (tint, tint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tint, tstzspan),
+  OPERATOR  28    &<# (tint, tbox),
+  OPERATOR  28    &<# (tint, tint),
+  -- strictly before
+  OPERATOR  29    <<# (tint, tstzspan),
+  OPERATOR  29    <<# (tint, tbox),
+  OPERATOR  29    <<# (tint, tint),
+  -- strictly after
+  OPERATOR  30    #>> (tint, tstzspan),
+  OPERATOR  30    #>> (tint, tbox),
+  OPERATOR  30    #>> (tint, tint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tint, tstzspan),
+  OPERATOR  31    #&> (tint, tbox),
+  OPERATOR  31    #&> (tint, tint),
   -- ever overlaps
   OPERATOR  36    ?&& (tint, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tint, tbox),
   -- functions
-  FUNCTION  1 tint_gist_consistent(internal, tint, smallint, oid, internal),
+  FUNCTION  1 tint_mgist_consistent(internal, tint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tint_gist_distance(internal, tint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tnumber_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tint_mrtree_tilesplit_ops
   FOR TYPE tint USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tint, intspan),
+  OPERATOR  1    << (tint, tbox),
+  OPERATOR  1    << (tint, tint),
+  -- overlaps or left
+  OPERATOR  2    &< (tint, intspan),
+  OPERATOR  2    &< (tint, tbox),
+  OPERATOR  2    &< (tint, tint),
+  -- overlaps or right
+  OPERATOR  4    &> (tint, intspan),
+  OPERATOR  4    &> (tint, tbox),
+  OPERATOR  4    &> (tint, tint),
+  -- strictly right
+  OPERATOR  5    >> (tint, intspan),
+  OPERATOR  5    >> (tint, tbox),
+  OPERATOR  5    >> (tint, tint),
+  -- contained by
+  OPERATOR  8    <@ (tint, tstzspan),
+  OPERATOR  8    <@ (tint, intspan),
+  OPERATOR  8    <@ (tint, tbox),
+  OPERATOR  8    <@ (tint, tint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tint, tstzspan),
+  OPERATOR  28    &<# (tint, tbox),
+  OPERATOR  28    &<# (tint, tint),
+  -- strictly before
+  OPERATOR  29    <<# (tint, tstzspan),
+  OPERATOR  29    <<# (tint, tbox),
+  OPERATOR  29    <<# (tint, tint),
+  -- strictly after
+  OPERATOR  30    #>> (tint, tstzspan),
+  OPERATOR  30    #>> (tint, tbox),
+  OPERATOR  30    #>> (tint, tint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tint, tstzspan),
+  OPERATOR  31    #&> (tint, tbox),
+  OPERATOR  31    #&> (tint, tint),
   -- ever overlaps
   OPERATOR  36    ?&& (tint, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tint, tbox),
   -- functions
-  FUNCTION  1 tint_gist_consistent(internal, tint, smallint, oid, internal),
+  FUNCTION  1 tint_mgist_consistent(internal, tint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tint_gist_distance(internal, tint, smallint, oid, internal),
   FUNCTION 10 mest_tile_options(internal),
   FUNCTION 13 tnumber_mest_tilesplit(internal, internal, internal);
+
+CREATE FUNCTION tbigint_mgist_consistent(internal, tbigint, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Tnumber_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tbigint_mrtree_equisplit_ops
   DEFAULT FOR TYPE tbigint USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tbigint, bigintspan),
+  OPERATOR  1    << (tbigint, tbox),
+  OPERATOR  1    << (tbigint, tbigint),
+  -- overlaps or left
+  OPERATOR  2    &< (tbigint, bigintspan),
+  OPERATOR  2    &< (tbigint, tbox),
+  OPERATOR  2    &< (tbigint, tbigint),
+  -- overlaps or right
+  OPERATOR  4    &> (tbigint, bigintspan),
+  OPERATOR  4    &> (tbigint, tbox),
+  OPERATOR  4    &> (tbigint, tbigint),
+  -- strictly right
+  OPERATOR  5    >> (tbigint, bigintspan),
+  OPERATOR  5    >> (tbigint, tbox),
+  OPERATOR  5    >> (tbigint, tbigint),
+  -- contained by
+  OPERATOR  8    <@ (tbigint, tstzspan),
+  OPERATOR  8    <@ (tbigint, bigintspan),
+  OPERATOR  8    <@ (tbigint, tbox),
+  OPERATOR  8    <@ (tbigint, tbigint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tbigint, tstzspan),
+  OPERATOR  28    &<# (tbigint, tbox),
+  OPERATOR  28    &<# (tbigint, tbigint),
+  -- strictly before
+  OPERATOR  29    <<# (tbigint, tstzspan),
+  OPERATOR  29    <<# (tbigint, tbox),
+  OPERATOR  29    <<# (tbigint, tbigint),
+  -- strictly after
+  OPERATOR  30    #>> (tbigint, tstzspan),
+  OPERATOR  30    #>> (tbigint, tbox),
+  OPERATOR  30    #>> (tbigint, tbigint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbigint, tstzspan),
+  OPERATOR  31    #&> (tbigint, tbox),
+  OPERATOR  31    #&> (tbigint, tbigint),
   -- ever overlaps
   OPERATOR  36    ?&& (tbigint, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tbigint, tbox),
   -- functions
-  FUNCTION  1 tbigint_gist_consistent(internal, tbigint, smallint, oid, internal),
+  FUNCTION  1 tbigint_mgist_consistent(internal, tbigint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tbigint_gist_distance(internal, tbigint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tnumber_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tbigint_mrtree_segsplit_ops
   FOR TYPE tbigint USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tbigint, bigintspan),
+  OPERATOR  1    << (tbigint, tbox),
+  OPERATOR  1    << (tbigint, tbigint),
+  -- overlaps or left
+  OPERATOR  2    &< (tbigint, bigintspan),
+  OPERATOR  2    &< (tbigint, tbox),
+  OPERATOR  2    &< (tbigint, tbigint),
+  -- overlaps or right
+  OPERATOR  4    &> (tbigint, bigintspan),
+  OPERATOR  4    &> (tbigint, tbox),
+  OPERATOR  4    &> (tbigint, tbigint),
+  -- strictly right
+  OPERATOR  5    >> (tbigint, bigintspan),
+  OPERATOR  5    >> (tbigint, tbox),
+  OPERATOR  5    >> (tbigint, tbigint),
+  -- contained by
+  OPERATOR  8    <@ (tbigint, tstzspan),
+  OPERATOR  8    <@ (tbigint, bigintspan),
+  OPERATOR  8    <@ (tbigint, tbox),
+  OPERATOR  8    <@ (tbigint, tbigint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tbigint, tstzspan),
+  OPERATOR  28    &<# (tbigint, tbox),
+  OPERATOR  28    &<# (tbigint, tbigint),
+  -- strictly before
+  OPERATOR  29    <<# (tbigint, tstzspan),
+  OPERATOR  29    <<# (tbigint, tbox),
+  OPERATOR  29    <<# (tbigint, tbigint),
+  -- strictly after
+  OPERATOR  30    #>> (tbigint, tstzspan),
+  OPERATOR  30    #>> (tbigint, tbox),
+  OPERATOR  30    #>> (tbigint, tbigint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbigint, tstzspan),
+  OPERATOR  31    #&> (tbigint, tbox),
+  OPERATOR  31    #&> (tbigint, tbigint),
   -- ever overlaps
   OPERATOR  36    ?&& (tbigint, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tbigint, tbox),
   -- functions
-  FUNCTION  1 tbigint_gist_consistent(internal, tbigint, smallint, oid, internal),
+  FUNCTION  1 tbigint_mgist_consistent(internal, tbigint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tbigint_gist_distance(internal, tbigint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tnumber_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tbigint_mrtree_tilesplit_ops
   FOR TYPE tbigint USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tbigint, bigintspan),
+  OPERATOR  1    << (tbigint, tbox),
+  OPERATOR  1    << (tbigint, tbigint),
+  -- overlaps or left
+  OPERATOR  2    &< (tbigint, bigintspan),
+  OPERATOR  2    &< (tbigint, tbox),
+  OPERATOR  2    &< (tbigint, tbigint),
+  -- overlaps or right
+  OPERATOR  4    &> (tbigint, bigintspan),
+  OPERATOR  4    &> (tbigint, tbox),
+  OPERATOR  4    &> (tbigint, tbigint),
+  -- strictly right
+  OPERATOR  5    >> (tbigint, bigintspan),
+  OPERATOR  5    >> (tbigint, tbox),
+  OPERATOR  5    >> (tbigint, tbigint),
+  -- contained by
+  OPERATOR  8    <@ (tbigint, tstzspan),
+  OPERATOR  8    <@ (tbigint, bigintspan),
+  OPERATOR  8    <@ (tbigint, tbox),
+  OPERATOR  8    <@ (tbigint, tbigint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tbigint, tstzspan),
+  OPERATOR  28    &<# (tbigint, tbox),
+  OPERATOR  28    &<# (tbigint, tbigint),
+  -- strictly before
+  OPERATOR  29    <<# (tbigint, tstzspan),
+  OPERATOR  29    <<# (tbigint, tbox),
+  OPERATOR  29    <<# (tbigint, tbigint),
+  -- strictly after
+  OPERATOR  30    #>> (tbigint, tstzspan),
+  OPERATOR  30    #>> (tbigint, tbox),
+  OPERATOR  30    #>> (tbigint, tbigint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbigint, tstzspan),
+  OPERATOR  31    #&> (tbigint, tbox),
+  OPERATOR  31    #&> (tbigint, tbigint),
   -- ever overlaps
   OPERATOR  36    ?&& (tbigint, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tbigint, tbox),
   -- functions
-  FUNCTION  1 tbigint_gist_consistent(internal, tbigint, smallint, oid, internal),
+  FUNCTION  1 tbigint_mgist_consistent(internal, tbigint, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tbigint_gist_distance(internal, tbigint, smallint, oid, internal),
   FUNCTION 10 mest_tile_options(internal),
   FUNCTION 13 tnumber_mest_tilesplit(internal, internal, internal);
+
+CREATE FUNCTION tfloat_mgist_consistent(internal, tfloat, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Tnumber_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tfloat_mrtree_equisplit_ops
   DEFAULT FOR TYPE tfloat USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tfloat, floatspan),
+  OPERATOR  1    << (tfloat, tbox),
+  OPERATOR  1    << (tfloat, tfloat),
+  -- overlaps or left
+  OPERATOR  2    &< (tfloat, floatspan),
+  OPERATOR  2    &< (tfloat, tbox),
+  OPERATOR  2    &< (tfloat, tfloat),
+  -- overlaps or right
+  OPERATOR  4    &> (tfloat, floatspan),
+  OPERATOR  4    &> (tfloat, tbox),
+  OPERATOR  4    &> (tfloat, tfloat),
+  -- strictly right
+  OPERATOR  5    >> (tfloat, floatspan),
+  OPERATOR  5    >> (tfloat, tbox),
+  OPERATOR  5    >> (tfloat, tfloat),
+  -- contained by
+  OPERATOR  8    <@ (tfloat, tstzspan),
+  OPERATOR  8    <@ (tfloat, floatspan),
+  OPERATOR  8    <@ (tfloat, tbox),
+  OPERATOR  8    <@ (tfloat, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tfloat, tstzspan),
+  OPERATOR  28    &<# (tfloat, tbox),
+  OPERATOR  28    &<# (tfloat, tfloat),
+  -- strictly before
+  OPERATOR  29    <<# (tfloat, tstzspan),
+  OPERATOR  29    <<# (tfloat, tbox),
+  OPERATOR  29    <<# (tfloat, tfloat),
+  -- strictly after
+  OPERATOR  30    #>> (tfloat, tstzspan),
+  OPERATOR  30    #>> (tfloat, tbox),
+  OPERATOR  30    #>> (tfloat, tfloat),
+  -- overlaps or after
+  OPERATOR  31    #&> (tfloat, tstzspan),
+  OPERATOR  31    #&> (tfloat, tbox),
+  OPERATOR  31    #&> (tfloat, tfloat),
   -- ever overlaps
   OPERATOR  36    ?&& (tfloat, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tfloat, tbox),
   -- functions
-  FUNCTION  1 tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
+  FUNCTION  1 tfloat_mgist_consistent(internal, tfloat, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tfloat_gist_distance(internal, tfloat, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tnumber_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tfloat_mrtree_segsplit_ops
   FOR TYPE tfloat USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tfloat, floatspan),
+  OPERATOR  1    << (tfloat, tbox),
+  OPERATOR  1    << (tfloat, tfloat),
+  -- overlaps or left
+  OPERATOR  2    &< (tfloat, floatspan),
+  OPERATOR  2    &< (tfloat, tbox),
+  OPERATOR  2    &< (tfloat, tfloat),
+  -- overlaps or right
+  OPERATOR  4    &> (tfloat, floatspan),
+  OPERATOR  4    &> (tfloat, tbox),
+  OPERATOR  4    &> (tfloat, tfloat),
+  -- strictly right
+  OPERATOR  5    >> (tfloat, floatspan),
+  OPERATOR  5    >> (tfloat, tbox),
+  OPERATOR  5    >> (tfloat, tfloat),
+  -- contained by
+  OPERATOR  8    <@ (tfloat, tstzspan),
+  OPERATOR  8    <@ (tfloat, floatspan),
+  OPERATOR  8    <@ (tfloat, tbox),
+  OPERATOR  8    <@ (tfloat, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tfloat, tstzspan),
+  OPERATOR  28    &<# (tfloat, tbox),
+  OPERATOR  28    &<# (tfloat, tfloat),
+  -- strictly before
+  OPERATOR  29    <<# (tfloat, tstzspan),
+  OPERATOR  29    <<# (tfloat, tbox),
+  OPERATOR  29    <<# (tfloat, tfloat),
+  -- strictly after
+  OPERATOR  30    #>> (tfloat, tstzspan),
+  OPERATOR  30    #>> (tfloat, tbox),
+  OPERATOR  30    #>> (tfloat, tfloat),
+  -- overlaps or after
+  OPERATOR  31    #&> (tfloat, tstzspan),
+  OPERATOR  31    #&> (tfloat, tbox),
+  OPERATOR  31    #&> (tfloat, tfloat),
   -- ever overlaps
   OPERATOR  36    ?&& (tfloat, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tfloat, tbox),
   -- functions
-  FUNCTION  1 tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
+  FUNCTION  1 tfloat_mgist_consistent(internal, tfloat, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tfloat_gist_distance(internal, tfloat, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tnumber_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tfloat_mrtree_tilesplit_ops
   FOR TYPE tfloat USING mgist AS
   STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tfloat, floatspan),
+  OPERATOR  1    << (tfloat, tbox),
+  OPERATOR  1    << (tfloat, tfloat),
+  -- overlaps or left
+  OPERATOR  2    &< (tfloat, floatspan),
+  OPERATOR  2    &< (tfloat, tbox),
+  OPERATOR  2    &< (tfloat, tfloat),
+  -- overlaps or right
+  OPERATOR  4    &> (tfloat, floatspan),
+  OPERATOR  4    &> (tfloat, tbox),
+  OPERATOR  4    &> (tfloat, tfloat),
+  -- strictly right
+  OPERATOR  5    >> (tfloat, floatspan),
+  OPERATOR  5    >> (tfloat, tbox),
+  OPERATOR  5    >> (tfloat, tfloat),
+  -- contained by
+  OPERATOR  8    <@ (tfloat, tstzspan),
+  OPERATOR  8    <@ (tfloat, floatspan),
+  OPERATOR  8    <@ (tfloat, tbox),
+  OPERATOR  8    <@ (tfloat, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tfloat, tstzspan),
+  OPERATOR  28    &<# (tfloat, tbox),
+  OPERATOR  28    &<# (tfloat, tfloat),
+  -- strictly before
+  OPERATOR  29    <<# (tfloat, tstzspan),
+  OPERATOR  29    <<# (tfloat, tbox),
+  OPERATOR  29    <<# (tfloat, tfloat),
+  -- strictly after
+  OPERATOR  30    #>> (tfloat, tstzspan),
+  OPERATOR  30    #>> (tfloat, tbox),
+  OPERATOR  30    #>> (tfloat, tfloat),
+  -- overlaps or after
+  OPERATOR  31    #&> (tfloat, tstzspan),
+  OPERATOR  31    #&> (tfloat, tbox),
+  OPERATOR  31    #&> (tfloat, tfloat),
   -- ever overlaps
   OPERATOR  36    ?&& (tfloat, tbox),
   -- always overlaps
   OPERATOR  37    %&& (tfloat, tbox),
   -- functions
-  FUNCTION  1 tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
+  FUNCTION  1 tfloat_mgist_consistent(internal, tfloat, smallint, oid, internal),
   FUNCTION  2 tbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 tbox_gist_picksplit(internal, internal),
   FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tfloat_gist_distance(internal, tfloat, smallint, oid, internal),
   FUNCTION 10 mest_tile_options(internal),
   FUNCTION 13 tnumber_mest_tilesplit(internal, internal, internal);

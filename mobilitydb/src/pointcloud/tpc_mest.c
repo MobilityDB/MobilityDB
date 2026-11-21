@@ -132,3 +132,25 @@ Tpointcloud_mest_adaptsplit(PG_FUNCTION_ARGS)
 }
 
 /* GENERATED-BOXMEST-END tpointcloud */
+
+/* GENERATED-MESTCONSISTENT-BEGIN pointcloud — tools/codegen/inherited/generate.py from templates/mestconsistent.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
+
+extern PGDLLEXPORT Datum Tpcbox_gist_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_mgist_consistent);
+/**
+ * @brief Multi-entry GiST consistent method of the classes keyed by the boxes
+ * of the pieces of a value, as #Tpcbox_gist_consistent answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator: a predicate of the box of a piece is not that of the value
+ */
+Datum
+Tpcbox_mgist_consistent(PG_FUNCTION_ARGS)
+{
+  Datum result = Tpcbox_gist_consistent(fcinfo);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  *recheck = true;
+  return result;
+}
+
+/* GENERATED-MESTCONSISTENT-END pointcloud */

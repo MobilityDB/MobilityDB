@@ -37,87 +37,337 @@
 
 /******************************************************************************/
 
+CREATE FUNCTION tnpoint_mgist_consistent(internal, tnpoint, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tnpoint_mrtree_equisplit_ops
   DEFAULT FOR TYPE tnpoint USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tnpoint, stbox),
+  OPERATOR  1    << (tnpoint, tnpoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tnpoint, stbox),
+  OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tnpoint, stbox),
+  OPERATOR  4    &> (tnpoint, tnpoint),
+  -- strictly right
+  OPERATOR  5    >> (tnpoint, stbox),
+  OPERATOR  5    >> (tnpoint, tnpoint),
+  -- contained by
+  OPERATOR  8    <@ (tnpoint, tstzspan),
+  OPERATOR  8    <@ (tnpoint, stbox),
+  OPERATOR  8    <@ (tnpoint, tnpoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tnpoint, stbox),
+  OPERATOR  9    &<| (tnpoint, tnpoint),
+  -- strictly below
+  OPERATOR  10    <<| (tnpoint, stbox),
+  OPERATOR  10    <<| (tnpoint, tnpoint),
+  -- strictly above
+  OPERATOR  11    |>> (tnpoint, stbox),
+  OPERATOR  11    |>> (tnpoint, tnpoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tnpoint, stbox),
+  OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tnpoint, tstzspan),
+  OPERATOR  28    &<# (tnpoint, stbox),
+  OPERATOR  28    &<# (tnpoint, tnpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tnpoint, tstzspan),
+  OPERATOR  29    <<# (tnpoint, stbox),
+  OPERATOR  29    <<# (tnpoint, tnpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tnpoint, tstzspan),
+  OPERATOR  30    #>> (tnpoint, stbox),
+  OPERATOR  30    #>> (tnpoint, tnpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tnpoint, tstzspan),
+  OPERATOR  31    #&> (tnpoint, stbox),
+  OPERATOR  31    #&> (tnpoint, tnpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tnpoint, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
-  FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
+  FUNCTION  1 tnpoint_mgist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tnpoint_mrtree_segsplit_ops
   FOR TYPE tnpoint USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tnpoint, stbox),
+  OPERATOR  1    << (tnpoint, tnpoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tnpoint, stbox),
+  OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tnpoint, stbox),
+  OPERATOR  4    &> (tnpoint, tnpoint),
+  -- strictly right
+  OPERATOR  5    >> (tnpoint, stbox),
+  OPERATOR  5    >> (tnpoint, tnpoint),
+  -- contained by
+  OPERATOR  8    <@ (tnpoint, tstzspan),
+  OPERATOR  8    <@ (tnpoint, stbox),
+  OPERATOR  8    <@ (tnpoint, tnpoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tnpoint, stbox),
+  OPERATOR  9    &<| (tnpoint, tnpoint),
+  -- strictly below
+  OPERATOR  10    <<| (tnpoint, stbox),
+  OPERATOR  10    <<| (tnpoint, tnpoint),
+  -- strictly above
+  OPERATOR  11    |>> (tnpoint, stbox),
+  OPERATOR  11    |>> (tnpoint, tnpoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tnpoint, stbox),
+  OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tnpoint, tstzspan),
+  OPERATOR  28    &<# (tnpoint, stbox),
+  OPERATOR  28    &<# (tnpoint, tnpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tnpoint, tstzspan),
+  OPERATOR  29    <<# (tnpoint, stbox),
+  OPERATOR  29    <<# (tnpoint, tnpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tnpoint, tstzspan),
+  OPERATOR  30    #>> (tnpoint, stbox),
+  OPERATOR  30    #>> (tnpoint, tnpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tnpoint, tstzspan),
+  OPERATOR  31    #&> (tnpoint, stbox),
+  OPERATOR  31    #&> (tnpoint, tnpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tnpoint, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
-  FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
+  FUNCTION  1 tnpoint_mgist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tnpoint_mrtree_mergesplit_ops
   FOR TYPE tnpoint USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tnpoint, stbox),
+  OPERATOR  1    << (tnpoint, tnpoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tnpoint, stbox),
+  OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tnpoint, stbox),
+  OPERATOR  4    &> (tnpoint, tnpoint),
+  -- strictly right
+  OPERATOR  5    >> (tnpoint, stbox),
+  OPERATOR  5    >> (tnpoint, tnpoint),
+  -- contained by
+  OPERATOR  8    <@ (tnpoint, tstzspan),
+  OPERATOR  8    <@ (tnpoint, stbox),
+  OPERATOR  8    <@ (tnpoint, tnpoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tnpoint, stbox),
+  OPERATOR  9    &<| (tnpoint, tnpoint),
+  -- strictly below
+  OPERATOR  10    <<| (tnpoint, stbox),
+  OPERATOR  10    <<| (tnpoint, tnpoint),
+  -- strictly above
+  OPERATOR  11    |>> (tnpoint, stbox),
+  OPERATOR  11    |>> (tnpoint, tnpoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tnpoint, stbox),
+  OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tnpoint, tstzspan),
+  OPERATOR  28    &<# (tnpoint, stbox),
+  OPERATOR  28    &<# (tnpoint, tnpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tnpoint, tstzspan),
+  OPERATOR  29    <<# (tnpoint, stbox),
+  OPERATOR  29    <<# (tnpoint, tnpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tnpoint, tstzspan),
+  OPERATOR  30    #>> (tnpoint, stbox),
+  OPERATOR  30    #>> (tnpoint, tnpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tnpoint, tstzspan),
+  OPERATOR  31    #&> (tnpoint, stbox),
+  OPERATOR  31    #&> (tnpoint, tnpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tnpoint, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
-  FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
+  FUNCTION  1 tnpoint_mgist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tnpoint_mrtree_linearsplit_ops
   FOR TYPE tnpoint USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tnpoint, stbox),
+  OPERATOR  1    << (tnpoint, tnpoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tnpoint, stbox),
+  OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tnpoint, stbox),
+  OPERATOR  4    &> (tnpoint, tnpoint),
+  -- strictly right
+  OPERATOR  5    >> (tnpoint, stbox),
+  OPERATOR  5    >> (tnpoint, tnpoint),
+  -- contained by
+  OPERATOR  8    <@ (tnpoint, tstzspan),
+  OPERATOR  8    <@ (tnpoint, stbox),
+  OPERATOR  8    <@ (tnpoint, tnpoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tnpoint, stbox),
+  OPERATOR  9    &<| (tnpoint, tnpoint),
+  -- strictly below
+  OPERATOR  10    <<| (tnpoint, stbox),
+  OPERATOR  10    <<| (tnpoint, tnpoint),
+  -- strictly above
+  OPERATOR  11    |>> (tnpoint, stbox),
+  OPERATOR  11    |>> (tnpoint, tnpoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tnpoint, stbox),
+  OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tnpoint, tstzspan),
+  OPERATOR  28    &<# (tnpoint, stbox),
+  OPERATOR  28    &<# (tnpoint, tnpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tnpoint, tstzspan),
+  OPERATOR  29    <<# (tnpoint, stbox),
+  OPERATOR  29    <<# (tnpoint, tnpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tnpoint, tstzspan),
+  OPERATOR  30    #>> (tnpoint, stbox),
+  OPERATOR  30    #>> (tnpoint, tnpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tnpoint, tstzspan),
+  OPERATOR  31    #&> (tnpoint, stbox),
+  OPERATOR  31    #&> (tnpoint, tnpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tnpoint, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
-  FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
+  FUNCTION  1 tnpoint_mgist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal),
   FUNCTION 10 mest_stbox_options(internal),
   FUNCTION 13 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tnpoint_mrtree_adaptsplit_ops
   FOR TYPE tnpoint USING mgist AS
   STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tnpoint, stbox),
+  OPERATOR  1    << (tnpoint, tnpoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tnpoint, stbox),
+  OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tnpoint, stbox),
+  OPERATOR  4    &> (tnpoint, tnpoint),
+  -- strictly right
+  OPERATOR  5    >> (tnpoint, stbox),
+  OPERATOR  5    >> (tnpoint, tnpoint),
+  -- contained by
+  OPERATOR  8    <@ (tnpoint, tstzspan),
+  OPERATOR  8    <@ (tnpoint, stbox),
+  OPERATOR  8    <@ (tnpoint, tnpoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tnpoint, stbox),
+  OPERATOR  9    &<| (tnpoint, tnpoint),
+  -- strictly below
+  OPERATOR  10    <<| (tnpoint, stbox),
+  OPERATOR  10    <<| (tnpoint, tnpoint),
+  -- strictly above
+  OPERATOR  11    |>> (tnpoint, stbox),
+  OPERATOR  11    |>> (tnpoint, tnpoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tnpoint, stbox),
+  OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tnpoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tnpoint, tstzspan),
+  OPERATOR  28    &<# (tnpoint, stbox),
+  OPERATOR  28    &<# (tnpoint, tnpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tnpoint, tstzspan),
+  OPERATOR  29    <<# (tnpoint, stbox),
+  OPERATOR  29    <<# (tnpoint, tnpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tnpoint, tstzspan),
+  OPERATOR  30    #>> (tnpoint, stbox),
+  OPERATOR  30    #>> (tnpoint, tnpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tnpoint, tstzspan),
+  OPERATOR  31    #&> (tnpoint, stbox),
+  OPERATOR  31    #&> (tnpoint, tnpoint),
   -- ever overlaps
   OPERATOR  36    ?&& (tnpoint, stbox),
   -- always overlaps
   OPERATOR  37    %&& (tnpoint, stbox),
   -- functions
-  FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
+  FUNCTION  1 tnpoint_mgist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 tgeo_mest_adaptsplit(internal, internal, internal);

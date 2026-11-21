@@ -339,7 +339,7 @@ def render_family_tempopclass(kind: str, sub: dict) -> str:
 def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
                     prefix: str, hasz: bool, hasdist: bool = True,
                     hasever: bool = True, opnames: dict = None,
-                    valspan: str = None) -> list:
+                    valspan: str = None, distround: bool = False) -> list:
     """The rows of the index test of `temp` over the tables `tbl_<stem>_*` of
     one dimension, as (label, query, cast), each label opening with `prefix`:
     each member of its class `cls` against a period, a box, the box of space
@@ -370,8 +370,13 @@ def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
             continue
         if order:
             tbl, col = table.get(arg, ("geo", "g"))
+            # A distance is written to 9 significant digits and at most 6
+            # decimals where `distround` asks it, so the output reads the same
+            # under the libm of every platform
+            dtext = ("round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)"
+                     "::numeric))::int))::text") if distround else "s.d::text"
             dist.append((f"{prefix}|=| {arg}",
-                         f"SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM "
+                         f"SELECT string_agg({dtext}, ',' ORDER BY s.d) FROM "
                          f"tbl_{stem}_{tbl} t2, LATERAL (SELECT t1.temp |=| t2.{col} AS d "
                          f"FROM tbl_{stem}_idx t1 ORDER BY t1.temp |=| t2.{col} LIMIT 3) s "
                          f"WHERE t2.knn", ""))
@@ -731,7 +736,8 @@ def render_mestindextest(test: dict, sub: dict, which: int = 0) -> str | None:
         return None
     tstem = temp + d["suffix"]
     rows = _indextest_rows(temp, box, cls, mf, tstem, "", bool(d.get("z")),
-                           False, True, opnames, valspan)
+                           d.get("dist", True) and "|=|" in cls, True, opnames,
+                           valspan, distround=True)
     if not rows:
         return None
     boxkw = "GEODSTBOX" if sub.get("geodetic_target") or \
@@ -1535,7 +1541,19 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
 # The consistent and tree functions are those of the type's GiST or SP-GiST
 # class, which recheck these predicates at every key; the compression keeps a
 # key as it is, and the options and the extraction are those of the split.
+# A class holds the members of the GiST or SP-GiST class of its type that a
+# value answers when every box of its pieces answers it (#MEST_STRATEGIES).
 MEST_AM = {"gist": "mgist", "spgist": "mspgist"}
+# The strategies a multi-entry class serves. The keys of a value are the boxes
+# of its pieces, each within the box of the value, so a predicate holding on
+# the box of the value when it holds on every piece (the position operators
+# of every axis, contained by) is held by some key of every value answering
+# it, as the ever overlaps is, and the always overlaps; the nearest approach
+# distance is bounded below by the distance to the nearest key. Overlaps,
+# same, contains and adjacent read the box of the whole value, which a query
+# between two pieces meets and no key does, and stay with the scan.
+MEST_STRATEGIES = {1, 2, 4, 5, 8, 9, 10, 11, 12, 25, 28, 29, 30, 31, 32, 33,
+                   34, 35, 36, 37}
 MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
                 "merge": "mest_count_options", "adapt": "mest_count_options",
                 "tile": "mest_tile_options", "bin": "mest_bin_options"}
@@ -1563,12 +1581,8 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
     gfn = tc.get("gistfn", box)
     sfn = tc.get("spgistfn", "stbox")
     am = TEMPOPCLASS_KINDS[kind]
-    members = []
-    for s in strategies:
-        if s["axis"] == "ever" and _ever_overlaps_box(temp) == box:
-            op = (opnames or {}).get(s["sqlop"], s["sqlop"])
-            members += [f"  -- {s['desc']}",
-                        f"  OPERATOR  {s['num']}    {op} ({temp}, {box}),"]
+    base = _tempopclass_text(temp, kind)
+    members = _mest_members(base)
     options = ((oc.get("mestoptions") or {}).get(split) or MEST_OPTIONS[split]) \
         + "(internal)"
     extract = (f"{(stem or oc['meststem']).lower()}_mest_{split}split"
@@ -1578,14 +1592,20 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
         cons = (f"{temp}_gist_consistent(internal, {temp}, smallint, oid, internal)"
                 if tc.get("gistconsistent", "own") == "own" else
                 f"{box}_gist_consistent(internal, {box}, smallint, oid, internal)")
-        funcs = [f"  FUNCTION  1 {cons}",
+        funcs = [f"  FUNCTION  1 {mest_consistent(cons)}",
                  f"  FUNCTION  2 {gfn}_gist_union(internal, internal)",
                  "  FUNCTION  3 mest_gist_compress(internal)",
                  f"  FUNCTION  5 {gfn}_gist_penalty(internal, internal, internal)",
                  f"  FUNCTION  6 {gfn}_gist_picksplit(internal, internal)",
-                 f"  FUNCTION  7 {gfn}_gist_same({box}, {box}, internal)",
-                 f"  FUNCTION 10 {options}",
-                 f"  FUNCTION 13 {extract}"]
+                 f"  FUNCTION  7 {gfn}_gist_same({box}, {box}, internal)"]
+        # The distance of the nearest approach, where the class holds it, as
+        # the GiST class of the type states it
+        if any("FOR ORDER BY" in m for m in members):
+            funcs += [f.rstrip(",") for f in
+                      re.findall(r"^  FUNCTION  8 [^\n]*(?:\n    [^\n]*)?", base,
+                                 re.M)]
+        funcs += [f"  FUNCTION 10 {options}",
+                  f"  FUNCTION 13 {extract}"]
         head = (f"CREATE OPERATOR CLASS {temp}_m{kind}_{split}split_ops\n"
                 f"  {default}FOR TYPE {temp} USING mgist AS\n  STORAGE {box},\n")
     else:
@@ -1594,7 +1614,7 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
                  f"  FUNCTION  2 {sfn}_{kind}_choose(internal, internal)",
                  f"  FUNCTION  3 {sfn}_{kind}_picksplit(internal, internal)",
                  f"  FUNCTION  4 {sfn}_{kind}_inner_consistent(internal, internal)",
-                 f"  FUNCTION  5 {sfn}_spgist_leaf_consistent(internal, internal)",
+                 f"  FUNCTION  5 {mest_consistent(sfn + '_spgist_leaf_consistent(internal, internal)')}",
                  "  FUNCTION  6 mest_spgist_compress(internal)",
                  f"  FUNCTION  7 {options}",
                  f"  FUNCTION  8 {extract}"]
@@ -1602,6 +1622,118 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
                 f"  {default}FOR TYPE {temp} USING mspgist AS\n")
     return (head + "\n".join(members) + "\n  -- functions\n"
             + ",\n".join(funcs) + ";\n")
+
+
+
+def _tempopclass_text(temp: str, kind: str) -> str:
+    """The `kind` index operator class of the temporal type `temp`, as
+    #main writes it: the class #render_tempopclass writes for a partner of a
+    box type, else the one #render_family_tempopclass writes for a subtype"""
+    mf = load_manifest()
+    for bt in mf.get("boxtypes", []):
+        for part in (bt.get("opclasses") or {}).get("partners") or []:
+            if part["type"] == temp and part.get("axes") is not None:
+                return render_tempopclass(temp, bt, part["axes"],
+                                          part.get("distwith") or [], kind,
+                                          mf.get("boxstrategies", []),
+                                          part.get("valspan"), part.get("opnames"))
+    sub = next(s for s in mf.get("subtypes", []) if s["temp"] == temp)
+    return render_family_tempopclass(kind, sub)
+
+
+def _mest_members(base: str) -> list:
+    """The members of the class `base` a multi-entry class holds, the
+    strategies of #MEST_STRATEGIES, each under the comment it has there"""
+    body = base.split("\n  -- functions\n")[0].split("\n")
+    out, comment = [], None
+    for line in body:
+        if line.startswith("  -- "):
+            comment = line
+            continue
+        m = re.match(r"  OPERATOR +(\d+) ", line)
+        if m and int(m.group(1)) in MEST_STRATEGIES:
+            if comment:
+                out.append(comment)
+                comment = None
+            out.append(line)
+    return out
+
+
+_SQL_C_SYMBOLS = {}
+
+
+def sql_c_symbol(name: str) -> str:
+    """The C symbol the SQL function `name` of the extension is declared with,
+    `AS 'MODULE_PATHNAME', '<Symbol>'` in mobilitydb/sql"""
+    if not _SQL_C_SYMBOLS:
+        pat = re.compile(r"CREATE FUNCTION (\w+)\([^)]*\)[^;]*?"
+                         r"AS 'MODULE_PATHNAME', '(\w+)'", re.S)
+        for f in sorted((ROOT / "mobilitydb/sql").rglob("*.in.sql")):
+            for fn, sym in pat.findall(f.read_text()):
+                _SQL_C_SYMBOLS.setdefault(fn, sym)
+    return _SQL_C_SYMBOLS[name]
+
+
+def mest_twin_symbol(symbol: str) -> str:
+    """The C symbol of the multi-entry twin of the consistent method `symbol`,
+    as #mest_consistent names its SQL function"""
+    return (symbol.replace("_gist_consistent", "_mgist_consistent", 1)
+            .replace("_spgist_leaf_consistent", "_mspgist_leaf_consistent", 1))
+
+
+def mest_twins_of(text: str) -> list:
+    """The consistent twins the multi-entry classes of `text` call, as
+    (twin SQL name, its arguments, original SQL name)"""
+    out = []
+    for twin, args in re.findall(
+            r"FUNCTION +[15] (\w+_m(?:gist|spgist_leaf)_consistent)\(([^)]*)\)", text):
+        orig = (twin.replace("_mgist_consistent", "_gist_consistent", 1)
+                .replace("_mspgist_leaf_consistent", "_spgist_leaf_consistent", 1))
+        if (twin, args, orig) not in out:
+            out.append((twin, args, orig))
+    return out
+
+
+def render_mestconsistent(symbols: list) -> str:
+    """The C bodies of the consistent twins of the GiST and SP-GiST methods
+    `symbols`, from templates/mestconsistent.c.tmpl, whose first chunk is a
+    GiST twin and whose chunk after `/* SPGIST */` an SP-GiST leaf one"""
+    gist, spgist = read_template("mestconsistent.c.tmpl").split("/* SPGIST */\n")
+    out = []
+    for sym in symbols:
+        chunk = spgist if "_spgist_leaf_consistent" in sym else gist
+        out.append(chunk.replace("{SYM}", sym)
+                   .replace("{TWIN}", mest_twin_symbol(sym)).strip("\n") + "\n")
+    return "\n" + "\n".join(out) + "\n"
+
+
+def _mestconsistent_markers(fam: str):
+    """BEGIN/END markers of the consistent twins of a family file, as
+    #_boxmest_markers marks its extract methods"""
+    begin = (f"/* GENERATED-MESTCONSISTENT-BEGIN {fam} — tools/codegen/inherited/"
+             "generate.py from templates/mestconsistent.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxtypes.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-MESTCONSISTENT-END {fam} */\n"
+
+
+def splice_mestconsistent(filetext: str, fam: str, rendered: str) -> str:
+    """Replace the text strictly between the markers of a family file with
+    `rendered`, as #splice_boxmest does, a file without them gaining them at
+    its end"""
+    begin, end = _mestconsistent_markers(fam)
+    if begin not in filetext:
+        return filetext.rstrip("\n") + "\n\n" + begin + rendered + end
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def mest_consistent(signature: str) -> str:
+    """The consistent method of a multi-entry class standing for the GiST or
+    SP-GiST one of `signature`: its twin, which rechecks every leaf, a key
+    covering a part of a value (#render_mestconsistent)"""
+    return (signature.replace("_gist_consistent(", "_mgist_consistent(", 1)
+            .replace("_spgist_leaf_consistent(", "_mspgist_leaf_consistent(", 1))
 
 
 def render_mestfile(bt: dict, am: str, partners: list, strategies: list,
@@ -1640,6 +1772,15 @@ def render_mestfile(bt: dict, am: str, partners: list, strategies: list,
             out.append(f"CREATE FUNCTION {stem.lower()}_mest_{split}split"
                        "(internal, internal, internal)\n  RETURNS internal\n"
                        f"  AS 'MODULE_PATHNAME', '{stem}_mest_{split}split'\n"
+                       "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
+        # The consistent twins, each declared once (#mest_consistent)
+        for twin, args, orig in mest_twins_of("\n".join(classes)):
+            if ("consistent", twin, args) in declared:
+                continue
+            declared.add(("consistent", twin, args))
+            out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS boolean\n"
+                       f"  AS 'MODULE_PATHNAME', "
+                       f"'{mest_twin_symbol(sql_c_symbol(orig))}'\n"
                        "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
         out += classes
     return "\n".join(out)
@@ -7802,6 +7943,31 @@ def main() -> int:
         p.write_text(splice_boxmest(p.read_text(), row["row"],
                                     render_boxmest(row)))
         print(f"spliced boxmest {row['row']} -> {row['mestfile']}")
+    # The C bodies of the consistent twins the classes call, each in the
+    # multi-entry file of the directory defining the method it stands for
+    mestdirs = {str(pathlib.Path(r["mestfile"]).parent): r["mestfile"]
+                for r in (mf.get("boxsplit") or {}).get("rows", [])
+                if r.get("mestfile")}
+    twins = {}
+    for path, parts in mestfiles.items():
+        for twin, a, orig in mest_twins_of("\n".join(parts)):
+            sym = sql_c_symbol(orig)
+            src = next(f for f in sorted((ROOT / "mobilitydb/src").rglob("*.c"))
+                       if re.search(rf"^{sym}\(PG_FUNCTION_ARGS\)", f.read_text(),
+                                    re.M))
+            target = mestdirs[str(src.parent.relative_to(ROOT))]
+            twins.setdefault(target, [])
+            if sym not in twins[target]:
+                twins[target].append(sym)
+    for target, syms in sorted(twins.items()):
+        fam = pathlib.Path(target).parent.name
+        if args.check:
+            print(f"would splice mestconsistent {fam} -> {target}")
+            continue
+        p = ROOT / target
+        p.write_text(splice_mestconsistent(p.read_text(), fam,
+                                           render_mestconsistent(sorted(syms))))
+        print(f"spliced mestconsistent {fam} -> {target}")
     return 0
 
 
