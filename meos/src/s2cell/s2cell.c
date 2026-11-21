@@ -708,8 +708,8 @@ static MEOS_TLS struct
  * leaf index @p I (#s2cell_corner_num, #rational_nearest)
  * @details The coordinate is a function of the index alone, and a walk reads
  * the corners neighbouring cells share again and again, so the ones read
- * last are kept by their index and answer again, as #h3_point_cached keeps
- * the geodetic positions of the H3 vertices
+ * last are kept by their index (#MEOS_CACHE_SLOT) and answer again, as
+ * #h3_point_cached keeps the geodetic positions of the H3 vertices
  */
 static double
 s2cell_corner_uv(uint32_t I)
