@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.0.0 |
+| Version | v1.2.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`02d8595`](https://github.com/MobilityDB/MobilityAPI/tree/02d8595): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`d546339`](https://github.com/MobilityDB/MobilityAPI/tree/d546339): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -191,18 +191,56 @@ the collection's raster type is refused naming the function.
 
 ## 8. Environmental Data Retrieval
 
-Over a raster collection the service answers four queries, each by `GET`, in
+Over a raster collection the service answers six queries, each by `GET`, in
 CoverageJSON:
 
 | query | geometry read | domain written |
 |---|---|---|
 | `position` | `POINT` | `Point`, or `PointSeries` over a span |
-| `trajectory` | `LINESTRINGM`, M the seconds since the Unix epoch | `Trajectory` |
+| `radius` | `POINT`, `within` and `within-units` in `m` or `km` | `Grid`, the raster of one period clipped to the circle |
 | `area` | `POLYGON` | `Grid` |
+| `cube` | `bbox` in CRS84 and `z` | `Grid`; `z` is required and read, and not applied, as a raster has no vertical axis |
+| `trajectory` | `LINESTRINGM`, M the seconds since the Unix epoch | `Trajectory` |
 | `corridor` | `LINESTRING` and a width in `m` or `km` | `Grid`; `corridor-height` is read and not applied, as a raster has no vertical axis |
 
-A collection's description carries `data_queries`, one link per query with its
-variables. The format is selected by `f`, and `Accept` is not read.
+The circle of `radius` and the buffer of `corridor` are taken on the sphere. A
+clipped coverage keeps the pixels whose centre the region covers, on a grid the
+extent of the region rounds outward to whole pixels, as PostGIS's `ST_Clip`
+answers. A collection's description carries `data_queries`, one link per query
+with its variables, and `distanceunits`, as `/req/edr/rc-collection-info` I
+requires of a description linking a radius. The format is selected by `f`, and
+`Accept` is not read.
+
+Each period of a raster collection is an instance:
+`/collections/{collectionId}/instances` lists them in time order and
+`/collections/{collectionId}/instances/{instanceId}` describes one, its id the
+start of the period in RFC 3339. An instance is described as a collection is,
+with the extent of its period alone and its data links under its own path, and
+`/instances/{instanceId}` writes the description `/instances` lists for it. The
+six queries are answered under an instance from the rasters of its period
+alone. `/req/instances/src-md-success` B holds one instance to `instances.yaml`,
+the schema of the list, and C holds its `extent` to the collection's; the
+service writes one instance in the form of `collection.yaml` and with the
+extent of its period, the reading that lets instances differ.
+
+The description of a raster collection carries what
+`/req/edr/rc-collection-info` and the schema `collection.yaml` of EDR 1.1 ask of
+it, and `/collections` lists it with the description `/collections/{collectionId}`
+writes, as `/req/collections/src-md-success` C requires:
+
+| member | content |
+|---|---|
+| `links` | every link with its `rel` and `type`: the description, the coverage in each encoding, the schema, and one `data` link per query |
+| `extent` | the bounds of the rasters in CRS84 and the span of the periods |
+| `output_formats` | `CoverageJSON` |
+| `parameter_names` | one `Parameter` per band, keyed `band1`, `band2`, ... as `parameter-name` reads them, its `data-type` `integer` or `float` by the band's pixel type, its `observedProperty` labelled as `asCoverageJSON` labels the band |
+| `keywords` | `coverage` and the raster type of the collection |
+
+An `observedProperty` carries a `label` and no `id`: `/req/edr/rc-parameters` F
+requires the two, the schema `observedPropertyCollection.yaml` requires the
+`label` alone, and the schema is followed. The class `collections` is not
+declared: it binds every collection of `/collections`, and a collection of
+moving features answers no EDR query.
 
 CoverageJSON is written `application/vnd.cov+json`, the type OGC CoverageJSON
 (OGC 21-069r2) states. EDR 1.1 as published writes `application/prs.coverage+json`;
@@ -243,8 +281,10 @@ at its major number when an answer stated here changes.
 ## 12. Out of scope
 
 - The classes `collections`, `queries` and `covjson` of EDR 1.1: the service
-  answers four of the eight optional queries of `queries`, and `covjson` names
-  the media type the service does not write.
+  answers six of the eight optional queries of `queries` and its instances,
+  `collections` binds every collection of `/collections`, a collection of
+  moving features among them, and `covjson` names the media type the service
+  does not write.
 - The operations of Part 4 over a temporal geometry (`LENGTH`, `AREA`,
   `TO_TRAJ` and the rest of its Table 7), and its Kafka and WebSocket channels.
 - A newer Part 4 draft, describing a Continuous Query resource with `id`,
