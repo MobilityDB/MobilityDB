@@ -66,6 +66,8 @@
 #include <meos_raster.h>
 #include <miscadmin.h>
 #include <pgtypes.h>
+#include <pg_int.h>
+#include <utils/float.h>
 #include <utils/datetime.h>
 #include <stringbuffer.h>
 #include "geo/geo_funcs.h"
@@ -2979,6 +2981,213 @@ bandstats_max(const BandStats *stats, double *result)
     return false;
   *result = stats->max;
   return true;
+}
+
+/**
+ * @brief Read one field of a summarystats record into a buffer, as the
+ * PostgreSQL function @p record_in reads a column: up to the next comma or
+ * closing parenthesis outside double quotes, a backslash taking the next
+ * character as it is and a doubled double quote inside quotes standing for one
+ * @param[in,out] str Text, advanced past the field
+ * @param[out] buf Buffer as long as the text, which receives the field
+ * @param[out] isnull True where the field is empty, a NULL column
+ * @return False where the text ends inside the field
+ */
+static bool
+bandstats_field(const char **str, char *buf, bool *isnull)
+{
+  const char *ptr = *str;
+  *isnull = (*ptr == ',' || *ptr == ')');
+  if (*isnull)
+    return true;
+  bool inquote = false;
+  size_t n = 0;
+  while (inquote || ! (*ptr == ',' || *ptr == ')'))
+  {
+    char ch = *ptr++;
+    if (ch == '\0')
+      return false;
+    if (ch == '\\')
+    {
+      if (*ptr == '\0')
+        return false;
+      buf[n++] = *ptr++;
+    }
+    else if (ch == '"')
+    {
+      if (! inquote)
+        inquote = true;
+      else if (*ptr == '"')
+        buf[n++] = *ptr++;
+      else
+        inquote = false;
+    }
+    else
+      buf[n++] = ch;
+  }
+  buf[n] = '\0';
+  *str = ptr;
+  return true;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return raster band statistics from the text of their summarystats
+ * record
+ * @details The text is read as PostgreSQL reads the @p summarystats record of
+ * PostGIS: its six columns count, sum, mean, stddev, min and max are read by
+ * the rule of the PostgreSQL function @p record_in, the count by #int64_in and
+ * the others by #float8_in, and a NULL column, or every column but the count
+ * where it counts no pixel, reads 0, as MobilityDB reads the record of
+ * #raster_summary_stats. As every input of MEOS, a NaN or an infinity is
+ * refused, and so is a count outside the 32 bits of the statistics
+ * @param[in] str String, as #bandstats_out writes it
+ * @errval NULL
+ */
+BandStats *
+bandstats_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  const char *ptr = str;
+  while (*ptr && isspace((unsigned char) *ptr))
+    ptr++;
+  if (*ptr != '(')
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse summarystats value: Missing left parenthesis");
+    return NULL;
+  }
+  ptr++;
+  char *buf = palloc(strlen(str) + 1);
+  int64 count = 0;
+  double fields[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+  bool isnull;
+  for (int i = 0; i < 6; i++)
+  {
+    if (i > 0)
+    {
+      if (*ptr != ',')
+      {
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "Could not parse summarystats value: Too few columns");
+        pfree(buf);
+        return NULL;
+      }
+      ptr++;
+    }
+    if (! bandstats_field(&ptr, buf, &isnull))
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse summarystats value: Unexpected end of input");
+      pfree(buf);
+      return NULL;
+    }
+    if (isnull)
+      continue;
+    /* The largest values are values of the domain, so a failed read is told
+     * by the error number */
+    int last_errno = meos_errno_reset();
+    if (i == 0)
+      count = int64_in(buf);
+    else
+      fields[i - 1] = float8_in(buf);
+    if (meos_errno() || (i > 0 && ! ensure_finite(fields[i - 1])))
+    {
+      pfree(buf);
+      return NULL;
+    }
+    meos_errno_restore(last_errno);
+  }
+  pfree(buf);
+  if (*ptr != ')')
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse summarystats value: Too many columns");
+    return NULL;
+  }
+  ptr++;
+  while (*ptr && isspace((unsigned char) *ptr))
+    ptr++;
+  if (*ptr)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse summarystats value: Junk after right parenthesis");
+    return NULL;
+  }
+  if (count < 0 || count > UINT32_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "The count of the statistics must lie between 0 and %u", UINT32_MAX);
+    return NULL;
+  }
+  BandStats *result = palloc(sizeof(BandStats));
+  result->count = (uint32_t) count;
+  double *dest[] = {&result->sum, &result->mean, &result->stddev,
+    &result->min, &result->max};
+  for (int i = 0; i < 5; i++)
+    *dest[i] = count == 0 ? 0.0 : fields[i];
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_inout
+ * @brief Return the text of the summarystats record of raster band
+ * statistics
+ * @details The text PostgreSQL writes for the @p summarystats record of
+ * PostGIS, by the rule of the PostgreSQL function @p record_out, each value
+ * written by #float8out_internal as PostgreSQL writes a double precision
+ * column, and the five statistics NULL where no pixel is counted, as in
+ * `(8,430,53.75,24.968730444297723,10,90)` and `(0,,,,,)`. #bandstats_in
+ * reads it
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
+ * @errval NULL
+ */
+char *
+bandstats_out(const BandStats *stats, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  VALIDATE_NOT_NULL(stats, NULL);
+  if (stats->count == 0)
+    return cstring_size(pstrdup("(0,,,,,)"), size_out);
+  const double fields[5] = {stats->sum, stats->mean, stats->stddev,
+    stats->min, stats->max};
+  /* No value float8out_internal writes holds a character record_out quotes */
+  char *strs[5];
+  size_t len = 0;
+  for (int i = 0; i < 5; i++)
+  {
+    strs[i] = float8out_internal(fields[i]);
+    len += strlen(strs[i]);
+  }
+  /* The count, five commas, the parentheses and the terminating null */
+  size_t total = len + 10 + 8;
+  char *result = palloc(total);
+  snprintf(result, total, "(%u,%s,%s,%s,%s,%s)", stats->count, strs[0],
+    strs[1], strs[2], strs[3], strs[4]);
+  for (int i = 0; i < 5; i++)
+    pfree(strs[i]);
+  return cstring_size(result, size_out);
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a copy of raster band statistics
+ * @details The copy mirrors #raster_copy over the fixed size of the statistics
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @errval NULL
+ */
+BandStats *
+bandstats_copy(const BandStats *stats)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, NULL);
+  BandStats *result = palloc(sizeof(BandStats));
+  memcpy(result, stats, sizeof(BandStats));
+  return result;
 }
 
 /**
