@@ -217,6 +217,21 @@ SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
 SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
   2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
   ST_Point(2, -1.1)) AS past_bulge;
+-- A hole stays a hole of the shell whose circle holds it although the circle
+-- of one of its arcs reaches past that shell: the disc of radius 10 holding
+-- the triangle of radius 2 whose arcs bulge out by 0.05 of their chord, of
+-- radius 8.75, leaves out the centre of the hole, 1.17 from its ring, and
+-- holds the point 0.4 inside the middle of its left arc
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(10 0,-10 0,
+  10 0),Compoundcurve(Circularstring(2 0,0.58660254 1.016025404,
+  -1 1.732050808),Circularstring(-1 1.732050808,-1.173205081 0,
+  -1 -1.732050808),Circularstring(-1 -1.732050808,0.58660254 -1.016025404,
+  2 0)))', 0.5), ST_Point(0, 0)) AS hole_centre;
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(10 0,-10 0,
+  10 0),Compoundcurve(Circularstring(2 0,0.58660254 1.016025404,
+  -1 1.732050808),Circularstring(-1 1.732050808,-1.173205081 0,
+  -1 -1.732050808),Circularstring(-1 -1.732050808,0.58660254 -1.016025404,
+  2 0)))', 0.5), ST_Point(-0.773205081, 0)) AS beside_hole_arc;
 -- An arc is offset by an arc about its own centre: a point at 1.4 from the
 -- centre of the half circle of radius 1 lies in its buffer by 0.5
 SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5),
