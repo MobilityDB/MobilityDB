@@ -2604,7 +2604,7 @@
 					<para><link linkend="trgeometry_to_tpose"><varname>tpose</varname></link>: Devuelve la pose temporal subyacente</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_to_tgeompoint"><varname>tgeompoint</varname></link>: Devuelve la trayectoria del centroide (antena) como un punto temporal</para>
+					<para><link linkend="trgeometry_to_tgeompoint"><varname>tgeompoint</varname></link>: Devuelve la trayectoria de la posición de la pose como un punto temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2621,7 +2621,7 @@
 					<para><link linkend="trgeometry_instants"><varname>instants</varname>, <varname>sequences</varname>, <varname>segments</varname></link>: Devuelve el arreglo de instantes, secuencias o segmentos entre instantes constituyentes</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_points"><varname>points</varname></link>: Devuelve el conjunto de puntos del centroide (antena) distintos vistos a lo largo de la trgeometry</para>
+					<para><link linkend="trgeometry_points"><varname>points</varname></link>: Devuelve el conjunto de posiciones distintas de la pose a lo largo de la geometría rígida temporal</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_yaw_pitch_roll"><varname>yaw</varname>, <varname>pitch</varname>, <varname>roll</varname></link>: Devuelve el ángulo yaw, pitch o roll como un flotante temporal, en radianes, bajo la convención Tait-Bryan intrínseca ZYX que exige la clase de conformidad Basic-YPR de OGC GeoPose</para>
@@ -2657,16 +2657,16 @@
 			<title>Métricas de movimiento</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_length"><varname>length</varname>, <varname>cumulativeLength</varname></link>: Devuelve la longitud total recorrida por el centroide, o su longitud acumulada a lo largo del tiempo</para>
+					<para><link linkend="trgeometry_length"><varname>length</varname>, <varname>cumulativeLength</varname></link>: Devuelve la longitud total recorrida por la posición de la pose, o su longitud acumulada a lo largo del tiempo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_speed"><varname>speed</varname></link>: Devuelve la velocidad del centroide como un flotante temporal</para>
+					<para><link linkend="trgeometry_speed"><varname>speed</varname></link>: Devuelve la velocidad de la posición de la pose como un flotante temporal</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_angular_speed"><varname>angularSpeed</varname></link>: Devuelve la velocidad angular como un flotante temporal</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_twcentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo de la trayectoria del centroide como una geometría</para>
+					<para><link linkend="trgeometry_twcentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo de la trayectoria de la posición de la pose como una geometría</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

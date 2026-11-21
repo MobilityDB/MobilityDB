@@ -191,7 +191,7 @@ SELECT asText(tpose(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 			<listitem xml:id="trgeometry_to_tgeompoint">
 				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
-				<para>Return the centroid (antenna) trajectory as a temporal point</para>
+				<para>Return the trajectory of the position of the pose as a temporal point</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tgeompoint(trgeometry) → tgeompoint
 tgeogpoint(trgeometry) → tgeogpoint
@@ -278,7 +278,7 @@ SELECT array_length( instants(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 			<listitem xml:id="trgeometry_points">
 				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
-				<para>Return the set of distinct centroid (antenna) points seen along the trgeometry</para>
+				<para>Return the set of distinct positions of the pose along the temporal rigid geometry</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 points(trgeometry) → geomset
 </programlisting>
@@ -410,13 +410,13 @@ SELECT asText(round(bodyPointTrajectory( trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1
 	<sect1 xml:id="trgeometry_motion_metrics">
 		<title>Motion Metrics</title>
 
-		<para>These functions report the motion of a temporal rigid geometry along its centroid trajectory.</para>
+		<para>These functions report the motion of a temporal rigid geometry along the trajectory of the position of its pose.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_length">
 				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>cumulativeLength</varname></primary></indexterm>
-				<para>Return the total length traversed by the centroid, or its cumulative length over time</para>
+				<para>Return the total length traversed by the position of the pose, or its cumulative length over time</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 length(trgeometry) → float
 cumulativeLength(trgeometry) → tfloat
@@ -430,7 +430,7 @@ SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 			<listitem xml:id="trgeometry_speed">
 				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
-				<para>Return the speed of the centroid as a temporal float</para>
+				<para>Return the speed of the position of the pose as a temporal float</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 speed(trgeometry) → tfloat
 </programlisting>
@@ -457,7 +457,7 @@ SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 			<listitem xml:id="trgeometry_twcentroid">
 				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
-				<para>Return the time-weighted centroid of the centroid trajectory as a geometry</para>
+				<para>Return the time-weighted centroid of the trajectory of the position of the pose as a geometry</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 twCentroid(trgeometry) → geometry
 </programlisting>
@@ -1184,7 +1184,7 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_tile">
 		<title>Tiles</title>
 
-		<para>These functions return the spatiotemporal boxes of a multidimensional grid that the temporal rigid geometry intersects, computed on its centroid trajectory.</para>
+		<para>These functions return the spatiotemporal boxes of a multidimensional grid that the body of the temporal rigid geometry intersects at some instant.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_spaceBoxes">
