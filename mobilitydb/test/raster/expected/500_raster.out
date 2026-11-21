@@ -1807,6 +1807,21 @@ FROM back;
  CDF              | t           | t
 (1 row)
 
+-- A VRT states where the pixels of its source are and copies none of them, so
+-- it is refused; the statement after it answers, the server having refused
+-- the format and not ended.
+SELECT asGDALRaster(ST_AddBand(
+  ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  '8BUI'::text, 7::float8, 0::float8), 'VRT');
+ERROR:  The format VRT states where the pixels of a raster are and writes none of them, so it cannot write a raster
+SELECT length(asGDALRaster(ST_AddBand(
+  ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  '8BUI'::text, 7::float8, 0::float8), 'GTiff')) > 0 AS answers_after_vrt;
+ answers_after_vrt 
+-------------------
+ t
+(1 row)
+
 -- The creation options reach the driver as PostGIS hands them, one option an
 -- element: a level of compression, a quality, a value holding spaces and
 -- quotes, written into the file; an element NULL and an empty array state no

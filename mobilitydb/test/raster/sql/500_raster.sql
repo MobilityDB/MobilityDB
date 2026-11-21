@@ -1436,6 +1436,16 @@ SELECT encode(substring(f from 1 for 3), 'escape') AS netcdf_signature,
     upperLeftY(rasterFromGDALRaster(f)) = upperLeftY(r) AS grid_kept
 FROM back;
 
+-- A VRT states where the pixels of its source are and copies none of them, so
+-- it is refused; the statement after it answers, the server having refused
+-- the format and not ended.
+SELECT asGDALRaster(ST_AddBand(
+  ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  '8BUI'::text, 7::float8, 0::float8), 'VRT');
+SELECT length(asGDALRaster(ST_AddBand(
+  ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 4326),
+  '8BUI'::text, 7::float8, 0::float8), 'GTiff')) > 0 AS answers_after_vrt;
+
 -- The creation options reach the driver as PostGIS hands them, one option an
 -- element: a level of compression, a quality, a value holding spaces and
 -- quotes, written into the file; an element NULL and an empty array state no
