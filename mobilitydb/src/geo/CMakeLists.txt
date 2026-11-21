@@ -35,6 +35,7 @@ add_library(pg_geo OBJECT
   tgeo_boxops.c
   tgeo_compops.c
   tgeo_distance.c
+  tgeo_mest.c
   tgeo_spatialfuncs.c
   tgeo_spatialrels.c
   tgeo_tile.c

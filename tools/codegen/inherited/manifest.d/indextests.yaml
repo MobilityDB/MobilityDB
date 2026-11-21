@@ -20,6 +20,11 @@
 #                             carries, the box its query is given, and whether
 #                             its two counts are named;
 #   extra                     the queries of the family ahead of that table.
+#   mesttiles                 per dimension suffix, the options of the class of
+#                             the tile split in the multi-entry test (a tile
+#                             fitting its fixtures, whose default of 1 in every
+#                             dimension splits a value with Z over the units of
+#                             its Z), or false to leave the tile split out.
 # ---------------------------------------------------------------------------
 indextests:
   - temp: tgeompoint
@@ -30,6 +35,8 @@ indextests:
     dims:
       - {suffix: "", offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
       - {suffix: 3d, z: true, offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
+    # the fixtures in three dimensions span 100 in each of them
+    mesttiles: {3d: "xsize = 10"}
     same: "Point(5 5)"
     sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
     labels: true
@@ -41,6 +48,8 @@ indextests:
     dims:
       - {suffix: "", offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
       - {suffix: 3d, z: true, offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
+    # the fixtures in three dimensions span 40 degrees and 1000 metres of Z
+    mesttiles: {3d: "zsize = 100"}
     same: "SRID=4326;Point(5 45)"
     sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
     labels: true
@@ -55,6 +64,10 @@ indextests:
       - {suffix: "", offset: 10100, copies: 0, srcfilter: k % 1000 = 0}
       - {suffix: 3d, z: true, ever: false, offset: 10100, copies: 0,
          srcfilter: k % 1000 = 0}
+    # no tile split in the multi-entry test: a curve of the big table through
+    # nearly collinear points has a box 2487200 wide, past the tiles an integer
+    # counts at any size that splits the other values
+    mesttiles: {"": false}
     same: "SRID=3812;Point(5 5)"
     sameq: (SELECT temp::stbox FROM tbl_{TEMP}_allthesame LIMIT 1)
     labels: true

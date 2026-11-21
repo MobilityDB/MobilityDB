@@ -24,10 +24,19 @@ boxtypes:
     # stating the box against itself and against each partner whose `axes` carry it.
     # A temporal partner with `files` has its own three classes there, in regions
     # written by render_tempopclass on the same axes, its nearest approach distance
-    # also taking its `distwith` types; `tempclasses` states their functions
+    # also taking its `distwith` types; `tempclasses` states their functions.
+    # A box type stating `mestsplits` gives each partner a multi-entry class per
+    # tree and split, in the file of the extension mobilitydb_mest cloning its
+    # GiST or SP-GiST file (render_mestopclass); `meststem` is the stem of the
+    # extraction methods of the splits (<stem>_mest_<split>split), and
+    # `mestoptions` the options method of a split where the box type's differs
+    # from the one every box type takes (MEST_OPTIONS)
     opclasses:
       tempclasses: {gistconsistent: own, gistcompress: tspatial_gist_compress,
                     spgistcompress: tspatial_spgist_compress}
+      mestsplits: [equi, seg, tile, merge, linear, adapt]
+      meststem: Tgeo
+      mestoptions: {tile: mest_stbox_options, linear: mest_stbox_options}
       partners:
         - {type: tgeompoint, axes: [topo, x, y, z, t, dist], distwith: [geometry],
            files: {gist: mobilitydb/sql/geo/073_tpoint_gist.in.sql,
@@ -38,7 +47,10 @@ boxtypes:
         - {type: tgeometry, axes: [topo, x, y, z, t, dist], distwith: [geometry],
            files: {gist: mobilitydb/sql/geo/073_tgeo_gist.in.sql,
                    spgist: mobilitydb/sql/geo/074_tgeo_spgist.in.sql}}
+        # no tile split: the restriction of a temporal geography to a box,
+        # which a tile reads, answers a temporal geography point alone
         - {type: tgeography, axes: [topo, t, dist], distwith: [geography],
+           mestsplits: [equi, seg, merge, linear, adapt],
            files: {gist: mobilitydb/sql/geo/073_tgeo_gist.in.sql,
                    spgist: mobilitydb/sql/geo/074_tgeo_spgist.in.sql}}
         - {type: geometry, axes: [dist]}
@@ -366,6 +378,8 @@ boxtypes:
     opclasses:
       tempclasses: {gistconsistent: box, gistcompress: tpc_gist_compress,
                     spgistcompress: tpc_spgist_compress, distpairs: true}
+      mestsplits: [equi, seg, merge, adapt]
+      meststem: Tpointcloud
       partners:
         - {type: tpcpoint, axes: [topo, x, y, z, t, dist],
            files: {gist: mobilitydb/sql/pointcloud/439_tpc_gist.in.sql,
@@ -441,6 +455,8 @@ boxtypes:
       tempclasses: {gistconsistent: own, gistfn: span, gistcompress: own,
                     spgistfn: span, spgistconfig: tstzspan,
                     spgistcompress: temporal_spgist_compress}
+      mestsplits: [equi, seg, bin]
+      meststem: Temporal
       partners:
         - {type: tbool, axes: [topo, t],
            files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,
@@ -512,6 +528,8 @@ boxtypes:
     opclasses:
       tempclasses: {gistconsistent: own, gistcompress: own, spgistfn: tbox,
                     spgistcompress: tnumber_spgist_compress}
+      mestsplits: [equi, seg, tile]
+      meststem: Tnumber
       partners:
         - {type: tint, axes: [topo, x, t, dist], valspan: intspan,
            files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,

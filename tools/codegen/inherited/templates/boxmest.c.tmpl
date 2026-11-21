@@ -1,0 +1,72 @@
+
+PG_FUNCTION_INFO_V1({CSTEM}_mest_equisplit);
+/**
+ * @brief Multi-entry extract method keyed by a number of boxes
+ * @details The keys of a {NOUN} are a number of
+ * {NOUNBOXES} of its consecutive instants or segments, the number being
+ * the option of the class (#mest_count) and the split that of
+ * #{PFX}_split_n_{BOXES}
+ */
+Datum
+{CSTEM}_mest_equisplit(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  {CTYPE} *boxes = {PFX}_split_n_{BOXES}_intl(temp, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1({CSTEM}_mest_segsplit);
+/**
+ * @brief Multi-entry extract method keyed by the boxes of a number of segments
+ * @details The keys of a {NOUN} are the
+ * {NOUNBOXES} of a number of its consecutive instants or segments each, the
+ * number being the option of the class (#mest_count) and the split that of
+ * #{PFX}_split_each_n_{BOXES}
+ */
+Datum
+{CSTEM}_mest_segsplit(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  {CTYPE} *boxes = {PFX}_split_each_n_{BOXES}_intl(temp, mest_count(fcinfo),
+    nkeys);
+  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1({CSTEM}_mest_mergesplit);
+/**
+ * @brief Multi-entry extract method keyed by a number of merged boxes
+ * @details The keys of a {NOUN} are a number of
+ * {NOUNBOXES} merged from the boxes of its instants or segments, the number
+ * being the option of the class (#mest_count) and the merge that of
+ * #{PFX}_merge_n_{BOXES}
+ */
+Datum
+{CSTEM}_mest_mergesplit(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  {CTYPE} *boxes = {PFX}_merge_n_{BOXES}_intl(temp, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1({CSTEM}_mest_adaptsplit);
+/**
+ * @brief Multi-entry extract method keyed by boxes of a number of segments
+ * @details The keys of a {NOUN} are the
+ * {NOUNBOXES} merged from the boxes of its instants or segments until a box
+ * holds on average a number of them,
+ * the number being the option of the class (#mest_count) and the merge that of
+ * #{PFX}_merge_each_n_{BOXES}
+ */
+Datum
+{CSTEM}_mest_adaptsplit(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  {CTYPE} *boxes = {PFX}_merge_each_n_{BOXES}_intl(temp, mest_count(fcinfo),
+    nkeys);
+  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+}
+
