@@ -616,7 +616,7 @@ int main(void)
     free(gap); free(gbody);
   }
 
-  /* A temporal rigid geometry has two dimensions, so a 3D operand is read in 2D */
+  /* A temporal rigid geometry in 2D reads a 3D operand in 2D */
   {
     Temporal *body = trgeometry_in(trgeo1_in);
     GSERIALIZED *g2 = geom_in("Point(9 9)", -1);
