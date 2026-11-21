@@ -1241,8 +1241,8 @@ raster_geo_mask(rt_raster raster, const GSERIALIZED *gs, bool touched)
   uint8_t hasnodata = 1;
   double scale_x = rt_raster_get_x_scale(raster);
   double scale_y = rt_raster_get_y_scale(raster);
-  double ul_x = rt_raster_get_x_offset(raster);
-  double ul_y = rt_raster_get_y_offset(raster);
+  double grid_x = rt_raster_get_x_offset(raster);
+  double grid_y = rt_raster_get_y_offset(raster);
   double skew_x = rt_raster_get_x_skew(raster);
   double skew_y = rt_raster_get_y_skew(raster);
   /* The touched pixels are the one option the rasterizer reads, as the
@@ -1250,10 +1250,14 @@ raster_geo_mask(rt_raster raster, const GSERIALIZED *gs, bool touched)
   char all_touched[] = "ALL_TOUCHED=TRUE";
   char *options[] = {all_touched, NULL};
 
+  /* The corner of the subject aligns the grid of the mask, which the
+   * rasterizer places over the extent of the geometry, as the PostGIS
+   * RASTER_clip hands the corner over: the mask then covers the pixels of the
+   * subject the geometry covers, wherever they lie in it */
   rt_raster result = rt_raster_gdal_rasterize(
     (const unsigned char *) wkb->data, (uint32_t) (LWSIZE_GET(wkb->size) -
       LWVARHDRSZ), NULL, 1, &pixtype, &init, &value, &nodata, &hasnodata,
-    NULL, NULL, &scale_x, &scale_y, &ul_x, &ul_y, NULL, NULL, &skew_x,
+    NULL, NULL, &scale_x, &scale_y, NULL, NULL, &grid_x, &grid_y, &skew_x,
     &skew_y, touched ? options : NULL);
   lwfree(wkb);
   if (! result)
