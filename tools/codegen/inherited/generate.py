@@ -671,6 +671,127 @@ def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
     return text
 
 
+def mest_classes_of(temp: str):
+    """The box type, the splits and the extraction stem of the multi-entry
+    classes of the temporal type `temp`, as #main gathers the partners of a box
+    type stating `mestsplits` and the subtype families over the spatiotemporal
+    box stating theirs, or None where the type has no such class"""
+    mf = load_manifest()
+    for bt in mf.get("boxtypes", []):
+        oc = bt.get("opclasses") or {}
+        if not oc.get("mestsplits") or _ever_overlaps_box(temp) != bt["box"]:
+            continue
+        for part in oc.get("partners") or []:
+            if part["type"] == temp:
+                return (bt, part.get("mestsplits") or oc["mestsplits"],
+                        part.get("meststem") or oc["meststem"],
+                        part.get("opnames") or {})
+        if bt["box"] == "stbox":
+            for sub in mf.get("subtypes", []):
+                if sub["temp"] == temp and sub.get("mestsplits"):
+                    return (bt, sub["mestsplits"],
+                            sub.get("meststem") or oc["meststem"], {})
+    return None
+
+
+def mest_indextest_file(path: str) -> str:
+    """The multi-entry index test of the index test `path`:
+    `mobilitydb/test/<fam>/sql/nnn_<temp>_indexes<d>_tbl.sql` becomes
+    `mobilitydb/test/mest/sql/nnn_<temp>_mest<d>_tbl.sql`, run where the access
+    methods of mest are installed"""
+    name = path.rsplit("/", 1)[1].replace("_indexes", "_mest", 1)
+    return "mobilitydb/test/mest/sql/" + name
+
+
+def render_mestindextest(test: dict, sub: dict, which: int = 0) -> str | None:
+    """The multi-entry index test of the subtype `sub` over the values of the
+    dimension `which` of its entry `test` of manifest.d/indextests.yaml,
+    templates/mestindextest.sql.tmpl filled as #render_indextest fills its
+    template: the rows #_indextest_rows takes from the multi-entry class
+    #render_mestopclass writes, answered by the scan and under the index of
+    each tree and split, a column each, with the tables #_indextest_tables
+    writes. None where the type has no multi-entry class or the dimension has
+    no ever and always overlaps"""
+    mc = mest_classes_of(sub["temp"])
+    if not mc:
+        return None
+    bt, splits, stem, opnames = mc
+    mf = load_manifest()
+    temp, q, box = sub["temp"], "'", bt["box"]
+    valspan = next((p.get("valspan") for p in
+                    (bt.get("opclasses") or {}).get("partners") or []
+                    if p["type"] == temp), None)
+    cls = render_mestopclass(temp, bt, "rtree", splits[0],
+                             mf.get("boxstrategies", []), opnames, stem)
+    alldims = test.get("dims") or [{"suffix": "", "offset": test["offset"],
+                                    "copies": test["copies"],
+                                    "srcfilter": test["srcfilter"]}]
+    d = alldims[which]
+    if not d.get("ever", True):
+        return None
+    tstem = temp + d["suffix"]
+    rows = _indextest_rows(temp, box, cls, mf, tstem, "", bool(d.get("z")),
+                           False, True, opnames, valspan)
+    if not rows:
+        return None
+    boxkw = "GEODSTBOX" if sub.get("geodetic_target") or \
+        test.get("base") == "geography" else "STBOX"
+    tables = _indextest_tables(tstem, d, test.get("srid"), boxkw, box, valspan,
+                               test.get("base"))
+    # A test states, per dimension, the options of the tile split fitting its
+    # fixtures, or false to leave the split out (manifest.d/indextests.yaml)
+    mesttile = (test.get("mesttiles") or {}).get(d["suffix"])
+    splits = [s for s in splits if not (s == "tile" and mesttile is False)]
+    cols = [(kind, split) for kind in TEMPOPCLASS_KINDS for split in splits]
+    out = []
+    for kind, split in cols:
+        am = "mgist" if TEMPOPCLASS_KINDS[kind] == "gist" else "mspgist"
+        c = f"{kind}_{split}"
+        opts = f"({mesttile})" if split == "tile" and isinstance(mesttile, str) \
+            else ""
+        b = ["-" * 79, "",
+             f"CREATE INDEX tbl_{tstem}_idx_{c} ON tbl_{tstem}_idx",
+             f"  USING {am}(temp {temp}_m{kind}_{split}split_ops{opts});",
+             "SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+             "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+        for label, query, cast in rows:
+            b += [f"UPDATE test_{temp}_mest SET {c}_idx = ({query}){cast},",
+                  f"  {c}_probe = pg_temp.test_probes_index("
+                  f"'{query.replace(q, q * 2)}')",
+                  f"WHERE op = '{label}';"]
+        b += ["RESET enable_seqscan;", "RESET enable_hashjoin;",
+              "RESET enable_mergejoin;", "RESET enable_sort;",
+              f"DROP INDEX tbl_{tstem}_idx_{c};", ""]
+        out.append("\n".join(b))
+    dimname = {"2d": " in two dimensions", "3d": " in three dimensions"}.get(
+        d["suffix"], "")
+    header = (f"The multi-entry R-tree mgist, quad-tree and k-d tree mspgist indexes "
+              f"of a {temp}{dimname}, keyed by the {box}es of the pieces of the "
+              f"value, one per split ({', '.join(splits)}). Under each index the ever "
+              "and always overlaps, with each right argument they declare, answer the "
+              "rows a sequential scan gives, from a plan that probes the index.")
+    header = textwrap.fill(header, width=83, initial_indent="-- ",
+                           subsequent_indent="-- ")
+    drops = "\n".join(f"DROP TABLE tbl_{tstem}_{t};"
+                      for t in {"stbox": ("geo", "span", "xbox", "box"),
+                                "tbox": ("span", "vspan", "xbox", "box")}.get(
+                                    box, ("span",)) + ("val", "src", "idx"))
+    text = read_template("mestindextest.sql.tmpl")
+    for k, v in (("{HEADER}", header), ("{TABLES}", tables),
+                 ("{COLUMNS}", ",\n".join(f"  {k}_{s}_idx text, {k}_{s}_probe boolean"
+                                          for k, s in cols)),
+                 ("{ROWS}", "\n".join(f"INSERT INTO test_{temp}_mest(op, no_idx) VALUES "
+                                      f"('{label}', ({qr}){c});"
+                                      for label, qr, c in rows)),
+                 ("{BLOCKS}", "\n".join(out)[:-1]),
+                 ("{COUNTS}", f"SELECT COUNT(*) FROM tbl_{tstem}_idx;"),
+                 ("{DIFFER}", " OR\n  ".join(f"no_idx IS DISTINCT FROM {k}_{s}_idx OR "
+                                             f"NOT {k}_{s}_probe" for k, s in cols)),
+                 ("{DROPS}", drops), ("{TEMP}", temp)):
+        text = text.replace(k, v)
+    return text
+
+
 def render(behaviour: str, sub: dict) -> str:
     if behaviour == "compops":
         # compops is not a flat {TOKEN}-substitution template like the other
@@ -1403,6 +1524,125 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
                 f"  {default}FOR TYPE {temp} USING spgist AS\n")
     return (head + "\n".join(members) + "\n  -- functions\n"
             + ",\n".join(funcs) + ";\n")
+
+
+# The multi-entry operator classes of a temporal type, one per tree and per
+# split its box type states in `opclasses.mestsplits`, written into the file of
+# the extension mobilitydb_mest that clones the type's GiST or SP-GiST file
+# (#mest_path). A class holds the predicates on the value alone, the ever and
+# always overlaps: its keys are the boxes of the pieces of a value, which an
+# operator answered on the bounding box of the whole value cannot be found by.
+# The consistent and tree functions are those of the type's GiST or SP-GiST
+# class, which recheck these predicates at every key; the compression keeps a
+# key as it is, and the options and the extraction are those of the split.
+MEST_AM = {"gist": "mgist", "spgist": "mspgist"}
+MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
+                "merge": "mest_count_options", "adapt": "mest_count_options",
+                "tile": "mest_tile_options", "bin": "mest_bin_options"}
+
+
+def mest_path(path: str) -> str:
+    """The file of the extension mobilitydb_mest cloning the GiST or SP-GiST
+    file `path` of the extension: `mobilitydb/sql/<fam>/nnn_<x>_gist.in.sql`
+    becomes `mobilitydb/mest/<fam>/nnn_<x>_mgist.in.sql`"""
+    head, name = path.rsplit("/", 1)
+    name = re.sub(r"_(gist|spgist)\.in\.sql$", r"_m\1.in.sql", name)
+    return head.replace("mobilitydb/sql/", "mobilitydb/mest/", 1) + "/" + name
+
+
+def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
+                       strategies: list, opnames: dict = None,
+                       stem: str = None) -> str:
+    """The multi-entry operator class `<temp>_m<kind>_<split>split_ops` of the
+    temporal type `temp` over the box type `bt`, as the comment of #MEST_AM
+    states it, written as #render_tempopclass writes the class of the tree; its
+    extraction method is the one of `stem`, by default the box type's"""
+    box = bt["box"]
+    oc = bt.get("opclasses") or {}
+    tc = oc.get("tempclasses") or {}
+    gfn = tc.get("gistfn", box)
+    sfn = tc.get("spgistfn", "stbox")
+    am = TEMPOPCLASS_KINDS[kind]
+    members = []
+    for s in strategies:
+        if s["axis"] == "ever" and _ever_overlaps_box(temp) == box:
+            op = (opnames or {}).get(s["sqlop"], s["sqlop"])
+            members += [f"  -- {s['desc']}",
+                        f"  OPERATOR  {s['num']}    {op} ({temp}, {box}),"]
+    options = ((oc.get("mestoptions") or {}).get(split) or MEST_OPTIONS[split]) \
+        + "(internal)"
+    extract = (f"{(stem or oc['meststem']).lower()}_mest_{split}split"
+               "(internal, internal, internal)")
+    default = "DEFAULT " if split == "equi" and kind in ("rtree", "quadtree") else ""
+    if am == "gist":
+        cons = (f"{temp}_gist_consistent(internal, {temp}, smallint, oid, internal)"
+                if tc.get("gistconsistent", "own") == "own" else
+                f"{box}_gist_consistent(internal, {box}, smallint, oid, internal)")
+        funcs = [f"  FUNCTION  1 {cons}",
+                 f"  FUNCTION  2 {gfn}_gist_union(internal, internal)",
+                 "  FUNCTION  3 mest_gist_compress(internal)",
+                 f"  FUNCTION  5 {gfn}_gist_penalty(internal, internal, internal)",
+                 f"  FUNCTION  6 {gfn}_gist_picksplit(internal, internal)",
+                 f"  FUNCTION  7 {gfn}_gist_same({box}, {box}, internal)",
+                 f"  FUNCTION 10 {options}",
+                 f"  FUNCTION 13 {extract}"]
+        head = (f"CREATE OPERATOR CLASS {temp}_m{kind}_{split}split_ops\n"
+                f"  {default}FOR TYPE {temp} USING mgist AS\n  STORAGE {box},\n")
+    else:
+        funcs = [f"  FUNCTION  1 {tc.get('spgistconfig', sfn)}_spgist_config"
+                 "(internal, internal)",
+                 f"  FUNCTION  2 {sfn}_{kind}_choose(internal, internal)",
+                 f"  FUNCTION  3 {sfn}_{kind}_picksplit(internal, internal)",
+                 f"  FUNCTION  4 {sfn}_{kind}_inner_consistent(internal, internal)",
+                 f"  FUNCTION  5 {sfn}_spgist_leaf_consistent(internal, internal)",
+                 "  FUNCTION  6 mest_spgist_compress(internal)",
+                 f"  FUNCTION  7 {options}",
+                 f"  FUNCTION  8 {extract}"]
+        head = (f"CREATE OPERATOR CLASS {temp}_m{kind}_{split}split_ops\n"
+                f"  {default}FOR TYPE {temp} USING mspgist AS\n")
+    return (head + "\n".join(members) + "\n  -- functions\n"
+            + ",\n".join(funcs) + ";\n")
+
+
+def render_mestfile(bt: dict, am: str, partners: list, strategies: list,
+                    declared: set) -> str:
+    """The part of a file of the extension mobilitydb_mest holding the
+    multi-entry classes of the access method `am` (gist or spgist) of the
+    partners of the box type `bt` written in one GiST or SP-GiST file, a class
+    per partner, tree and split as #render_tempopclass renders the class of a
+    tree. A partner takes the splits and the extraction methods of the box
+    type, or the `mestsplits` and `meststem` it states; each extraction method
+    is declared before the first class taking it, `declared` holding those the
+    files before declare. Empty where no partner has a class. Several box types
+    share a file, as they share its GiST or SP-GiST file, after the header #main
+    writes once"""
+    oc = bt.get("opclasses") or {}
+    out = []
+    for part in partners:
+        if _ever_overlaps_box(part["type"]) != bt["box"]:
+            continue
+        stem = part.get("meststem") or oc["meststem"]
+        splits = part.get("mestsplits") or oc["mestsplits"]
+        classes = []
+        for kind, kam in TEMPOPCLASS_KINDS.items():
+            if kam != am:
+                continue
+            for split in splits:
+                classes.append(render_mestopclass(part["type"], bt, kind, split,
+                                                  strategies, part.get("opnames"),
+                                                  stem))
+        if not classes:
+            continue
+        for split in splits:
+            if (stem, split) in declared:
+                continue
+            declared.add((stem, split))
+            out.append(f"CREATE FUNCTION {stem.lower()}_mest_{split}split"
+                       "(internal, internal, internal)\n  RETURNS internal\n"
+                       f"  AS 'MODULE_PATHNAME', '{stem}_mest_{split}split'\n"
+                       "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
+        out += classes
+    return "\n".join(out)
 
 
 def splice_tempopclass(filetext: str, name: str, rendered: str) -> str:
@@ -6213,6 +6453,43 @@ def render_boxspgist(box: dict, posaxes: list, posops: list) -> str:
     return text
 
 
+def _boxmest_markers(row: str):
+    """BEGIN/END markers of the multi-entry extract methods of a box splitter
+    row, as #_boxspgist_markers marks the SP-GiST support of a box"""
+    begin = (f"/* GENERATED-BOXMEST-BEGIN {row} — tools/codegen/inherited/"
+             "generate.py from templates/boxmest.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxsplit.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXMEST-END {row} */\n"
+
+
+def render_boxmest(row: dict) -> str:
+    """The multi-entry extract methods of a box splitter row, one per split it
+    states in `mestsplits`, from templates/boxmest.c.tmpl, whose method of a
+    split `<split>` is the chunk defining `{CSTEM}_mest_<split>split`; each
+    calls the internal twin of the row's splitter or merge"""
+    text = read_template("boxmest.c.tmpl")
+    chunks = {}
+    for chunk in text.split("\nPG_FUNCTION_INFO_V1(")[1:]:
+        name = re.match(r"\{CSTEM\}_mest_(\w+)split\)", chunk).group(1)
+        chunks[name] = "\nPG_FUNCTION_INFO_V1(" + chunk.rstrip("\n") + "\n"
+    out = "".join(chunks[s] for s in row["mestsplits"])
+    for key in ("CSTEM", "PFX", "BOXES", "CTYPE", "NOUN", "NOUNBOXES"):
+        out = out.replace("{" + key + "}", row[key])
+    return out + "\n"
+
+
+def splice_boxmest(filetext: str, row: str, rendered: str) -> str:
+    """Replace the text strictly between the row's markers with `rendered`, as
+    #splice_boxspgist does for the SP-GiST support"""
+    begin, end = _boxmest_markers(row)
+    if begin not in filetext:
+        # A row without a region yet gains one at the end of the file
+        return filetext.rstrip("\n") + "\n\n" + begin + rendered + end
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 def splice_boxspgist(filetext: str, box: str, rendered: str) -> str:
     """Replace the text strictly between the box's markers with `rendered`, as
     #splice_boxgist does for the GiST ones"""
@@ -6311,7 +6588,7 @@ def render_boxsplit(row: dict) -> str:
             args, end = _boxsplit_call_args(text, i + len(token) - 1)
             text = text[:i] + expr.format(*args) + text[end:]
     for key, val in row.items():
-        if key not in ("row", "file", "calls"):
+        if key not in ("row", "file", "calls", "mestfile", "mestsplits"):
             text = text.replace("{" + key + "}", val)
     return _wrap_code(text)
 
@@ -6385,6 +6662,15 @@ def main() -> int:
                                for i, f in enumerate(indextest_files(t))]:
             p = ROOT / f
             gen = render_indextest(test, bytemp.get(test["temp"]) or {"temp": test["temp"], "base": test["base"]}, which)
+            mgen = render_mestindextest(test, bytemp.get(test["temp"]) or
+                                        {"temp": test["temp"], "base": test["base"]},
+                                        which)
+            if mgen:
+                mp = ROOT / mest_indextest_file(f)
+                msame = mp.exists() and mp.read_text() == mgen
+                ok = ok and msame
+                print(f"[{'OK ' if msame else 'DIFF'}] self-regen mest indextest "
+                      f"{test['temp']} -> {mp.relative_to(ROOT)}")
             cur = p.read_text() if p.exists() else ""
             same = gen == cur
             ok = ok and same
@@ -6888,6 +7174,15 @@ def main() -> int:
                 continue
             p.write_text(render_indextest(test, bytemp.get(test["temp"]) or {"temp": test["temp"], "base": test["base"]}, which))
             print(f"wrote {p.relative_to(ROOT)}")
+            # Its multi-entry twin, where the type has a multi-entry class
+            # (#render_mestindextest)
+            text = render_mestindextest(test, bytemp.get(test["temp"]) or
+                                        {"temp": test["temp"], "base": test["base"]},
+                                        which)
+            if text:
+                mp = ROOT / mest_indextest_file(f)
+                mp.write_text(text)
+                print(f"wrote {mp.relative_to(ROOT)}")
 
     for fam in mf.get("tempspatialrel_families", []):
         p = ROOT / fam["file"]
@@ -6968,6 +7263,66 @@ def main() -> int:
                                               part.get("valspan"), part.get("opnames"))
                 p.write_text(splice_tempopclass(p.read_text(), name, rendered))
                 print(f"spliced tempopclass {name} -> {path}")
+
+    # The files of the extension mobilitydb_mest, written whole: each clones a
+    # GiST or SP-GiST file and holds the multi-entry classes of the box types
+    # whose partners that file holds (#render_mestfile)
+    mestfiles = {}
+    # The extraction methods each declared once, in the first file holding a
+    # class taking it, as #render_mestfile states; a file holding no class is
+    # left out
+    declared = set()
+    for bt in mf.get("boxtypes", []):
+        oc = bt.get("opclasses") or {}
+        if not oc.get("mestsplits"):
+            continue
+        # The partners of the box type, then the subtype families over it
+        # stating their splits, their files those #target_path writes their
+        # GiST and SP-GiST classes to (#render_family_tempopclass)
+        partners = list(oc.get("partners") or [])
+        if bt["box"] == "stbox":
+            for sub in subs:
+                if not sub.get("mestsplits"):
+                    continue
+                files = {am: str(target_path(am, sub, positions)
+                                 .relative_to(ROOT))
+                         for am in ("gist", "spgist")
+                         if am in (sub.get("files") or [])}
+                partners.append({"type": sub["temp"], "files": files,
+                                 "mestsplits": sub["mestsplits"],
+                                 "meststem": sub.get("meststem")})
+        for am in ("gist", "spgist"):
+            groups = {}
+            for part in partners:
+                path = (part.get("files") or {}).get(am)
+                if path:
+                    groups.setdefault(path, []).append(part)
+            for path, parts in groups.items():
+                text = render_mestfile(bt, am, parts, mf.get("boxstrategies", []),
+                                       declared)
+                if text:
+                    mestfiles.setdefault(mest_path(path), []).append(text)
+    if mestfiles:
+        # The functions every multi-entry class takes, loaded first
+        path = "mobilitydb/mest/temporal/000_mest.in.sql"
+        if args.check:
+            print(f"would write mest {path}")
+        else:
+            p = ROOT / path
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(read_template("mestcommon.sql.tmpl"))
+            print(f"wrote mest {path}")
+    for path, parts in mestfiles.items():
+        am = "mgist" if path.endswith("_mgist.in.sql") else "mspgist"
+        text = (read_template("mestfile.sql.tmpl").replace("{AM}", am)
+                + "\n".join(parts))
+        if args.check:
+            print(f"would write mest {path}")
+            continue
+        p = ROOT / path
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+        print(f"wrote mest {path}")
 
     for bt in mf.get("boxtypes", []):
         for stanza in tempsql_stanzas(bt):
@@ -7437,6 +7792,16 @@ def main() -> int:
         p.write_text(splice_boxsplit(p.read_text(), row["row"],
                                      render_boxsplit(row)))
         print(f"spliced boxsplit {row['row']} -> {row['file']}")
+    for row in (mf.get("boxsplit") or {}).get("rows", []):
+        if not row.get("mestfile"):
+            continue
+        p = ROOT / row["mestfile"]
+        if args.check:
+            print(f"would splice boxmest {row['row']} -> {row['mestfile']}")
+            continue
+        p.write_text(splice_boxmest(p.read_text(), row["row"],
+                                    render_boxmest(row)))
+        print(f"spliced boxmest {row['row']} -> {row['mestfile']}")
     return 0
 
 

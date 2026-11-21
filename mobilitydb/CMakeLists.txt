@@ -42,6 +42,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${PROJECT_VERSION}.sql")
 set(MOBILITYDB_DATAGEN_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}_datagen--${PROJECT_VERSION}.sql")
+set(MOBILITYDB_MEST_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}_mest--${PROJECT_VERSION}.sql")
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -50,6 +51,16 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 else()
   add_definitions(-DDEBUG_BUILD=0)
 endif()
+
+# Option to build the extension mobilitydb_mest, the multi-entry operator
+# classes of the temporal types, which require the access methods of the mest
+# extension where it is installed
+option(MEST
+  "Set MEST (default=OFF) to build the extension mobilitydb_mest, which requires
+  the mest extension
+  "
+  OFF
+)
 
 # Option to show debug messages for analyzing the selectivity estimation
 option(DEBUG_SELECTIVITY
@@ -345,11 +356,18 @@ endif()
 message(STATUS "Including SQL definitions and tests")
 add_subdirectory(sql)
 add_subdirectory(datagen)
+if(MEST)
+  add_subdirectory(mest)
+endif()
 add_subdirectory(test)
 
 add_custom_target(mobilitydb_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(mobilitydb_datagen_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE})
 add_custom_target(mobilitydb_control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
+if(MEST)
+  add_custom_target(mobilitydb_mest_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_MEST_EXTENSION_FILE})
+  add_custom_target(mobilitydb_mest_control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb_mest.control)
+endif()
 
 # add_custom_target(datagen_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE})
 # add_custom_target(datagen_control ALL DEPENDS ${CMAKE_BINARY_DIR}/datagen/mobilitydb_datagen.control)
@@ -361,6 +379,11 @@ install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
 install(
   FILES "${CMAKE_BINARY_DIR}/mobilitydb_datagen.control" "${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE}"
   DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
+if(MEST)
+  install(
+    FILES "${CMAKE_BINARY_DIR}/mobilitydb_mest.control" "${CMAKE_BINARY_DIR}/${MOBILITYDB_MEST_EXTENSION_FILE}"
+    DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
+endif()
 
 #-----------------------------------------------------------------------------
 # The End
