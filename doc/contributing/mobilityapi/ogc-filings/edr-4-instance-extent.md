@@ -8,7 +8,7 @@
 
 # An instance is required to carry the extent of its collection
 
-Filed once the implementation it cites is merged: MobilityAPI row U3.
+Its evidence is MobilityAPI row U3; it is filed with that row merged.
 
 **Defect.** `/req/instances/src-md-success` C:
 
