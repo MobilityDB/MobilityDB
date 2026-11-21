@@ -203,6 +203,15 @@ SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(5.813848 2.813777,
   12.184346 5.166935,5.813848 2.813777),Circularstring(9.168692 2.718545,
   8.696632 5.985608,9.168692 2.718545))', 2.1456446498870543),
   ST_Point(8.599378402370817, 4.328579428763156)) AS in_hole;
+-- A hole of arcs the distance covers whole: the hole of two segments and an
+-- arc, buffered by 223, lies within the buffer whole, as does the point
+-- (777 632) of the polygon, 19.6 outside the arc of the hole
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(336.67574
+  -466.566789,1383.46813 1589.61924,336.67574 -466.566789),
+  Compoundcurve((979.934798 774.194819,677.203023 938.042203),
+  (677.203023 938.042203,736.308033 618.808792),Circularstring(736.308033
+  618.808792,848.170603 712.103492,979.934798 774.194819)))', 223),
+  ST_Point(777, 632)) AS in_arc_hole;
 -- A ring whose arcs turn both ways turns as it does at its point furthest
 -- right: the square of side 4 whose bottom bulges out by 0.5 and whose top
 -- dips in by 0.5, the top an arc of radius 4.25 about (2 7.75), holds within

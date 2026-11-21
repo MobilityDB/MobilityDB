@@ -10955,6 +10955,23 @@ buffer_curve_npoints(const LWGEOM *geom)
   return n;
 }
 
+/*
+ * Set the input arc of an element of a walk, its circle in doubles read
+ * (#exact_arc_bound), which the ends of its offset read: the start of the
+ * element is the start of the arc, a half the walk reverses included, so the
+ * sweep of the arc is the element's only where its half turns
+ * counterclockwise
+ */
+static void
+buffer_walk_arc(const BufferWalkElem *w, ExactArc *ea)
+{
+  *ea = (ExactArc) {{w->p[0][0], w->p[0][1]}, {w->p[1][0], w->p[1][1]},
+    {w->p[2][0], w->p[2][1]}, w->half != 0, 0.0, 0.0, 0.0, 0.0};
+  double box[4];
+  exact_arc_bound(ea, box);
+  return;
+}
+
 /**
  * @brief Add to an edge array the offset curve of the walk of a curve with
  * round joins and round caps, every piece of it exact, as
@@ -11002,10 +11019,7 @@ buffer_round_curve_offsets(const BufferWalkElem *w, uint32_t m,
     int side = ccw ? 1 : -1;
     /* The input arc and its circle in doubles (#exact_arc_bound), which
      * the ends of its offset read */
-    ea[k] = (ExactArc) {{a[0], a[1]}, {mid[0], mid[1]}, {b[0], b[1]},
-      w[k].half != 0, 0.0, 0.0, 0.0, 0.0};
-    double box[4];
-    exact_arc_bound(&ea[k], box);
+    buffer_walk_arc(&w[k], &ea[k]);
     ts[k] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, side, 0,
       0, &ea[k]};
     te[k] = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, side, 1,
@@ -11192,10 +11206,7 @@ buffer_arc_strip_offsets(const BufferWalkElem *w, double radius, bool sa,
 {
   const double *a = w->p[0], *mid = w->p[1], *b = w->p[2];
   ExactArc *ea = &arcs[*ntp / 2];
-  *ea = (ExactArc) {{a[0], a[1]}, {mid[0], mid[1]}, {b[0], b[1]},
-    w->half != 0, 0.0, 0.0, 0.0, 0.0};
-  double box[4];
-  exact_arc_bound(ea, box);
+  buffer_walk_arc(w, ea);
   if (ea->err < 0.0)
     return false;
   /* The right of an arc running counterclockwise lies outside it, and
@@ -11397,10 +11408,8 @@ buffer_curve_ring_right_sense(const BufferWalkElem *w, uint32_t n)
       continue;
     /* The point E of the circle of arc k, where the arc holds it */
     buffer_arc_circle_edge(&w[k], &circ[k]);
-    ExactArc ea = {{w[k].p[0][0], w[k].p[0][1]}, {w[k].p[1][0], w[k].p[1][1]},
-      {w[k].p[2][0], w[k].p[2][1]}, w[k].half != 0, 0.0, 0.0, 0.0, 0.0};
-    double box[4];
-    exact_arc_bound(&ea, box);
+    ExactArc ea;
+    buffer_walk_arc(&w[k], &ea);
     if (ea.err < 0.0)
       goto done;
     /* The centre in doubles, the origin the exact tests measure from */
@@ -11538,7 +11547,8 @@ buffer_curve_ring_sense(const BufferWalkElem *w, uint32_t n)
  * (#buffer_curve_ring_sense), each element reversed where it turns the other
  * way, and offset by the distance to its right (#buffer_round_curve_offsets)
  * @return False where the ring's sense or a turn is not told, or a hole lies
- * within a circle of the distance: nothing then usable
+ * within a circle of the distance that the buffer is not told to cover:
+ * nothing then usable
  */
 static bool
 buffer_round_curve_ring_offsets(const LWGEOM *ring, bool shell,
@@ -11557,9 +11567,8 @@ buffer_round_curve_ring_offsets(const LWGEOM *ring, bool shell,
   {
     /* A hole within a circle no larger than the distance is covered by the
      * buffer whole (#buffer_polygon_offsets); the circle enclosing the points
-     * that fix the hole bounds the one enclosing the hole from below, so
-     * only a hole whose points the distance cannot enclose is kept, any
-     * other left unanswered */
+     * that fix the hole bounds the one enclosing the hole from below, so a
+     * hole whose points the distance cannot enclose is kept */
     POINT2D *pts = palloc(sizeof(POINT2D) * 2 * n);
     int np = 0;
     for (uint32_t k = 0; k < n; k++)
@@ -11568,13 +11577,28 @@ buffer_round_curve_ring_offsets(const LWGEOM *ring, bool shell,
       if (w[k].arc && ! w[k].half)
         pts[np++] = (POINT2D) {w[k].p[1][0], w[k].p[1][1]};
     }
-    int c = mec_radius_cmp(pts, np, radius);
+    POINT2D support[3];
+    int nsupport;
+    int c = mec_radius_cmp_support(pts, np, radius, support, &nsupport);
     pfree(pts);
-    /* A whole circle is the circle on its two points: one no larger than
-     * the distance is covered by the buffer whole and left out, any other
-     * hole the distance may cover left unanswered */
     if (c <= 0)
-      return n == 2 && w[0].half && w[1].half;
+    {
+      /* The disc of the distance about the centre of that circle holds every
+       * point fixing the hole, so every segment, and the hole where it holds
+       * every arc too (#tower_arc_within_disc): the hole is then covered and
+       * left out, and else left unanswered. Not yet reversed, every half of
+       * the hole turns counterclockwise from its start */
+      for (uint32_t k = 0; k < n; k++)
+      {
+        if (! w[k].arc)
+          continue;
+        ExactArc ea;
+        buffer_walk_arc(&w[k], &ea);
+        if (tower_arc_within_disc(&ea, support, nsupport, radius) != 1)
+          return false;
+      }
+      return true;
+    }
   }
   /* Shells turn counterclockwise, holes clockwise */
   if ((sense > 0) != shell)
