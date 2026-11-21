@@ -33,7 +33,7 @@ SELECT array_length( instants(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   {Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.5)@2001-01-02,
   Pose(Point(0 0), 0.0)@2001-01-03}'), 1);
 -- 3
-</pre></li><li class="listitem"><a name="trgeometry_points"></a><a class="indexterm" name="id11966"></a><p>Devuelve el conjunto de puntos del centroide (antena) distintos vistos a lo largo de la trgeometry</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_points"></a><a class="indexterm" name="id11966"></a><p>Devuelve el conjunto de posiciones distintas de la pose a lo largo de la geometría rígida temporal</p><pre class="programlisting">
 points(trgeometry) → geomset
 </pre><pre class="programlisting">
 SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));

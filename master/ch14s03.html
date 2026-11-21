@@ -4,7 +4,7 @@ tpose(trgeometry) → tpose
 SELECT asText(tpose(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.5)@2001-01-02]'));
 -- [Pose(POINT(0 0),0)@..., Pose(POINT(10 0),0.5)@...]
-</pre></li><li class="listitem"><a name="trgeometry_to_tgeompoint"></a><a class="indexterm" name="id12489"></a><p>Return the centroid (antenna) trajectory as a temporal point</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="trgeometry_to_tgeompoint"></a><a class="indexterm" name="id12489"></a><p>Return the trajectory of the position of the pose as a temporal point</p><pre class="programlisting">
 tgeompoint(trgeometry) → tgeompoint
 tgeogpoint(trgeometry) → tgeogpoint
 tgeography(trgeometry) → tgeography
