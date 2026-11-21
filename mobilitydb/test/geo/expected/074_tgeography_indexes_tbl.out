@@ -158,6 +158,8 @@ INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('#>> tgeography', (SELECT CO
 INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_span t2 WHERE t1.temp #&> t2.t)::text);
 INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('#&> stbox', (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp #&> t2.b)::text);
 INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('#&> tgeography', (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_val t2 WHERE t1.temp #&> t2.temp)::text);
+INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('?&& stbox', (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp ?&& t2.b)::text);
+INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('%&& stbox', (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp %&& t2.b)::text);
 INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('tstzspan && tgeography', (SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t && t1.temp)::text);
 INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('stbox && tgeography', (SELECT COUNT(*) FROM tbl_tgeography_box t2, tbl_tgeography_idx t1 WHERE t2.b && t1.temp)::text);
 INSERT INTO test_tgeography_idx(op, no_idx) VALUES ('tstzspan ~= tgeography', (SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t ~= t1.temp)::text);
@@ -286,6 +288,12 @@ WHERE op = '#&> stbox';
 UPDATE test_tgeography_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_val t2 WHERE t1.temp #&> t2.temp)::text,
   rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tgeography';
+UPDATE test_tgeography_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp ?&& t2.b)::text,
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tgeography_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp %&& t2.b)::text,
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_tgeography_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t && t1.temp)::text,
   rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t && t1.temp')
 WHERE op = 'tstzspan && tgeography';
@@ -444,6 +452,12 @@ WHERE op = '#&> stbox';
 UPDATE test_tgeography_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_val t2 WHERE t1.temp #&> t2.temp)::text,
   quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tgeography';
+UPDATE test_tgeography_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp ?&& t2.b)::text,
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tgeography_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp %&& t2.b)::text,
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_tgeography_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t && t1.temp)::text,
   quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t && t1.temp')
 WHERE op = 'tstzspan && tgeography';
@@ -602,6 +616,12 @@ WHERE op = '#&> stbox';
 UPDATE test_tgeography_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_val t2 WHERE t1.temp #&> t2.temp)::text,
   kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tgeography';
+UPDATE test_tgeography_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp ?&& t2.b)::text,
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tgeography_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp %&& t2.b)::text,
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_idx t1, tbl_tgeography_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_tgeography_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t && t1.temp)::text,
   kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeography_span t2, tbl_tgeography_idx t1 WHERE t2.t && t1.temp')
 WHERE op = 'tstzspan && tgeography';
@@ -668,7 +688,7 @@ SELECT COUNT(*) FROM tbl_tgeography_idx;
 SELECT COUNT(*) FROM test_tgeography_idx;
  count 
 -------
-    49
+    51
 (1 row)
 
 SELECT op, no_idx FROM test_tgeography_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
@@ -680,6 +700,7 @@ SELECT op, no_idx FROM test_tgeography_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  #>> stbox               | 173603
  #>> tgeography          | 106026
  #>> tstzspan            | 175561
+ %&& stbox               | 226
  && stbox                | 641
  && stbox x              | 282424
  && tgeography           | 80
@@ -698,6 +719,7 @@ SELECT op, no_idx FROM test_tgeography_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  <@ stbox x              | 66814
  <@ tgeography           | 40
  <@ tstzspan             | 648
+ ?&& stbox               | 540
  @> stbox                | 48
  @> stbox x              | 114542
  @> tgeography           | 28
@@ -720,7 +742,7 @@ SELECT op, no_idx FROM test_tgeography_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  ~= stbox x              | 10
  ~= tgeography           | 17
  ~= tstzspan             | 12
-(46 rows)
+(48 rows)
 
 -- The distances of the nearest values are compared, not stated
 SELECT op FROM test_tgeography_idx WHERE op LIKE '%|=|%' AND no_idx IS NULL ORDER BY op;

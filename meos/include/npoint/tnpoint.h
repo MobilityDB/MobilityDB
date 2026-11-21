@@ -122,6 +122,9 @@ extern char *npoint_wkt_out(Datum value, int maxdd, size_t *size_out);
 extern void npoint_set(int64 rid, double pos, Npoint *np);
 extern size_t npoint_sortkey_size(void);
 extern uint8_t *npoint_sortkey_put(const Npoint *np, uint8_t *out);
+extern size_t nsegment_sortkey_size(void);
+extern uint8_t *nsegment_sortkey_put(const Nsegment *ns, uint8_t *out);
+extern uint8_t *nsegment_sortkey_intl(const Nsegment *ns, size_t *size);
 extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 
 /* Transformation functions */

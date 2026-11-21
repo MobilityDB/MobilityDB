@@ -1876,6 +1876,39 @@ npoint_sortkey_put(const Npoint *np, uint8_t *out)
 }
 
 /**
+ * @brief Return the number of bytes of the sort key of a network segment
+ */
+size_t
+nsegment_sortkey_size(void)
+{
+  return datum_sortkey_size(T_INT8) + 2 * datum_sortkey_size(T_FLOAT8);
+}
+
+/**
+ * @brief Write the sort key of a network segment
+ * @details The key holds the fields in the order #nsegment_cmp compares them,
+ * each written as #npoint_sortkey_put writes those of a network point: the
+ * route identifier as an 8-byte integer, then the two positions as 8-byte
+ * doubles. The positions are in [0, 1], finite numbers as every input
+ * requires, so #nsegment_cmp, which compares them with < and >, is a total
+ * order holding two segments equal exactly when #nsegment_eq does
+ * @param[in] ns Network segment
+ * @param[out] out Buffer of #nsegment_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+nsegment_sortkey_put(const Nsegment *ns, uint8_t *out)
+{
+  assert(ns); assert(out);
+  datum_sortkey_put(Int64GetDatum(ns->rid), T_INT8, out);
+  out += datum_sortkey_size(T_INT8);
+  datum_sortkey_put(Float8GetDatum(ns->pos1), T_FLOAT8, out);
+  out += datum_sortkey_size(T_FLOAT8);
+  datum_sortkey_put(Float8GetDatum(ns->pos2), T_FLOAT8, out);
+  return out + datum_sortkey_size(T_FLOAT8);
+}
+
+/**
  * @ingroup meos_npoint_base_comp
  * @brief Return true if the first network point is less than the second one
  * @param[in] np1,np2 Network points
@@ -1984,6 +2017,39 @@ nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
   else if (ns1->pos2 > ns2->pos2)
     return 1;
   return 0;
+}
+
+/**
+ * @brief Return the sort key of a network segment
+ * @param[in] ns Network segment
+ * @param[out] size Number of bytes of the key
+ * @see #nsegment_sortkey
+ */
+uint8_t *
+nsegment_sortkey_intl(const Nsegment *ns, size_t *size)
+{
+  assert(ns); assert(size);
+  *size = nsegment_sortkey_size();
+  uint8_t *result = palloc(*size);
+  nsegment_sortkey_put(ns, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_base_comp
+ * @brief Return the sort key of a network segment, the bytes whose unsigned
+ * byte order is the order of #nsegment_cmp and whose byte equality is
+ * #nsegment_eq
+ * @param[in] ns Network segment
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+nsegment_sortkey(const Nsegment *ns, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL); VALIDATE_NOT_NULL(size, NULL);
+  return nsegment_sortkey_intl(ns, size);
 }
 
 /**

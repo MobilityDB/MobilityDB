@@ -218,6 +218,24 @@ SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
   'endcap=flat'), ST_Point(1.2, -0.1)) AS past_flat_cap;
 SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
   'endcap=square'), ST_Point(1.45, -0.45)) AS in_square_cap;
+-- The buffer of a collection is the union of the buffers of its members,
+-- each with its own cap: beside the half circle, the point (3 0) holds
+-- (2.6 0) at 0.4 from it, the square cap of the half circle holds the point
+-- of its square 0.64 from the end, and the flat cap leaves out the point
+-- below its cut
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=square'), ST_Point(1.45, -0.45))
+  AS member_square_cap;
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(1.2, -0.1))
+  AS member_flat_cap;
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(2.6, 0)) AS member_point;
+-- A line in a multicurve or a collection is walked as a curve of segments:
+-- the segment of length 2 buffered by 0.5 is its stadium, two half circles
+SELECT ST_AsText(round(buffer(geometry 'MultiCurve((0 0,2 0))', 0.5), 6));
+SELECT ST_AsText(round(buffer(geometry 'GeometryCollection(Linestring(0 0,
+  2 0),Point(5 0))', 0.5), 6));
 
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));

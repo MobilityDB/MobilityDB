@@ -404,6 +404,7 @@ extern bool raquet_lt(const Raquet *rq1, const Raquet *rq2);
 extern bool raquet_le(const Raquet *rq1, const Raquet *rq2);
 extern bool raquet_ge(const Raquet *rq1, const Raquet *rq2);
 extern bool raquet_gt(const Raquet *rq1, const Raquet *rq2);
+extern uint8_t *raquet_sortkey(const Raquet *rq, size_t *size);
 
 /* Sampling functions */
 
