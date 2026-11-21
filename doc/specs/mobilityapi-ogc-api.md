@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.2.0 |
+| Version | v1.3.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`d546339`](https://github.com/MobilityDB/MobilityAPI/tree/d546339): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`f7de535`](https://github.com/MobilityDB/MobilityAPI/tree/f7de535): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -55,10 +55,10 @@ is also listed under `http://` (section 3.1).
 | OGC API – Common – Part 1: Core (OGC 19-072) | core, landing-page | `http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/<class>` |
 | OGC API – Common – Part 2: Geospatial Data (OGC 20-024) | collections | `https://` and `http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections` |
 | OGC API – Coverages – Part 1: Core (OGC 19-087, 1.0.0rc4 draft) | core, subsetting-spatial, subsetting-temporal, field-selection, geotiff, coveragejson | `https://` and `http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/<class>` |
-| OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/core` |
+| OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
 
-The service serves 45 operations. The API definition at `GET /api` marks each
-with the class it is a requirement of (`x-conformance-class`), 33 of them, or
+The service serves 55 operations. The API definition at `GET /api` marks each
+with the class it is a requirement of (`x-conformance-class`), 43 of them, or
 as an extension (`x-mobilityapi-extension`), 12 of them (section 9). The suite
 fails if a route is served and not described, described and not served, or
 marked with a class the conformance declaration does not list.
@@ -183,7 +183,7 @@ one period are the tiles of one raster.
 | a `datetime` meeting several periods | 400, naming them: GeoTIFF has no time axis and a CoverageJSON coverage is written from one raster |
 | `bbox`, `subset` | the coverage clipped, its bounds stated by `Content-Bbox` |
 | `properties` | the bands named |
-| `Accept` | `image/tiff; application=geotiff` (also when no preference is stated) or `application/vnd.cov+json`; 406 when neither is admitted |
+| `Accept` | `image/tiff; application=geotiff` (also when no preference is stated), or CoverageJSON as `application/vnd.cov+json` or `application/prs.coverage+json`, in the spelling named; 406 when none is admitted |
 
 The tiles are joined by `rasterUnion` and written by `asTIFF` or
 `asCoverageJSON`. A request needing a function MobilityDB does not state over
@@ -209,7 +209,7 @@ extent of the region rounds outward to whole pixels, as PostGIS's `ST_Clip`
 answers. A collection's description carries `data_queries`, one link per query
 with its variables, and `distanceunits`, as `/req/edr/rc-collection-info` I
 requires of a description linking a radius. The format is selected by `f`, and
-`Accept` is not read.
+the spelling of CoverageJSON by `Accept`.
 
 Each period of a raster collection is an instance:
 `/collections/{collectionId}/instances` lists them in time order and
@@ -242,11 +242,12 @@ requires the two, the schema `observedPropertyCollection.yaml` requires the
 declared: it binds every collection of `/collections`, and a collection of
 moving features answers no EDR query.
 
-CoverageJSON is written `application/vnd.cov+json`, the type OGC CoverageJSON
-(OGC 21-069r2) states. EDR 1.1 as published writes `application/prs.coverage+json`;
-the EDR working group adopts `vnd.cov+json` for the editions after 1.1. A
-client asking for either spelling gets the answer, and the class `covjson` of
-EDR 1.1, whose requirement names the other spelling, is not declared.
+CoverageJSON is written in the spelling the client's `Accept` names:
+`application/prs.coverage+json`, the spelling EDR 1.1 as published writes
+(`/req/covjson/content`), or `application/vnd.cov+json`, the type OGC
+CoverageJSON (OGC 21-069r2) states and the EDR working group adopts for the
+editions after 1.1, which also answers a client naming neither. The two are the
+same document. The class `covjson` of EDR 1.1 is declared.
 
 ## 9. Extensions
 
@@ -280,11 +281,10 @@ at its major number when an answer stated here changes.
 
 ## 12. Out of scope
 
-- The classes `collections`, `queries` and `covjson` of EDR 1.1: the service
-  answers six of the eight optional queries of `queries` and its instances,
+- The classes `collections` and `queries` of EDR 1.1: the service answers six
+  of the eight optional queries of `queries` and its instances, and
   `collections` binds every collection of `/collections`, a collection of
-  moving features among them, and `covjson` names the media type the service
-  does not write.
+  moving features among them.
 - The operations of Part 4 over a temporal geometry (`LENGTH`, `AREA`,
   `TO_TRAJ` and the rest of its Table 7), and its Kafka and WebSocket channels.
 - A newer Part 4 draft, describing a Continuous Query resource with `id`,
