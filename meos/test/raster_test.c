@@ -2450,6 +2450,46 @@ int main(void)
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
+  /* The equality of rasters is that of their serialized bytes: a raster equals
+   * itself, its copy and the raster its WKB is read back into, with the same
+   * hashes, and differs from every other fixture. Each 32-bit hash is printed
+   * to be read against the raster_hash of PostGIS */
+  const char *eq_fixtures[] = {raster_one_band, raster_two_bands,
+    raster_values, raster_nir, raster_red, raster_east1, raster_easthalf,
+    raster_east10, raster_srid3857, raster_dem, raster_dem_square,
+    raster_plane, raster_counts, raster_all_nodata, raster_pixels,
+    raster_union1, raster_union2, raster_union3};
+  enum { NEQ = sizeof(eq_fixtures) / sizeof(eq_fixtures[0]) };
+  Raster *eq_rasts[NEQ];
+  for (int i = 0; i < NEQ; i++)
+  {
+    eq_rasts[i] = raster_from_hexwkb(eq_fixtures[i]);
+    assert(eq_rasts[i] != NULL);
+    Raster *copy = raster_copy(eq_rasts[i]);
+    size_t eq_wkb_size;
+    uint8_t *eq_wkb = raster_as_wkb(eq_rasts[i], 0, &eq_wkb_size);
+    Raster *back = raster_from_wkb(eq_wkb, eq_wkb_size);
+    assert(raster_eq(eq_rasts[i], eq_rasts[i]));
+    assert(raster_eq(eq_rasts[i], copy) && ! raster_ne(eq_rasts[i], copy));
+    assert(raster_eq(eq_rasts[i], back) && ! raster_ne(eq_rasts[i], back));
+    assert(raster_hash(eq_rasts[i]) == raster_hash(back));
+    assert(raster_hash_extended(eq_rasts[i], 1) ==
+      raster_hash_extended(back, 1));
+    printf("raster_hash(#%d): %u\n", i + 1, raster_hash(eq_rasts[i]));
+    free(copy); free(eq_wkb); free(back);
+  }
+  for (int i = 0; i < NEQ; i++)
+    for (int j = 0; j < NEQ; j++)
+      if (i != j)
+        assert(! raster_eq(eq_rasts[i], eq_rasts[j]) &&
+          raster_ne(eq_rasts[i], eq_rasts[j]));
+  meos_errno_reset();
+  assert(! raster_eq(NULL, eq_rasts[0]) && meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_hash(NULL) == UINT32_MAX && meos_errno() != 0);
+  for (int i = 0; i < NEQ; i++)
+    free(eq_rasts[i]);
+
   meos_finalize();
   printf("raster_test: all assertions passed\n");
   return 0;
