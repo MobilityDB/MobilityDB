@@ -153,6 +153,19 @@ SHARED_IMPLEMENTATION = {
   'jsonpath':
     'A PostgreSQL built-in type; jsonpath_in is vendored from '
     'src/backend/utils/adt/jsonpath.c into pgtypes/utils/jsonpath.c.',
+  'bandstats':
+    'No SQL type of this name: the statistics are the summarystats record '
+    'PostGIS declares (CREATE TYPE summarystats AS (count bigint, sum double '
+    'precision, ...) in postgis_raster--*.sql), which PostgreSQL reads and '
+    'writes with record_in and record_out, each column with int8in and '
+    'float8in, and float8out. bandstats_in and bandstats_out '
+    '(meos/src/raster/raster_rtcore.c) apply the rule of record_in and '
+    'record_out to the six columns, each through int64_in, float8_in and '
+    'float8out_internal, the server code vendored into pgtypes/utils/int8.c '
+    'and pgtypes/utils/float.c, and read a NULL column as '
+    'record_bandstats (mobilitydb/src/raster/temporal_raster.c) reads it. '
+    'The one rule MEOS adds is the one every MEOS input follows '
+    '(doc/specs/meos-finite-values.md): a NaN or an infinity is refused.',
   'gbox':
     'Not an SQL type anywhere: liblwgeom declares GBOX as a C struct, and '
     'PostGIS declares no such type (no CREATE TYPE gbox in postgis--*.sql). '

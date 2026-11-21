@@ -45,6 +45,9 @@
     "^raster_from_hexwkb$": {
       "char *": "rast_hexwkb1"
     },
+    "^bandstats_in$": {
+      "char *": "\"(8,430,53.75,24.968730444297723,10,90)\""
+    },
     "^meospixtype_from_string$": {
       "char *": "\"uint8\""
     },

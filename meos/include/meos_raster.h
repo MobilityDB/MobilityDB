@@ -294,6 +294,9 @@ extern bool bandstats_mean(const BandStats *stats, double *result);
 extern bool bandstats_stddev(const BandStats *stats, double *result);
 extern bool bandstats_min(const BandStats *stats, double *result);
 extern bool bandstats_max(const BandStats *stats, double *result);
+extern BandStats *bandstats_in(const char *str);
+extern char *bandstats_out(const BandStats *stats, size_t *size_out);
+extern BandStats *bandstats_copy(const BandStats *stats);
 
 /* Processing functions for PostGIS rasters */
 

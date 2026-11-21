@@ -1171,6 +1171,44 @@ int main(void)
   assert(bandstats_count(NULL) == -1);
   assert(! bandstats_mean(NULL, &field) && ! bandstats_mean(st, NULL));
   assert(meos_errno() != 0);
+  /* The statistics are written as PostgreSQL writes the summarystats record
+   * and read back with the fields they state, and the copy holds the same
+   * fields. The standard deviation is sqrt(623.4375), which PostgreSQL writes
+   * 24.968730444297723 */
+  char *st_text = bandstats_out(st, &size);
+  printf("bandstats_out(raster_summary_stats(raster, 1, true)): %s\n",
+    st_text);
+  assert(strcmp(st_text, "(8,430,53.75,24.968730444297723,10,90)") == 0);
+  assert(size == strlen(st_text) + 1);
+  BandStats *st_back = bandstats_in(st_text);
+  assert(st_back != NULL && st_back->count == 8 && st_back->sum == 430.0 &&
+    st_back->mean == 53.75 && st_back->stddev == st->stddev &&
+    st_back->min == 10.0 && st_back->max == 90.0);
+  BandStats *st_copy = bandstats_copy(st);
+  assert(st_copy != NULL && memcmp(st_copy, st, sizeof(BandStats)) == 0);
+  free(st_text); free(st_back); free(st_copy);
+  /* Statistics counting no pixel are written and read with no value */
+  st_text = bandstats_out(&none, &size);
+  assert(strcmp(st_text, "(0,,,,,)") == 0);
+  st_back = bandstats_in(st_text);
+  assert(st_back != NULL && st_back->count == 0);
+  free(st_text); free(st_back);
+  /* A column is read as PostgreSQL reads it, quoted or not, and the
+   * statistics of a record counting no pixel read 0 */
+  st_back = bandstats_in("(\"8\",430,53.75,\"24.9\",10,90)");
+  assert(st_back != NULL && st_back->count == 8 && st_back->stddev == 24.9);
+  free(st_back);
+  st_back = bandstats_in("(0,1,,,,)");
+  assert(st_back != NULL && st_back->count == 0 && st_back->sum == 0.0);
+  free(st_back);
+  /* A record missing a column, with a fractional count or holding an
+   * infinity is refused */
+  meos_errno_reset();
+  assert(bandstats_in("(8,430,53.75,24.9,10)") == NULL);
+  assert(bandstats_in("(1.5,1,1,0,1,1)") == NULL);
+  assert(bandstats_in("(1,Infinity,1,0,1,1)") == NULL);
+  assert(bandstats_in(NULL) == NULL && bandstats_copy(NULL) == NULL);
+  assert(meos_errno() != 0);
   free(st);
 
   /* Counting the nodata pixel counts the value it holds, -9999, so the count
