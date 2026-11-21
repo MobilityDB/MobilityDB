@@ -115,7 +115,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__base__int_gacd9d894e1ac9023e93d0f32af8dca7da.html#gacd9d894e1ac9023e93d0f32af8dca7da">int64_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a15da10f3e68f6d6c08176af595ead68d.html#a15da10f3e68f6d6c08176af595ead68d">pfree_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_aaa58a82eb6a708c2bd059619ba2fbcbb.html#aaa58a82eb6a708c2bd059619ba2fbcbb">scanner_isspace</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a7bebd2c5d1f4de4ac314d9e9c6f539e0.html#a7bebd2c5d1f4de4ac314d9e9c6f539e0">sortkey_put_uint64</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_ab1dfb849cda16e4e6957e99fe406dfea.html#ab1dfb849cda16e4e6957e99fe406dfea">sortkey_put_uint64</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a9c6dbcb3fb25773d04678b0dadca6967.html#a9c6dbcb3fb25773d04678b0dadca6967">spanarr_sort</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a874accea9dc06bd406f1151bde335460.html#a874accea9dc06bd406f1151bde335460">string_escape</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a2bdcb8db4ea736b72c2556178ecb4939.html#a2bdcb8db4ea736b72c2556178ecb4939">string_unescape</a></td></tr>
@@ -132,17 +132,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7bebd2c5d1f4de4ac314d9e9c6f539e0" name="a7bebd2c5d1f4de4ac314d9e9c6f539e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7bebd2c5d1f4de4ac314d9e9c6f539e0">&#9670;&#160;</a></span>sortkey_put_uint64()</h2>
+<a id="ab1dfb849cda16e4e6957e99fe406dfea" name="ab1dfb849cda16e4e6957e99fe406dfea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1dfb849cda16e4e6957e99fe406dfea">&#9670;&#160;</a></span>sortkey_put_uint64()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void sortkey_put_uint64 </td>
+          <td class="memname">void sortkey_put_uint64 </td>
           <td>(</td>
           <td class="paramtype">uint64&#160;</td>
           <td class="paramname"><em>v</em>, </td>
@@ -165,14 +162,17 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Write the low <code>nbytes</code> bytes of an unsigned integer most significant first. </p>
+<p>Write the low <code>nbytes</code> bytes of an unsigned integer most significant first, so that comparing the bytes as unsigned values orders the integers. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">v</td><td>Unsigned integer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nbytes</td><td>Number of its low bytes written </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>Buffer of <code>nbytes</code> bytes </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
