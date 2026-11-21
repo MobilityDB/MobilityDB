@@ -11569,6 +11569,17 @@ tower_point_radial(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   if (tower_arc_circle(ctx, arc->s, arc->m, arc->e, arc->half, ox, oy, &cx,
       &cy, &w, &r2) == 0 && ! arc->half)
     ctx->arena.unsafe = true;
+  if (tp->k == 2)
+  {
+    /* The centre c / w, in the root of the circle with no part on it */
+    out->t.depth = 1;
+    out->t.key[0] = NULL;
+    out->t.h[0].c[0] = r2;
+    tower_set(ctx, cx, 1, out->x.c);
+    tower_set(ctx, cy, 1, out->y.c);
+    tower_set(ctx, w, 1, out->w.c);
+    return;
+  }
   const double *a = tp->k ? arc->e : arc->s;
   double ax = a[0], ay = a[1];
   DyadicX px = dx_diff(ctx, ax, ox), py = dx_diff(ctx, ay, oy);
@@ -12193,6 +12204,12 @@ tangent_point_round(const TangentPoint *tp, double *x, double *y)
      * through that end, and past it along the tangent there where @p along
      * asks it */
     const ExactArc *arc = tp->arc;
+    if (tp->k == 2)
+    {
+      *x = arc->cx;
+      *y = arc->cy;
+      return;
+    }
     const double *a = tp->k ? arc->e : arc->s;
     double ax = a[0], ay = a[1];
     double nx = ax - arc->cx, ny = ay - arc->cy;
@@ -13733,7 +13750,7 @@ meet_point_origin(const MeetPoint *m, double *ox, double *oy)
       /* The end of an offset lies about the end of its input arc */
       if (m->tp->arc)
       {
-        const double *a = m->tp->k ? m->tp->arc->e : m->tp->arc->s;
+        const double *a = (m->tp->k == 1) ? m->tp->arc->e : m->tp->arc->s;
         *ox = a[0]; *oy = a[1];
         return;
       }

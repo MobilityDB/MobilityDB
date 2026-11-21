@@ -250,6 +250,18 @@ SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
 SELECT ST_AsText(round(buffer(geometry 'MultiCurve((0 0,2 0))', 0.5), 6));
 SELECT ST_AsText(round(buffer(geometry 'GeometryCollection(Linestring(0 0,
   2 0),Point(5 0))', 0.5), 6));
+-- Buffered by 1.5, more than its radius 1, the normal segment of the half
+-- circle runs through its centre: the strip is the upper half disc of radius
+-- 2.5 and the lower one of radius 0.5, holding (0 -0.4) and not (0 -0.6); a
+-- square cap adds the squares past both ends, which hold (2 -1)
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), 6));
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.4)) AS in_far_lobe;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.6)) AS past_far_lobe;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=square'), ST_Point(2, -1)) AS in_square_past_centre;
 
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));

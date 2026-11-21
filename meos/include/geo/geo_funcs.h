@@ -117,7 +117,9 @@ typedef struct
  * arc ends: the arc's points fix its circle, of centre C, and the point lies
  * on the circle of radius r1 about its start (@p k 0) or its end (@p k 1), on
  * the line through C, away from C for @p side 1 and toward it for -1: the end
- * of the arc of radius R + side r1 about C. No double holds it in general.
+ * of the arc of radius R + side r1 about C. With @p k 2 it is C itself, the
+ * apex of the strip of an arc no larger than the distance. No double holds it
+ * in general.
  * The arc is held out of line, as an edge holds its tangent points, so that
  * a point where a tangent touches a circle keeps its size
  */
@@ -129,7 +131,9 @@ typedef struct
                                       first centre to the second, -1 for the
                                       one on its right */
   int8_t k;                      /**< 0 for the point on the first circle, 1
-                                      for the one on the second */
+                                      for the one on the second; for the end
+                                      of the offset of an arc, 0 its start, 1
+                                      its end and 2 the centre of the arc */
   int8_t along;                  /**< 0 for the point on the circle, 1 or -1
                                       for the one past it by the radius along
                                       C2 - C1 or C1 - C2; for the end of the

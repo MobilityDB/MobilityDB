@@ -11050,6 +11050,112 @@ buffer_curve_walk_back(BufferWalkElem *w, uint32_t n)
 }
 
 /**
+ * @brief Add to an edge array the boundary of the strip of an arc whose
+ * radius R the distance r exceeds, every piece of it exact
+ * @details The segment normal to the arc of half length r runs through the
+ * centre C of the arc, so the strip is two sectors with their apex at C: of
+ * radius R + r over the sweep of the arc, and of radius r - R over the
+ * opposite sweep. Each is bounded counterclockwise by its two radii and its
+ * arc about C, the offset of the arc away from C for the first and the one
+ * toward C, which runs on the far side of C, for the second
+ * (#edges_add_offset_arc), C a point of the root of the circle
+ * (#TangentPoint, member k 2); an arc of a half turn has its two radii on one
+ * line and the union of its two half discs is bounded by one curve along it.
+ * Stretched by r past an end, the square cap
+ * there, the rectangle between the ends of the two offsets there and those
+ * ends pushed by r along the tangent of the circle is added, turning
+ * counterclockwise too. Each of these curves winds once around the points
+ * it bounds and around no other point
+ * @param[in] ea The input arc, its circle read (#exact_arc_bound)
+ * @param[in] ccw Whether the arc runs counterclockwise
+ * @param[in] radius Distance, positive
+ * @param[in] sa,sb Whether the strip is stretched past the start, past the
+ * end
+ * @param[in,out] tps The tangent points, at most thirteen appended at @p ntp
+ * @param[in,out] ntp Number of tangent points
+ * @param[in,out] edges Edges, appended to
+ */
+static void
+buffer_arc_strip_past_centre(const ExactArc *ea, bool ccw, double radius,
+  bool sa, bool sb, TangentPoint *tps, uint32_t *ntp, MeosArray *edges)
+{
+  const double *a = ea->s, *mid = ea->m;
+  TangentPoint *t = &tps[*ntp];
+  uint32_t n = 0;
+  /* C, then the ends of the two offsets at the end of the arc, the second
+   * and third points as #buffer_elem_strip_offsets states them, then those
+   * at its start */
+  TangentPoint *c = &t[n++], *eo = &t[n++], *ei = &t[n++], *so = &t[n++],
+    *si = &t[n++];
+  *c = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 0, 2, 0, ea};
+  *eo = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, 1, 0, ea};
+  *ei = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, 1, 0,
+    ea};
+  *so = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, 0, 0, ea};
+  *si = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, 0, 0,
+    ea};
+  /* The ends in the counterclockwise order of the arc */
+  const TangentPoint *po = ccw ? so : eo, *qo = ccw ? eo : so;
+  const TangentPoint *pi = ccw ? si : ei, *qi = ccw ? ei : si;
+  /* An arc of a half turn, the half circle on its diameter or an arc whose
+   * middle sees its chord at a right angle, (s - m).(e - m) = 0 as
+   * #cert_arc_minor reads it, has its two radii on one line through C, and
+   * the union of its two half discs is bounded by one curve along that line:
+   * the outer offset, the line to the inner one, which runs on the far side
+   * of C, and the line back */
+  const double *e = ea->e;
+  bool diameter = ea->half ||
+    certa_sum2_sign(a[0], mid[0], e[0], mid[0], a[1], mid[1], e[1],
+      mid[1]) == 0;
+  if (diameter)
+  {
+    edges_add_offset_arc(edges, true, po, qo);
+    edges_add_tangent_segment(edges, qo, pi);
+    edges_add_offset_arc(edges, true, pi, qi);
+    edges_add_tangent_segment(edges, qi, po);
+  }
+  else
+  {
+    /* The sector of the sweep, and the one of the opposite sweep */
+    edges_add_tangent_segment(edges, c, po);
+    edges_add_offset_arc(edges, true, po, qo);
+    edges_add_tangent_segment(edges, qo, c);
+    edges_add_tangent_segment(edges, c, pi);
+    edges_add_offset_arc(edges, true, pi, qi);
+    edges_add_tangent_segment(edges, qi, c);
+  }
+  for (int8_t k = 0; k < 2; k++)
+  {
+    if (! (k ? sb : sa))
+      continue;
+    /* Out of the curve along the tangent: counterclockwise past the end of
+     * an arc running so, clockwise past its start */
+    int8_t along = (int8_t) ((k ? 1 : -1) * (ccw ? 1 : -1));
+    TangentPoint *u = &t[n++], *up = &t[n++], *vp = &t[n++], *v = &t[n++];
+    *u = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, k, 0,
+      ea};
+    *up = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, 1, k,
+      along, ea};
+    *vp = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, k,
+      along, ea};
+    *v = (TangentPoint) {a[0], a[1], radius, mid[0], mid[1], 0.0, -1, k, 0,
+      ea};
+    /* From the end away from C past the cap and back: counterclockwise where
+     * the cap lies counterclockwise of the line through the end and C */
+    TangentPoint *r[4] = {u, up, vp, v};
+    for (int i = 0; i < 4; i++)
+    {
+      if (along > 0)
+        edges_add_tangent_segment(edges, r[i], r[(i + 1) % 4]);
+      else
+        edges_add_tangent_segment(edges, r[(i + 1) % 4], r[i]);
+    }
+  }
+  *ntp += n;
+  return;
+}
+
+/**
  * @brief Add to an edge array the boundary of the strip of an arc, the
  * points the segment normal to it of half length the distance sweeps, every
  * piece of it exact: the sibling of #buffer_strip_offsets for an arc
@@ -11062,19 +11168,21 @@ buffer_curve_walk_back(BufferWalkElem *w, uint32_t n)
  * distance past an end, the square cap there, the segment across moves past
  * the end by the distance along the tangent of the circle there and two
  * segments along that tangent join it to the offsets (#TangentPoint, member
- * along). Where the radius R of the arc does not exceed the distance, the
- * normal segment sweeps through C into the points beyond it, which no one
- * curve winds around once with the rest of the strip, so R must exceed the
- * distance by more than the bound on the circle in doubles
+ * along). Where the distance exceeds the radius R of the arc, the normal
+ * segment sweeps through C into the points beyond it, which no one curve
+ * winds around once with the rest of the strip: the strip is then two
+ * sectors about C (#buffer_arc_strip_past_centre). R and the distance must
+ * differ by more than the bound on the circle in doubles
  * @param[in] w The arc
  * @param[in] radius Distance, positive
  * @param[in] sa,sb Whether the strip is stretched past the start, past the
  * end
- * @param[in,out] tps The tangent points, at most eight appended at @p ntp
+ * @param[in,out] tps The tangent points, at most thirteen appended at
+ * @p ntp
  * @param[in,out] arcs The input arcs, one stored where @p ntp halved points
  * @param[in,out] ntp Number of tangent points
  * @param[in,out] edges Edges, appended to
- * @return False where R is not told to exceed the distance, nothing then
+ * @return False where R and the distance are not told apart, nothing then
  * appended
  */
 static bool
@@ -11088,14 +11196,22 @@ buffer_arc_strip_offsets(const BufferWalkElem *w, double radius, bool sa,
     w->half != 0, 0.0, 0.0, 0.0, 0.0};
   double box[4];
   exact_arc_bound(ea, box);
-  if (ea->err < 0.0 ||
-      ! (ea->r - radius > ea->err + 0x1p-50 * (ea->r + radius)))
+  if (ea->err < 0.0)
     return false;
   /* The right of an arc running counterclockwise lies outside it, and
    * running on past its end is running counterclockwise */
   bool ccw = w->half ? w->half > 0 :
     cross_product_sign(a[0], a[1], mid[0], mid[1], a[0], a[1], b[0],
       b[1]) > 0;
+  /* R and the distance told apart by more than the bound on the circle */
+  double margin = ea->err + 0x1p-50 * (ea->r + radius);
+  if (radius - ea->r > margin)
+  {
+    buffer_arc_strip_past_centre(ea, ccw, radius, sa, sb, tps, ntp, edges);
+    return true;
+  }
+  if (! (ea->r - radius > margin))
+    return false;
   int8_t sr = ccw ? 1 : -1;
   TangentPoint *t = &tps[*ntp];
   uint32_t n = 0;
