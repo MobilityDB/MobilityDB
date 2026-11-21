@@ -463,7 +463,11 @@ join at a vertex turns as the walk does there, the direction of an arc being
 its tangent, and a whole circle is walked as its two halves. A ring of a curve
 polygon turns counterclockwise where the shoelace sum of the ring through
 every point fixing it, and the sense of every arc, agree on it: each arc adds
-to that sum two circular segments of its own sign.
+to that sum two circular segments of its own sign. Where they disagree, the
+ring, being simple, turns as it does at its point furthest along x, the one
+furthest along y among those: a vertex, where the walk's turn there decides,
+or the point `(cx + R, cy)` of the circle of an arc holding it, where the arc's
+sense decides, the vertices and those points compared exactly.
 
 **The region is decided by the winding number.** The curves wind around a
 point as many times as the parts of the geometry within the distance of it,
@@ -513,9 +517,10 @@ no other path answers it exactly; the erosion of a polygon holding a ring that
 encloses no area is built on the older path. So is the buffer of a lone point,
 whose disc that path writes as its whole circle, of a curve under
 a flat or a square cap ending in an arc whose radius is not shown to exceed
-the distance, of a curve polygon ring whose arcs turn against its
-shoelace sum, and of a curve polygon holding a hole of arcs, other than a whole
-circle, that the distance may cover.
+the distance, of a curve polygon ring whose point furthest right is not told,
+an arc's end within the bound of its circle in doubles of the point
+`(cx + R, cy)` or a tie, and of a curve polygon holding a hole of arcs, other
+than a whole circle, that the distance may cover.
 
 **The rings of a line's buffer carry a certificate.** The rings are written in
 doubles, and the written end of every offset segment, chord or corner of a
@@ -560,6 +565,7 @@ rests on a rounding.
 | curve polygons bounded by whole circles, with and without a circular hole | 60 discs at distances below and above the radius of the hole, points at 0.999 and 1.001 of the distance from either circle | 11087 of 11087, with no decline |
 | circular strings and compound curves under a flat or a square cap | 120 curves of one to three arcs, ending in segments or arcs, at 0.3 and 0.97 of the smallest radius of their end arcs, a grid about each, points at 0.999 and 1.001 of the distance from every arc, segment and end, and on both sides of every cut and of every side and corner of a square | 57760 of 57760, with no decline |
 | geometry collections of points, multipoints, lines, multilines, polygons with and without a hole, curve polygons and curves, nested at times | 80 collections of two to five members about one centre, 41 holding a line, under the round, flat and square caps at 0.3 and 0.9 of the smallest radius of their curves' end arcs, a grid about each and points at 0.999 and 1.001 of the distance from every edge, arc and point | 46392 of 46392, with no decline |
+| curve polygons whose rings hold arcs turning both ways | 100 convex polygons of three to six vertices whose edges are arcs bulging out by up to a quarter of their chord or in by up to 0.12 of it, counterclockwise and clockwise, at 0.1, 0.5 and 1.5 of their radius, a grid about each and points at 0.999 and 1.001 of the distance from every arc, segment and vertex | 44638 of 44638, with no decline |
 
 Every query a line's certificate declines has a distance below the rounding of
 its coordinates, at most 0.32 of an ulp; answered instead, five of them are
