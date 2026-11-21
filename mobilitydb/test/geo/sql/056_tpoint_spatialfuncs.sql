@@ -150,6 +150,20 @@ SELECT asText(transformPipeline(tgeompoint 'SRID=4326;POINT(2 49)@2001-01-01',
 SELECT asText(transformPipeline(tgeompoint 'POINT(426857.9877165967 5427937.523342293)@2001-01-01 00:00:00+01',
   text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false), 3);
 
+-- The pipeline states both coordinate systems, so neither SRID is read: a
+-- geometry, a set and a temporal value of the same point may each take the
+-- unknown SRID as the SRID of the result, or have it as their own
+SELECT ST_SRID(transformPipeline(geometry 'SRID=4326;Point(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'));
+SELECT asEWKT(transformPipeline(geomset 'SRID=4326;{"Point(2 49)"}',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
+SELECT asEWKT(transformPipeline(tgeompoint 'SRID=4326;Point(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
+SELECT asEWKT(transformPipeline(geomset '{"Point(2 49)"}',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+SELECT asEWKT(transformPipeline(tgeompoint 'Point(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+
 --------------------------------------------------------
 
 WITH test1(pipeline) AS (

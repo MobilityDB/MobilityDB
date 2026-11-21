@@ -76,3 +76,9 @@ target_include_directories(h3_geog_cover_unit PRIVATE
 target_link_libraries(h3_geog_cover_unit ${MEOS_LIB_NAME} ${H3_LIBRARY}
   postgis pgtypes m)
 add_test(NAME h3_geog_cover_unit COMMAND h3_geog_cover_unit)
+
+add_executable(h3_vertex_unit h3_vertex_unit.c)
+target_include_directories(h3_vertex_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(h3_vertex_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
+  pgtypes m)
+add_test(NAME h3_vertex_unit COMMAND h3_vertex_unit)

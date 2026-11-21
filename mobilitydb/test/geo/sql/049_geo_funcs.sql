@@ -203,10 +203,65 @@ SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(5.813848 2.813777,
   12.184346 5.166935,5.813848 2.813777),Circularstring(9.168692 2.718545,
   8.696632 5.985608,9.168692 2.718545))', 2.1456446498870543),
   ST_Point(8.599378402370817, 4.328579428763156)) AS in_hole;
+-- A ring whose arcs turn both ways turns as it does at its point furthest
+-- right: the square of side 4 whose bottom bulges out by 0.5 and whose top
+-- dips in by 0.5, the top an arc of radius 4.25 about (2 7.75), holds within
+-- 0.5 the points 0.3 above the dip and 0.4 below the bottom, and not 0.6
+-- below it
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, 3.8)) AS above_dip;
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -0.9)) AS below_bulge;
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -1.1)) AS past_bulge;
 -- An arc is offset by an arc about its own centre: a point at 1.4 from the
 -- centre of the half circle of radius 1 lies in its buffer by 0.5
 SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5),
   ST_Point(0, 1.4)) AS beside_arc;
+-- A flat cap cuts the strip of an end arc along the line through its end and
+-- its centre: the upper half of the ring from 0.5 to 1.5, without the point
+-- 0.22 from the end (1 0) below that line, which a round cap holds; a square
+-- cap stretches the strip by 0.5 past the end along the tangent there, and
+-- holds a point of that square 0.64 from the end
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), 6));
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=flat'), ST_Point(1.2, -0.1)) AS past_flat_cap;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5,
+  'endcap=square'), ST_Point(1.45, -0.45)) AS in_square_cap;
+-- The buffer of a collection is the union of the buffers of its members,
+-- each with its own cap: beside the half circle, the point (3 0) holds
+-- (2.6 0) at 0.4 from it, the square cap of the half circle holds the point
+-- of its square 0.64 from the end, and the flat cap leaves out the point
+-- below its cut
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=square'), ST_Point(1.45, -0.45))
+  AS member_square_cap;
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(1.2, -0.1))
+  AS member_flat_cap;
+SELECT contains(buffer(geometry 'GeometryCollection(Circularstring(-1 0,0 1,
+  1 0),Point(3 0))', 0.5, 'endcap=flat'), ST_Point(2.6, 0)) AS member_point;
+-- A line in a multicurve or a collection is walked as a curve of segments:
+-- the segment of length 2 buffered by 0.5 is its stadium, two half circles
+SELECT ST_AsText(round(buffer(geometry 'MultiCurve((0 0,2 0))', 0.5), 6));
+SELECT ST_AsText(round(buffer(geometry 'GeometryCollection(Linestring(0 0,
+  2 0),Point(5 0))', 0.5), 6));
+-- Buffered by 1.5, more than its radius 1, the normal segment of the half
+-- circle runs through its centre: the strip is the upper half disc of radius
+-- 2.5 and the lower one of radius 0.5, holding (0 -0.4) and not (0 -0.6); a
+-- square cap adds the squares past both ends, which hold (2 -1)
+SELECT ST_AsText(round(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), 6));
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.4)) AS in_far_lobe;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=flat'), ST_Point(0, -0.6)) AS past_far_lobe;
+SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 1.5,
+  'endcap=square'), ST_Point(2, -1)) AS in_square_past_centre;
 
 -- The buffer of a geometry of several components is their union
 SELECT ST_GeometryType(buffer(geometry 'Multipoint(0 0,10 0)', 1));

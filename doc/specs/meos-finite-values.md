@@ -113,7 +113,6 @@ A raster pixel holding a NaN or an infinity carries no value, as a pixel
 equal to the nodata value of its band does. The temporal value read from a
 raster along a trajectory therefore has no instant where the trajectory
 crosses such a pixel.
-
 ## 4. Results
 
 ### 4.1 The rule
@@ -130,7 +129,8 @@ include the arithmetic of temporal floats, the sum of temporal floats, the
 delta, the integral and the exponential of a temporal float, the distance of
 two float spans, the distance of two circular buffers or geometries whose
 coordinates are near `±DBL_MAX`, the area, the volume and the perimeter of a
-box or a geometry, the expansion of a float box, a value tile, and the number
+box or a geometry, the expansion of a float box, a value tile, the sum of the
+pixels of a raster band (`summaryStats` and `summaryStatsAgg`), and the number
 of bins of a float span:
 
 ```sql
@@ -155,7 +155,11 @@ of centre `(0 0)` and radius `1e308`, the time-weighted average of
 is 0. The value of `[1e308@2001-01-01, -1e308@2001-01-03]` at `2001-01-02` is
 0, and the temporal average (`tavg`, `wavg`) and the temporal centroid
 (`tcentroid`) of values near `±DBL_MAX` are answered as well: the `tavg` of
-two temporal floats valued `1e308` is `1e308`. The rounding of `DBL_MAX` is
+two temporal floats valued `1e308` is `1e308`. The statistics of the pixels
+of a band are answered as well, `summaryStats` and `summaryStatsAgg` alike:
+the standard deviation of a band holding `-1.7e308` and `1.7e308` is
+`1.7e308`, and the sum of a band holding `1.7e308`, `1.7e308` and `-1.7e308`
+is `1.7e308`. The rounding of `DBL_MAX` is
 `DBL_MAX`, and the area of a box whose extent exceeds `DBL_MAX` while its area
 does not is answered:
 

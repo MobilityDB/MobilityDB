@@ -53,8 +53,11 @@
  *   since they refuse two values of different SRIDs.
  *
  * The routes of the network points come from the ways file the environment
- * variable MEOS_WAYS_CSV names, by default `meos/examples/data/ways1000.csv`
- * of the source tree, read from the directory the program runs in.
+ * variable MEOS_WAYS_CSV names, by default `../examples/data/ways1000.csv`,
+ * the one of the source tree read from `meos/test`, where the tests run, as
+ * `spatialset_distance_test.c` reads it. A check given no value is a failure,
+ * so that a ways file holding none of the routes cannot leave the network
+ * points unchecked while the program passes.
  *
  * The program can be built as follows
  * @code
@@ -106,6 +109,12 @@ typedef bool (*eqfn)(const void *, const void *);
 static void
 base_check(const char *name, void **v, int n, cmpfn cmp, eqfn eq)
 {
+  if (n == 0)
+  {
+    printf("%s: no value was read\n", name);
+    failures++;
+    return;
+  }
   long pairs = 0, inconsistent = 0, asymmetric = 0, triples = 0,
     intransitive = 0;
   for (int i = 0; i < n; i++)
@@ -202,6 +211,12 @@ npoint_in_v(const char *str)
 static void
 set_check(const char *name, Set **sets, int n)
 {
+  if (n == 0)
+  {
+    printf("%s: no set was made\n", name);
+    failures++;
+    return;
+  }
   long pairs = 0, bad = 0, refused = 0, mixed = 0;
   for (int i = 0; i < n; i++)
     for (int j = 0; j < n; j++)
@@ -234,6 +249,12 @@ set_check(const char *name, Set **sets, int n)
 static void
 temporal_check(const char *name, Temporal **temps, int n)
 {
+  if (n == 0)
+  {
+    printf("%s: no temporal value was made\n", name);
+    failures++;
+    return;
+  }
   long pairs = 0, bad = 0, refused = 0, mixed = 0;
   for (int i = 0; i < n; i++)
     for (int j = 0; j < n; j++)
@@ -271,7 +292,7 @@ main(void)
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
   const char *ways = getenv("MEOS_WAYS_CSV");
-  meos_set_ways_csv(ways ? ways : "meos/examples/data/ways1000.csv");
+  meos_set_ways_csv(ways ? ways : "../examples/data/ways1000.csv");
 
   /* Circular buffers: the special inputs, then a grid of finite ones */
   void *cbufs[MAXV];

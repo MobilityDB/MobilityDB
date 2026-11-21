@@ -719,7 +719,7 @@ SELECT op, no_idx FROM test_tgeogpoint_idx WHERE op NOT LIKE '%|=|%' ORDER BY op
  <@ stbox x              | 23490
  <@ tgeogpoint           | 33
  <@ tstzspan             | 631
- ?&& stbox               | 251
+ ?&& stbox               | 245
  @> stbox                | 58
  @> stbox x              | 50670
  @> tgeogpoint           | 38

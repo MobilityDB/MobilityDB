@@ -11551,10 +11551,13 @@ tower_point_xy(DyadicCtx *ctx, double px, double py, double ox, double oy,
  * M and E is the one #tower_arc_circle forms, centre c / w and squared
  * radius r2 / w^2, w positive, so for A the end asked n = w (A - O) - c is
  * (A - C) w and the unit vector from C to A is n / sqrt(r2): the point is
- * A + side r n / sqrt(r2), over r2 the point A r2 + side r n sqrt(r2). The
- * tower has the one root sqrt(r2), the same number for both ends of one arc.
- * An arc whose three points lie on one line has no centre, which marks the
- * arithmetic unsafe
+ * A + side r n / sqrt(r2), over r2 the point A r2 + side r n sqrt(r2). With
+ * @p along nonzero the point lies past it by r along the tangent of the
+ * circle there, counterclockwise for 1 and clockwise for -1, the corner of
+ * the square cap of a curve ending in the arc: rot(n) = (-ny, nx) added
+ * along r times over sqrt(r2), in the same root. The tower has the one root
+ * sqrt(r2), the same number for every point of one arc. An arc whose three
+ * points lie on one line has no centre, which marks the arithmetic unsafe
  */
 static void
 tower_point_radial(DyadicCtx *ctx, const TangentPoint *tp, double ox,
@@ -11566,6 +11569,17 @@ tower_point_radial(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   if (tower_arc_circle(ctx, arc->s, arc->m, arc->e, arc->half, ox, oy, &cx,
       &cy, &w, &r2) == 0 && ! arc->half)
     ctx->arena.unsafe = true;
+  if (tp->k == 2)
+  {
+    /* The centre c / w, in the root of the circle with no part on it */
+    out->t.depth = 1;
+    out->t.key[0] = NULL;
+    out->t.h[0].c[0] = r2;
+    tower_set(ctx, cx, 1, out->x.c);
+    tower_set(ctx, cy, 1, out->y.c);
+    tower_set(ctx, w, 1, out->w.c);
+    return;
+  }
   const double *a = tp->k ? arc->e : arc->s;
   double ax = a[0], ay = a[1];
   DyadicX px = dx_diff(ctx, ax, ox), py = dx_diff(ctx, ay, oy);
@@ -11579,6 +11593,12 @@ tower_point_radial(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   out->x.c[1] = dx_mul(ctx, sr, nx);
   out->y.c[0] = dx_mul(ctx, py, r2);
   out->y.c[1] = dx_mul(ctx, sr, ny);
+  if (tp->along)
+  {
+    DyadicX ar = dx_scale(ctx, dx_val(ctx, tp->r1), (double) tp->along);
+    out->x.c[1] = dx_sub(ctx, out->x.c[1], dx_mul(ctx, ar, ny));
+    out->y.c[1] = dx_add(ctx, out->y.c[1], dx_mul(ctx, ar, nx));
+  }
   tower_set(ctx, r2, 1, out->w.c);
   return;
 }
@@ -12181,8 +12201,15 @@ tangent_point_round(const TangentPoint *tp, double *x, double *y)
   {
     /* The end of the offset of an input arc, on the line from the centre of
      * its circle in doubles, which the arc carries (#exact_arc_bound),
-     * through that end */
+     * through that end, and past it along the tangent there where @p along
+     * asks it */
     const ExactArc *arc = tp->arc;
+    if (tp->k == 2)
+    {
+      *x = arc->cx;
+      *y = arc->cy;
+      return;
+    }
     const double *a = tp->k ? arc->e : arc->s;
     double ax = a[0], ay = a[1];
     double nx = ax - arc->cx, ny = ay - arc->cy;
@@ -12196,9 +12223,10 @@ tangent_point_round(const TangentPoint *tp, double *x, double *y)
       nx = (turn > 0) ? cys : - cys;
       ny = (turn > 0) ? - cxs : cxs;
     }
-    double f = tp->side * tp->r1 / hypot(nx, ny);
-    *x = ax + f * nx;
-    *y = ay + f * ny;
+    double l = tp->r1 / hypot(nx, ny);
+    double f = tp->side * l, g = tp->along * l;
+    *x = ax + f * nx - g * ny;
+    *y = ay + f * ny + g * nx;
     return;
   }
   double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
@@ -13722,7 +13750,7 @@ meet_point_origin(const MeetPoint *m, double *ox, double *oy)
       /* The end of an offset lies about the end of its input arc */
       if (m->tp->arc)
       {
-        const double *a = m->tp->k ? m->tp->arc->e : m->tp->arc->s;
+        const double *a = (m->tp->k == 1) ? m->tp->arc->e : m->tp->arc->s;
         *ox = a[0]; *oy = a[1];
         return;
       }
