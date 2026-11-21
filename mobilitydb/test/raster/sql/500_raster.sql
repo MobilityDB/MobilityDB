@@ -1418,6 +1418,24 @@ SELECT encode(substring(asPNG(r) from 1 for 8), 'hex') AS png_signature,
     dumpValues(r, 1) AS png_values
 FROM rast;
 
+-- A format whose library writes only through the operating system, as
+-- netCDF's, is written as any other: the file opens with the signature of
+-- netCDF, and reading it back answers the values and the grid of the raster.
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 4326),
+    '16BSI'::text, 0::float8, -1::float8), 1, 1, 1,
+    ARRAY[[1, 2, 3], [4, -5, 0]]::double precision[][]) AS r),
+back AS (
+  SELECT r, asGDALRaster(r, 'netCDF') AS f FROM rast)
+SELECT encode(substring(f from 1 for 3), 'escape') AS netcdf_signature,
+  dumpValues(rasterFromGDALRaster(f), 1) = dumpValues(r, 1) AS values_kept,
+  width(rasterFromGDALRaster(f)) = width(r) AND
+    height(rasterFromGDALRaster(f)) = height(r) AND
+    upperLeftX(rasterFromGDALRaster(f)) = upperLeftX(r) AND
+    upperLeftY(rasterFromGDALRaster(f)) = upperLeftY(r) AS grid_kept
+FROM back;
+
 -- The creation options reach the driver as PostGIS hands them, one option an
 -- element: a level of compression, a quality, a value holding spaces and
 -- quotes, written into the file; an element NULL and an empty array state no
