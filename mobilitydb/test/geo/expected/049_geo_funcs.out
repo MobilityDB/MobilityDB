@@ -472,6 +472,20 @@ SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(5.813848 2.813777,
  t
 (1 row)
 
+-- A hole of arcs the distance covers whole: the hole of two segments and an
+-- arc, buffered by 223, lies within the buffer whole, as does the point
+-- (777 632) of the polygon, 19.6 outside the arc of the hole
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(336.67574
+  -466.566789,1383.46813 1589.61924,336.67574 -466.566789),
+  Compoundcurve((979.934798 774.194819,677.203023 938.042203),
+  (677.203023 938.042203,736.308033 618.808792),Circularstring(736.308033
+  618.808792,848.170603 712.103492,979.934798 774.194819)))', 223),
+  ST_Point(777, 632)) AS in_arc_hole;
+ in_arc_hole 
+-------------
+ t
+(1 row)
+
 -- A ring whose arcs turn both ways turns as it does at its point furthest
 -- right: the square of side 4 whose bottom bulges out by 0.5 and whose top
 -- dips in by 0.5, the top an arc of radius 4.25 about (2 7.75), holds within
@@ -499,6 +513,31 @@ SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
  past_bulge 
 ------------
  f
+(1 row)
+
+-- A hole stays a hole of the shell whose circle holds it although the circle
+-- of one of its arcs reaches past that shell: the disc of radius 10 holding
+-- the triangle of radius 2 whose arcs bulge out by 0.05 of their chord, of
+-- radius 8.75, leaves out the centre of the hole, 1.17 from its ring, and
+-- holds the point 0.4 inside the middle of its left arc
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(10 0,-10 0,
+  10 0),Compoundcurve(Circularstring(2 0,0.58660254 1.016025404,
+  -1 1.732050808),Circularstring(-1 1.732050808,-1.173205081 0,
+  -1 -1.732050808),Circularstring(-1 -1.732050808,0.58660254 -1.016025404,
+  2 0)))', 0.5), ST_Point(0, 0)) AS hole_centre;
+ hole_centre 
+-------------
+ f
+(1 row)
+
+SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(10 0,-10 0,
+  10 0),Compoundcurve(Circularstring(2 0,0.58660254 1.016025404,
+  -1 1.732050808),Circularstring(-1 1.732050808,-1.173205081 0,
+  -1 -1.732050808),Circularstring(-1 -1.732050808,0.58660254 -1.016025404,
+  2 0)))', 0.5), ST_Point(-0.773205081, 0)) AS beside_hole_arc;
+ beside_hole_arc 
+-----------------
+ t
 (1 row)
 
 -- An arc is offset by an arc about its own centre: a point at 1.4 from the

@@ -20976,10 +20976,9 @@ SELECT asText(pose ' pose   (  Point  ( 1  1  ) ,	0.5   )   ');
 (1 row)
 
 SELECT pose 'point(1,0.5)';
-ERROR:  parse error - invalid geometry
+ERROR:  Could not parse pose value: Missing prefix 'Pose'
 LINE 1: SELECT pose 'point(1,0.5)';
                     ^
-HINT:  "point(1" <-- parse error at position 8 within geometry
 SELECT pose 'pose 1,0.5)';
 ERROR:  Could not parse pose value: Missing opening parenthesis
 LINE 1: SELECT pose 'pose 1,0.5)';
@@ -21381,7 +21380,7 @@ SELECT asText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.70710
 (1 row)
 
 SELECT poseFromText(asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6));
-ERROR:  unexpected end of data (at offset 21)
+ERROR:  Could not parse pose value: Missing prefix 'Pose'
 \set VERBOSITY default
 -------------------------------------------------------------------------------
 -- Extracted from pose/sql/101_poseset_tbl.sql

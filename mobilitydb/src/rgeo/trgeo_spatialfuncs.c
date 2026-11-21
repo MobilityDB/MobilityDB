@@ -241,8 +241,8 @@ PGDLLEXPORT Datum Trgeometry_length(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_length);
 /**
  * @ingroup mobilitydb_rgeo_accessor
- * @brief Return the length traversed by the centroid of a temporal rigid
- * geometry
+ * @brief Return the length traversed by the position of the pose of a
+ * temporal rigid geometry
  * @sqlfn length()
  * @altsqlfn geoLength()
  */
@@ -261,8 +261,8 @@ PGDLLEXPORT Datum Trgeometry_cumulative_length(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_cumulative_length);
 /**
  * @ingroup mobilitydb_rgeo_accessor
- * @brief Return the cumulative length traversed by the centroid of a temporal
- * rigid geometry
+ * @brief Return the cumulative length traversed by the position of the pose
+ * of a temporal rigid geometry
  * @sqlfn cumulativeLength()
  * @altsqlfn geoCumulativeLength()
  */
@@ -279,7 +279,8 @@ PGDLLEXPORT Datum Trgeometry_speed(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_speed);
 /**
  * @ingroup mobilitydb_rgeo_accessor
- * @brief Return the speed of the centroid of a temporal rigid geometry
+ * @brief Return the speed of the position of the pose of a temporal rigid
+ * geometry
  * @sqlfn speed()
  */
 Datum
@@ -316,8 +317,8 @@ PGDLLEXPORT Datum Trgeometry_twcentroid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_twcentroid);
 /**
  * @ingroup mobilitydb_rgeo_accessor
- * @brief Return the time-weighted centroid of the centroid trajectory of a
- * temporal rigid geometry
+ * @brief Return the time-weighted centroid of the trajectory of the position
+ * of the pose of a temporal rigid geometry
  * @sqlfn twCentroid()
  */
 Datum

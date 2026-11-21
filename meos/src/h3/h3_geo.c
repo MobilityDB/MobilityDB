@@ -627,7 +627,8 @@ h3_cell_outline_compute(H3Index cell, DggsOutline *out)
 }
 
 /** @brief Number of outlines a thread keeps, direct-mapped by cell */
-#define H3_OUTLINE_CACHE 64
+#define H3_OUTLINE_CACHE_BITS 6
+#define H3_OUTLINE_CACHE (1 << H3_OUTLINE_CACHE_BITS)
 
 /** @brief The outlines of the cells read last, per thread: the outline is a
  * function of the cell alone, and a walk and the owner of a point read the
@@ -640,14 +641,14 @@ static MEOS_TLS DggsOutline MEOS_H3_OUTLINE[H3_OUTLINE_CACHE];
  * (#h3_cell_outline_compute) where its slot holds another cell, or NULL on
  * an error of the H3 library
  * @details The slot is read in place, valid until a cell of the same slot is
- * read: the resolution and the base cell sit in the high bits of the index
- * and its digits below, so the low bits spread the neighbours of a cell
+ * read; the cells are placed by their index (#MEOS_CACHE_SLOT), which spreads
+ * the neighbours of a cell, whose indices differ in their low digits
  */
 static DggsOutline *
 h3_cell_outline_slot(H3Index cell)
 {
-  DggsOutline *slot = &MEOS_H3_OUTLINE[(cell ^ (cell >> 21)) %
-    H3_OUTLINE_CACHE];
+  DggsOutline *slot = &MEOS_H3_OUTLINE[MEOS_CACHE_SLOT(cell,
+    H3_OUTLINE_CACHE_BITS)];
   if (cell == (H3Index) 0 || slot->cell != cell)
   {
     if (! h3_cell_outline_compute(cell, slot))

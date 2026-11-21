@@ -75,6 +75,20 @@ empties it. Every such call is made by `meos_finalize`.
    is, and as the tables of the arctangent of the exact arithmetic and the
    points and cells of H3 are, each entry point reading their address once
    and passing it to what it calls.
+7. **A value read again by neighbouring cells is kept by its key.** The
+   corners of the S2 cells, the row boundaries of the QUADBIN cells, the
+   points, the face coordinates and the outlines of the H3 cells and the
+   geodetic positions of the cell walks are functions of a key alone, and
+   the outlines of neighbouring cells read the ones they share again. Each
+   is kept in a per-thread table of a power of 2 of slots, the slot of a key
+   given by `MEOS_CACHE_SLOT` of `meos/include/meos_tls.h`: the high bits of
+   the key times 2^64 over the golden ratio (Fibonacci hashing), which
+   spread keys differing in their low bits, as the indices of neighbouring
+   cells do. A key of several words, the face and the two leaf indices of an
+   S2 corner or the two degrees of a position, is mixed into one word first,
+   and its entry keeps every word. A slot holds its key, a lookup of another
+   key computes the value and overwrites the slot, and the table holds no
+   memory, so nothing frees it.
 
 A program using MEOS from several threads therefore calls `meos_initialize`
 once for the process, then, on each thread before its first MEOS call,
