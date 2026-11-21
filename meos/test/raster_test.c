@@ -770,6 +770,35 @@ int main(void)
   assert(tfloat_start_value(masked) == 10.0);
   free(masked_str); free(masked);
 
+  /* A region away from the upper left corner keeps the pixels it covers at
+   * their place. The region below spans x in [1,3] and y in [0,2], the two
+   * right columns of the two lower rows, so the clip answers two pixels by two
+   * whose corner is (1, 2), and pixel(2,2) = 50 and pixel(3,3) = 90 answer what
+   * they answered before the clip */
+  GSERIALIZED *region_lr = geom_in("SRID=4326;POLYGON((1 0,3 0,3 2,1 2,1 0))",
+    -1);
+  assert(region_lr != NULL);
+  meos_errno_reset();
+  Raster *cropped_lr = raster_clip(rast_values, NULL, 0, region_lr, NULL, 0,
+    true, false);
+  assert(cropped_lr != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_width(cropped_lr) == 2);
+  assert(raster_height(cropped_lr) == 2);
+  assert(raster_upper_left_x(cropped_lr) == 1.0);
+  assert(raster_upper_left_y(cropped_lr) == 2.0);
+  Temporal *traj_lr = tgeompoint_in("SRID=4326;{POINT(1.5 1.5)@2001-01-01,"
+    " POINT(2.5 0.5)@2001-01-02}");
+  assert(traj_lr != NULL);
+  meos_errno_reset();
+  Temporal *kept_lr = raster_value(traj_lr, cropped_lr, 1, true, "nearest");
+  assert(kept_lr != NULL);
+  assert(meos_errno() == 0);
+  assert(temporal_num_instants(kept_lr) == 2);
+  assert(tfloat_start_value(kept_lr) == 50.0);
+  assert(tfloat_end_value(kept_lr) == 90.0);
+  free(kept_lr); free(traj_lr); free(cropped_lr); free(region_lr);
+
   /* A geometry in another reference system states its positions in different
    * units, which is an error and not an empty answer */
   GSERIALIZED *region_3857 = geom_in("SRID=3857;POLYGON((0 1,2 1,2 3,0 3,0 1))",
