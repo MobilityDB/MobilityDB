@@ -346,6 +346,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aef42653d8925cdbb9240c13edd0d3760.html#aef42653d8925cdbb9240c13edd0d3760">mec_nearest_beyond</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a35e52e272ba4db9f0ce8c8f386d91cc8.html#a35e52e272ba4db9f0ce8c8f386d91cc8">mec_points</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_ad0e5d7e0d185ed0671ab1494f06c291b.html#ad0e5d7e0d185ed0671ab1494f06c291b">mec_radius_cmp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_abdc4f58780161465135dcd9bb180a98f.html#abdc4f58780161465135dcd9bb180a98f">mec_radius_cmp_support</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af3964af71dbc08d61f78060bbac35c6f.html#af3964af71dbc08d61f78060bbac35c6f">MEC_RADIUS_TERMS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af953685be6ce9692e8e366ed40052cd6.html#af953685be6ce9692e8e366ed40052cd6">mec_shuffle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ac8075c9c2b76bb158a893014f7b501c7.html#ac8075c9c2b76bb158a893014f7b501c7">mec_support3</a></td></tr>
@@ -414,16 +415,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return how the radius of the smallest circle enclosing an array of points, which it shuffles, compares with a distance, decided exactly: -1 where it is smaller, 0 where they are equal, 1 where it is larger. </p>
-<p >The circle is held as the points defining it (<a class="el" href="postgis__funcs_8c_a3659d8a7593a06f48d829f7a07d641bf.html#a3659d8a7593a06f48d829f7a07d641bf" title="Iterative Welzl algorithm for the minimum enclosing circle, returning the points defining it.">mec_welzl_support</a>) and never constructed: a single point has radius zero, the radius of a diameter from A to B is compared through |B - A|^2 - 4 r^2, and that of the circle of three points through the polynomial <a class="el" href="postgis__funcs_8c_a21d6b0059edbdb5e55a08fa809085836.html#a21d6b0059edbdb5e55a08fa809085836" title="Return true where a coordinate of the centre (which 0 or 1) or the radius (which 2) of the circle of ...">mec_beyond</a> reads, |u|^2 |v|^2 |w|^2 - 4 r^2 (u x v)^2, each a sign of exact sums of the input doubles (<a class="el" href="geo__dyadic_8h_ade8596ce994b8fdcf2c035bcc273bd2f.html#ade8596ce994b8fdcf2c035bcc273bd2f" title="Return the sign of a polynomial in exact sums, computed exactly.">polynomial_sign_exact</a>) </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">pts</td><td>Points, shuffled </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of points, at least one </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">radius</td><td>Distance, not negative </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd><a class="el" href="structExact.html">Exact</a> where no product of six coordinate differences overflows or underflows </dd></dl>
+<p>Return how the radius of the smallest circle enclosing an array of points, which it shuffles, compares with a distance, decided exactly (<a class="el" href="postgis__funcs_8c_abdc4f58780161465135dcd9bb180a98f.html#abdc4f58780161465135dcd9bb180a98f" title="Return how the radius of the smallest circle enclosing an array of points, which it shuffles,...">mec_radius_cmp_support</a>) </p>
 
 </div>
 </div>
