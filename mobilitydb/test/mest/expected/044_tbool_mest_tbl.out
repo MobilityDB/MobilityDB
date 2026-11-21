@@ -11,7 +11,7 @@ DECLARE
   line text;
 BEGIN
   FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
-    IF line LIKE '%Index Cond%' THEN
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
       RETURN true;
     END IF;
   END LOOP;
@@ -84,8 +84,21 @@ CREATE TEMP TABLE test_tbool_mest(op text, no_idx text,
   kdtree_equi_idx text, kdtree_equi_probe boolean,
   kdtree_seg_idx text, kdtree_seg_probe boolean,
   kdtree_bin_idx text, kdtree_bin_probe boolean);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<@ tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('&<# tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<<# tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#>> tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#&> tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text);
 INSERT INTO test_tbool_mest(op, no_idx) VALUES ('?&& tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text);
 INSERT INTO test_tbool_mest(op, no_idx) VALUES ('%&& tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('tstzspan @> tbool', (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('tstzspan #>> tbool', (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('tstzspan <<# tbool', (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text);
 -------------------------------------------------------------------------------
 CREATE INDEX tbl_tbool_idx_rtree_equi ON tbl_tbool_idx
   USING mgist(temp tbool_mrtree_equisplit_ops);
@@ -93,12 +106,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -111,12 +163,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -129,12 +220,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -147,12 +277,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -165,12 +334,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -183,12 +391,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -201,12 +448,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -219,12 +505,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -237,12 +562,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
 UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t)::text,
   kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t)::text,
   kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tbool';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tbool';
+UPDATE test_tbool_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_span t2, tbl_tbool_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tbool';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -258,15 +622,28 @@ SELECT COUNT(*) FROM tbl_tbool_idx;
 SELECT COUNT(*) FROM test_tbool_mest;
  count 
 -------
-     2
+    15
 (1 row)
 
 SELECT op, no_idx FROM test_tbool_mest ORDER BY op;
-      op      | no_idx 
---------------+--------
- %&& tstzspan | 590
- ?&& tstzspan | 714
-(2 rows)
+         op         | no_idx 
+--------------------+--------
+ #&> tbool          | 124666
+ #&> tstzspan       | 235951
+ #>> tbool          | 124591
+ #>> tstzspan       | 235317
+ %&& tstzspan       | 590
+ &<# tbool          | 137752
+ &<# tstzspan       | 236898
+ <<# tbool          | 137688
+ <<# tstzspan       | 236277
+ <@ tbool           | 52
+ <@ tstzspan        | 590
+ ?&& tstzspan       | 714
+ tstzspan #>> tbool | 236277
+ tstzspan <<# tbool | 235317
+ tstzspan @> tbool  | 590
+(15 rows)
 
 SELECT * FROM test_tbool_mest
 WHERE no_idx IS DISTINCT FROM rtree_equi_idx OR NOT rtree_equi_probe OR

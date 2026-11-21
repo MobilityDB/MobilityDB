@@ -39,6 +39,21 @@
 
 CREATE OPERATOR CLASS tjsonb_mquadtree_equisplit_ops
   DEFAULT FOR TYPE tjsonb USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
@@ -48,13 +63,28 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_equisplit_ops
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
   FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 temporal_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tjsonb_mquadtree_segsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
@@ -64,13 +94,28 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_segsplit_ops
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
   FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 temporal_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tjsonb_mquadtree_binsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
@@ -80,13 +125,28 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_binsplit_ops
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
   FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),
   FUNCTION  8 temporal_mest_binsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tjsonb_mkdtree_equisplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
@@ -96,13 +156,28 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_equisplit_ops
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
   FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 temporal_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tjsonb_mkdtree_segsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
@@ -112,13 +187,28 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_segsplit_ops
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
   FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 temporal_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tjsonb_mkdtree_binsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
@@ -128,7 +218,7 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_binsplit_ops
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
   FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),
   FUNCTION  8 temporal_mest_binsplit(internal, internal, internal);

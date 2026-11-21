@@ -39,6 +39,50 @@
 
 CREATE OPERATOR CLASS tquadbin_mquadtree_equisplit_ops
   DEFAULT FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -48,13 +92,57 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_equisplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mquadtree_segsplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -64,13 +152,57 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_segsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mquadtree_mergesplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -80,13 +212,57 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_mergesplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mquadtree_linearsplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -96,13 +272,57 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_linearsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mquadtree_adaptsplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -112,13 +332,57 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_adaptsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mkdtree_equisplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -128,13 +392,57 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_equisplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mkdtree_segsplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -144,13 +452,57 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_segsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mkdtree_mergesplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -160,13 +512,57 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_mergesplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mkdtree_linearsplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -176,13 +572,57 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_linearsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS tquadbin_mkdtree_adaptsplit_ops
   FOR TYPE tquadbin USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (tquadbin, stbox),
+  OPERATOR  1    << (tquadbin, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (tquadbin, stbox),
+  OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (tquadbin, stbox),
+  OPERATOR  4    &> (tquadbin, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (tquadbin, stbox),
+  OPERATOR  5    >> (tquadbin, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (tquadbin, tstzspan),
+  OPERATOR  8    <@ (tquadbin, stbox),
+  OPERATOR  8    <@ (tquadbin, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (tquadbin, stbox),
+  OPERATOR  9    &<| (tquadbin, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (tquadbin, stbox),
+  OPERATOR  10    <<| (tquadbin, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (tquadbin, stbox),
+  OPERATOR  11    |>> (tquadbin, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (tquadbin, stbox),
+  OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (tquadbin, tstzspan),
+  OPERATOR  28    &<# (tquadbin, stbox),
+  OPERATOR  28    &<# (tquadbin, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (tquadbin, tstzspan),
+  OPERATOR  29    <<# (tquadbin, stbox),
+  OPERATOR  29    <<# (tquadbin, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (tquadbin, tstzspan),
+  OPERATOR  30    #>> (tquadbin, stbox),
+  OPERATOR  30    #>> (tquadbin, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (tquadbin, tstzspan),
+  OPERATOR  31    #&> (tquadbin, stbox),
+  OPERATOR  31    #&> (tquadbin, tquadbin),
   -- ever overlaps
   OPERATOR  36    ?&& (tquadbin, stbox),
   -- always overlaps
@@ -192,7 +632,7 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_adaptsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);

@@ -12,7 +12,7 @@ DECLARE
   line text;
 BEGIN
   FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
-    IF line LIKE '%Index Cond%' THEN
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
       RETURN true;
     END IF;
   END LOOP;
@@ -84,8 +84,21 @@ CREATE TEMP TABLE test_tjsonb_mest(op text, no_idx text,
   kdtree_seg_idx text, kdtree_seg_probe boolean,
   kdtree_bin_idx text, kdtree_bin_probe boolean);
 
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('<@# tstzspan', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('<@# tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('&<# tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('<<# tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('#>> tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('#&> tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text);
 INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('?&& tstzspan', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text);
 INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('%&& tstzspan', (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('tstzspan #@> tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('tstzspan #>> tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text);
+INSERT INTO test_tjsonb_mest(op, no_idx) VALUES ('tstzspan <<# tjsonb', (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text);
 
 -------------------------------------------------------------------------------
 
@@ -95,12 +108,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -115,12 +167,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -135,12 +226,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET rtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -155,12 +285,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -175,12 +344,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -195,12 +403,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET quadtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -215,12 +462,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -235,12 +521,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -255,12 +580,51 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <@# t2.t')
+WHERE op = '<@# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <@# t2.temp')
+WHERE op = '<@# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tjsonb';
 UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t)::text,
   kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp ?&& t2.t')
 WHERE op = '?&& tstzspan';
 UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t)::text,
   kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_idx t1, tbl_tjsonb_span t2 WHERE t1.temp %&& t2.t')
 WHERE op = '%&& tstzspan';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #@> t1.temp')
+WHERE op = 'tstzspan #@> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tjsonb';
+UPDATE test_tjsonb_mest SET kdtree_bin_idx = (SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_bin_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tjsonb_span t2, tbl_tjsonb_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tjsonb';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;

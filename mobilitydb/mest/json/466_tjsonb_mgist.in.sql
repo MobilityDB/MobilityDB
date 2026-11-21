@@ -37,15 +37,35 @@
 
 /******************************************************************************/
 
+CREATE FUNCTION tjsonb_mgist_consistent(internal, tjsonb, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tjsonb_mrtree_equisplit_ops
   DEFAULT FOR TYPE tjsonb USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (tjsonb, tstzspan),
   -- functions
-  FUNCTION  1 tjsonb_gist_consistent(internal, tjsonb, smallint, oid, internal),
+  FUNCTION  1 tjsonb_mgist_consistent(internal, tjsonb, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -57,12 +77,27 @@ CREATE OPERATOR CLASS tjsonb_mrtree_equisplit_ops
 CREATE OPERATOR CLASS tjsonb_mrtree_segsplit_ops
   FOR TYPE tjsonb USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (tjsonb, tstzspan),
   -- functions
-  FUNCTION  1 tjsonb_gist_consistent(internal, tjsonb, smallint, oid, internal),
+  FUNCTION  1 tjsonb_mgist_consistent(internal, tjsonb, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
@@ -74,12 +109,27 @@ CREATE OPERATOR CLASS tjsonb_mrtree_segsplit_ops
 CREATE OPERATOR CLASS tjsonb_mrtree_binsplit_ops
   FOR TYPE tjsonb USING mgist AS
   STORAGE tstzspan,
+  -- contained by
+  OPERATOR  8    <@# (tjsonb, tstzspan),
+  OPERATOR  8    <@# (tjsonb, tjsonb),
+  -- overlaps or before
+  OPERATOR  28    &<# (tjsonb, tstzspan),
+  OPERATOR  28    &<# (tjsonb, tjsonb),
+  -- strictly before
+  OPERATOR  29    <<# (tjsonb, tstzspan),
+  OPERATOR  29    <<# (tjsonb, tjsonb),
+  -- strictly after
+  OPERATOR  30    #>> (tjsonb, tstzspan),
+  OPERATOR  30    #>> (tjsonb, tjsonb),
+  -- overlaps or after
+  OPERATOR  31    #&> (tjsonb, tstzspan),
+  OPERATOR  31    #&> (tjsonb, tjsonb),
   -- ever overlaps
   OPERATOR  36    ?&& (tjsonb, tstzspan),
   -- always overlaps
   OPERATOR  37    %&& (tjsonb, tstzspan),
   -- functions
-  FUNCTION  1 tjsonb_gist_consistent(internal, tjsonb, smallint, oid, internal),
+  FUNCTION  1 tjsonb_mgist_consistent(internal, tjsonb, smallint, oid, internal),
   FUNCTION  2 span_gist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
   FUNCTION  5 span_gist_penalty(internal, internal, internal),

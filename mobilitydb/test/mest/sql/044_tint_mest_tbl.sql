@@ -12,7 +12,7 @@ DECLARE
   line text;
 BEGIN
   FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
-    IF line LIKE '%Index Cond%' THEN
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
       RETURN true;
     END IF;
   END LOOP;
@@ -142,8 +142,52 @@ CREATE TEMP TABLE test_tint_mest(op text, no_idx text,
   kdtree_seg_idx text, kdtree_seg_probe boolean,
   kdtree_tile_idx text, kdtree_tile_probe boolean);
 
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<< intspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<< tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<< tbox x', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<< tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&< intspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&< tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&< tbox x', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&< tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&> intspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&> tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&> tbox x', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&> tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('>> intspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('>> tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('>> tbox x', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('>> tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<@ intspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<@ tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<@ tbox x', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<@ tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&<# tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('&<# tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<<# tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('<<# tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('#>> tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('#>> tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('#&> tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('#&> tint', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text);
 INSERT INTO test_tint_mest(op, no_idx) VALUES ('?&& tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text);
 INSERT INTO test_tint_mest(op, no_idx) VALUES ('%&& tbox', (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tbox >> tint', (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tbox << tint', (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tstzspan @> tint', (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tbox @> tint', (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tstzspan #>> tint', (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tbox #>> tint', (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tstzspan <<# tint', (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('tbox <<# tint', (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text);
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('|=| intspan', (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn));
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('|=| tbox', (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn));
+INSERT INTO test_tint_mest(op, no_idx) VALUES ('|=| tint', (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn));
 
 -------------------------------------------------------------------------------
 
@@ -153,12 +197,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET rtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -173,12 +349,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET rtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -193,12 +501,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET rtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -213,12 +653,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET quadtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -233,12 +805,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET quadtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -253,12 +957,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET quadtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -273,12 +1109,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET kdtree_equi_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -293,12 +1261,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET kdtree_seg_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -313,12 +1413,144 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp << t2.v')
+WHERE op = '<< intspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< tbox x';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &< t2.v')
+WHERE op = '&< intspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< tbox x';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp &> t2.v')
+WHERE op = '&> intspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> tbox x';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp >> t2.v')
+WHERE op = '>> intspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> tbox x';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_vspan t2 WHERE t1.temp <@ t2.v')
+WHERE op = '<@ intspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ tbox x';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tint';
 UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp ?&& t2.b')
 WHERE op = '?&& tbox';
 UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_idx t1, tbl_tint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'tbox >> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'tbox << tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'tbox @> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'tbox #>> tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_span t2, tbl_tint_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_box t2, tbl_tint_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'tbox <<# tint';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn),
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_vspan t2, LATERAL (SELECT t1.temp |=| t2.v AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.v LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| intspan';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tbox';
+UPDATE test_tint_mest SET kdtree_tile_idx = (SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, ',' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT string_agg(round(s.d::numeric, least(6, 8 - floor(log(greatest(s.d, 1)::numeric))::int))::text, '','' ORDER BY s.d) FROM tbl_tint_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tint_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tint';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;

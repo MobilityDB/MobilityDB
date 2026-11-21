@@ -52,6 +52,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/reloptions.h>
+#include <access/spgist.h>
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
@@ -306,8 +307,19 @@ Temporal_mest_binsplit(PG_FUNCTION_ARGS)
   int count;
   Span *bins = temporal_time_bins_intl(temp, duration,
     pg_timestamptz_in(MEST_TORIGIN, -1), true, &count);
-  *nkeys = count;
-  PG_RETURN_POINTER(count > 0 ? mest_keys(bins, sizeof(Span), count) : NULL);
+  /* Each key is a bin trimmed to the period of the value, so the keys lie in
+   * the box of the value and a predicate holding on every key holds on the
+   * value; a bin meeting the period at a bound it leaves out is no key */
+  Span period;
+  temporal_set_tstzspan(temp, &period);
+  int nbins = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (inter_span_span(&bins[i], &period, &bins[nbins]))
+      nbins++;
+  }
+  *nkeys = nbins;
+  PG_RETURN_POINTER(nbins > 0 ? mest_keys(bins, sizeof(Span), nbins) : NULL);
 }
 
 /*****************************************************************************
@@ -395,3 +407,82 @@ Temporal_mest_segsplit(PG_FUNCTION_ARGS)
 }
 
 /* GENERATED-BOXMEST-END temporal */
+
+/* GENERATED-MESTCONSISTENT-BEGIN temporal — tools/codegen/inherited/generate.py from templates/mestconsistent.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
+
+extern PGDLLEXPORT Datum Span_gist_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mgist_consistent);
+/**
+ * @brief Multi-entry GiST consistent method of the classes keyed by the boxes
+ * of the pieces of a value, as #Span_gist_consistent answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator: a predicate of the box of a piece is not that of the value
+ */
+Datum
+Span_mgist_consistent(PG_FUNCTION_ARGS)
+{
+  Datum result = Span_gist_consistent(fcinfo);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  *recheck = true;
+  return result;
+}
+
+extern PGDLLEXPORT Datum Span_spgist_leaf_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mspgist_leaf_consistent);
+/**
+ * @brief Multi-entry SP-GiST leaf consistent method of the classes keyed by
+ * the boxes of the pieces of a value, as #Span_spgist_leaf_consistent answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator, and its distance by the distance of the value: the distance to a
+ * piece bounds that of the value from below
+ */
+Datum
+Span_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
+{
+  Datum result = Span_spgist_leaf_consistent(fcinfo);
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  out->recheck = true;
+  if (out->distances)
+    out->recheckDistances = true;
+  return result;
+}
+
+extern PGDLLEXPORT Datum Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_mspgist_leaf_consistent);
+/**
+ * @brief Multi-entry SP-GiST leaf consistent method of the classes keyed by
+ * the boxes of the pieces of a value, as #Tbox_spgist_leaf_consistent answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator, and its distance by the distance of the value: the distance to a
+ * piece bounds that of the value from below
+ */
+Datum
+Tbox_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
+{
+  Datum result = Tbox_spgist_leaf_consistent(fcinfo);
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  out->recheck = true;
+  if (out->distances)
+    out->recheckDistances = true;
+  return result;
+}
+
+extern PGDLLEXPORT Datum Tnumber_gist_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_mgist_consistent);
+/**
+ * @brief Multi-entry GiST consistent method of the classes keyed by the boxes
+ * of the pieces of a value, as #Tnumber_gist_consistent answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator: a predicate of the box of a piece is not that of the value
+ */
+Datum
+Tnumber_mgist_consistent(PG_FUNCTION_ARGS)
+{
+  Datum result = Tnumber_gist_consistent(fcinfo);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  *recheck = true;
+  return result;
+}
+
+/* GENERATED-MESTCONSISTENT-END temporal */

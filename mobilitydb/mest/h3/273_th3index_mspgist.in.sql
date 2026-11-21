@@ -39,6 +39,50 @@
 
 CREATE OPERATOR CLASS th3index_mquadtree_equisplit_ops
   DEFAULT FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -48,13 +92,57 @@ CREATE OPERATOR CLASS th3index_mquadtree_equisplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mquadtree_segsplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -64,13 +152,57 @@ CREATE OPERATOR CLASS th3index_mquadtree_segsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mquadtree_mergesplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -80,13 +212,57 @@ CREATE OPERATOR CLASS th3index_mquadtree_mergesplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mquadtree_linearsplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -96,13 +272,57 @@ CREATE OPERATOR CLASS th3index_mquadtree_linearsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mquadtree_adaptsplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -112,13 +332,57 @@ CREATE OPERATOR CLASS th3index_mquadtree_adaptsplit_ops
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mkdtree_equisplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -128,13 +392,57 @@ CREATE OPERATOR CLASS th3index_mkdtree_equisplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_equisplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mkdtree_segsplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -144,13 +452,57 @@ CREATE OPERATOR CLASS th3index_mkdtree_segsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_segsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mkdtree_mergesplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -160,13 +512,57 @@ CREATE OPERATOR CLASS th3index_mkdtree_mergesplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_mergesplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mkdtree_linearsplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -176,13 +572,57 @@ CREATE OPERATOR CLASS th3index_mkdtree_linearsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_stbox_options(internal),
   FUNCTION  8 tgeo_mest_linearsplit(internal, internal, internal);
 
 CREATE OPERATOR CLASS th3index_mkdtree_adaptsplit_ops
   FOR TYPE th3index USING mspgist AS
+  -- strictly left
+  OPERATOR  1    << (th3index, stbox),
+  OPERATOR  1    << (th3index, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (th3index, stbox),
+  OPERATOR  2    &< (th3index, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (th3index, stbox),
+  OPERATOR  4    &> (th3index, th3index),
+  -- strictly right
+  OPERATOR  5    >> (th3index, stbox),
+  OPERATOR  5    >> (th3index, th3index),
+  -- contained by
+  OPERATOR  8    <@ (th3index, tstzspan),
+  OPERATOR  8    <@ (th3index, stbox),
+  OPERATOR  8    <@ (th3index, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (th3index, stbox),
+  OPERATOR  9    &<| (th3index, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (th3index, stbox),
+  OPERATOR  10    <<| (th3index, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (th3index, stbox),
+  OPERATOR  11    |>> (th3index, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (th3index, stbox),
+  OPERATOR  12    |&> (th3index, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (th3index, tstzspan),
+  OPERATOR  28    &<# (th3index, stbox),
+  OPERATOR  28    &<# (th3index, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (th3index, tstzspan),
+  OPERATOR  29    <<# (th3index, stbox),
+  OPERATOR  29    <<# (th3index, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (th3index, tstzspan),
+  OPERATOR  30    #>> (th3index, stbox),
+  OPERATOR  30    #>> (th3index, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (th3index, tstzspan),
+  OPERATOR  31    #&> (th3index, stbox),
+  OPERATOR  31    #&> (th3index, th3index),
   -- ever overlaps
   OPERATOR  36    ?&& (th3index, stbox),
   -- always overlaps
@@ -192,7 +632,7 @@ CREATE OPERATOR CLASS th3index_mkdtree_adaptsplit_ops
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  5 stbox_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
   FUNCTION  8 tgeo_mest_adaptsplit(internal, internal, internal);

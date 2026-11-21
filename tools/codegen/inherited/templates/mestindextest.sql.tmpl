@@ -8,7 +8,7 @@ DECLARE
   line text;
 BEGIN
   FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
-    IF line LIKE '%Index Cond%' THEN
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
       RETURN true;
     END IF;
   END LOOP;
