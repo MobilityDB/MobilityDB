@@ -222,7 +222,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the double nearest the cube coordinate of the corner at the leaf index <code>I</code> (<a class="el" href="meos_2src_2s2cell_2s2cell_8c_ab80fa7330a1b0a732f397bf5b801f411.html#ab80fa7330a1b0a732f397bf5b801f411" title="Return the numerator of the cube coordinate of the corner at the leaf index I in [0,...">s2cell_corner_num</a>, <a class="el" href="geo__funcs_8h_adc4afb82058cedad87646136c23d7101.html#adc4afb82058cedad87646136c23d7101" title="Return the double nearest the rational num / den, den &gt; 0.">rational_nearest</a>) </p>
-<p >The coordinate is a function of the index alone, and a walk reads the corners neighbouring cells share again and again, so the ones read last are kept by their index and answer again, as <a class="el" href="meos_2src_2h3_2h3__geo_8c_a2ca19f2985a400342658f9ff09f9da2a.html#a2ca19f2985a400342658f9ff09f9da2a" title="Address of MEOS_H3_POINT, read once by each entry point.">h3_point_cached</a> keeps the geodetic positions of the H3 vertices </p>
+<p >The coordinate is a function of the index alone, and a walk reads the corners neighbouring cells share again and again, so the ones read last are kept by their index (<a class="el" href="meos__tls_8h_a538d2cc1f1eb8fe4961f43610b84eff8.html#a538d2cc1f1eb8fe4961f43610b84eff8">MEOS_CACHE_SLOT</a>) and answer again, as <a class="el" href="meos_2src_2h3_2h3__geo_8c_a2ca19f2985a400342658f9ff09f9da2a.html#a2ca19f2985a400342658f9ff09f9da2a" title="Address of MEOS_H3_POINT, read once by each entry point.">h3_point_cached</a> keeps the geodetic positions of the H3 vertices </p>
 
 </div>
 </div>
