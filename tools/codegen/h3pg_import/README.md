@@ -18,8 +18,8 @@ tests, CI, docs, and the `h3_postgis/` tree are not — mirroring the
 tools/codegen/h3pg_import/
 ├── README.md            this file
 ├── extract.py           the transformer
-├── ruleset.yaml         PG-macro → MEOS-helper rules
-├── opt-out.yaml         functions we implement by hand (h3_adapter.c)
+├── ruleset.yaml         PG-macro → MEOS-helper rules, briefs of uncommented functions
+├── opt-out.yaml         functions written by hand in meos/src/h3
 └── extraction_report.txt (generated) last run's per-function status
 ```
 
@@ -62,7 +62,8 @@ Two responses:
    becomes a new `arg_readers:` entry.
 2. **The pattern is one-off / messy** — add the function to
    `opt-out.yaml` under `skip:` with a short `why` note, then
-   hand-implement the MEOS version in `meos/src/h3/h3_adapter.c`.
+   hand-implement the MEOS version in `meos/src/h3`, naming it in the
+   `why` note.
 
 The extraction report file (`extraction_report.txt`) lists every
 failure with the offending line, so diagnosing the next rule to add
@@ -72,16 +73,31 @@ is usually a minute of work.
 
 - **No hand-editing of `h3_generated.{c,h}`.** The files start with a
   "GENERATED — DO NOT EDIT" banner; any manual edit is clobbered on
-  the next run. CI should run `extract.py --check` and fail the
-  build if the committed files don't match what the script would
-  currently emit.
+  the next run. The `h3pg_import_check` job of `check-code.yml` runs
+  `extract.py --check`, which fails when the committed files or the
+  extraction report differ from what the script emits.
+- **Every generated function carries a Doxygen comment in MEOS form.**
+  Its `@brief` is the first paragraph of the h3-pg comment, with the
+  leading verb in MEOS form (`Returns` becomes `Return`, `Determines if`
+  becomes `Return true if`) and no final period; the other paragraphs
+  become its `@details`, and its `@note` names the h3-pg source. A
+  function h3-pg leaves without a comment takes its brief from the
+  `briefs:` section of `ruleset.yaml`. The script refuses to run when
+  such a brief is missing, or when the section names a function that
+  is not generated or that h3-pg comments. The `details:` section
+  replaces the details of a function whose h3-pg comment, copied from
+  libh3, states a result the binding does not give.
+- **A libh3 failure raises the error h3-pg raises.** The rule for
+  h3-pg's `h3_assert(expr)` emits `ensure_h3_success(expr)`, whose
+  error states the code libh3 returns and the description
+  `describeH3Error` gives it.
 - **No hand-editing of `h3-pg/`.** Only the binding sources are
   vendored — `h3/src/binding/*.c` (what `extract.py` reads), `LICENSE`,
   and `H3PG_REVISION` — each byte-identical to upstream. Mirroring the
   `postgis/` trim, the PG-extension SQL, tests, CI, docs, and the
   `h3_postgis/` tree are not vendored (nothing reads them). All
   divergences live here in `ruleset.yaml` / `opt-out.yaml` or in the
-  MEOS-side `h3_adapter.c`.
+  functions of `meos/src/h3` written by hand.
 - **Every skip is explicit.** A function is either generated
   (appears in the report's "Extracted" section) or listed in
   `opt-out.yaml` with a reason; there is no silent dropping.

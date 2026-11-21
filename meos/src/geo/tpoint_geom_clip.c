@@ -96,10 +96,13 @@ static MEOS_TLS MeosArray *meets = NULL;
 static inline void
 clip_meet_add(double t, double x, double y)
 {
-  if (! meets)
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *mts = meets;
+  if (! mts)
     return;
   ClipMeet m = { t, x, y };
-  meos_array_add_intl(meets, &m);
+  meos_array_add_intl(mts, &m);
   return;
 }
 
@@ -463,11 +466,12 @@ point_in_polygon_index_vertex(double x, double y, Edge **edges, int nedges,
  * array of point edges
  * @details A segment that does not move carries no direction to solve the
  * parameter along, and meets a point edge exactly where it stands, for the
- * whole of its extent
+ * whole of its extent. The caller passes the per-thread array #intervals in
+ * @p ivs, read once for all its segments
  */
 static void
 intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
-  int nedges)
+  int nedges, MeosArray *ivs)
 {
   assert(a); assert(b); assert(edges); assert(nedges >= 0);
 
@@ -495,7 +499,7 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
         Span in;
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
           T_FLOAT8, T_FLOATSPAN, &in);
-        meos_array_add_intl(intervals, &in);
+        meos_array_add_intl(ivs, &in);
       }
     }
     return;
@@ -508,7 +512,8 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
     /* Iterate only for the points */
     if (e->etype != EDGE_POINT)
       continue;
-    // assert(e->x1 == e->x2 && e->y1 == e->y2);
+    /* A point edge holds its point at both ends, as #extract_point builds it */
+    assert(e->x1 == e->x2 && e->y1 == e->y2);
 
     /* Solve parameter t */
     double t = use_x ? (e->x1 - a->x) * inv : (e->y1 - a->y) * inv;
@@ -524,7 +529,7 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add_intl(intervals, &in);
+      meos_array_add_intl(ivs, &in);
       /* The segment meets the point of the clip, which is its own vertex */
       clip_meet_add(t, e->x1, e->y1);
     }
@@ -535,10 +540,12 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
 /**
  * @brief Compute the intersection intervals of a trajectory segment with an
  * array of linear or point edges
+ * @details The caller passes the per-thread arrays #intervals and #meets in
+ * @p ivs and @p mts, read once for all its segments
  */
 static void
 intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
-  int nedges)
+  int nedges, MeosArray *ivs, MeosArray *mts)
 {
   assert(a); assert(b); assert(edges); assert(nedges >= 0);
 
@@ -571,11 +578,11 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
      * line clip asks for them */
     double pt[4];
     IntersectResult r = linesegm_intersect_at(ax, ay, bx, by,
-      e->x1, e->y1, e->x2, e->y2, meets ? pt : NULL);
+      e->x1, e->y1, e->x2, e->y2, mts ? pt : NULL);
     /* If there is no intersection  */
     if (r.type == INTERSECT_NONE)
       continue;
-    if (meets)
+    if (mts)
     {
       clip_meet_add(r.t0, pt[0], pt[1]);
       if (r.type == INTERSECT_OVERLAP)
@@ -590,7 +597,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
     else
       span_set(Float8GetDatum(r.t0), Float8GetDatum(r.t1), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-    meos_array_add_intl(intervals, &in);
+    meos_array_add_intl(ivs, &in);
   }
 
   /* Full collinear segment */
@@ -615,7 +622,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
       {
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
           T_FLOAT8, T_FLOATSPAN, &in);
-        meos_array_add_intl(intervals, &in);
+        meos_array_add_intl(ivs, &in);
         return;
       }
     }
@@ -719,16 +726,20 @@ point_on_poly_boundary(double px, double py, Edge **edges, int nedges)
  * the full scan
  * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all @nullable
  * @param[in] xmax Geometry bounding-box maximum abscissa, which bounds the ray
+ * @param[in] evs,ivs,mts,rrs The per-thread arrays #events, #intervals,
+ * #meets and #rtree_results, which the caller reads once for all its
+ * segments
  */
 static void
 intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   int nedges, Edge **all_edges, int all_nedges, const RTree *rtree,
-  double xmax)
+  double xmax, MeosArray *evs, MeosArray *ivs, MeosArray *mts,
+  MeosArray *rrs)
 {
   assert(a); assert(b); assert(edges); assert(nedges >= 0);
 
   /* Reset event array */
-  events->count = 0;
+  evs->count = 0;
 
   const double ax = a->x, ay = a->y;
   const double bx = b->x, by = b->y;
@@ -778,14 +789,14 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
        * point it stands for where the line clip asks for it */
       double pt[4];
       IntersectResult r = linesegm_intersect_at(ax, ay, bx, by,
-        e->x1, e->y1, e->x2, e->y2, meets ? pt : NULL);
+        e->x1, e->y1, e->x2, e->y2, mts ? pt : NULL);
       if (r.type == INTERSECT_POINT)
       {
         double t = r.t0;
         if (t >= -MEOS_GEOM_TOLERANCE && t <= 1.0 + MEOS_GEOM_TOLERANCE)
         {
-          meos_array_add_intl(events, &t);
-          if (meets)
+          meos_array_add_intl(evs, &t);
+          if (mts)
             clip_meet_add(t, pt[0], pt[1]);
         }
       }
@@ -797,22 +808,22 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       int n = arcsegm_intersect(ax, ay, rx, ry, e, t);
       for (int k = 0; k < n; k++)
         if (t[k] >= -MEOS_GEOM_TOLERANCE && t[k] <= 1.0 + MEOS_GEOM_TOLERANCE)
-          meos_array_add_intl(events, &t[k]);
+          meos_array_add_intl(evs, &t[k]);
     }
   }
 
   /* Add endpoints */
   double t0 = 0.0, t1 = 1.0;
-  meos_array_add_intl(events, &t0);
-  meos_array_add_intl(events, &t1);
+  meos_array_add_intl(evs, &t0);
+  meos_array_add_intl(evs, &t1);
 
   /* Sort */
-  qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
+  qsort(evs->elems, evs->count, sizeof(double), float8_qsort_cmp);
 
   /* Deduplicate */
   int newcount = 0;
-  double *evtarr = (double *) events->elems;
-  for (int i = 0; i < (int) events->count; i++)
+  double *evtarr = (double *) evs->elems;
+  for (int i = 0; i < (int) evs->count; i++)
   {
     if (i == 0 ||
         fabs(evtarr[i] - evtarr[newcount - 1]) > MEOS_GEOM_TOLERANCE)
@@ -820,11 +831,11 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       evtarr[newcount++] = evtarr[i];
     }
   }
-  events->count = newcount;
+  evs->count = newcount;
 
   /* Build intervals using midpoint test, recording for each event whether it
    * bounds an interval the point spends in the polygon interior */
-  int nevents = (int) events->count;
+  int nevents = (int) evs->count;
   bool *bounded = palloc0(sizeof(bool) * (nevents > 0 ? nevents : 1));
   for (int i = 0; i < nevents - 1; i++)
   {
@@ -838,12 +849,12 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     double x = ax + tm * rx;
     double y = ay + tm * ry;
     if (point_in_polygon_impl(x, y, all_edges, all_nedges, rtree, xmax, 0.0,
-          rtree_results, false, NULL))
+          rrs, false, NULL))
     {
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add_intl(intervals, &in);
+      meos_array_add_intl(ivs, &in);
       bounded[i] = bounded[i + 1] = true;
     }
   }
@@ -867,7 +878,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     Span in;
     span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
       T_FLOAT8, T_FLOATSPAN, &in);
-    meos_array_add_intl(intervals, &in);
+    meos_array_add_intl(ivs, &in);
   }
   pfree(bounded);
   return;
@@ -927,6 +938,10 @@ static void
 tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
   const RTree *rtree, Edge **cand_edges, double xmax)
 {
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *ivs = intervals;
+  MeosArray *rrs = rtree_results;
   assert(inst); assert(edges); assert(nedges > 0);
   assert(inst->temptype == T_TGEOMPOINT);
 
@@ -944,24 +959,25 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
     stbox_set(true, false, false, srid, a->x, a->x, a->y, a->y, 0, 0, NULL,
       &query);
     /* Query the R-tree */
-    int cand_nedges = rtree_search_intl(rtree, INDEX_OVERLAPS, &query, rtree_results);
+    int cand_nedges = rtree_search_intl(rtree, INDEX_OVERLAPS, &query, rrs);
 
     /* Convert the result of an R-tree look up into an edge pointer array */
     for (int j = 0; j < cand_nedges; j++)
-      cand_edges[j] = edges[INDEX_RESULT_ID_N(rtree_results, j)];
+      cand_edges[j] = edges[INDEX_RESULT_ID_N(rrs, j)];
     sel_edges = cand_edges;
     sel_nedges = cand_nedges;
   }
 
   /* Reset the interval array */
-  intervals->count = 0;
+  ivs->count = 0;
   /* Compute the intervals for the points, lines, and polygon edges */
   bool found = point_inter_points_lines(a, sel_edges, sel_nedges);
   if (! found)
   {
+    MeosArray *evs = events, *mts = meets;
     intervals_from_polygons(a, a, sel_edges, sel_nedges, edges, nedges, rtree,
-      xmax);
-    if (intervals->count == 0)
+      xmax, evs, ivs, mts, rrs);
+    if (ivs->count == 0)
       return;
   }
   
@@ -987,6 +1003,13 @@ static void
 tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
   const RTree *rtree, Edge **cand_edges, double xmax)
 {
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *evs = events;
+  MeosArray *ivs = intervals;
+  MeosArray *mts = meets;
+  MeosArray *pds = periods;
+  MeosArray *rrs = rtree_results;
   assert(seq); assert(edges); assert(nedges > 0);
   assert(seq->temptype == T_TGEOMPOINT);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
@@ -1022,37 +1045,37 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
         Max(a->x, b->x), Min(a->y, b->y), Max(a->y, b->y),
         0, 0, NULL, &query);
       /* Query the R-tree */
-      int cand_nedges = rtree_search_intl(rtree, INDEX_OVERLAPS, &query, rtree_results);
+      int cand_nedges = rtree_search_intl(rtree, INDEX_OVERLAPS, &query, rrs);
 
       /* Convert the result of an R-tree look up into an edge pointer array */
       for (int j = 0; j < cand_nedges; j++)
-        cand_edges[j] = edges[INDEX_RESULT_ID_N(rtree_results, j)];
+        cand_edges[j] = edges[INDEX_RESULT_ID_N(rrs, j)];
       sel_edges = cand_edges;
       sel_nedges = cand_nedges;
     }
 
     /* Reset the interval array */
-    intervals->count = 0;
+    ivs->count = 0;
     /* Compute the intervals for the points, lines, and polygon edges */
-    intervals_from_points(a, b, sel_edges, sel_nedges);
-    intervals_from_lines(a, b, sel_edges, sel_nedges);
+    intervals_from_points(a, b, sel_edges, sel_nedges, ivs);
+    intervals_from_lines(a, b, sel_edges, sel_nedges, ivs, mts);
     intervals_from_arcs(a, b, sel_edges, sel_nedges);
     intervals_from_polygons(a, b, sel_edges, sel_nedges, edges, nedges, rtree,
-      xmax);
+      xmax, evs, ivs, mts, rrs);
     /* The array is declared before the jump below, which would otherwise skip
      * its initializer while `next_segment` reads it */
     Span *intervarr = NULL;
-    if (intervals->count == 0)
+    if (ivs->count == 0)
       goto next_segment;
 
     /* Normalize the intervals */
     int count;
-    if (intervals->count > 1)
-      intervarr = spanarr_normalize(intervals->elems, intervals->count,
+    if (ivs->count > 1)
+      intervarr = spanarr_normalize(ivs->elems, ivs->count,
         ORDER_NO, &count);
     else
     {
-      intervarr = intervals->elems;
+      intervarr = ivs->elems;
       count = 1;
     }
 
@@ -1079,7 +1102,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add_intl(periods, &s);
+        meos_array_add_intl(pds, &s);
       }
       else
       {
@@ -1089,13 +1112,13 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
           inst2->t : inst1->t + (TimestampTz) (duration * upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add_intl(periods, &s);
+        meos_array_add_intl(pds, &s);
       }
     }
     
 next_segment:
     /* Prepare the next iteration */
-    if (intervarr && intervals->count > 1)
+    if (intervarr && ivs->count > 1)
       pfree(intervarr);
     inst1 = inst2;
     a = b;
@@ -1772,6 +1795,9 @@ linear_pieces_geo(const MeosArray *pieces, const MeosArray *touches,
 static void
 segment_point_at(const POINT2D *a, const POINT2D *b, double s, POINT2D *p)
 {
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  const MeosArray *mts = meets;
   if (s == 0.0)
   {
     *p = *a;
@@ -1782,10 +1808,10 @@ segment_point_at(const POINT2D *a, const POINT2D *b, double s, POINT2D *p)
     *p = *b;
     return;
   }
-  if (meets)
+  if (mts)
   {
-    const ClipMeet *m = (const ClipMeet *) meets->elems;
-    for (int i = 0; i < (int) meets->count; i++)
+    const ClipMeet *m = (const ClipMeet *) mts->elems;
+    for (int i = 0; i < (int) mts->count; i++)
     {
       if (m[i].t == s)
       {
@@ -1887,6 +1913,9 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
   }
 
   GeoEdgeCtx *ctx = (GeoEdgeCtx *) geo_edge_ctx_make(gs);
+  /* The array of the candidates the context makes, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *rrs = rtree_results;
   if (! ctx)
     return NULL;
 
@@ -1903,6 +1932,8 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
   /* The points the kernels meet each segment at, which the pieces are
    * written from (#segment_point_at) */
   meets = meos_array_create(sizeof(ClipMeet));
+  /* The per-thread arrays just made, read once for all the segments */
+  MeosArray *evs = events, *ivs = intervals, *mts = meets;
 
   /* The components a linear geometry draws, one point array each */
   /* A subject carrying arcs is walked through its EDGES, each solved by the
@@ -1940,11 +1971,13 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
       else
       {
         POINT2D pa = { se->x1, se->y1 }, pb = { se->x2, se->y2 };
-        intervals_from_points(&pa, &pb, ctx->edge_ptrs, ctx->nedges);
-        intervals_from_lines(&pa, &pb, ctx->edge_ptrs, ctx->nedges);
+        intervals_from_points(&pa, &pb, ctx->edge_ptrs, ctx->nedges, ivs);
+        intervals_from_lines(&pa, &pb, ctx->edge_ptrs, ctx->nedges, ivs,
+          mts);
         intervals_from_arcs(&pa, &pb, ctx->edge_ptrs, ctx->nedges);
         intervals_from_polygons(&pa, &pb, ctx->edge_ptrs, ctx->nedges,
-          ctx->edge_ptrs, ctx->nedges, ctx->rtree, ctx->box.xmax);
+          ctx->edge_ptrs, ctx->nedges, ctx->rtree, ctx->box.xmax, evs, ivs,
+          mts, rrs);
         const Span *iv = intervals->elems;
         int cnt = (int) intervals->count;
         Span *nm = NULL;
@@ -1995,19 +2028,19 @@ geo_clip_linear_geom(const GSERIALIZED *line, const GSERIALIZED *gs,
           Max(pa->x, pb->x), Min(pa->y, pb->y), Max(pa->y, pb->y), 0, 0, NULL,
           &query);
         int nc = rtree_search_intl(ctx->rtree, INDEX_OVERLAPS, &query,
-          rtree_results);
+          rrs);
         for (int k = 0; k < nc; k++)
           ctx->cand_edges[k] =
-            ctx->edge_ptrs[INDEX_RESULT_ID_N(rtree_results, k)];
+            ctx->edge_ptrs[INDEX_RESULT_ID_N(rrs, k)];
         sel = ctx->cand_edges; seln = nc;
       }
       intervals->count = 0;
       meets->count = 0;
-      intervals_from_points(pa, pb, sel, seln);
-      intervals_from_lines(pa, pb, sel, seln);
+      intervals_from_points(pa, pb, sel, seln, ivs);
+      intervals_from_lines(pa, pb, sel, seln, ivs, mts);
       intervals_from_arcs(pa, pb, sel, seln);
       intervals_from_polygons(pa, pb, sel, seln, ctx->edge_ptrs,
-        ctx->nedges, ctx->rtree, ctx->box.xmax);
+        ctx->nedges, ctx->rtree, ctx->box.xmax, evs, ivs, mts, rrs);
 
       const Span *intervarr = intervals->elems;
       int count = (int) intervals->count;
@@ -2142,6 +2175,9 @@ edges_have_area(Edge **edges, int nedges)
 bool
 geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
 {
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *rrs = rtree_results;
   assert(gs); assert(ctxv);
   const GeoEdgeCtx *ctx = (const GeoEdgeCtx *) ctxv;
   /* An empty geometry intersects nothing, matching PostGIS ST_Intersects.
@@ -2177,10 +2213,10 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
       STBox query;
       stbox_set(true, false, false, ctx->srid, e->xmin, e->xmax, e->ymin,
         e->ymax, 0, 0, NULL, &query);
-      int nc = rtree_search_intl(ctx->rtree, INDEX_OVERLAPS, &query, rtree_results);
+      int nc = rtree_search_intl(ctx->rtree, INDEX_OVERLAPS, &query, rrs);
       for (int j = 0; j < nc; j++)
         ctx->cand_edges[j] =
-          ctx->edge_ptrs[INDEX_RESULT_ID_N(rtree_results, j)];
+          ctx->edge_ptrs[INDEX_RESULT_ID_N(rrs, j)];
       for (int j = 0; j < nc && ! result; j++)
         if (edge_intersect(e, ctx->cand_edges[j]))
           result = true;
@@ -2198,7 +2234,7 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
   if (! result && edges_have_area(ctx->edge_ptrs, ctx->nedges))
     for (int i = 0; i < n && ! result; i++)
       if (point_in_polygon_impl(ptr[i]->x1, ptr[i]->y1, ctx->edge_ptrs,
-            ctx->nedges, ctx->rtree, ctx->box.xmax, 0.0, rtree_results, true,
+            ctx->nedges, ctx->rtree, ctx->box.xmax, 0.0, rrs, true,
             NULL))
         result = true;
   if (! result && edges_have_area(ptr, n))
@@ -2673,16 +2709,19 @@ static bool
 point_geom_within(double px, double py, Edge **edges, int nedges,
   double dist, const RTree *rtree, int32_t srid, double xmax)
 {
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *rrs = rtree_results;
   const double d2 = dist * dist;
   if (rtree)
   {
     STBox query;
     stbox_set(true, false, false, srid, px - dist, px + dist, py - dist,
       py + dist, 0, 0, NULL, &query);
-    int nc = rtree_search_intl(rtree, INDEX_OVERLAPS, &query, rtree_results);
+    int nc = rtree_search_intl(rtree, INDEX_OVERLAPS, &query, rrs);
     for (int i = 0; i < nc; i++)
       if (point_edge_dist2(px, py,
-            edges[INDEX_RESULT_ID_N(rtree_results, i)]) <=
+            edges[INDEX_RESULT_ID_N(rrs, i)]) <=
           d2 + MEOS_GEOM_TOLERANCE)
         return true;
   }
@@ -2693,7 +2732,7 @@ point_geom_within(double px, double py, Edge **edges, int nedges,
         return true;
   }
   return point_in_polygon_impl(px, py, edges, nedges, rtree, xmax, 0.0,
-    rtree_results, false, NULL) ? true : false;
+    rrs, false, NULL) ? true : false;
 }
 
 /**
@@ -2820,13 +2859,16 @@ within_roots_from_edge(double ax, double ay, double rx, double ry,
  * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all @nullable
  * @param[in] srid,xmax SRID and geometry bounding-box maximum abscissa, used
  * to query @p rtree
+ * @param[in] evs,ivs The per-thread arrays #events and #intervals, which the
+ * caller reads once for all its segments
  */
 static void
 intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   int sel_nedges, Edge **all_edges, int all_nedges, double dist,
-  const RTree *rtree, int32_t srid, double xmax)
+  const RTree *rtree, int32_t srid, double xmax, MeosArray *evs,
+  MeosArray *ivs)
 {
-  events->count = 0;
+  evs->count = 0;
   const double ax = a->x, ay = a->y;
   const double rx = b->x - ax, ry = b->y - ay;
   const double seg_xmin = Min(a->x, b->x), seg_xmax = Max(a->x, b->x);
@@ -2841,24 +2883,24 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
     if (e->xmax + dist < seg_xmin || e->xmin - dist > seg_xmax ||
         e->ymax + dist < seg_ymin || e->ymin - dist > seg_ymax)
       continue;
-    within_roots_from_edge(ax, ay, rx, ry, e, dist, events);
+    within_roots_from_edge(ax, ay, rx, ry, e, dist, evs);
   }
   /* Add the segment endpoints */
   double t0 = 0.0, t1 = 1.0;
-  meos_array_add_intl(events, &t0);
-  meos_array_add_intl(events, &t1);
+  meos_array_add_intl(evs, &t0);
+  meos_array_add_intl(evs, &t1);
 
   /* Sort and deduplicate the candidates */
-  qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
+  qsort(evs->elems, evs->count, sizeof(double), float8_qsort_cmp);
   int newcount = 0;
-  double *ev = (double *) events->elems;
-  for (int i = 0; i < (int) events->count; i++)
+  double *ev = (double *) evs->elems;
+  for (int i = 0; i < (int) evs->count; i++)
     if (i == 0 || fabs(ev[i] - ev[newcount - 1]) > MEOS_GEOM_TOLERANCE)
       ev[newcount++] = ev[i];
-  events->count = newcount;
+  evs->count = newcount;
 
   /* Keep each sub-interval whose midpoint is within dist of the geometry */
-  for (int i = 0; i < (int) events->count - 1; i++)
+  for (int i = 0; i < (int) evs->count - 1; i++)
   {
     const double ta = ev[i], tb = ev[i + 1];
     if (tb - ta <= MEOS_GEOM_TOLERANCE)
@@ -2871,7 +2913,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add_intl(intervals, &in);
+      meos_array_add_intl(ivs, &in);
     }
   }
 
@@ -2884,7 +2926,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
    * touches. This is what keeps the distance-inclusive semantics exact and, at
    * a zero distance, matches the isolated contact points of the intersection
    * engine (which the zero-distance path delegates to anyway). */
-  for (int i = 0; i < (int) events->count; i++)
+  for (int i = 0; i < (int) evs->count; i++)
   {
     const double t = ev[i];
     const double x = ax + t * rx, y = ay + t * ry;
@@ -2894,7 +2936,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add_intl(intervals, &in);
+      meos_array_add_intl(ivs, &in);
     }
   }
   return;
@@ -2929,6 +2971,12 @@ static void
 tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
   const RTree *rtree, Edge **cand_edges, double dist, double xmax)
 {
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *evs = events;
+  MeosArray *ivs = intervals;
+  MeosArray *pds = periods;
+  MeosArray *rrs = rtree_results;
   assert(seq); assert(edges); assert(nedges > 0);
   assert(seq->temptype == T_TGEOMPOINT);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
@@ -2963,9 +3011,9 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
         Max(a->x, b->x) + dist, Min(a->y, b->y) - dist,
         Max(a->y, b->y) + dist, 0, 0, NULL, &query);
       int cand_nedges = rtree_search_intl(rtree, INDEX_OVERLAPS, &query,
-        rtree_results);
+        rrs);
       for (int j = 0; j < cand_nedges; j++)
-        cand_edges[j] = edges[INDEX_RESULT_ID_N(rtree_results, j)];
+        cand_edges[j] = edges[INDEX_RESULT_ID_N(rrs, j)];
       sel_edges = cand_edges;
       sel_nedges = cand_nedges;
     }
@@ -2989,7 +3037,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
         span_set(TimestampTzGetDatum(inst1->t + exact_lo[j]),
           TimestampTzGetDatum(inst1->t + exact_hi[j]), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add_intl(periods, &s);
+        meos_array_add_intl(pds, &s);
       }
       inst1 = inst2;
       a = b;
@@ -2997,24 +3045,24 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
     }
 
     /* Reset and compute the within intervals for this segment */
-    intervals->count = 0;
+    ivs->count = 0;
     intervals_within_edges(a, b, sel_edges, sel_nedges, edges, nedges, dist,
-      rtree, srid, xmax);
+      rtree, srid, xmax, evs, ivs);
     /* The array is declared before the jump below, which would otherwise skip
      * its initializer while `next_segment` reads it */
     Span *intervarr = NULL;
-    if (intervals->count == 0)
+    if (ivs->count == 0)
       goto next_segment;
 
     /* Normalize the intervals (sort: the midpoint intervals and the isolated
      * within points are appended in two separate passes, not globally sorted) */
     int count;
-    if (intervals->count > 1)
-      intervarr = spanarr_normalize(intervals->elems, intervals->count,
+    if (ivs->count > 1)
+      intervarr = spanarr_normalize(ivs->elems, ivs->count,
         ORDER, &count);
     else
     {
-      intervarr = intervals->elems;
+      intervarr = ivs->elems;
       count = 1;
     }
 
@@ -3039,7 +3087,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
         span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add_intl(periods, &s);
+        meos_array_add_intl(pds, &s);
       }
       else
       {
@@ -3049,12 +3097,12 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
           inst2->t : inst1->t + (TimestampTz) (duration * upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-        meos_array_add_intl(periods, &s);
+        meos_array_add_intl(pds, &s);
       }
     }
 
 next_segment:
-    if (intervarr && intervals->count > 1)
+    if (intervarr && ivs->count > 1)
       pfree(intervarr);
     inst1 = inst2;
     a = b;
@@ -3458,6 +3506,9 @@ tpoint_distance_geom_at(const POINT2D *a, const POINT2D *b, TimestampTz s0,
 static TSequence *
 tpointseq_distance_geom(const TSequence *seq, const DistGeomCtx *ctx)
 {
+  /* The per-thread arrays this function reads, read once: each reading
+   * of a per-thread variable is a lookup of the thread */
+  MeosArray *evs = events;
   assert(seq); assert(ctx); assert(ctx->nedges > 0);
   Edge **cedges = ctx->cedges;
   const int nedges = ctx->nedges, scale = ctx->k;
@@ -3507,26 +3558,26 @@ tpointseq_distance_geom(const TSequence *seq, const DistGeomCtx *ctx)
       rx = ldexp(b->x, scale) - ax, ry = ldexp(b->y, scale) - ay;
 
     /* Gather the interior turning points of the distance to every edge */
-    events->count = 0;
+    evs->count = 0;
     for (int j = 0; j < nedges; j++)
-      distance_cands_from_edge(ax, ay, rx, ry, cedges[j], events);
+      distance_cands_from_edge(ax, ay, rx, ry, cedges[j], evs);
 
     /* Sort the candidate parameters and emit an instant for each interior one
      * with the exact distance to the whole geometry */
-    qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
-    const double *ev = (double *) events->elems;
+    qsort(evs->elems, evs->count, sizeof(double), float8_qsort_cmp);
+    const double *ev = (double *) evs->elems;
 
     /* This segment appends at most one instant per surviving candidate plus its
      * end instant */
-    if (ninsts + (int) events->count + 1 > maxinsts)
+    if (ninsts + (int) evs->count + 1 > maxinsts)
     {
-      maxinsts = Max(ninsts + (int) events->count + 1, 2 * maxinsts);
+      maxinsts = Max(ninsts + (int) evs->count + 1, 2 * maxinsts);
       instants = repalloc(instants, sizeof(TInstant *) * maxinsts);
     }
 
     const double duration = (double) (inst2->t - inst1->t);
     TimestampTz prevt = inst1->t;
-    for (int k = 0; k < (int) events->count; k++)
+    for (int k = 0; k < (int) evs->count; k++)
     {
       const double p = ev[k];
       if (! (p > 0.0 && p < 1.0))

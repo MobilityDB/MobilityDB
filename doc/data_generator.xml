@@ -67,85 +67,85 @@
 					<para><varname>random_geom_point</varname>: Generate a random 2D geometric point</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_point3D</varname>: Generate a random 3D geometric point</para>
+					<para><varname>random_geom_point3d</varname>: Generate a random 3D geometric point</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_point</varname>: Generate a random 2D geographic point</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_point3D</varname>: Generate a random 3D geographic point</para>
+					<para><varname>random_geog_point3d</varname>: Generate a random 3D geographic point</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_point_array</varname>: Generate a random array of 2D geometric points</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_point3D_array</varname>: Generate a random array of 3D geometric points</para>
+					<para><varname>random_geom_point3d_array</varname>: Generate a random array of 3D geometric points</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_point_array</varname>: Generate a random array of 2D geographic points</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_point3D_array</varname>: Generate a random array of 3D geographic points</para>
+					<para><varname>random_geog_point3d_array</varname>: Generate a random array of 3D geographic points</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_linestring</varname>: Generate a random geometric 2D linestring</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_linestring3D</varname>: Generate a random geometric 3D linestring</para>
+					<para><varname>random_geom_linestring3d</varname>: Generate a random geometric 3D linestring</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_linestring</varname>: Generate a random geographic 2D linestring</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_linestring3D</varname>: Generate a random geographic 3D linestring</para>
+					<para><varname>random_geog_linestring3d</varname>: Generate a random geographic 3D linestring</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_polygon</varname>: Generate a random geometric 2D polygon without holes</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_polygon3D</varname>: Generate a random geometric 3D polygon without holes</para>
+					<para><varname>random_geom_polygon3d</varname>: Generate a random geometric 3D polygon without holes</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_polygon</varname>: Generate a random geographic 2D polygon without holes</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_polygon3D</varname>: Generate a random geographic 3D polygon without holes</para>
+					<para><varname>random_geog_polygon3d</varname>: Generate a random geographic 3D polygon without holes</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_multipoint</varname>: Generate a random geometric 2D multipoint</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_multipoint3D</varname>: Generate a random geometric 3D multipoint</para>
+					<para><varname>random_geom_multipoint3d</varname>: Generate a random geometric 3D multipoint</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_multipoint</varname>: Generate a random geographic 2D multipoint</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_multipoint3D</varname>: Generate a random geographic 3D multipoint</para>
+					<para><varname>random_geog_multipoint3d</varname>: Generate a random geographic 3D multipoint</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_multilinestring</varname>: Generate a random geometric 2D multilinestring</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_multilinestring3D</varname>: Generate a random geometric 3D multilinestring</para>
+					<para><varname>random_geom_multilinestring3d</varname>: Generate a random geometric 3D multilinestring</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_multilinestring</varname>: Generate a random geographic 2D multilinestring</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_multilinestring3D</varname>: Generate a random geographic 3D multilinestring</para>
+					<para><varname>random_geog_multilinestring3d</varname>: Generate a random geographic 3D multilinestring</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geom_multipolygon</varname>: Generate a random geometric 2D multipolygon without holes</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geom_multipolygon3D</varname>: Generate a random geometric 3D multipolygon without holes</para>
+					<para><varname>random_geom_multipolygon3d</varname>: Generate a random geometric 3D multipolygon without holes</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geog_multipolygon</varname>: Generate a random geographic 2D multipolygon without holes</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geog_multipolygon3D</varname>: Generate a random geographic 3D multipolygon without holes</para>
+					<para><varname>random_geog_multipolygon3d</varname>: Generate a random geographic 3D multipolygon without holes</para>
 				</listitem>
 			</itemizedlist>
 	</sect1>
@@ -179,13 +179,13 @@
 					<para><varname>random_stbox</varname>: Generate a random 2D <varname>stbox</varname></para>
 				</listitem>
 				<listitem>
-					<para><varname>random_stbox3D</varname>: Generate a random 3D <varname>stbox</varname></para>
+					<para><varname>random_stbox3d</varname>: Generate a random 3D <varname>stbox</varname></para>
 				</listitem>
 				<listitem>
 					<para><varname>random_geodstbox</varname>: Generate a random 2D geodetic <varname>stbox</varname></para>
 				</listitem>
 				<listitem>
-					<para><varname>random_geodstbox3D</varname>: Generate a random 3D geodetic <varname>stbox</varname></para>
+					<para><varname>random_geodstbox3d</varname>: Generate a random 3D geodetic <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 	</sect1>
@@ -210,13 +210,13 @@
 					<para><varname>random_tgeompoint_inst</varname>: Generate a random temporal geometric 2D point of instant subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_inst</varname>: Generate a random temporal geometric 3D point of instant subtype</para>
+					<para><varname>random_tgeompoint3d_inst</varname>: Generate a random temporal geometric 3D point of instant subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_inst</varname>: Generate a random temporal geographic 2D point of instant subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_inst</varname>: Generate a random temporal geographic 3D point of instant subtype</para>
+					<para><varname>random_tgeogpoint3d_inst</varname>: Generate a random temporal geographic 3D point of instant subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbool_discseq</varname>: Generate a random temporal Boolean of sequence subtype and discrete interpolation</para>
@@ -234,13 +234,13 @@
 					<para><varname>random_tgeompoint_discseq</varname>: Generate a random temporal geometric 2D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_discseq</varname>: Generate a random temporal geometric 3D point of sequence subtype and discrete interpolation</para>
+					<para><varname>random_tgeompoint3d_discseq</varname>: Generate a random temporal geometric 3D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_discseq</varname>: Generate a random temporal geographic 2D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_discseq</varname>: Generate a random temporal geographic 3D point of sequence subtype and discrete interpolation</para>
+					<para><varname>random_tgeogpoint3d_discseq</varname>: Generate a random temporal geographic 3D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbool_seq</varname>: Generate a random temporal Boolean of sequence subtype</para>
@@ -258,13 +258,13 @@
 					<para><varname>random_tgeompoint_seq</varname>: Generate a random temporal geometric 2D point of sequence subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_seq</varname>: Generate a random temporal geometric 3D point of sequence subtype</para>
+					<para><varname>random_tgeompoint3d_seq</varname>: Generate a random temporal geometric 3D point of sequence subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_seq</varname>: Generate a random temporal geographic 2D point of sequence subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_seq</varname>: Generate a random temporal geographic 3D point of sequence subtype</para>
+					<para><varname>random_tgeogpoint3d_seq</varname>: Generate a random temporal geographic 3D point of sequence subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbool_seqset</varname>: Generate a random temporal Boolean of sequence set subtype</para>
@@ -282,13 +282,13 @@
 					<para><varname>random_tgeompoint_seqset</varname>: Generate a random temporal geometric 2D point of sequence set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_seqset</varname>: Generate a random temporal geometric 3D point of sequence set subtype</para>
+					<para><varname>random_tgeompoint3d_seqset</varname>: Generate a random temporal geometric 3D point of sequence set subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tgeogpoint_seqset</varname>: Generate a random temporal geographic 2D point of sequence set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_seqset</varname>: Generate a random temporal geographic 3D point of sequence set subtype</para>
+					<para><varname>random_tgeogpoint3d_seqset</varname>: Generate a random temporal geographic 3D point of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 
@@ -381,13 +381,13 @@ SELECT k, random_geom_point(0, 100, 0, 100, 3812) FROM generate_series(2, size) 
 		</para>
 
 		<para>
-			The creation of a table <varname>tbl_geog_point3D</varname> containing random <varname>geography</varname> 3D point values, where the x, y, and z coordinates are, respectively, in the ranges [-10, 32], [35, 72], and [0, 1000] and in SRID 7844 is given next.
+			The creation of a table <varname>tbl_geog_point3d</varname> containing random <varname>geography</varname> 3D point values, where the x, y, and z coordinates are, respectively, in the ranges [-10, 32], [35, 72], and [0, 1000] and in SRID 7844 is given next.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE TABLE tbl_geog_point3D AS
+CREATE TABLE tbl_geog_point3d AS
 SELECT 1 AS k, geography 'SRID=7844;pointZ empty' AS g UNION
 SELECT k,
-  random_geog_point3D(-10, 32, 35, 72, 0, 1000, 7844) FROM generate_series(2, size) k;
+  random_geog_point3d(-10, 32, 35, 72, 0, 1000, 7844) FROM generate_series(2, size) k;
 </programlisting>
 		<para>
 			Notice that latitude and longitude values are chosen to approximately cover continental Europe. If the SRID is not given it is set by default to 4326.
@@ -414,12 +414,12 @@ SELECT k,
 </programlisting>
 
 		<para>
-			The creation of a table <varname>tbl_geom_polygon3D</varname> containing random <varname>geometry</varname> 3D polygon values without holes, having between 5 and 10 vertices, where the x, y, and z coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.
+			The creation of a table <varname>tbl_geom_polygon3d</varname> containing random <varname>geometry</varname> 3D polygon values without holes, having between 5 and 10 vertices, where the x, y, and z coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE TABLE tbl_geom_polygon3D AS
+CREATE TABLE tbl_geom_polygon3d AS
 SELECT 1 AS k, geometry 'polygon Z empty' AS g UNION
-SELECT k, random_geom_polygon3D(0, 100, 0, 100, 0, 100, 10, 5, 10)
+SELECT k, random_geom_polygon3d(0, 100, 0, 100, 0, 100, 10, 5, 10)
 FROM generate_series(2, size) k;
 </programlisting>
 
@@ -444,17 +444,17 @@ FROM generate_series(2, size) k;
 </programlisting>
 
 		<para>
-			The creation of a table <varname>tbl_geometry3D</varname> containing random <varname>geometry</varname> 3D values of various types is given next. This function requires that the tables for the various geometry types have been created previously.
+			The creation of a table <varname>tbl_geometry3d</varname> containing random <varname>geometry</varname> 3D values of various types is given next. This function requires that the tables for the various geometry types have been created previously.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE TABLE tbl_geometry3D (k serial PRIMARY KEY, g geometry);
-INSERT INTO tbl_geometry3D(g)
-(SELECT g FROM tbl_geom_point3D ORDER BY k LIMIT (size * 0.1)) UNION ALL
-(SELECT g FROM tbl_geom_linestring3D ORDER BY k LIMIT (size * 0.1)) UNION ALL
-(SELECT g FROM tbl_geom_polygon3D ORDER BY k LIMIT (size * 0.2)) UNION ALL
-(SELECT g FROM tbl_geom_multipoint3D ORDER BY k LIMIT (size * 0.2)) UNION ALL
-(SELECT g FROM tbl_geom_multilinestring3D ORDER BY k LIMIT (size * 0.2)) UNION ALL
-(SELECT g FROM tbl_geom_multipolygon3D ORDER BY k LIMIT (size * 0.2));
+CREATE TABLE tbl_geometry3d (k serial PRIMARY KEY, g geometry);
+INSERT INTO tbl_geometry3d(g)
+(SELECT g FROM tbl_geom_point3d ORDER BY k LIMIT (size * 0.1)) UNION ALL
+(SELECT g FROM tbl_geom_linestring3d ORDER BY k LIMIT (size * 0.1)) UNION ALL
+(SELECT g FROM tbl_geom_polygon3d ORDER BY k LIMIT (size * 0.2)) UNION ALL
+(SELECT g FROM tbl_geom_multipoint3d ORDER BY k LIMIT (size * 0.2)) UNION ALL
+(SELECT g FROM tbl_geom_multilinestring3d ORDER BY k LIMIT (size * 0.2)) UNION ALL
+(SELECT g FROM tbl_geom_multipolygon3d ORDER BY k LIMIT (size * 0.2));
 </programlisting>
 
 		<para>
@@ -596,30 +596,30 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 </programlisting>
 
 		<para>
-			Finally, the creation of a table <varname>tbl_tgeompoint3D_seqset</varname> containing random <varname>tgeompoint</varname> 3D values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the x, y, and z coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
+			Finally, the creation of a table <varname>tbl_tgeompoint3d_seqset</varname> containing random <varname>tgeompoint</varname> 3D values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the x, y, and z coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
 		</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-DROP TABLE IF EXISTS tbl_tgeompoint3D_seqset;
-CREATE TABLE tbl_tgeompoint3D_seqset AS
-SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
+DROP TABLE IF EXISTS tbl_tgeompoint3d_seqset;
+CREATE TABLE tbl_tgeompoint3d_seqset AS
+SELECT k, random_tgeompoint3d_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
   10, 10, 5, 10, 5, 10, 3812) AS ts FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
-UPDATE tbl_tgeompoint3D_seqset t1
-SET ts = (SELECT ts FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3d_seqset t1
+SET ts = (SELECT ts FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeompoint3D_seqset t1
-SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3d_seqset t1
+SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeompoint3D_seqset t1
+UPDATE tbl_tgeompoint3d_seqset t1
 SET ts = (SELECT shift(ts,
-  timeSpan(ts)) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+  timeSpan(ts)) FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeompoint3D_seqset t1
+UPDATE tbl_tgeompoint3d_seqset t1
 SET ts = (SELECT shift(ts, date_trunc('minute', timeSpan(ts)/2))
-  FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeompoint3d_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 </programlisting>
 	</sect1>

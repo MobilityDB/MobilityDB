@@ -113,7 +113,6 @@ A raster pixel holding a NaN or an infinity carries no value, as a pixel
 equal to the nodata value of its band does. The temporal value read from a
 raster along a trajectory therefore has no instant where the trajectory
 crosses such a pixel.
-
 ## 4. Results
 
 ### 4.1 The rule
@@ -130,7 +129,8 @@ include the arithmetic of temporal floats, the sum of temporal floats, the
 delta, the integral and the exponential of a temporal float, the distance of
 two float spans, the distance of two circular buffers or geometries whose
 coordinates are near `±DBL_MAX`, the area, the volume and the perimeter of a
-box or a geometry, the expansion of a float box, a value tile, and the number
+box or a geometry, the expansion of a float box, a value tile, the sum of the
+pixels of a raster band (`summaryStats` and `summaryStatsAgg`), and the number
 of bins of a float span:
 
 ```sql
@@ -155,7 +155,11 @@ of centre `(0 0)` and radius `1e308`, the time-weighted average of
 is 0. The value of `[1e308@2001-01-01, -1e308@2001-01-03]` at `2001-01-02` is
 0, and the temporal average (`tavg`, `wavg`) and the temporal centroid
 (`tcentroid`) of values near `±DBL_MAX` are answered as well: the `tavg` of
-two temporal floats valued `1e308` is `1e308`. The rounding of `DBL_MAX` is
+two temporal floats valued `1e308` is `1e308`. The statistics of the pixels
+of a band are answered as well, `summaryStats` and `summaryStatsAgg` alike:
+the standard deviation of a band holding `-1.7e308` and `1.7e308` is
+`1.7e308`, and the sum of a band holding `1.7e308`, `1.7e308` and `-1.7e308`
+is `1.7e308`. The rounding of `DBL_MAX` is
 `DBL_MAX`, and the area of a box whose extent exceeds `DBL_MAX` while its area
 does not is answered:
 
@@ -169,15 +173,22 @@ SELECT area(stbox 'STBOX X((-1e308,0),(1e308,1e-10))');
 The length and the perimeter of a geometry are answered whatever the
 magnitudes of its coordinates, from the subnormal doubles to `±DBL_MAX`, and
 raise `value out of range` only where they exceed `DBL_MAX`. The area of a
-geometry is read scaled by a power of two where its coordinates lie outside
-`2^-500` to `2^500`; `geom_area` raises `MEOS_ERR_FEATURE_NOT_SUPPORTED` where
-that scaling is not exact, as for a geometry mixing coordinates near
-`DBL_MAX`, scaled by `2^-523`, with coordinates so small that this scaling
-rounds them:
+geometry of straight edges is the double nearest its exact value, a tie going
+to the even one, whatever the magnitudes of its coordinates, and raises
+`value out of range` only where it exceeds `DBL_MAX`: a triangle reaching from
+subnormal coordinates to `1e307` encloses `3.3118017121875465e-17`. The area
+of a geometry holding a circular arc, whose circular segments are not
+rationals of its coordinates, is read scaled by a power of two where its
+coordinates lie outside `2^-500` to `2^500`, and `geom_area` raises
+`MEOS_ERR_FEATURE_NOT_SUPPORTED` where that scaling is not exact:
 
 ```sql
 SELECT perimeter(stbox 'STBOX X((0,0),(5e-324,1e-323))') = 3e-323;
 -- t
+SELECT area(geometry 'Polygon((-2.4194e-319 -2.4194e-319,
+  1.584721628692562e+307 9.264240401570348e+307,
+  -2.41944e-319 -2.41964e-319,-2.4194e-319 -2.4194e-319))');
+-- 3.3118017121875465e-17
 ```
 
 The integers follow the same rule. The sum, the weighted sum and the delta of

@@ -40,6 +40,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <liblwgeom.h>
 #include <meos_pointcloud.h>
 
 /*****************************************************************************
@@ -86,6 +87,11 @@ extern bool ensure_valid_pcpatchset_pcpatch(const Set *s, const Pcpatch *pa);
  *****************************************************************************/
 
 extern Pcpatch *pcpatch_parse(const char **str, bool end);
+extern Pcpatch *pg_pcpatch_transform(const Pcpatch *pa, uint32_t pcid);
+extern Pcpatch *pcpatch_transf_pj(const Pcpatch *pa, uint32_t pcid_to,
+  const PCSCHEMA *to, const LWPROJ *pj);
+extern size_t pcpatch_sortkey_size(const Pcpatch *pa);
+extern uint8_t *pcpatch_sortkey_put(const Pcpatch *pa, uint8_t *out);
 extern uint8_t *pcpatch_to_wkb_bytes(const Pcpatch *pa, uint8_t variant,
   size_t *size_out);
 

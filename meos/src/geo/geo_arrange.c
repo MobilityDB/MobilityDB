@@ -112,7 +112,7 @@ arr_fmax(double a, double b)
 static void
 arr_circle(const Edge *arc, Ival *cx, Ival *cy, Ival *r2)
 {
-  if (arc->centred)
+  if (arc->centred && ! arc->offset)
   {
     *cx = ival(arc->cx);
     *cy = ival(arc->cy);
@@ -141,7 +141,81 @@ arr_circle(const Edge *arc, Ival *cx, Ival *cy, Ival *r2)
   }
   Ival dx = ival_sub(ival(arc->sx), *cx), dy = ival_sub(ival(arc->sy), *cy);
   *r2 = ival_dot(dx, dy, dx, dy);
+  if (arc->offset)
+  {
+    /* The offset of the input arc by the distance, of radius
+     * |R + side r| (#edges_add_offset_arc) */
+    Ival rho = ival_add(ival_sqrt(*r2), ival_mul(ival((double) arc->side),
+      ival(arc->radius)));
+    if (rho.hi < 0.0)
+      rho = ival_neg(rho);
+    else if (rho.lo < 0.0)
+      rho = ival_out(0.0, Max(- rho.lo, rho.hi));
+    *r2 = ival_mul(rho, rho);
+  }
   return;
+}
+
+/* The centre and the radius of the circle of a centred arc as intervals:
+ * its doubles, or for an offset its intervals (#arr_circle) */
+static inline void
+arr_circle_ivals(const Edge *e, Ival *cx, Ival *cy, Ival *r)
+{
+  if (! e->offset)
+  {
+    *cx = ival(e->cx); *cy = ival(e->cy); *r = ival(e->radius);
+    return;
+  }
+  Ival r2;
+  arr_circle(e, cx, cy, &r2);
+  *r = ival_sqrt(r2);
+  return;
+}
+
+/* The radius of the circle of a centred arc in doubles: its own, or for an
+ * offset |R + side r| read off the input arc and the centre rounded once
+ * (#edges_add_offset_arc), a rounding as the written points of a piece are
+ * (#arr_piece_write) */
+static inline double
+arr_circle_radius(const Edge *e)
+{
+  if (! e->offset)
+    return e->radius;
+  return fabs(hypot(e->sx - e->cx, e->sy - e->cy) + e->side * e->radius);
+}
+
+/* The x of the centre of the circle of a centred arc as an interval
+ * (#arr_circle_ivals) */
+static inline Ival
+arr_circle_xival(const Edge *e)
+{
+  Ival cx, cy, r;
+  arr_circle_ivals(e, &cx, &cy, &r);
+  return cx;
+}
+
+/* The side of a line through the circle of a centred arc a vertex lies on,
+ * decided exactly (#meet_point_circle_side) */
+static inline int
+arr_vertex_circle_side(const Edge *e, double x, double y, bool alongx, int sr)
+{
+  MeetPoint m;
+  memset(&m, 0, sizeof(MeetPoint));
+  m.kind = MEET_VERTEX;
+  m.x = x; m.y = y;
+  return meet_point_circle_side(&m, e, alongx, sr);
+}
+
+/* How the heights of the centres of the circles of two centred arcs
+ * compare, or with @p radius their radii, decided exactly: their doubles,
+ * or a tower for an offset (#tower_circles_cmp); 2 where it is not told */
+static inline int
+arr_circles_cmp(const Edge *p, const Edge *q, bool radius)
+{
+  if (p->offset || q->offset)
+    return tower_circles_cmp(p, q, radius);
+  double u = radius ? p->radius : p->cy, v = radius ? q->radius : q->cy;
+  return (u > v) - (u < v);
 }
 
 /**
@@ -467,6 +541,10 @@ typedef struct
   double certd;           /**< The margin D, 0 where the certificate is off */
   uint32_t *pfirst;       /**< First piece of each edge, one past the last */
   bool *ekept;            /**< Whether each edge keeps a piece */
+  int sense;              /**< The sign of the winding number of the region,
+                               1 or -1 where the caller fixes it, 0 where the
+                               side of the outermost piece away from the
+                               outside reads it */
 } Arr;
 
 /* Whether stretches i and j lie on one edge or on edges following each
@@ -578,7 +656,7 @@ arr_circle_start_side_exact(const Edge *e, Ival t, const ArrMeet *m)
 {
   MeetPoint mp = arr_meet_point(m);
   mp.p = m->p; mp.q = m->q;
-  int sy = meet_point_y_side(&mp, e->cy);
+  int sy = meet_point_circle_side(&mp, e, false, 0);
   /* After the start a counterclockwise circle turns below its centre */
   if (sy == 2 || sy == 0 || (sy > 0) != arr_arc_ccw(e))
     return t;
@@ -769,6 +847,15 @@ arr_end_tower_node(Arr *a, const ArrMeet *m, const Ival *box)
   return arr_tower_node_at(a, m, m->x, m->y, b);
 }
 
+/* The hash of a pointer, the high half of its product by the golden ratio,
+ * the slot of a tangent point in the table of their nodes */
+static inline uint32_t
+arr_hash_ptr(const void *p)
+{
+  uint64_t h = (uint64_t) (uintptr_t) p * UINT64CONST(0x9E3779B97F4A7C15);
+  return (uint32_t) (h >> 32);
+}
+
 /* The node of a point where a tangent touches a circle, one per point,
  * found by the point that defines it; UINT32_MAX where it cannot be
  * placed. Two points of one value are made one node (#arr_arrange) */
@@ -788,9 +875,7 @@ static uint32_t
 arr_tangent_node_at(Arr *a, const TangentPoint *tp, const ArrMeet *end,
   const Ival *box)
 {
-  uintptr_t key = (uintptr_t) tp;
-  uint64_t hk = (uint64_t) key * UINT64CONST(0x9E3779B97F4A7C15);
-  uint32_t h = (uint32_t) (hk >> 32) & a->tpmask;
+  uint32_t h = arr_hash_ptr(tp) & a->tpmask;
   while (a->tptab[h])
   {
     if (a->tptab[h] == tp)
@@ -814,9 +899,7 @@ arr_tangent_node_at(Arr *a, const TangentPoint *tp, const ArrMeet *end,
 static void
 arr_tangent_node_xy(Arr *a, const TangentPoint *tp, double x, double y)
 {
-  uintptr_t key = (uintptr_t) tp;
-  uint64_t hk = (uint64_t) key * UINT64CONST(0x9E3779B97F4A7C15);
-  uint32_t h = (uint32_t) (hk >> 32) & a->tpmask;
+  uint32_t h = arr_hash_ptr(tp) & a->tpmask;
   while (a->tptab[h])
   {
     if (a->tptab[h] == tp)
@@ -1089,6 +1172,9 @@ typedef enum
 static inline bool
 arr_vertex_at_origin(const Edge *e, double x, double y)
 {
+  if (e->offset)
+    return arr_vertex_circle_side(e, x, y, false, 0) == 0 &&
+      arr_vertex_circle_side(e, x, y, true, -1) == 0;
   if (y != e->cy)
     return false;
   double s = x + e->radius;
@@ -1104,7 +1190,7 @@ arr_vertex_at_origin(const Edge *e, double x, double y)
 static inline bool
 arr_tangent_signs(const TangentPoint *tp, int *sx, int *sy)
 {
-  if (tp->r1 != tp->r2)
+  if (tp->r1 != tp->r2 || tp->along)
     return false;
   int dx = (tp->c2x > tp->c1x) - (tp->c2x < tp->c1x);
   int dy = (tp->c2y > tp->c1y) - (tp->c2y < tp->c1y);
@@ -1157,10 +1243,10 @@ arr_meet_circle_start(const Edge *e, const ArrMeet *m)
     return ty == 0 && tx < 0;
   MeetPoint mp = arr_meet_point(m);
   mp.p = m->p; mp.q = m->q;
-  int sy = meet_point_y_side(&mp, e->cy);
+  int sy = meet_point_circle_side(&mp, e, false, 0);
   if (sy != 0)
     return (sy == 2) ? 2 : 0;
-  int sx = meet_point_x_side(&mp, e->cx, - e->radius);
+  int sx = meet_point_circle_side(&mp, e, true, -1);
   return (sx == 2) ? 2 : (sx == 0);
 }
 
@@ -1174,7 +1260,7 @@ arr_meet_exact_xy(const ArrMeet *m, double *x, double *y)
     *x = m->x; *y = m->y;
     return true;
   }
-  if (m->kind == MEET_TANGENT && m->tp &&
+  if (m->kind == MEET_TANGENT && m->tp && ! m->tp->arc &&
       (m->tp->k ? m->tp->r2 : m->tp->r1) == 0.0)
   {
     *x = m->tp->k ? m->tp->c2x : m->tp->c1x;
@@ -2026,6 +2112,18 @@ arr_support_sigma(const Arr *a, uint32_t s, int sigma)
 static inline bool
 arr_tangent_on(const TangentPoint *tp, const Edge *c)
 {
+  if (tp->along)
+    return false;
+  /* The end of the offset of an input arc lies on the circle of the
+   * distance about that end of the arc (#TangentPoint, member arc) */
+  if (tp->arc)
+  {
+    /* The centre of an arc lies on no circle of the distance */
+    if (tp->k == 2)
+      return false;
+    const double *a = tp->k ? tp->arc->e : tp->arc->s;
+    return tp->r1 == c->radius && a[0] == c->cx && a[1] == c->cy;
+  }
   return tp->k ? (tp->c2x == c->cx && tp->c2y == c->cy && tp->r2 == c->radius) :
     (tp->c1x == c->cx && tp->c1y == c->cy && tp->r1 == c->radius);
 }
@@ -2081,7 +2179,8 @@ static bool
 arr_offset_of(const Edge *e, POINT2D *u, POINT2D *v, int *side, double *r)
 {
   const TangentPoint *f = e->from, *t = e->to;
-  if (! f || e->centred || f->k != 0 || t->k != 1 || f->r1 != f->r2 ||
+  if (! f || e->centred || f->along || t->along || f->k != 0 || t->k != 1 ||
+      f->r1 != f->r2 ||
       t->r1 != f->r1 || t->r2 != f->r1 || t->side != f->side ||
       t->c1x != f->c1x || t->c1y != f->c1y || t->c2x != f->c2x ||
       t->c2y != f->c2y)
@@ -2268,22 +2367,35 @@ arr_support_meets(const Arr *a, uint32_t i, uint32_t j, ArrMeet m[2],
   *n = 0;
   if (p->centred && q->centred)
   {
-    if (arc_same_circle(p, q))
+    bool off = p->offset || q->offset;
+    if (! off && arc_same_circle(p, q))
       return ARR_OVERLAP;
-    /* Circles the intervals keep apart, or one within the other */
+    /* Circles the intervals keep apart, or one within the other; the
+     * radius of an offset is held by its interval (#arr_circle) */
     Ival dx = ival_sub(a->ccx[j], a->ccx[i]);
     Ival dy = ival_sub(a->ccy[j], a->ccy[i]);
     Ival d2 = ival_dot(dx, dy, dx, dy);
-    Ival rs = ival_add(ival(p->radius), ival(q->radius));
-    Ival rd = ival_sub(ival(p->radius), ival(q->radius));
+    Ival rp = p->offset ? ival_sqrt(a->cr2[i]) : ival(p->radius);
+    Ival rq = q->offset ? ival_sqrt(a->cr2[j]) : ival(q->radius);
+    Ival rs = ival_add(rp, rq);
+    Ival rd = ival_sub(rp, rq);
     if (ival_sign(ival_sub(d2, ival_mul(rs, rs))) == 1 ||
         ival_sign(ival_sub(ival_mul(rd, rd), d2)) == 1)
       return ARR_ANSWERED;
     /* Two circles touching cross nothing: on either side of each, the
      * winding number the other gives is the same all along it, so the
-     * touching is no node of the arrangement, as two circles apart */
+     * touching is no node of the arrangement, as two circles apart. An
+     * offset is met in its tower (#tower_circles_meet) */
     int meet, within[2][2];
-    if (! arcarc_meet_exact(p, q, &meet, within))
+    if (off)
+    {
+      meet = tower_circles_meet(p, q);
+      if (meet == 3)
+        return ARR_OVERLAP;
+      if (meet == 2)
+        return ARR_MEETING;
+    }
+    else if (! arcarc_meet_exact(p, q, &meet, within))
       return ARR_MEETING;
     if (meet <= 0)
       return ARR_ANSWERED;
@@ -3173,7 +3285,9 @@ arr_piece_at(const Arr *a, const ArrPiece *p, uint32_t k, ArrPiece *buf)
  * passes them by along the run: the labels and the rings read the chain
  * between the nodes it starts and ends at, and every question about its
  * points reads its members (#arr_piece_member). A run is ended before it
- * closes on the node it starts at
+ * closes on the node it starts at, and a run that holds no stretch but @p i,
+ * such as the first of the two half turns of a circle meeting nothing, is no
+ * chain
  */
 static uint32_t
 arr_chain(Arr *a, uint32_t i)
@@ -3219,6 +3333,10 @@ arr_chain(Arr *a, uint32_t i)
       break;
     k++;
   }
+  /* A run of the one stretch, ended before its next closes on its start, is
+   * no chain: the stretch is cut as every other is */
+  if (k == i)
+    return i;
   int32_t w0 = arr_weight(a, i);
   a->chw[c] = a->chagree[a->choff[c]] ? w0 : - w0;
   a->choff[c + 1] = m;
@@ -3385,7 +3503,8 @@ static inline bool
 arr_tangent_along(const Edge *e, int *s)
 {
   const TangentPoint *a = e->from, *b = e->to;
-  if (e->centred || ! a || ! b || a->r1 != a->r2 || b->r1 != a->r1 ||
+  if (e->centred || ! a || ! b || a->along || b->along || a->r1 != a->r2 ||
+      b->r1 != a->r1 ||
       b->r2 != a->r1 || a->side != b->side || a->k == b->k ||
       a->c1x != b->c1x || a->c1y != b->c1y || a->c2x != b->c2x ||
       a->c2y != b->c2y)
@@ -3516,7 +3635,7 @@ arr_half_exact(const Arr *a, uint32_t e, bool out, const ArrNode *nd,
   if (! ed->centred || ! nd->tower || nd->meet.kind != MEET_TANGENT)
     return false;
   const TangentPoint *t = nd->meet.tp;
-  if (t->r1 != t->r2 || ed->radius != t->r1 ||
+  if (t->along || t->r1 != t->r2 || ed->radius != t->r1 ||
       ed->cx != (t->k ? t->c2x : t->c1x) || ed->cy != (t->k ? t->c2y : t->c1y))
     return false;
   *tp = t;
@@ -3789,6 +3908,9 @@ typedef struct
 static int
 arr_centred_right_cmp(const Edge *p, const Edge *q)
 {
+  /* An offset holds its circle in a tower (#tower_circles_right_cmp) */
+  if (p->offset || q->offset)
+    return tower_circles_right_cmp(p, q);
   const double t[4] = {p->cx, p->radius, - q->cx, - q->radius};
   ExactSum sum;
   exact_sum_set(&sum, t, 4);
@@ -3808,6 +3930,12 @@ arr_centred_right_cmp(const Edge *p, const Edge *q)
 static int
 arr_arc_centre_y_side(const Edge *e, double y)
 {
+  if (e->offset)
+  {
+    /* The side of y = cy a point at height y lies on, negated */
+    int s = arr_vertex_circle_side(e, e->cx, y, false, 0);
+    return (s == 2) ? 2 : - s;
+  }
   if (e->centred)
     return (e->cy > y) - (e->cy < y);
   if (e->diameter)
@@ -3910,15 +4038,16 @@ static int
 arr_node_circle_left(const Arr *a, uint32_t v, const Edge *e)
 {
   const ArrNode *nd = &a->nodes[v];
-  if (nd->origin || ! (nd->bx.hi < e->cx))
+  if (nd->origin || ! (nd->bx.hi < arr_circle_xival(e).lo))
     return 0;
   if (nd->vertex)
-    return nd->y == e->cy;
+    return e->offset ? arr_vertex_circle_side(e, nd->x, nd->y, false, 0) == 0 :
+      nd->y == e->cy;
   if (! nd->tower)
     return 0;
   MeetPoint at = arr_meet_point(&nd->meet);
   at.p = nd->meet.p; at.q = nd->meet.q;
-  int s = meet_point_y_side(&at, e->cy);
+  int s = meet_point_circle_side(&at, e, false, 0);
   return (s == 2) ? 2 : (s == 0);
 }
 
@@ -3981,6 +4110,10 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
   /* For a centred arc the sign of r^2 - (py - cy)^2 is that of the side of
    * its circle (cx, py) lies on, decided exactly: a ray touching the circle
    * at its top or bottom crosses nothing */
+  /* An offset holds its circle in a tower: a ray the intervals cannot place
+   * against it is not told, and another ray is asked */
+  if (e->offset && (sh == 2 || sh == 0))
+    return false;
   if (sh == 2 && e->centred)
     sh = arc_circle_side(e, e->cx, py);
   if (sh == 0 && e->centred)
@@ -4036,7 +4169,8 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
     /* The start of a centred arc, (cx - r, cy) exactly, met by a ray along
      * y = cy: a point of the circle like any other, which no edge but this
      * one passes through, read on the piece leaving it */
-    bool start = e->centred && side < 0 && py == e->cy;
+    bool start = e->centred && side < 0 && (e->offset ?
+      arr_vertex_circle_side(e, e->cx, py, false, 0) == 0 : py == e->cy);
     if (start && a->nodes[p->from].origin != arr_edge_ref(a, j))
     {
       /* A piece ending there where the circle does not start, as the round
@@ -4150,7 +4284,7 @@ arr_node_meet(const Arr *a, uint32_t v)
 static bool
 arr_tangent_x_sum(const TangentPoint *tp, double x[2])
 {
-  if (tp->r1 != tp->r2)
+  if (tp->r1 != tp->r2 || tp->along)
     return false;
   x[0] = tp->k ? tp->c2x : tp->c1x;
   if (tp->c1y == tp->c2y && tp->c1x != tp->c2x)
@@ -4263,15 +4397,16 @@ static bool
 arr_node_circle_right(const Arr *a, uint32_t v, const Edge *e)
 {
   const ArrNode *nd = &a->nodes[v];
-  if (nd->origin || ! (nd->bx.lo > e->cx))
+  if (nd->origin || ! (nd->bx.lo > arr_circle_xival(e).hi))
     return false;
   if (nd->vertex)
-    return nd->y == e->cy;
+    return e->offset ? arr_vertex_circle_side(e, nd->x, nd->y, false, 0) == 0 :
+      nd->y == e->cy;
   if (! nd->tower)
     return false;
   MeetPoint at = arr_meet_point(&nd->meet);
   at.p = nd->meet.p; at.q = nd->meet.q;
-  return meet_point_y_side(&at, e->cy) == 0;
+  return meet_point_circle_side(&at, e, false, 0) == 0;
 }
 
 /* The sign of the x of node v less that of the point of the circle of the
@@ -4285,6 +4420,20 @@ arr_node_right_x(const Arr *a, uint32_t v, const Edge *e, bool *same)
 {
   const ArrNode *nd = &a->nodes[v];
   *same = false;
+  if (nd->vertex && e->offset)
+  {
+    int c = arr_vertex_circle_side(e, nd->x, nd->y, true, 1);
+    if (c == 2)
+      return 2;
+    if (c == 0)
+    {
+      int y = arr_vertex_circle_side(e, nd->x, nd->y, false, 0);
+      if (y == 2)
+        return 2;
+      *same = (y == 0);
+    }
+    return c;
+  }
   if (nd->vertex)
   {
     double s = e->cx + e->radius;
@@ -4299,12 +4448,12 @@ arr_node_right_x(const Arr *a, uint32_t v, const Edge *e, bool *same)
     return 2;
   MeetPoint at = arr_meet_point(&nd->meet);
   at.p = nd->meet.p; at.q = nd->meet.q;
-  int c = meet_point_x_side(&at, e->cx, e->radius);
+  int c = meet_point_circle_side(&at, e, true, 1);
   if (c == 2)
     return 2;
   if (c == 0)
   {
-    int y = meet_point_y_side(&at, e->cy);
+    int y = meet_point_circle_side(&at, e, false, 0);
     if (y == 2)
       return 2;
     *same = (y == 0);
@@ -4328,13 +4477,19 @@ arr_node_right_order(const Arr *a, uint32_t j, uint32_t v, bool start,
   if (nd->origin && nd->origin == arr_edge_ref(a, j))
     return start ? -1 : 1;
   int s;
-  if (nd->vertex)
+  if (nd->vertex && e->offset)
+  {
+    s = arr_vertex_circle_side(e, nd->x, nd->y, false, 0);
+    if (s == 2)
+      return 2;
+  }
+  else if (nd->vertex)
     s = (nd->y > e->cy) - (nd->y < e->cy);
   else if (nd->tower)
   {
     MeetPoint at = arr_meet_point(&nd->meet);
     at.p = nd->meet.p; at.q = nd->meet.q;
-    s = meet_point_y_side(&at, e->cy);
+    s = meet_point_circle_side(&at, e, false, 0);
     if (s == 2)
       return 2;
   }
@@ -4347,9 +4502,10 @@ arr_node_right_order(const Arr *a, uint32_t j, uint32_t v, bool start,
    * circle tells (#arr_end_position) */
   if (s == 0)
   {
-    if (nd->bx.lo > e->cx)
+    Ival cx = arr_circle_xival(e);
+    if (nd->bx.lo > cx.hi)
       return 0;
-    if (nd->bx.hi < e->cx)
+    if (nd->bx.hi < cx.lo)
       return (pos.hi < 2.0) ? -1 : ((pos.lo > 2.0) ? 1 : 2);
     return 2;
   }
@@ -4494,8 +4650,16 @@ arr_extreme_arc(const Arr *a, const ArrPiece *p, uint32_t piece, bool agree,
      * so that its piece is the one the outside faces */
     const Edge *xe = &a->e[ex->edge];
     int order = arr_centred_right_cmp(ae, xe);
-    if (order > 0 ||
-        (order == 0 && ae->cy == xe->cy && ae->radius > xe->radius))
+    int cy = (order == 0) ? arr_circles_cmp(ae, xe, false) : 1;
+    int rc = (order == 0 && cy == 0) ? arr_circles_cmp(ae, xe, true) : 0;
+    if (order == 2 || cy == 2 || rc == 2)
+    {
+      /* Not told, as for an offset whose tower cannot tell: a tie */
+      *tie = *tied ? ival_hull(*tie, x) : x;
+      *tied = true;
+      return;
+    }
+    if (order > 0 || (order == 0 && cy == 0 && rc > 0))
       arr_extreme_on_arc(ex, piece, p, agree, x);
     return;
   }
@@ -4507,7 +4671,7 @@ arr_extreme_arc(const Arr *a, const ArrPiece *p, uint32_t piece, bool agree,
      * lies at least as far right */
     MeetPoint at = arr_meet_point(&xn->meet);
     at.p = xn->meet.p; at.q = xn->meet.q;
-    int side = meet_point_x_side(&at, ae->cx, ae->radius);
+    int side = meet_point_circle_side(&at, ae, true, 1);
     if (side != 2)
     {
       if (side < 0)
@@ -4525,6 +4689,19 @@ arr_extreme_arc(const Arr *a, const ArrPiece *p, uint32_t piece, bool agree,
      * sum read with its rounding error (two-sum), so the sign of
      * (cx + r) - x is exact; the vertex keeps the point where it lies
      * at least as far right, nothing lying right of either */
+    if (ae->offset)
+    {
+      /* The side of the line x = cx + r the vertex lies on, in a tower */
+      int side = arr_vertex_circle_side(ae, xn->x, xn->y, true, 1);
+      if (side == 2)
+      {
+        *tie = *tied ? ival_hull(*tie, x) : x;
+        *tied = true;
+      }
+      else if (side < 0)
+        arr_extreme_on_arc(ex, piece, p, agree, x);
+      return;
+    }
     double s = ae->cx + ae->radius;
     double bv = s - ae->cx;
     double err = (ae->cx - (s - bv)) + (ae->radius - bv);
@@ -4846,11 +5023,19 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         const Edge *pk = &a->e[ek->edge];
         const Edge *pm = &a->e[em->edge];
         int c = arr_centred_right_cmp(pk, pm);
-        if (c == 0 && pk->cy == pm->cy)
+        int cy = (c == 0) ? arr_circles_cmp(pk, pm, false) : 1;
+        int rc = (c == 0 && cy == 0) ? arr_circles_cmp(pk, pm, true) : 0;
+        /* Not told, as for an offset whose tower cannot tell */
+        if (c == 2 || cy == 2 || rc == 2)
         {
-          if (pk->radius == pm->radius)
+          st = ARR_DEPTH;
+          continue;
+        }
+        if (c == 0 && cy == 0)
+        {
+          if (rc == 0)
             st = ARR_DEPTH;
-          else if (pk->radius < pm->radius)
+          else if (rc < 0)
           {
             ArrSweep t = order[k]; order[k] = order[m]; order[m] = t;
             arr_suffix_hi(order, cex, ncomp, sufhi);
@@ -4959,11 +5144,14 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
               double at = ((sgn > 0) == ce->ccw) ? 3.0 : 1.0;
               if (a->sup && ! (cp->pfrom.hi < at && at < cp->pto.lo))
                 continue;
-              Ival ty = sgn > 0 ? ival_add(ival(ce->cy), ival(ce->radius)) :
-                ival_sub(ival(ce->cy), ival(ce->radius));
-              px = ce->cx;
-              py = ce->cy + sgn * ce->radius;
-              told = arr_point_clear(a, px, py, ival(px), ty, cpieces, coff,
+              Ival icx, icy, ir;
+              arr_circle_ivals(ce, &icx, &icy, &ir);
+              Ival ty = sgn > 0 ? ival_add(icy, ir) : ival_sub(icy, ir);
+              Ival tx = icx;
+              px = ce->offset ? 0.5 * (tx.lo + tx.hi) : ce->cx;
+              py = ce->offset ? 0.5 * (ty.lo + ty.hi) :
+                ce->cy + sgn * ce->radius;
+              told = arr_point_clear(a, px, py, tx, ty, cpieces, coff,
                   (const double (*)[4]) lbox, nlab) &&
                 arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
                   nlab, ival(px), py, &outside);
@@ -4992,7 +5180,9 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
             const Edge *ce = &a->e[cp->edge];
             if (! ce->centred)
               continue;
-            Ival hr = ival_mul(ival(ce->radius), ival_sqrt(ival(0.5)));
+            Ival icx, icy, ir;
+            arr_circle_ivals(ce, &icx, &icy, &ir);
+            Ival hr = ival_mul(ir, ival_sqrt(ival(0.5)));
             for (int q = 0; q < 4 && ! told; q++)
             {
               double at = q + 0.5;
@@ -5002,8 +5192,8 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
               static const int ccwx[4] = {-1, 1, 1, -1};
               static const int ccwy[4] = {-1, -1, 1, 1};
               int sx = ccwx[q], sy = ce->ccw ? ccwy[q] : - ccwy[q];
-              Ival tx = ival_add(ival(ce->cx), sx > 0 ? hr : ival_neg(hr));
-              Ival ty = ival_add(ival(ce->cy), sy > 0 ? hr : ival_neg(hr));
+              Ival tx = ival_add(icx, sx > 0 ? hr : ival_neg(hr));
+              Ival ty = ival_add(icy, sy > 0 ? hr : ival_neg(hr));
               px = 0.5 * (tx.lo + tx.hi);
               py = 0.5 * (ty.lo + ty.hi);
               told = arr_point_clear(a, px, py, tx, ty, cpieces, coff,
@@ -5139,6 +5329,9 @@ static pg_attribute_always_inline void
 arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
 {
   const Edge *e = &a->e[p->edge];
+  /* The radius of its circle, that of an offset rounded once */
+  double er = arr_is_arc(e) && e->centred ? arr_circle_radius(e) :
+    e->radius;
   const ArrNode *n1 = &a->nodes[p->flip ? p->to : p->from];
   const ArrNode *n2 = &a->nodes[p->flip ? p->from : p->to];
   out->x1 = n1->x; out->y1 = n1->y;
@@ -5151,7 +5344,7 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
    * along -x through the one opposite */
   if (e->centred && p->from == p->to)
   {
-    out->mx = e->cx + e->radius; out->my = e->cy;
+    out->mx = e->cx + er; out->my = e->cy;
     return;
   }
   /* The edge's own middle where the piece is the whole of an arc of three
@@ -5186,8 +5379,8 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
       dx = (ccw ? - ay : ay) / alen;
       dy = (ccw ? ax : - ax) / alen;
     }
-    out->mx = e->cx + e->radius * dx;
-    out->my = e->cy + e->radius * dy;
+    out->mx = e->cx + er * dx;
+    out->my = e->cy + er * dy;
     return;
   }
   /* The middle of a centred arc lies on the perpendicular to its chord
@@ -5201,7 +5394,7 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
   double c2 = cx * cx + cy * cy;
   double clen = sqrt(c2);
   double dx, dy;
-  if (16.0 * c2 >= e->radius * e->radius)
+  if (16.0 * c2 >= er * er)
   {
     dx = (ccw ? cy : - cy) / clen;
     dy = (ccw ? - cx : cx) / clen;
@@ -5222,8 +5415,8 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
     double k = (whole > 0) ? -1.0 : 1.0;
     dx = k * sx / len; dy = k * sy / len;
   }
-  out->mx = e->cx + e->radius * dx;
-  out->my = e->cy + e->radius * dy;
+  out->mx = e->cx + er * dx;
+  out->my = e->cy + er * dy;
   /* An arc whose middle the rounding of its written points puts on their
    * chord is written as the chord: three such points fix no circle, and the
    * region moves by less than their rounding */
@@ -5408,8 +5601,10 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
       a->ekept[p->edge] = true;
   }
   /* The outermost piece bounds the region, unless it is linework, which
-   * bounds nothing (#arr_weight) */
-  if (outer_piece == UINT32_MAX || (! a->pieces[outer_piece].result &&
+   * bounds nothing (#arr_weight), or the caller fixes the sense of the
+   * region, which then need not reach the outermost piece */
+  if (outer_piece == UINT32_MAX || (a->sense == 0 &&
+      ! a->pieces[outer_piece].result &&
       arr_piece_weight(a, &a->pieces[outer_piece]) != 0))
     return ARR_SHELLS;
   uint32_t cap = 4, n = 0;
@@ -7156,6 +7351,9 @@ arr_finish(Arr *a, ArrPair *pairs, uint32_t npairs, MeosArray ***rings,
      * linework turn counterclockwise (#arrange_union_surfaces_lines) */
     if (arr_piece_weight(a, p) == 0)
       sgn = 1;
+    /* A sense the caller fixes is read as given */
+    if (a->sense != 0)
+      sgn = a->sense;
     uint32_t *rp = NULL, *roff = NULL;
     if (sout)
       st = arr_stretches_write(a, sgn, outer, sout, nsout);
@@ -7586,7 +7784,10 @@ arr_arrange_merge(const MeosArray *edges, MeosArray ***rings,
        * node of its own and no input vertex: (cx - r, cy) exactly, written
        * rounded once */
       uint32_t v = arr_node_new(&a, e->x1, e->y1, false, -1);
-      a.nodes[v].bx = ival_sub(ival(e->cx), ival(e->radius));
+      a.nodes[v].bx = e->offset ? ival_sub(a.ccx[i], ival_sqrt(a.cr2[i])) :
+        ival_sub(ival(e->cx), ival(e->radius));
+      if (e->offset)
+        a.nodes[v].by = a.ccy[i];
       a.nodes[v].origin = e;
       a.start[i] = a.end[i] = v;
       continue;
@@ -7679,7 +7880,8 @@ arr_stretch_box(Arr *a, uint32_t i)
   const Edge *e = &a->e[i];
   if (! e->centred)
     return;
-  Ival r = ival(e->radius);
+  /* The circle of an offset is held by its intervals (#arr_circle) */
+  Ival r = e->offset ? ival_sqrt(a->cr2[i]) : ival(e->radius);
   /* Counterclockwise from (-r, 0): the bottom, the right, the top */
   const int ax[3] = {1, 0, 1}, sg[3] = {-1, 1, 1};
   for (int k = 0; k < 3; k++)
@@ -7687,7 +7889,8 @@ arr_stretch_box(Arr *a, uint32_t i)
     if (a->tfrom[i].lo > k + 1 || a->tto[i].hi < k + 1)
       continue;
     int s = (ax[k] == 1 && ! e->ccw) ? - sg[k] : sg[k];
-    Ival c = ax[k] ? ival(e->cy) : ival(e->cx);
+    Ival c = e->offset ? (ax[k] ? a->ccy[i] : a->ccx[i]) :
+      (ax[k] ? ival(e->cy) : ival(e->cx));
     Ival v = (s > 0) ? ival_add(c, r) : ival_sub(c, r);
     int lo = ax[k] ? 2 : 0;
     a->box[i][lo] = arr_fmin(a->box[i][lo], v.lo);
@@ -7764,7 +7967,16 @@ arr_end_node(Arr *a, const ArrMeet *end, const Ival *box)
   {
     /* (cx - r, cy) exactly, rounded once, as #arr_arrange places it */
     id = arr_node_new(a, p->x1, p->y1, false, -1);
-    a->nodes[id].bx = ival_sub(ival(p->cx), ival(p->radius));
+    if (p->offset)
+    {
+      /* The circle of an offset is held by its intervals (#arr_circle) */
+      Ival cx, cy, r2;
+      arr_circle(p, &cx, &cy, &r2);
+      a->nodes[id].bx = ival_sub(cx, ival_sqrt(r2));
+      a->nodes[id].by = cy;
+    }
+    else
+      a->nodes[id].bx = ival_sub(ival(p->cx), ival(p->radius));
     a->nodes[id].origin = p;
   }
   else if (end->kind == MEET_SEGSEG)
@@ -8298,14 +8510,16 @@ typedef struct
  * of the winding number across each stretch from its right to its left
  * (#arr_weight), one otherwise; where @p cv is given, the curves the
  * stretches lie on, whose neighbours meet at their common end alone
- * (#arr_curve_neighbours)
+ * (#arr_curve_neighbours); the region of winding number of sign @p sense
+ * where it is 1 or -1, of the sign the outermost stretch reads where it is
+ * 0 (#arr_finish)
  */
 static ArrangeStatus
 arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
   const ArrLinework *lw, const int32_t *weight, const ArrCurves *cv,
   MeosArray ***rings,
   uint32_t *nrings, int32_t **owner, ArrStretch **sout, uint32_t *nsout,
-  ArrangeCert *cert)
+  ArrangeCert *cert, int sense)
 {
   if (n == 0)
     return ARR_NOT_CLOSED;
@@ -8316,6 +8530,7 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
       return ARR_OVERLAP;
   Arr a;
   memset(&a, 0, sizeof(Arr));
+  a.sense = sense;
   /* The margin D of the certificate, 16 eps of the largest coordinate the
    * rings can be written at */
   if (cert)
@@ -8718,7 +8933,7 @@ arrange_union_surfaces_lines(const MeosArray *edges, const uint32_t *soff,
       ArrStretch *out = NULL;
       uint32_t nout = 0;
       st = arr_arrange_stretches(both, nboth, count[g], NULL, NULL, NULL,
-        NULL, NULL, NULL, &out, &nout, NULL);
+        NULL, NULL, NULL, &out, &nout, NULL, 0);
       pfree(both);
       part[k] = out;
       count[k++] = (st == ARR_ANSWERED) ? nout : 0;
@@ -8749,7 +8964,7 @@ arrange_union_surfaces_lines(const MeosArray *edges, const uint32_t *soff,
     ArrLinework lw = {lines, nlines, lout, pts, npts, pkeep};
     st = arr_arrange_stretches(all, total, (m == 2) ? count[0] : 0,
       (nlines || npts) ? &lw : NULL, NULL, NULL, rings, nrings, owner, NULL,
-      NULL, NULL);
+      NULL, NULL, 0);
     pfree(all);
   }
   for (uint32_t g = 0; g < m; g++)
@@ -8818,6 +9033,10 @@ arr_stretch_make(const Edge *s, ArrMeet from, ArrMeet to)
   return st;
 }
 
+static ArrangeStatus arr_wound_tangent_surfaces(const MeosArray *edges,
+  int sense, MeosArray ***rings, uint32_t *nrings, int32_t **owner,
+  ArrangeCert *cert);
+
 /**
  * @brief Return the rings bounding the region closed curves of segments and
  * arcs between tangent points wind around, as surfaces: each shell and the
@@ -8851,6 +9070,66 @@ arr_stretch_make(const Edge *s, ArrMeet from, ArrMeet to)
 ArrangeStatus
 arrange_wound_tangent_surfaces(const MeosArray *edges, MeosArray ***rings,
   uint32_t *nrings, int32_t **owner, ArrangeCert *cert)
+{
+  return arr_wound_tangent_surfaces(edges, 0, rings, nrings, owner, cert);
+}
+
+/* Whether two centred arcs lie on one circle, as their circle is held: a
+ * centred arc by its centre and radius, an offset of an input arc by that
+ * arc, its side and the distance (#edges_add_offset_arc) */
+static inline bool
+arr_same_circle(const Edge *c, const Edge *s)
+{
+  if (c->offset != s->offset || c->radius != s->radius)
+    return false;
+  if (! c->offset)
+    return c->cx == s->cx && c->cy == s->cy;
+  if (c->side != s->side || c->diameter != s->diameter)
+    return false;
+  /* A diameter fixes one circle whichever way it is written, as the two
+   * halves of a whole circle write it */
+  if (c->diameter)
+    return (c->sx == s->sx && c->sy == s->sy && c->ex == s->ex &&
+      c->ey == s->ey) || (c->sx == s->ex && c->sy == s->ey &&
+      c->ex == s->sx && c->ey == s->sy);
+  return c->sx == s->sx && c->sy == s->sy && c->ex == s->ex &&
+    c->ey == s->ey && c->mx == s->mx && c->my == s->my;
+}
+
+/**
+ * @brief Return the rings bounding the region where closed curves of
+ * segments and arcs between tangent points wind around with a winding number
+ * of a given sign, as surfaces: each shell and the holes it owns
+ * @details As #arrange_wound_tangent_surfaces, the region being the points
+ * whose winding number is at least one in the sense @p sense, whichever
+ * curve is outermost: where a curve winding the other way reaches beyond the
+ * others, its side away from the outside is not the region, and the region
+ * may be empty, answered as no ring
+ * @param[in] edges The edges of the curves
+ * @param[in] sense 1 for the points the curves wind around counterclockwise,
+ * -1 for those they wind around clockwise
+ * @param[out] rings,nrings The rings, released by #arrange_rings_free
+ * @param[out] owner For every ring, the index of the shell owning it where it
+ * is a hole, -1 where it is a shell; released by the caller
+ * @return #ARR_ANSWERED, or the question left unanswered
+ */
+ArrangeStatus
+arrange_wound_tangent_surfaces_signed(const MeosArray *edges, int sense,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner)
+{
+  assert(sense == 1 || sense == -1);
+  return arr_wound_tangent_surfaces(edges, sense, rings, nrings, owner,
+    NULL);
+}
+
+/*
+ * The region closed curves of segments and arcs between tangent points wind
+ * around, as #arrange_wound_tangent_surfaces answers it, read with the sense
+ * @p sense as #arr_arrange_stretches reads it
+ */
+static ArrangeStatus
+arr_wound_tangent_surfaces(const MeosArray *edges, int sense,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner, ArrangeCert *cert)
 {
   assert(edges); assert(rings); assert(nrings); assert(owner);
   *rings = NULL;
@@ -8924,14 +9203,23 @@ arrange_wound_tangent_surfaces(const MeosArray *edges, MeosArray ***rings,
       continue;
     /* The circle of its centre and radius, made once */
     uint32_t h = (arr_hash(s->cx, s->cy) ^ arr_hash(s->radius, 0.0)) & cmask;
-    while (ctab[h] >= 0 && (circ[ctab[h]].cx != s->cx ||
-        circ[ctab[h]].cy != s->cy || circ[ctab[h]].radius != s->radius))
+    while (ctab[h] >= 0 && ! arr_same_circle(&circ[ctab[h]], s))
       h = (h + 1) & cmask;
     if (ctab[h] < 0)
     {
       circ[ncirc] = *s;
       circ[ncirc].from = circ[ncirc].to = NULL;
       circ[ncirc].ccw = true;
+      if (s->offset)
+      {
+        /* A whole circle starts at its point furthest along -x, rounded
+         * once, as #edges_add_circle places it */
+        double rho = fabs(hypot(s->sx - s->cx, s->sy - s->cy) +
+          s->side * s->radius);
+        circ[ncirc].x1 = circ[ncirc].x2 = s->cx - rho;
+        circ[ncirc].y1 = circ[ncirc].y2 = s->cy;
+        circ[ncirc].theta0 = circ[ncirc].theta1 = M_PI;
+      }
       ctab[h] = (int32_t) ncirc++;
     }
     const Edge *c = &circ[ctab[h]];
@@ -9014,7 +9302,7 @@ arrange_wound_tangent_surfaces(const MeosArray *edges, MeosArray ***rings,
   {
     ArrCurves cv = {src, next};
     status = arr_arrange_stretches(st, m, 0, NULL, w, &cv, rings, nrings,
-      owner, NULL, NULL, cert);
+      owner, NULL, NULL, cert, sense);
   }
   pfree(next); pfree(src);
   pfree(w); pfree(ctab);

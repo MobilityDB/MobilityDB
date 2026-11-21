@@ -23,25 +23,25 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp #= t2.te
    104
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE g #= temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_geometry3d WHERE g #= temp IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE g #= temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_geography3d WHERE g #= temp IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #= t2.temp IS NOT NULL;
  count 
 -------
    102
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE t1.temp #= t2.temp IS NOT NULL;
  count 
 -------
    100
@@ -72,25 +72,25 @@ SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp #<> t2.t
    104
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE g #<> temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_geometry3d WHERE g #<> temp IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE g #<> temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_geography3d WHERE g #<> temp IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
  count 
 -------
    102
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
  count 
 -------
    100
@@ -124,6 +124,65 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE t1.temp %&& stbox(
  count 
 -------
    101
+(1 row)
+
+-- A temporal geography is read against the bounds of a geodetic box, the
+-- region of its longitudes and latitudes, its edges being great circles
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp ?&& stbox(t2.temp);
+ count 
+-------
+   104
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp %&& stbox(t2.temp);
+ count 
+-------
+   101
+(1 row)
+
+-- The great circle from Point(10 60) to Point(50 60) rises to latitude 61.52
+SELECT tgeography '[Linestring(10 60,50 60)@2001-01-01, Linestring(10 60,50 60)@2001-01-02]'
+  %&& stbox 'SRID=4326;GEODSTBOX X((10,55),(50,61))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeography '[Linestring(10 60,50 60)@2001-01-01, Linestring(10 60,50 60)@2001-01-02]'
+  %&& stbox 'SRID=4326;GEODSTBOX X((10,55),(50,62))';
+ ?column? 
+----------
+ t
+(1 row)
+
+-- The edge crosses a box holding none of its vertices
+SELECT tgeography '[Linestring(10 60,50 60)@2001-01-01, Linestring(10 60,50 60)@2001-01-02]'
+  ?&& stbox 'SRID=4326;GEODSTBOX X((25,61),(35,62))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeography '[Linestring(10 60,50 60)@2001-01-01, Linestring(10 60,50 60)@2001-01-02]'
+  ?&& stbox 'SRID=4326;GEODSTBOX X((25,62),(35,63))';
+ ?column? 
+----------
+ f
+(1 row)
+
+-- A polygon holds a box which none of its vertices and edges reaches
+SELECT tgeography 'Polygon((0 0,20 0,20 20,0 20,0 0))@2001-01-01'
+  ?&& stbox 'SRID=4326;GEODSTBOX X((9,9),(11,11))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeography 'Polygon((0 0,20 0,20 20,0 20,0 0))@2001-01-01'
+  %&& stbox 'SRID=4326;GEODSTBOX X((9,9),(11,11))';
+ ?column? 
+----------
+ f
 (1 row)
 
 -- Two temporal geometries that ever intersect ever have overlapping boxes

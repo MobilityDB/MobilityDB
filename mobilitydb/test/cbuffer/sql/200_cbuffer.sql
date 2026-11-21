@@ -18,6 +18,16 @@ SELECT cbuffer 'Cbuffer(Point(1 1),0.5)xxx';
 -------------------------------------------------------------------------------
 
 SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+-- setSRID reads an SRID as ST_SetSRID reads it, and the values and the
+-- bounding box of a temporal circular buffer state that one SRID
+WITH s(srid) AS (VALUES (3857), (1000000), (999999999))
+SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)),
+  SRID(setSRID(cbuffer 'Cbuffer(Point(1 1),0.5)', srid)),
+  SRID(setSRID(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', srid)),
+  SRID(setSRID(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', srid)::stbox)
+FROM s;
+SELECT SRID(setSRID(cbuffer 'Cbuffer(Point(1 1),0.5)', -1));
+SELECT setSRID(cbuffer 'Cbuffer(Point(1 1),0.5)', 1000001);
 SELECT asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 SELECT asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
@@ -77,6 +87,10 @@ SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
 SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
   'urn:ogc:def:coordinateOperation:EPSG::16031', 0, false);
 SELECT transform(cbufferset '{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}', 4326);
+-- A circular buffer states its SRID inside itself, which must be the SRID of
+-- its set
+SELECT asEWKT(cbufferset 'SRID=25832;{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}');
+SELECT asEWKT(cbufferset 'SRID=25832;{"Cbuffer(SRID=3857;Point(651337 6058377),10)"}');
 
 -------------------------------------------------------------------------------
 -- Modification functions

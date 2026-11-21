@@ -77,6 +77,10 @@
  * @ingroup meos_pointcloud_base
  * @brief Schema-aware coordinate accessors and metadata for pcpoint / pcpatch
  *
+ * @defgroup meos_pointcloud_base_srid Spatial reference system functions
+ * @ingroup meos_pointcloud_base
+ * @brief Spatial reference system functions for pcpoint / pcpatch
+ *
  * @defgroup meos_pointcloud_base_conversion Conversion functions
  * @ingroup meos_pointcloud_base
  * @brief Conversion of pcpoint / pcpatch into other types
@@ -106,6 +110,10 @@
  * @defgroup meos_pointcloud_set_accessor Accessor functions
  * @ingroup meos_pointcloud_set
  * @brief Accessor functions for pcpointset / pcpatchset
+ *
+ * @defgroup meos_pointcloud_set_srid Spatial reference system functions
+ * @ingroup meos_pointcloud_set
+ * @brief Spatial reference system functions for pcpointset / pcpatchset
  *
  * @defgroup meos_pointcloud_set_setops Set operations
  * @ingroup meos_pointcloud_set

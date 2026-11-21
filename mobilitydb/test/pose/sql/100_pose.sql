@@ -49,6 +49,16 @@ SELECT asText(pose(ST_PointZ(1,1,1), 'NaN', 0, 0));
 SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
 SELECT yaw(pose 'Pose(Point(1 1),0.5)');
 SELECT srid(pose 'Pose(SRID=5676;Point(1 1),0.5)');
+-- setSRID reads an SRID as ST_SetSRID reads it, and the values and the
+-- bounding box of a temporal pose state that one SRID
+WITH s(srid) AS (VALUES (3857), (1000000), (999999999))
+SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)),
+  SRID(setSRID(pose 'Pose(Point(1 1),0.5)', srid)),
+  SRID(setSRID(tpose '[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]', srid)),
+  SRID(setSRID(tpose '[Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02]', srid)::stbox)
+FROM s;
+SELECT SRID(setSRID(pose 'Pose(Point(1 1),0.5)', -1));
+SELECT setSRID(pose 'Pose(Point(1 1),0.5)', 1000001);
 
 -- (yaw, pitch, roll) accessors. For a 2D pose the rotation theta is yaw;
 -- pitch and roll are zero by definition. For a 3D pose these are the

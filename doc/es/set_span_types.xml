@@ -1177,6 +1177,7 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 SRID(spatialset) → integer
 setSRID(spatialset,integer) → spatialset
 </programlisting>
+<para>El SRID se establece como <link linkend="geo_srid"><varname>setSRID</varname></link> lo establece en una geometría, plegándose dentro del rango reservado un SRID que lo exceda, y los valores y la caja delimitadora toman ese mismo SRID. El SRID inválido se rechaza, así como el SRID desconocido 0, que es como se lee un SRID negativo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(geomset '{"Point(1 1)", "Point(2 2)"}');
 -- 0
@@ -1591,7 +1592,7 @@ SELECT mergeQuerySpans(floatspanset '{[1, 2], [3, 4], [20, 21]}', floatspan '[1,
 	<sect1 xml:id="setspan_distance">
 		<title>Operaciones de distancia</title>
 
-		<para>El operador de distancia <varname>&lt;-&gt;</varname> para los tipos de rango o de tiempo considera el lapso o período delimitador y devuelve la distancia más pequeña entre los dos valores. La distancia tiene el tipo de la diferencia de dos valores, tal como la responde el operador de resta de PostgreSQL: el tipo base para los números, la cantidad de días como <varname>integer</varname> para las fechas, y un <varname>interval</varname> para las marcas de tiempo. El operador de distancia también se puede usar para búsquedas de vecinos más cercanos utilizando un índice GiST o SP-GiST (ver <xref linkend="setspan_indexing" />).</para>
+		<para>El operador de distancia <varname>&lt;-&gt;</varname> para los tipos conjunto y lapso devuelve la distancia más pequeña entre las extensiones que delimitan los dos valores: el lapso delimitador de un conjunto, un lapso o un conjunto de lapsos de números, fechas o marcas de tiempo, y la caja delimitadora de un conjunto de geometrías o geografías. Un valor situado entre dos elementos de un conjunto, o en un hueco de un conjunto de lapsos, está por lo tanto a distancia 0 de él. La caja delimitadora de un conjunto de geografías se lee por sus límites, la región de sus longitudes y latitudes, y nunca como el polígono de sus esquinas, cuyos bordes de círculo máximo salen de esa región. La distancia tiene el tipo de la diferencia de dos valores, tal como la responde el operador de resta de PostgreSQL: el tipo base para los números, la cantidad de días como <varname>integer</varname> para las fechas, y un <varname>interval</varname> para las marcas de tiempo. El operador de distancia también se puede usar para búsquedas de vecinos más cercanos utilizando un índice GiST o SP-GiST (ver <xref linkend="setspan_indexing" />).</para>
 
 		<itemizedlist>
 			<listitem xml:id="smallest_distance_time">
@@ -1608,6 +1609,8 @@ setDistance({geography,geogset},{geography,geogset},spheroid boolean=true) → f
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT 3 &lt;-&gt; intspan '[6, 8)';
 -- 3
+SELECT intset '{1, 10}' &lt;-&gt; 5;
+-- 0
 SELECT floatspan '[1, 3]' &lt;-&gt; floatspan '(5.5, 7]';
 -- 2.5
 SELECT floatspan '[1, 3]' &lt;-&gt; floatspanset '{(5.5, 7],[8, 9]}';

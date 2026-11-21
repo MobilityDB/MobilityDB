@@ -245,18 +245,12 @@ h3_grid_disk(H3Index origin, int k)
     return NULL;
   }
   int64_t max;
-  if (maxGridDiskSize(k, &max) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_grid_disk: maxGridDiskSize failed");
+  if (! ensure_h3_success(maxGridDiskSize(k, &max)))
     return NULL;
-  }
   H3Index *cells = palloc0(max * sizeof(H3Index));
-  if (gridDisk(origin, k, cells) != E_SUCCESS)
+  if (! ensure_h3_success(gridDisk(origin, k, cells)))
   {
     pfree(cells);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_grid_disk: gridDisk failed");
     return NULL;
   }
   return h3index_set_from_buffer(cells, max);
@@ -360,25 +354,15 @@ h3_grid_ring(H3Index origin, int k)
     return NULL;
   }
   int64_t max, inner = 0;
-  if (maxGridDiskSize(k, &max) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_grid_ring: maxGridDiskSize failed");
+  if (! ensure_h3_success(maxGridDiskSize(k, &max)))
     return NULL;
-  }
-  if (k > 0 && maxGridDiskSize(k - 1, &inner) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_grid_ring: maxGridDiskSize failed");
+  if (k > 0 && ! ensure_h3_success(maxGridDiskSize(k - 1, &inner)))
     return NULL;
-  }
   int64_t ring = max - inner;
   H3Index *cells = palloc0(ring * sizeof(H3Index));
-  if (gridRingUnsafe(origin, k, cells) != E_SUCCESS)
+  if (! ensure_h3_success(gridRingUnsafe(origin, k, cells)))
   {
     pfree(cells);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_grid_ring: gridRingUnsafe failed (pentagonal distortion?)");
     return NULL;
   }
   return h3index_set_from_buffer(cells, ring);
@@ -396,19 +380,12 @@ h3_grid_path_cells(H3Index start, H3Index end)
   VALIDATE_H3INDEX_CELL(start, NULL);
   VALIDATE_H3INDEX_CELL(end, NULL);
   int64_t size;
-  if (gridPathCellsSize(start, end, &size) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_grid_path_cells: gridPathCellsSize failed "
-      "(incomparable resolutions or pentagonal distortion?)");
+  if (! ensure_h3_success(gridPathCellsSize(start, end, &size)))
     return NULL;
-  }
   H3Index *cells = palloc0(size * sizeof(H3Index));
-  if (gridPathCells(start, end, cells) != E_SUCCESS)
+  if (! ensure_h3_success(gridPathCells(start, end, cells)))
   {
     pfree(cells);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_grid_path_cells: gridPathCells failed");
     return NULL;
   }
   return h3index_set_from_buffer(cells, size);
@@ -429,19 +406,12 @@ h3_cell_to_children(H3Index origin, int childRes)
   /* Ensure the validity of the arguments */
   VALIDATE_H3INDEX_CELL(origin, NULL);
   int64_t max;
-  if (cellToChildrenSize(origin, childRes, &max) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_cell_to_children: cellToChildrenSize failed "
-      "(child resolution coarser than cell resolution?)");
+  if (! ensure_h3_success(cellToChildrenSize(origin, childRes, &max)))
     return NULL;
-  }
   H3Index *cells = palloc0(max * sizeof(H3Index));
-  if (cellToChildren(origin, childRes, cells) != E_SUCCESS)
+  if (! ensure_h3_success(cellToChildren(origin, childRes, cells)))
   {
     pfree(cells);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_cell_to_children: cellToChildren failed");
     return NULL;
   }
   return h3index_set_from_buffer(cells, max);
@@ -462,11 +432,9 @@ h3_compact_cells(const Set *cells)
   for (int i = 0; i < n; ++i)
     in[i] = DatumGetH3Index(SET_VAL_N(cells, i));
   H3Index *out = palloc0(n * sizeof(H3Index));
-  if (compactCells(in, out, n) != E_SUCCESS)
+  if (! ensure_h3_success(compactCells(in, out, n)))
   {
     pfree(in); pfree(out);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_compact_cells: compactCells failed");
     return NULL;
   }
   pfree(in);
@@ -488,20 +456,15 @@ h3_uncompact_cells(const Set *cells, int res)
   for (int i = 0; i < n; ++i)
     in[i] = DatumGetH3Index(SET_VAL_N(cells, i));
   int64_t max;
-  if (uncompactCellsSize(in, n, res, &max) != E_SUCCESS)
+  if (! ensure_h3_success(uncompactCellsSize(in, n, res, &max)))
   {
     pfree(in);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_uncompact_cells: uncompactCellsSize failed "
-      "(target resolution is coarser than an input cell?)");
     return NULL;
   }
   H3Index *out = palloc0(max * sizeof(H3Index));
-  if (uncompactCells(in, n, out, max, res) != E_SUCCESS)
+  if (! ensure_h3_success(uncompactCells(in, n, out, max, res)))
   {
     pfree(in); pfree(out);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_uncompact_cells: uncompactCells failed");
     return NULL;
   }
   pfree(in);
@@ -524,11 +487,9 @@ h3_origin_to_directed_edges(H3Index origin)
   VALIDATE_H3INDEX_CELL(origin, NULL);
   /* Always 6 slots; pentagons fill only 5 (one slot is 0). */
   H3Index *edges = palloc0(6 * sizeof(H3Index));
-  if (originToDirectedEdges(origin, edges) != E_SUCCESS)
+  if (! ensure_h3_success(originToDirectedEdges(origin, edges)))
   {
     pfree(edges);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_origin_to_directed_edges: originToDirectedEdges failed");
     return NULL;
   }
   return h3index_set_from_buffer(edges, 6);
@@ -546,11 +507,9 @@ h3_cell_to_vertexes(H3Index cell)
   VALIDATE_H3INDEX_CELL(cell, NULL);
   /* Always 6 slots; pentagons fill only 5 (one slot is 0). */
   H3Index *vertexes = palloc0(6 * sizeof(H3Index));
-  if (cellToVertexes(cell, vertexes) != E_SUCCESS)
+  if (! ensure_h3_success(cellToVertexes(cell, vertexes)))
   {
     pfree(vertexes);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_cell_to_vertexes: cellToVertexes failed");
     return NULL;
   }
   return h3index_set_from_buffer(vertexes, 6);
@@ -571,21 +530,15 @@ h3_get_icosahedron_faces(H3Index cell)
   /* Ensure the validity of the arguments */
   VALIDATE_H3INDEX_CELL(cell, NULL);
   int maxFaces;
-  if (maxFaceCount(cell, &maxFaces) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_get_icosahedron_faces: maxFaceCount failed");
+  if (! ensure_h3_success(maxFaceCount(cell, &maxFaces)))
     return NULL;
-  }
   int *faces = palloc(maxFaces * sizeof(int));
   /* libh3 writes -1 for unused slots. */
   for (int i = 0; i < maxFaces; ++i)
     faces[i] = -1;
-  if (getIcosahedronFaces(cell, faces) != E_SUCCESS)
+  if (! ensure_h3_success(getIcosahedronFaces(cell, faces)))
   {
     pfree(faces);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3_get_icosahedron_faces: getIcosahedronFaces failed");
     return NULL;
   }
   Datum *datums = palloc(sizeof(Datum) * maxFaces);

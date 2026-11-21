@@ -336,6 +336,341 @@ def render_family_tempopclass(kind: str, sub: dict) -> str:
                               mf.get("boxstrategies", []))
 
 
+def _indextest_rows(temp: str, box: str, cls: str, mf: dict, stem: str,
+                    prefix: str, hasz: bool, hasdist: bool = True,
+                    hasever: bool = True, opnames: dict = None,
+                    valspan: str = None) -> list:
+    """The rows of the index test of `temp` over the tables `tbl_<stem>_*` of
+    one dimension, as (label, query, cast), each label opening with `prefix`:
+    each member of its class `cls` against a period, a box, the box of space
+    alone the operators on time accept, or a value, the members of the z axis
+    only where the values have Z; then each of those against a period or a box
+    written the other way, through the commutator its box operation states
+    (boxtopops.yaml, boxposops.yaml); then the nearest approach distances where
+    the values of the dimension have one. The ever and always overlaps, which
+    read the time of a box together with its space, take no box of space
+    alone, and none where the values of the dimension have no restriction to
+    a box (`hasever` false). The axes of the strategies are read as
+    #render_tempopclass reads them to choose the members of a class"""
+    comm = {o["sqlop"]: o["comm"] for o in (mf.get("boxtopops", [])
+                                           + mf.get("boxposops", [])) if o.get("comm")}
+    axis = {str(s["num"]): s["axis"] for s in mf.get("boxstrategies", [])}
+    # A type keyed by its period reads its box from the table of periods
+    table = {"tstzspan": ("span", "t"), temp: ("val", "temp")}
+    if box != "tstzspan":
+        table[box] = ("box", "b")
+    # A temporal number reads the span of its values from the table of spans
+    if valspan:
+        table[valspan] = ("vspan", "v")
+    rows, rev, dist = [], [], []
+    members = re.findall(rf"OPERATOR +(\d+) +(\S+) \({temp}, (\w+)\)( FOR ORDER BY)?",
+                         cls)
+    for num, op, arg, order in members:
+        if order and not hasdist:
+            continue
+        if order:
+            tbl, col = table.get(arg, ("geo", "g"))
+            dist.append((f"{prefix}|=| {arg}",
+                         f"SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM "
+                         f"tbl_{stem}_{tbl} t2, LATERAL (SELECT t1.temp |=| t2.{col} AS d "
+                         f"FROM tbl_{stem}_idx t1 ORDER BY t1.temp |=| t2.{col} LIMIT 3) s "
+                         f"WHERE t2.knn", ""))
+            continue
+        if (axis.get(num) == "z" and not hasz) or \
+           (axis.get(num) == "ever" and not hasever):
+            continue
+        tbl, col = table[arg]
+        for label, t in ((f"{prefix}{op} {arg}", tbl),) + (
+                ((f"{prefix}{op} {arg} x", "xbox"),)
+                if arg == box and box in ("stbox", "tbox")
+                and axis.get(num) not in ("t", "ever")
+                else ()):
+            rows.append((label, f"SELECT COUNT(*) FROM tbl_{stem}_idx t1, tbl_{stem}_{t} "
+                                f"t2 WHERE t1.temp {op} t2.{col}", "::text"))
+        # The commutator of an operator the type renames (`opnames`), read
+        # under the name of its strategy and renamed back
+        canon = {v: k for k, v in (opnames or {}).items()}.get(op, op)
+        if arg in ("tstzspan", box) and canon in comm:
+            rop = (opnames or {}).get(comm[canon], comm[canon])
+            rev.append((f"{prefix}{arg} {rop} {temp}",
+                        f"SELECT COUNT(*) FROM tbl_{stem}_{tbl} t2, tbl_{stem}_idx t1 "
+                        f"WHERE t2.{col} {rop} t1.temp", "::text"))
+    return rows + rev + dist
+
+
+def _indextest_tables(stem: str, dim: dict, srid, boxkw: str = "STBOX",
+                      box: str = "stbox", valspan: str = None,
+                      base: str = None) -> str:
+    """The tables of one dimension of an index test over the fixtures
+    `tbl_<stem>_*`, templates/indextest_tables.sql.tmpl with the coordinates
+    of the boxes of that dimension, the keyword `boxkw` of their literals and
+    the fixtures `dim` states, a template filled per dimension as
+    #render_tempopclass fills the class per axis; a type keyed by its period
+    alone takes templates/indextest_tables_span.sql.tmpl, the same tables
+    without the boxes of space, and a temporal number keyed by a tbox
+    templates/indextest_tables_tbox.sql.tmpl, its boxes of values alone and
+    the spans `valspan` of its values in place of those of space, the value
+    it expands a box by written in its `base` type, since a box takes a value of
+    its own type alone. A fixture
+    stating `big: none` has no table of many values, its instants keeping
+    their keys"""
+    axes = ("x", "y", "z") if dim.get("z") else ("x", "y")
+    mid = [f"({a}min(b) + {a}max(b)) / 2" for a in axes]
+    o = dim["offset"]
+    fx = dim.get("fixture") or {}
+    big = None if fx.get("big") == "none" else \
+        (fx.get("big") or "tbl_{T}_big").replace("{T}", stem)
+    fixture = "\n".join(
+        (["WITH base(k, temp) AS (", f"  SELECT k, temp FROM {big}", "  UNION ALL",
+          f"  SELECT k + {o}, temp FROM tbl_{stem}_inst", "  UNION ALL"] if big else
+         ["WITH base(k, temp) AS (", f"  SELECT k, temp FROM tbl_{stem}_inst",
+          "  UNION ALL"]) + [
+        f"  SELECT k + {o + 100}, temp FROM tbl_{stem}_discseq", "  UNION ALL",
+        f"  SELECT k + {o + 200}, temp FROM tbl_{stem}_contseq", "  UNION ALL",
+        f"  SELECT k + {o + 300}, temp FROM tbl_{stem}_seqset )",
+        f"SELECT k + n * {o + 400} AS k, shiftTime(temp, n * interval '1 week') AS temp",
+        f"FROM base, generate_series(0, {dim['copies']}) AS n;"])
+    text = read_template({"stbox": "indextest_tables.sql.tmpl",
+                          "tbox": "indextest_tables_tbox.sql.tmpl"}.get(
+                              box, "indextest_tables_span.sql.tmpl"))
+    text = text.replace("{VSPAN}", valspan or "").replace(
+        "{D}", f"1::{base}" if box == "tbox" else "1")
+    for k, v in (("{FIXTURE}", fixture), ("{SRCFILTER}", dim["srcfilter"]),
+                 ("{XT}", "ZT" if dim.get("z") else "XT"),
+                 ("{X}", "Z" if dim.get("z") else "X"),
+                 ("{P}", ",".join("%s" for _ in axes)),
+                 ("{MIDE}", ", ".join(f"{m} + 0.000001" for m in mid)),
+                 ("{MID}", ", ".join(mid)),
+                 ("{AROUND}", ", ".join([f"{a}min(b) - 0.1" for a in axes]
+                                        + [f"{a}max(b) + 0.1" for a in axes])),
+                 ("{MEETS}", ", ".join(["xmax(b)"] + [f"{a}min(b)" for a in axes[1:]]
+                                       + ["xmax(b) + 0.1"]
+                                       + [f"{a}max(b)" for a in axes[1:]])),
+                 ("{MINMAX}", ", ".join([f"{a}min(b)" for a in axes]
+                                        + [f"{a}max(b)" for a in axes])),
+                 ("{CORNER}", ", ".join(f"{a}min(b)" for a in axes)),
+                 ("{BOXKW}", boxkw), ("{T}", stem), ("{SRID}", str(srid))):
+        text = text.replace(k, v)
+    return text
+
+
+def indextest_files(test: dict) -> list:
+    """The files of the index test of an entry of manifest.d/indextests.yaml,
+    one per dimension of its values as the tests of tgeompoint are, the second
+    named `<nnn>_<fam>_indexes3d_tbl.sql` beside `<nnn>_<fam>_indexes_tbl.sql`
+    as `060_tpoint_topops3d_tbl.sql` is beside `060_tpoint_topops_tbl.sql`"""
+    files = [test["file"]]
+    for d in (test.get("dims") or [])[1:]:
+        files.append(test["file"].replace("_tbl.sql", f"{d['suffix']}_tbl.sql"))
+    return files
+
+
+def _indextest_class(sub: dict, kind: str):
+    """The `kind` index operator class of the type of `sub` and the box it is
+    keyed by: the class #render_tempopclass writes for a partner of a box in
+    manifest.d/boxtypes.yaml, as the files of the classes are written, else
+    the class #render_family_tempopclass writes over the spatiotemporal box"""
+    mf = load_manifest()
+    for bt in mf.get("boxtypes", []):
+        for part in (bt.get("opclasses") or {}).get("partners") or []:
+            if part["type"] == sub["temp"]:
+                return (render_tempopclass(part["type"], bt, part["axes"],
+                                           part.get("distwith") or [], kind,
+                                           mf.get("boxstrategies", []),
+                                           part.get("valspan"), part.get("opnames")),
+                        bt["box"], part.get("opnames") or {}, part.get("valspan"))
+    return render_family_tempopclass(kind, sub), "stbox", {}, None
+
+
+def render_indextest(test: dict, sub: dict, which: int = 0) -> str:
+    """The index test of the subtype `sub` over the values of the dimension
+    `which` of its entry `test` of manifest.d/indextests.yaml,
+    templates/indextest.sql.tmpl filled with the rows #_indextest_rows takes
+    from the class #_indextest_class reads and the data of the entry, the
+    first file also holding the table whose values are all equal where the
+    entry states one, and the file of the last dimension with a distance over
+    the spatiotemporal box the queries of a column of its boxes from the
+    members of the box family #render_boxmembers adds, as #render writes a
+    file of a subtype"""
+    mf = load_manifest()
+    temp, q = sub["temp"], "'"
+    cls, box, opnames, valspan = _indextest_class(sub, "rtree")
+    # The dimensions of the values, each with its own tables and file; one
+    # dimension takes the fixtures of the type
+    alldims = test.get("dims") or [{"suffix": "", "offset": test["offset"],
+                                    "copies": test["copies"],
+                                    "srcfilter": test["srcfilter"]}]
+    cd = [i for i, d in enumerate(alldims) if d.get("dist", True)][-1]
+    withsame = which == 0 and bool(test.get("same") or test.get("sameexpr"))
+    # A column of boxes is queried by the members the subtype adds to the box
+    # family, so a subtype adding none has no such queries
+    withcol = which == cd and box == "stbox" and bool(sub.get("boxmembers"))
+    dims = [alldims[which]]
+    # Whether the class has a distance, which a cell's has not
+    classdist = "|=|" in cls
+    stems = [temp + d["suffix"] for d in dims]
+    rows = []
+    for d, stem in zip(dims, stems):
+        rows += _indextest_rows(temp, box, cls, mf, stem,
+                                f"{d['suffix']} " if len(dims) > 1 else "",
+                                bool(d.get("z")), d.get("dist", True) and classdist,
+                                d.get("ever", True), opnames, valspan)
+    # A cell bounded by great-circle arcs, and a value of a geography, has a
+    # geodetic box
+    boxkw = "GEODSTBOX" if sub.get("geodetic_target") or \
+        test.get("base") == "geography" else "STBOX"
+    tables = "\n".join(_indextest_tables(stem, d, test.get("srid"), boxkw, box, valspan,
+                                          test.get("base"))
+                       for d, stem in zip(dims, stems))
+    out = []
+    for idx, using in (("rtree", "gist(temp)"), ("quadtree", "spgist(temp)"),
+                       ("kdtree", f"spgist(temp {temp}_kdtree_ops)")):
+        b = ["-" * 79, ""]
+        b += [f"CREATE INDEX tbl_{stem}_idx_{idx} ON tbl_{stem}_idx USING {using};"
+              for stem in stems]
+        b += ["SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+              "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+        for label, query, cast in rows:
+            b += [f"UPDATE test_{temp}_idx SET {idx}_idx = ({query}){cast},",
+                  f"  {idx}_probe = pg_temp.test_probes_index("
+                  f"'{query.replace(q, q * 2)}')",
+                  f"WHERE op = '{label}';"]
+        b += ["RESET enable_seqscan;", "RESET enable_hashjoin;", "RESET enable_mergejoin;",
+              "RESET enable_sort;"]
+        b += [f"DROP INDEX tbl_{stem}_idx_{idx};" for stem in stems] + [""]
+        out.append("\n".join(b))
+    blocks = "\n".join(out)[:-1]
+    # What the test states, the dimensions named where the values have two
+    dimname = {"2d": " in two dimensions", "3d": " in three dimensions"}.get(
+        dims[0]["suffix"], "")
+    header = (f"The R-tree GiST, quad-tree and k-d tree SP-GiST indexes of a {temp}"
+              f"{dimname}, keyed by the {box} of the value. Under each index every "
+              "operator of the class, with each right argument it declares, answers "
+              "the rows a sequential scan gives, from a plan that probes the index"
+              + (", and the search for the nearest values answers the distances a "
+                 "sort gives." if dims[0].get("dist", True) and classdist else
+                 ". The distance takes a value in two dimensions alone."
+                 if classdist else "."))
+    header = textwrap.fill(header, width=83, initial_indent="-- ",
+                           subsequent_indent="-- ")
+    counts = "\n".join(f"SELECT COUNT(*) FROM tbl_{stem}_idx;" for stem in stems)
+    drops = "\n".join(f"DROP TABLE tbl_{stem}_{t};" for stem in stems
+                      for t in {"stbox": ("geo", "span", "xbox", "box"),
+                                "tbox": ("span", "vspan", "xbox", "box")}.get(
+                                    box, ("span",)) + ("val", "src", "idx"))
+    sameq = (test.get("sameq") or "").replace("{TEMP}", temp)
+    scan, index = ((" AS rows_scan", " AS rows_index") if test.get("labels")
+                   else ("", ""))
+    same = "" if not withsame else "\n".join([
+        "-- Every row carries the same value, so a split of the quad-tree finds keys that",
+        "-- are all equal",
+        f"CREATE TEMP TABLE tbl_{temp}_allthesame AS",
+        "SELECT k, " + (test.get("sameexpr")
+                        or f"{temp}({sub['base']} '{test['same']}', t)") + " AS temp",
+        "FROM tbl_tstzspan_big;",
+        f"CREATE INDEX tbl_{temp}_allthesame_quadtree ON tbl_{temp}_allthesame "
+        "USING spgist(temp);",
+        f"SELECT COUNT(*){scan} FROM tbl_{temp}_allthesame WHERE temp && {sameq};",
+        "SET enable_seqscan = off;",
+        f"SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_{temp}_allthesame "
+        f"WHERE temp && {sameq.replace(q, q * 2)}') AS probe;",
+        f"SELECT COUNT(*){index} FROM tbl_{temp}_allthesame WHERE temp && {sameq};",
+        "RESET enable_seqscan;",
+        f"DROP TABLE tbl_{temp}_allthesame;"])
+    # The column of boxes, queried by the members of the box family over the
+    # type in their order, its nearest approach distance last
+    fmembers = re.findall(rf"OPERATOR +(\d+) +(\S+) \({box}, {temp}\)( FOR ORDER BY)?",
+                          render_boxmembers("gist", sub)) if withcol else []
+    axis = {str(s["num"]): s["axis"] for s in mf.get("boxstrategies", [])}
+    # The values of the column are those of this file's dimension, the last
+    # one with a distance since its queries end with the nearest boxes; the z
+    # axis only where they have Z
+    colstem = stems[0]
+    ops = [m for m in fmembers if axis.get(m[0]) != "ever"
+           and (axis.get(m[0]) != "z" or dims[0].get("z"))]
+    s = f"{box}_{temp}"
+    ans, ind = [], []
+    for i, (num, op, order) in enumerate([m for m in ops if not m[2]], 1):
+        ans.append(f"    SELECT {i}, (SELECT count(*) FROM tbl_{s} WHERE b {op} q) "
+                   f"FROM tbl_{temp}_q")
+        ind.append(f"    ({i}, 'SELECT count(*) FROM tbl_{s} WHERE b {op} "
+                   f"(SELECT q FROM tbl_{temp}_q LIMIT 1)'),")
+    n = len(ans) + 1
+    # The nearest boxes where the box family orders by a distance to the type
+    if any(m[2] for m in ops):
+        ans.append(f"    SELECT {n}, (SELECT sum(k) FROM (SELECT k FROM tbl_{s}\n"
+                   f"      ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_{temp}_q) t(o, c);")
+        ind.append(f"    ({n}, 'SELECT k FROM tbl_{s} ORDER BY b |=| "
+                   f"(SELECT q FROM tbl_{temp}_q LIMIT 1) LIMIT 5')) t(o, query);")
+    elif ans:
+        ans[-1] += ") t(o, c);"
+        ind[-1] = ind[-1][:-1] + ") t(o, query);"
+    listed = [m[1] for m in ops if not m[2]] + [m[1] for m in ops if m[2]]
+    col = "\n".join([
+        "-" * 79,
+        f"-- A column of {box} values indexed by GiST, quad-tree and k-d tree answers the",
+        f"-- queries of a {temp} as the scan does: {', '.join(listed)}",
+        "-" * 79, "",
+        f"CREATE TEMP TABLE tbl_{s} AS",
+        f"SELECT k, temp::{box} AS b FROM tbl_{colstem} WHERE temp IS NOT NULL;",
+        f"CREATE TEMP TABLE tbl_{temp}_q AS",
+        f"SELECT temp AS q FROM tbl_{colstem} WHERE temp IS NOT NULL ORDER BY k LIMIT 3;",
+        f"CREATE FUNCTION pg_temp.{s}_answers() RETURNS text AS $$",
+        "  SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (",
+        "\n    UNION ALL\n".join(ans),
+        "$$ LANGUAGE SQL;",
+        f"CREATE FUNCTION pg_temp.{s}_probes_index(query text)",
+        "RETURNS boolean LANGUAGE plpgsql AS $$", "DECLARE", "  line text;", "BEGIN",
+        "  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP",
+        "    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN",
+        "      RETURN true;", "    END IF;", "  END LOOP;", "  RETURN false;", "END;",
+        "$$;",
+        f"CREATE FUNCTION pg_temp.{s}_indexed() RETURNS text AS $$",
+        f"  SELECT string_agg(CASE WHEN pg_temp.{s}_probes_index(query) THEN 't' "
+        "ELSE 'f' END, '' ORDER BY o)",
+        "  FROM (VALUES", "\n".join(ind), "$$ LANGUAGE SQL;",
+        f"CREATE TEMP TABLE tbl_{s}_seq AS SELECT pg_temp.{s}_answers() AS a;",
+        f"SELECT a FROM tbl_{s}_seq;", "SET enable_seqscan = off;",
+        f"CREATE INDEX tbl_{s}_gist_idx ON tbl_{s} USING gist(b);",
+        f"SELECT pg_temp.{s}_indexed(), pg_temp.{s}_answers() = a", f"FROM tbl_{s}_seq;",
+        f"DROP INDEX tbl_{s}_gist_idx;",
+        f"CREATE INDEX tbl_{s}_quad_idx ON tbl_{s} USING spgist(b);",
+        f"SELECT pg_temp.{s}_indexed(), pg_temp.{s}_answers() = a", f"FROM tbl_{s}_seq;",
+        f"DROP INDEX tbl_{s}_quad_idx;",
+        f"CREATE INDEX tbl_{s}_kd_idx ON tbl_{s}", f"  USING spgist(b {box}_kdtree_ops);",
+        f"SELECT pg_temp.{s}_indexed(), pg_temp.{s}_answers() = a", f"FROM tbl_{s}_seq;",
+        "RESET enable_seqscan;",
+        f"DROP TABLE tbl_{s}, tbl_{temp}_q, tbl_{s}_seq;",
+        f"DROP FUNCTION pg_temp.{s}_indexed(), pg_temp.{s}_answers(), "
+        f"pg_temp.{s}_probes_index(text);", ""])
+    noidx = next(qr for label, qr, c in rows if label.endswith(f" {box}"))
+    text = read_template("indextest.sql.tmpl")
+    # The tables of the setup scripts the queries of the family index, copied
+    # into the session, since every test reads them and an index on them would
+    # change the plans of the other tests
+    extra = (test.get("extra") or "") if which == 0 else ""
+    shadows = sorted(set(re.findall(r"CREATE INDEX \w+ ON (tbl_\w+)", extra)))
+    shadowtext = ("".join(
+        ["-- This test creates its indexes on copies of the tables of the setup scripts,\n",
+         "-- which hide those tables in its session: every test reads them, and an\n",
+         "-- index on them would change the plans of the other tests.\n"]
+        + [f"CREATE TEMP TABLE {t} AS TABLE {t};\nANALYZE {t};\n" for t in shadows]
+        + ["\n"]) if shadows else "")
+    for k, v in (("{HEADER}", header), ("{SHADOWS}", shadowtext), ("{TABLES}", tables),
+                 ("{COUNTS}", counts),
+                 ("{DROPS}", drops),
+                 ("{ROWS}", "\n".join(f"INSERT INTO test_{temp}_idx(op, no_idx) VALUES "
+                                      f"('{label}', ({qr}){c});" for label, qr, c in rows)),
+                 ("{NOIDXQUERY}", noidx.replace(q, q * 2)), ("{BLOCKS}", blocks),
+                 ("{EXTRA}", (test.get("extra") or "") if which == 0 else ""),
+                 ("{ALLTHESAME}", same if withsame else ""),
+                 ("{STBOXCOL}", col if withcol else ""), ("{TEMP}", temp),
+                 ("{BASE}", sub["base"]),
+                 ("{SRID}", str(test.get("srid", "")))):
+        text = text.replace(k, v)
+    return text
+
+
 def render(behaviour: str, sub: dict) -> str:
     if behaviour == "compops":
         # compops is not a flat {TOKEN}-substitution template like the other
@@ -5737,6 +6072,18 @@ _BOXGIST_BOUND = """
 """
 
 
+# A box type stating the lower bound its index reports (#stbox_index_distance)
+# reports it for an entry carrying a box and the operator's answer otherwise
+_BOXGIST_INDEXDISTANCE = """  /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
+   * box rather than the value, so what they report is a lower bound of the
+   * distance the ordering operator computes (#{INDEXFN}). The exact
+   * leaf of a column of boxes reports the operator's own answer */
+  double distance = (! GIST_LEAF(entry) || *recheck) ?
+    {INDEXDISTANCE} : {DISTANCE};
+
+"""
+
+
 def render_boxgist(box: dict, samekinds: dict) -> str:
     """The GiST support functions of a box type, rendered from its template as
     #render_indextree renders a tree's constructors"""
@@ -5744,7 +6091,13 @@ def render_boxgist(box: dict, samekinds: dict) -> str:
     same = textwrap.indent(samekinds[box["same"]].replace("{FIELDS}", fields),
                            "    ")
     bound = _BOXGIST_BOUND if box["bound"] else "\n"
-    text = read_template("boxgist.c.tmpl").replace("{BOUND}", bound)
+    text = read_template("boxgist.c.tmpl")
+    if box.get("indexdistance"):
+        text = text.replace("  double distance = {DISTANCE};\n{BOUND}",
+                            _BOXGIST_INDEXDISTANCE
+                            .replace("{INDEXFN}", box["indexdistance"].split("(")[0])
+                            .replace("{INDEXDISTANCE}", box["indexdistance"]))
+    text = text.replace("{BOUND}", bound)
     for key, val in (("{SAME}", same), ("{CONSISTENT}", box["consistent"]),
                      ("{TEMPDISTANCE}", box["tempdistance"]),
                      ("{GETBOX}", box["getbox"]), ("{DATUMGET}", box["datumget"]),
@@ -5831,7 +6184,11 @@ def _boxspgist_nodetest(test: str, box: dict) -> str:
 def render_boxspgist(box: dict, posaxes: list, posops: list) -> str:
     """The SP-GiST support functions of a box type, rendered from its template
     as #render_boxgist renders the GiST ones"""
-    if box["bound"]:
+    if box.get("indexdistance"):
+        distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
+                    "       * reports is a lower bound of the operator's own distance */\n"
+                    f"      distances[i] = {box['indexdistance']};")
+    elif box["bound"]:
         distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
                     "       * reports is lowered to stay under the operator's own distance */\n"
                     f"      distances[i] = {box['box']}_index_distance_bound(\n"
@@ -6022,6 +6379,26 @@ def main() -> int:
                             break
                     if len(g) != len(c):
                         print(f"     line count gen={len(g)} cur={len(c)}")
+        # The index tests, each the test #render_indextest writes for its type
+        bytemp = {sub["temp"]: sub for sub in mf["subtypes"]}
+        for test, which, f in [(t, i, f) for t in mf.get("indextests", [])
+                               for i, f in enumerate(indextest_files(t))]:
+            p = ROOT / f
+            gen = render_indextest(test, bytemp.get(test["temp"]) or {"temp": test["temp"], "base": test["base"]}, which)
+            cur = p.read_text() if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen indextest {test['temp']} "
+                  f"-> {p.relative_to(ROOT)}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for bt in mf.get("boxtypes", []):
             if not (bt.get("posaxes") and bt.get("posreference")):
                 continue
@@ -6499,6 +6876,17 @@ def main() -> int:
                 continue
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(render(beh, sub))
+            print(f"wrote {p.relative_to(ROOT)}")
+
+    # The index test of each type the axis lists (#render_indextest)
+    bytemp = {sub["temp"]: sub for sub in subs}
+    for test in mf.get("indextests", []):
+        for which, f in enumerate(indextest_files(test)):
+            p = ROOT / f
+            if args.check:
+                print(f"would write {p.relative_to(ROOT)}")
+                continue
+            p.write_text(render_indextest(test, bytemp.get(test["temp"]) or {"temp": test["temp"], "base": test["base"]}, which))
             print(f"wrote {p.relative_to(ROOT)}")
 
     for fam in mf.get("tempspatialrel_families", []):

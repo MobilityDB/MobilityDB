@@ -132,6 +132,61 @@ SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
  SRID=5676;{"POINT(0 0)", "POINT(1 1)"}
 (1 row)
 
+-- setSRID reads an SRID as ST_SetSRID reads it, an SRID above the maximum
+-- folding into the reserved range, and the values and the bounding box of a
+-- temporal point or a set state that one SRID
+WITH s(srid) AS (VALUES (3857), (1000000), (999999999)),
+t AS (SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)) AS expected,
+  setSRID(stbox 'STBOX X((1,1),(2,2))', srid) AS box,
+  setSRID(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
+    [Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]}', srid) AS temp,
+  setSRID(geomset '{"Point(1 1)", "Point(2 2)"}', srid) AS gs FROM s)
+SELECT srid, expected, SRID(box), SRID(temp), SRID(temp::stbox),
+  ST_SRID(endValue(temp)), SRID(gs), SRID(gs::stbox), ST_SRID(endValue(gs))
+FROM t;
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+   srid    | expected |  srid  |  srid  |  srid  | st_srid |  srid  |  srid  | st_srid 
+-----------+----------+--------+--------+--------+---------+--------+--------+---------
+      3857 |     3857 |   3857 |   3857 |   3857 |    3857 |   3857 |   3857 |    3857
+   1000000 |   999001 | 999001 | 999001 | 999001 |  999001 | 999001 | 999001 |  999001
+ 999999999 |   999000 | 999000 | 999000 | 999000 |  999000 | 999000 | 999000 |  999000
+(3 rows)
+
+-- The invalid SRID is refused, and a negative SRID is set as the unknown SRID
+-- 0, on a temporal point and a set as on a geometry
+SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 1000001);
+ERROR:  The SRID is invalid
+SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', 1000001);
+ERROR:  The SRID is invalid
+SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', -1);
+NOTICE:  SRID value -1 converted to the officially unknown SRID value 0
+                                 setsrid                                 
+-------------------------------------------------------------------------
+ 0101000000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT setSRID(geomset '{"Point(1 1)"}', -1);
+NOTICE:  SRID value -1 converted to the officially unknown SRID value 0
+                    setsrid                     
+------------------------------------------------
+ {"0101000000000000000000F03F000000000000F03F"}
+(1 row)
+
 -- Tests independent of the PROJ version
 WITH test(geoset) AS (
   SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
@@ -1469,7 +1524,11 @@ ERROR:  The tgeometry cannot have Z dimension
 SELECT atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
 SELECT atGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometry cannot have Z dimension
+                               atgeometry                                
+-------------------------------------------------------------------------
+ 0101000000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asText(minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
@@ -1555,7 +1614,11 @@ ERROR:  The tgeometry cannot have Z dimension
 SELECT minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
 SELECT minusGeometry(tgeometry 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometry cannot have Z dimension
+ minusgeometry 
+---------------
+ 
+(1 row)
+
 --------------------------------------------------------
 -- Equivalences
 WITH test(temp, geo) AS (

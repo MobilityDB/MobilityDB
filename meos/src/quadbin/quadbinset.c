@@ -214,14 +214,11 @@ quadbinset_value_n(const Set *s, int n, Quadbin *result)
 Set *
 quadbin_grid_disk(Quadbin origin, int k)
 {
-  if (k < 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "quadbin_grid_disk: k must be >= 0");
-    return NULL;
-  }
+  /* #quadbin_k_ring ensures the validity of the radius */
   int count;
   Quadbin *cells = quadbin_k_ring(origin, k, &count);
+  if (! cells)
+    return NULL;
   return quadbinset_from_buffer(cells, count);
 }
 
@@ -275,16 +272,12 @@ quadbinset_grid_disk(const Set *cells, int k)
 Set *
 quadbin_cell_to_children_set(Quadbin origin, int children_resolution)
 {
+  /* #quadbin_cell_to_children ensures the validity of the resolution */
   int count;
   Quadbin *cells = quadbin_cell_to_children(origin,
     (uint32_t) children_resolution, &count);
   if (! cells)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "quadbin_cell_to_children: children resolution must be finer than "
-      "the cell resolution and within range");
     return NULL;
-  }
   return quadbinset_from_buffer(cells, count);
 }
 

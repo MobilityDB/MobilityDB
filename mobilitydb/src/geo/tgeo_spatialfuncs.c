@@ -1314,7 +1314,6 @@ Tgeo_minus_geom(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup mobilitydb_geo_restrict
  * @brief Return a temporal geo restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */

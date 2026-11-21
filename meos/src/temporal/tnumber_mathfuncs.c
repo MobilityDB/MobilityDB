@@ -49,6 +49,7 @@
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+#include "geo/geo_dyadic.h"
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -59,16 +60,83 @@
  * General functions on datums
  *****************************************************************************/
 
+/* The magnitude, 2^450, below which the values of two float segments keep
+ * every product of #tfloat_arithop_turnpt clear of overflow */
+#define FLOATSEGM_PRODUCT_MAX 0x1p450
+
+/* The operands of the derivative of the product of two float segments, for
+ * #floatsegm_product_slope_half */
+typedef struct
+{
+  ExactSum sums[6];   /**< Differences of the ends and the ends themselves */
+  int64 d;            /**< Duration of the segments in microseconds */
+} FloatsegmProduct;
+
 /**
- * @brief Find the single timestamptz at which the operation of two temporal
- * float segments is at a local minimum/maximum
- * @details The function supposes that the instants are synchronized, that is,
- * `start1->t = start2->t` and `end1->t = end2->t`.
- * The function only return an intersection at the middle, that is, it
- * it returns false if the timestamp found is not at a bound
- * @note This function is called only when both sequences are linear
+ * @brief Return the sign of the derivative of the product of two float
+ * segments at an offset from their start, exactly, the sign
+ * #linear_crossing_nearest reads
+ * @details With the first segment from `x1` to `x2` and the second from `x3`
+ * to `x4` over `d` microseconds, `a = x2 - x1` and `c = x4 - x3`, the
+ * derivative of the product at the offset `x` times `d^2` is
+ * `(a x3 + c x1)(d - x) + (a x4 + c x2) x`, a polynomial in the doubles and
+ * in `x = m + half` and `d - x`, each an exact sum of two doubles
+ * (#int64_half_split), whose sign #polynomial_sign_exact decides
+ */
+static int
+floatsegm_product_slope_half(const void *ctx, int64 m, double half)
+{
+  const FloatsegmProduct *p = (const FloatsegmProduct *) ctx;
+  ExactSum sums[8];
+  memcpy(sums, p->sums, sizeof(p->sums));
+  double t[2];
+  int64_half_split(p->d - m, - half, &t[0], &t[1]);
+  exact_sum_set(&sums[6], t, 2);
+  int64_half_split(m, half, &t[0], &t[1]);
+  exact_sum_set(&sums[7], t, 2);
+  /* Sums 0 and 1 are a and c, 2 to 5 are x1 to x4, 6 is d - x and 7 is x */
+  const PolyTerm terms[4] = {
+    {.coef = 1.0, .deg = 3, .sum = {0, 4, 6}},
+    {.coef = 1.0, .deg = 3, .sum = {1, 2, 6}},
+    {.coef = 1.0, .deg = 3, .sum = {0, 5, 7}},
+    {.coef = 1.0, .deg = 3, .sum = {1, 3, 7}}};
+  return polynomial_sign_exact(sums, terms, 4);
+}
+
+/* The sign of a double, 0 for zero and for not a number */
+#define DOUBLE_SIGN(v) (((v) > 0.0) - ((v) < 0.0))
+
+/**
+ * @brief Return 1 if the product of two temporal float segments has an
+ * extremum strictly inside their period, dated in the output argument by the
+ * microsecond nearest to it, 0 otherwise
+ * @details With the first segment from `x1` to `x2` and the second from `x3`
+ * to `x4`, `a = x2 - x1` and `c = x4 - x3`, the derivative of the product
+ * moves linearly from `a x3 + c x1` at the start to `a x4 + c x2` at the end,
+ * so the product has an extremum strictly inside where their signs are
+ * opposite; where the four products have the sign of their factors in common
+ * no arithmetic is needed. The filter of this function computes both in
+ * doubles with an error bound, the sign being the exact one where the value
+ * exceeds the bound and otherwise that of a cross product of the doubles
+ * (#cross_product_sign), and the offset of the extremum with its bound,
+ * which proves its nearest microsecond where it keeps the offset clear of the
+ * middle of two microseconds (#offset_nearest_bounded); a nearest
+ * microsecond on a bound means the extremum belongs to the bound, which
+ * states its value. Elsewhere #linear_crossing_nearest dates it from the
+ * exact sign of the derivative (#floatsegm_product_slope_half), a tie going
+ * to the even timestamp. The extremum lies midway between the instants at
+ * which the segments are zero, which also places the instant a quotient of
+ * the two segments adds
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] param Additional parameter
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] tps Array of the instants found
  * @param[out] values Values of the function at the instants, which this
  * function does not write, NULL
+ * @param[in] cap Number of instants @p tps holds
+ * @note This function is called only when both sequences are linear, and
+ * supposes that they are synchronized
  */
 int
 tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
@@ -81,26 +149,79 @@ tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   double x2 = DatumGetFloat8(end1);
   double x3 = DatumGetFloat8(start2);
   double x4 = DatumGetFloat8(end2);
-  /* Compute the instants t1 and t2 at which the linear functions of the two
-   * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
-   * minimum/maximum exactly at the middle between t1 and t2.
-   * To reduce problems related to floating point arithmetic, t1 and t2
-   * are shifted, respectively, to 0 and 1 before the computation */
-  if ((x2 - x1) == 0.0 || (x4 - x3) == 0.0)
+  /* A constant segment makes the product linear */
+  if (x1 == x2 || x3 == x4)
+    return 0;
+  /* Each of a x3, c x1, a x4 and c x2 has the sign of its factors: where the
+   * four agree, the derivative keeps that sign over the segment */
+  int sa = (x2 > x1) ? 1 : -1, sc = (x4 > x3) ? 1 : -1;
+  int s13 = sa * DOUBLE_SIGN(x3);
+  if (s13 != 0 && s13 == sc * DOUBLE_SIGN(x1) &&
+      s13 == sa * DOUBLE_SIGN(x4) && s13 == sc * DOUBLE_SIGN(x2))
+    return 0;
+  int64 d = upper - lower;
+
+  /* The derivative at the start, a x3 + c x1, and at the end, a x4 + c x2,
+   * in doubles. Below the magnitude FLOATSEGM_PRODUCT_MAX, which the negation
+   * also refuses for not a number, as #point_motion_dwithin_filter refuses
+   * its own, no product overflows, and each value differs from the exact one
+   * by at most 3u + O(u^2) times the sum of the magnitudes of its two
+   * products, u = 2^-53, bounded here by 4u, that is DBL_EPSILON / 2, plus
+   * DDB_TINY for the products that underflow */
+  double big = Max(Max(fabs(x1), fabs(x2)), Max(fabs(x3), fabs(x4)));
+  bool bounded = (big <= FLOATSEGM_PRODUCT_MAX);
+  double a = x2 - x1, c = x4 - x3;
+  double s1 = a * x3, s2 = c * x1, e1 = a * x4, e2 = c * x2;
+  double pstart = s1 + s2, pend = e1 + e2;
+  double estart = (fabs(s1) + fabs(s2)) * (DBL_EPSILON / 2.0) + DDB_TINY;
+  double eend = (fabs(e1) + fabs(e2)) * (DBL_EPSILON / 2.0) + DDB_TINY;
+  /* Each sign is the exact one where the value exceeds its bound, and is
+   * otherwise that of the cross product of (a, c) and (x3, -x1) or (x4, -x2)
+   * of the doubles */
+  bool fstart = bounded && fabs(pstart) > estart;
+  bool fend = bounded && fabs(pend) > eend;
+  int sstart = fstart ? DOUBLE_SIGN(pstart) :
+    cross_product_sign(x1, x3, x2, x4, x1, 0.0, 0.0, x3);
+  int send = fend ? DOUBLE_SIGN(pend) :
+    cross_product_sign(x1, x3, x2, x4, x2, 0.0, 0.0, x4);
+  if (sstart == 0 || sstart != - send)
     return 0;
 
-  long double d1 = (-1 * x1) / (x2 - x1);
-  long double d2 = (-1 * x3) / (x4 - x3);
-  long double min = Min(d1, d2);
-  long double max = Max(d1, d2);
-  long double fraction = min + (max - min) / 2;
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-    /* Minimum/maximum occurs out of the period */
-    return 0;
+  /* The offset of the extremum, d |a x3 + c x1| / (|a x3 + c x1| +
+   * |a x4 + c x2|). Where both values are within their bounds of the exact
+   * ones, whose sum t they leave within a quarter of itself, the quotient is
+   * within 2 (estart + eend) / t of the exact one, and its three roundings
+   * add 3u of it; the bound below takes 2.5 and 8u to cover its own
+   * roundings. A negative bound states that none is known */
+  double t = fabs(pstart) + fabs(pend);
+  double x = (fabs(pstart) / t) * (double) d;
+  double err = -1.0;
+  if (fstart && fend && d < FLOATSEGM_FILTER_MAXD &&
+      estart + eend <= 0.25 * t)
+  {
+    err = 2.5 * (double) d * ((estart + eend) / t) + 4.0 * DBL_EPSILON * x;
+    int64 m;
+    if (offset_nearest_bounded(x, err, d, &m))
+    {
+      if (m <= 0 || m >= d)
+        return 0;
+      tps[0] = lower + m;
+      return 1;
+    }
+  }
 
-  long double duration = (long double) (upper - lower);
-  tps[0] = lower + (TimestampTz) (duration * fraction);
-  return 1;
+  /* Elsewhere the exact sign of the derivative dates it */
+  FloatsegmProduct prod;
+  const double ta[2] = {x2, - x1}, tc[2] = {x4, - x3};
+  exact_sum_set(&prod.sums[0], ta, 2);
+  exact_sum_set(&prod.sums[1], tc, 2);
+  exact_sum_set(&prod.sums[2], &x1, 1);
+  exact_sum_set(&prod.sums[3], &x2, 1);
+  exact_sum_set(&prod.sums[4], &x3, 1);
+  exact_sum_set(&prod.sums[5], &x4, 1);
+  prod.d = d;
+  return linear_crossing_nearest(&floatsegm_product_slope_half, &prod,
+    sstart, send, x, err, lower, upper, &tps[0]) ? 1 : 0;
 }
 
 /*****************************************************************************

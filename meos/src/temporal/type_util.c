@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
+#include <common/hashfn.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 #include "utils/varlena.h"
@@ -151,23 +152,10 @@ datum_cmp(Datum l, Datum r, MeosType type)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
-      const GSERIALIZED *gs1 = DatumGetGserializedP(l);
-      const GSERIALIZED *gs2 = DatumGetGserializedP(r);
-      /* Fast path: two points of the same SRID and dimension are ordered by
-       * their coordinates, as the centre of two circular buffers is. The
-       * general comparison builds a bounding box and a sortable hash for each
-       * operand, which is the dominant cost of sorting the values of a
-       * temporal point. A point precedes any other geometry, so that the
-       * order stays total on a value holding geometries of several types */
-      bool point1 = (gserialized_get_type(gs1) == POINTTYPE);
-      bool point2 = (gserialized_get_type(gs2) == POINTTYPE);
-      if (point1 && point2 &&
-          gserialized_get_srid(gs1) == gserialized_get_srid(gs2) &&
-          FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags))
-        return geopoint_cmp(gs1, gs2);
-      if (point1 != point2)
-        return point1 ? -1 : 1;
-      return gserialized_cmp(gs1, gs2);
+      /* Two geometries or geographies are ordered by value (#geo_cmp): the
+       * SRID, the flags, the type, so that a point precedes any other
+       * geometry, the counts, then the coordinates as numbers */
+      return geo_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
     }
 #if CBUFFER
     case T_CBUFFER:
@@ -279,31 +267,14 @@ datum_eq(Datum l, Datum r, MeosType type)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
-      /* Two geometries or geographies are equal when they are the same
-       * values, vertex by vertex, exactly, as #datum_cmp() and #datum_hash()
-       * read them and as PostGIS answers = between them. A temporal value
-       * applies this equality at every instant, so its =, its ever and always
-       * equalities, the de-duplication of a set and the normalization of a
-       * sequence agree with the B-tree order and the hash. The point-set
-       * equality is #geo_equals(). Two points compare their coordinates
-       * exactly, which keeps the serialization and the relate engine out of
-       * the temporal-distance hot path */
-      GSERIALIZED *gs1 = DatumGetGserializedP(l);
-      GSERIALIZED *gs2 = DatumGetGserializedP(r);
-      if (gserialized_get_type(gs1) == POINTTYPE &&
-          gserialized_get_type(gs2) == POINTTYPE)
-      {
-        /* A 3D and a 2D point, which the walks of the relationships measuring
-         * them in 2D compare, are not equal, as #datum_point_eq answers */
-        if (FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags))
-          return false;
-        /* This walk compares one element after another and its entry has
-         * established the shared reference system, so the internal twin
-         * asserts what the external form tests */
-        return datum_point_eq_intl(l, r);
-      }
-      else
-        return geo_same(gs1, gs2);
+      /* Two geometries or geographies are equal by value (#geo_eq), every
+       * field #datum_cmp() orders them by equal, a zero of either sign being
+       * 0 and a geography read on the sphere. A temporal value applies this
+       * equality at every instant, so its =, its ever and always equalities,
+       * the de-duplication of a set and the normalization of a sequence agree
+       * with the B-tree order and the hash. The point-set equality is
+       * #geo_equals() */
+      return geo_eq(DatumGetGserializedP(l), DatumGetGserializedP(r));
     }
 #if CBUFFER
     case T_CBUFFER:
@@ -611,12 +582,8 @@ datum_hash(Datum d, MeosType type)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
-      /* A point hashes as #datum_eq compares it, by its coordinates
-       * (#geopoint_hash) */
-      GSERIALIZED *gs = DatumGetGserializedP(d);
-      if (gserialized_get_type(gs) == POINTTYPE)
-        return geopoint_hash(gs);
-      return (uint32) gserialized_hash(gs);
+      /* A geometry hashes as #datum_eq compares it (#geo_hash) */
+      return geo_hash(DatumGetGserializedP(d));
     }
 #if CBUFFER
     case T_CBUFFER:
@@ -686,9 +653,12 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
     case T_TEXT:
       return text_hash_extended(DatumGetTextP(d), seed, DEFAULT_COLLATION_OID);
     // PostGIS currently does not provide an extended hash function
-    // case T_GEOMETRY:
-    // case T_GEOGRAPHY:
-      // return gserialized_hash_extended(DatumGetGserializedP(d), seed);
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+    {
+      /* A geometry hashes as #datum_eq compares it (#geo_hash_extended) */
+      return geo_hash_extended(DatumGetGserializedP(d), seed);
+    }
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_hash_extended(DatumGetCbufferP(d), seed);
@@ -775,9 +745,23 @@ datum_sortkey_size(MeosType type)
 bool
 datum_sortkey_type(MeosType type)
 {
+  /* A geometry and a geography have a key whose length depends on the value */
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY)
+    return true;
 #if POSE
   /* A pose and a pose chain have a key whose length depends on the value */
   if (type == T_POSE || type == T_POSECHAIN)
+    return true;
+#endif
+#if POINTCLOUD
+  /* A point-cloud point and patch have a key whose length depends on the
+   * value */
+  if (type == T_PCPOINT || type == T_PCPATCH)
+    return true;
+#endif
+#if JSON
+  /* A JSON value has a key whose length depends on the value */
+  if (type == T_JSONB)
     return true;
 #endif
   return datum_sortkey_size(type) > 0 || type == T_TEXT;
@@ -788,14 +772,16 @@ datum_sortkey_type(MeosType type)
  * @details The function has one arm per base type of #datum_sortkey_put,
  * which writes the key. The key of a text is its bytes, a zero byte written
  * as a zero byte followed by 0xFF, then two zero bytes ending it. The key of
- * a point is its coordinates, as #geopoint_sortkey_size counts them. The
+ * a geometry or a geography is its value, as #geo_sortkey_size counts it. The
  * key of a circular buffer and of a network point have a fixed size, which
  * #cbuffer_sortkey_size and #npoint_sortkey_size give, and the key of a pose
  * and of a pose chain the length #pose_sortkey_size and
- * #posechain_sortkey_size give, which depends on the value.
+ * #posechain_sortkey_size give, which depends on the value, as the key of a
+ * point-cloud point and patch the length #pcpoint_sortkey_size and
+ * #pcpatch_sortkey_size give, and as the key of a JSON value the length
+ * #jsonb_sortkey_size gives.
  * @param[in] d Value
- * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
- * or geography type when the value is a point
+ * @param[in] type Base type, one #datum_sortkey_type accepts
  */
 size_t
 datum_sortkey_len(Datum d, MeosType type)
@@ -816,15 +802,23 @@ datum_sortkey_len(Datum d, MeosType type)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
-      const GSERIALIZED *gs = DatumGetGserializedP(d);
-      assert(gserialized_get_type(gs) == POINTTYPE);
-      return geopoint_sortkey_size(gs);
+      return geo_sortkey_size(DatumGetGserializedP(d));
     }
 #if POSE
     case T_POSE:
       return pose_sortkey_size(DatumGetPoseP(d));
     case T_POSECHAIN:
       return posechain_sortkey_size(DatumGetPoseChainP(d));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_sortkey_size(DatumGetPcpointP(d));
+    case T_PCPATCH:
+      return pcpatch_sortkey_size(DatumGetPcpatchP(d));
+#endif
+#if JSON
+    case T_JSONB:
+      return jsonb_sortkey_size(DatumGetJsonbP(d));
 #endif
     case T_BOOL:
     case T_INT4:
@@ -857,9 +851,12 @@ datum_sortkey_len(Datum d, MeosType type)
 
 /**
  * @brief Write the low `nbytes` bytes of an unsigned integer most significant
- * first
+ * first, so that comparing the bytes as unsigned values orders the integers
+ * @param[in] v Unsigned integer
+ * @param[in] nbytes Number of its low bytes written
+ * @param[out] out Buffer of `nbytes` bytes
  */
-static void
+void
 sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
 {
   for (int i = nbytes - 1; i >= 0; i--)
@@ -881,14 +878,17 @@ sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
  * and a prefix first, writes its bytes, a zero byte as a zero byte followed by
  * 0xFF, and ends with two zero bytes, which sort below every byte that
  * continues a longer text, so that the key of a value followed by other keys
- * still orders as the value does. A point writes its coordinates through
- * #geopoint_sortkey_put, a circular buffer its SRID, centre and radius
+ * still orders as the value does. A geometry or a geography writes its SRID,
+ * flags, type, counts and coordinates through #geo_sortkey_put, a circular
+ * buffer its SRID, centre and radius
  * through #cbuffer_sortkey_put, a network point its route and position
  * through #npoint_sortkey_put, and a pose and a pose chain their flags, SRID
- * and values through #pose_sortkey_put and #posechain_sortkey_put.
+ * and values through #pose_sortkey_put and #posechain_sortkey_put, and a
+ * point-cloud point and patch their pcid and stored bytes through
+ * #pcpoint_sortkey_put and #pcpatch_sortkey_put, and a JSON value its
+ * tokens through #jsonb_sortkey_put.
  * @param[in] d Value
- * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
- * or geography type when the value is a point
+ * @param[in] type Base type, one #datum_sortkey_type accepts
  * @param[out] out Buffer of #datum_sortkey_len bytes
  */
 void
@@ -975,9 +975,7 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
-      const GSERIALIZED *gs = DatumGetGserializedP(d);
-      assert(gserialized_get_type(gs) == POINTTYPE);
-      geopoint_sortkey_put(gs, out);
+      geo_sortkey_put(DatumGetGserializedP(d), out);
       return;
     }
 #if CBUFFER
@@ -996,6 +994,19 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
       return;
     case T_POSECHAIN:
       posechain_sortkey_put(DatumGetPoseChainP(d), out);
+      return;
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      pcpoint_sortkey_put(DatumGetPcpointP(d), out);
+      return;
+    case T_PCPATCH:
+      pcpatch_sortkey_put(DatumGetPcpatchP(d), out);
+      return;
+#endif
+#if JSON
+    case T_JSONB:
+      jsonb_sortkey_put(DatumGetJsonbP(d), out);
       return;
 #endif
     default: /* Error! */

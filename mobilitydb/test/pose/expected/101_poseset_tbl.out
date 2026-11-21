@@ -71,6 +71,17 @@ SELECT round(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)", "Pose(Poi
  STBOX X((1,1),(3,3))
 (1 row)
 
+-- A pose states its SRID inside itself, which must be the SRID of its set
+SELECT asEWKT(poseset 'SRID=3857;{"Pose(SRID=3857;Point(1 1),0.5)"}');
+               asewkt               
+------------------------------------
+ SRID=3857;{"Pose(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asEWKT(poseset 'SRID=3857;{"Pose(SRID=4326;Point(1 1),0.5)"}');
+ERROR:  The SRID of the pose (4326) does not match the SRID of the poseset (3857)
+LINE 1: SELECT asEWKT(poseset 'SRID=3857;{"Pose(SRID=4326;Point(1 1)...
+                              ^
 SELECT COUNT(*) FROM tbl_pose2d WHERE pose::poseset IS NOT NULL;
  count 
 -------

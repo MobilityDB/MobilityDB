@@ -43,7 +43,10 @@
  * verifies that #geog_in and #geom_to_geog refuse a coordinate system that
  * is not lon/lat with the same error, that #stbox_make reports a time span of
  * another type, and that a valid SRID still answers with no error left
- * behind.
+ * behind. Every SRID setter then reads an SRID as #geo_set_srid reads it,
+ * PostGIS's rule: a negative SRID is the unknown one and an SRID above the
+ * maximum folds into the reserved range, and the components and the bounding
+ * box of a spatiotemporal value or a spatial set state that one SRID.
  *
  * The program can be build as follows
  * @code
@@ -117,6 +120,16 @@ int main(void)
     pose_set_srid(pose, invalid), MEOS_ERR_INVALID_ARG_VALUE);
   check_refused("posechain_set_srid(pc, SRID_INVALID)",
     posechain_set_srid(pc, invalid), MEOS_ERR_INVALID_ARG_VALUE);
+  GSERIALIZED *geom = geom_in("Point(1 1)", -1);
+  assert(geom);
+  check_refused("geo_set_srid(geom, SRID_INVALID)",
+    geo_set_srid(geom, invalid), MEOS_ERR_INVALID_ARG_VALUE);
+  /* An unknown SRID is a valid one, as for a circular buffer */
+  GSERIALIZED *geom0 = geo_set_srid(geom, 0);
+  printf("geo_set_srid(geom, 0): %s, errno %d\n", geom0 ? "a value" : "NULL",
+    meos_errno());
+  assert(geom0 && meos_errno() == 0);
+  free(geom0); free(geom);
 
   /* A geography refuses a coordinate system that is not lon/lat, whether it
    * is read from text or converted from a geometry */
@@ -149,6 +162,77 @@ int main(void)
   assert(pose2 != NULL);
   assert(meos_errno() == 0);
 
+  /* Every setter reads an SRID as PostGIS reads it: SRID_INVALID is refused,
+   * any other SRID is clamped as gserialized_set_srid clamps it, and a value
+   * and its bounding box state the same SRID */
+  STBox *box2 = stbox_in("STBOX X((1,1),(2,2))");
+  Temporal *tseq = tgeompoint_in("[Point(1 1)@2001-01-01, "
+    "Point(2 2)@2001-01-02]");
+  Temporal *tss = tgeompoint_in("{[Point(1 1)@2001-01-01, "
+    "Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]}");
+  Temporal *tcb = tcbuffer_in("[Cbuffer(Point(1 1),0.5)@2001-01-01, "
+    "Cbuffer(Point(2 2),0.5)@2001-01-02]");
+  Set *gset = geomset_in("{Point(1 1), Point(2 2)}");
+  GSERIALIZED *pt = geom_in("Point(1 1)", -1);
+  assert(box2 && tseq && tss && tcb && gset && pt);
+  check_refused("stbox_set_srid(box, SRID_INVALID)",
+    stbox_set_srid(box2, invalid), MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tspatial_set_srid(tgeompoint, SRID_INVALID)",
+    tspatial_set_srid(tseq, invalid), MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("spatialset_set_srid(geomset, SRID_INVALID)",
+    spatialset_set_srid(gset, invalid), MEOS_ERR_INVALID_ARG_VALUE);
+
+  int32_t srids[] = {-5, 0, 4326, 999999, 1000000, 999999999};
+  for (int i = 0; i < (int) (sizeof(srids) / sizeof(srids[0])); i++)
+  {
+    int32_t srid = srids[i];
+    GSERIALIZED *ref = geo_set_srid(pt, srid);
+    assert(ref);
+    int32_t expected = geo_srid(ref);
+    free(ref);
+    printf("SRID %d reads as %d\n", srid, expected);
+
+    STBox *b = stbox_set_srid(box2, srid);
+    assert(b && stbox_srid(b) == expected);
+    free(b);
+    Cbuffer *c = cbuffer_set_srid(cb, srid);
+    assert(c && cbuffer_srid(c) == expected);
+    free(c);
+    Pose *p = pose_set_srid(pose, srid);
+    assert(p && pose_srid(p) == expected);
+    free(p);
+    PoseChain *q = posechain_set_srid(pc, srid);
+    assert(q && posechain_srid(q) == expected);
+    free(q);
+    meos_errno_reset();
+
+    /* The components and the bounding box of a spatiotemporal value and of a
+     * spatial set state the SRID the setter of a geometry answers, the
+     * unknown SRID a negative SRID reads as included */
+    const Temporal *temps[] = {tseq, tss, tcb};
+    for (int j = 0; j < 3; j++)
+    {
+      Temporal *t = tspatial_set_srid(temps[j], srid);
+      assert(t && tspatial_srid(t) == expected);
+      STBox *tb = tspatial_to_stbox(t);
+      assert(stbox_srid(tb) == expected);
+      free(tb); free(t);
+    }
+    Temporal *t = tspatial_set_srid(tss, srid);
+    GSERIALIZED *last = tgeo_end_value(t);
+    assert(geo_srid(last) == expected);
+    free(last); free(t);
+    Set *s = spatialset_set_srid(gset, srid);
+    assert(s && spatialset_srid(s) == expected);
+    STBox *sb = spatialset_to_stbox(s);
+    assert(stbox_srid(sb) == expected);
+    GSERIALIZED *elem = geoset_end_value(s);
+    assert(geo_srid(elem) == expected);
+    free(elem); free(sb); free(s);
+    meos_errno_reset();
+  }
+
+  free(box2); free(tseq); free(tss); free(tcb); free(gset); free(pt);
   free(gs); free(box); free(pose2); free(planar);
   free(cb); free(pose); free(pc); free(ispan);
 

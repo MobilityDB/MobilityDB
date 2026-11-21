@@ -4156,6 +4156,41 @@ dggs_geodetic_before(const double *p0, const double *p1, const double *a,
   return *cmp >= 0;
 }
 
+/* The operands of #dggs_geodetic_before and the comparison it read last
+ * before the crossing, for #dggs_geodetic_cross_beyond */
+typedef struct
+{
+  const double *p0, *p1;   /**< Positions of the ends of the segment */
+  const double *a, *b;     /**< Positions of the vertices of the edge */
+  int64 D;                 /**< Duration of the segment in microseconds */
+  uint64 lokey;            /**< Last offset read before the crossing */
+  int locmp;               /**< Comparison read there, 3 where none is */
+} DggsGeodeticCross;
+
+/**
+ * @brief Return 1 where the position at the offset of a key has not passed
+ * the crossing, 0 where it has: the side #dggs_geodetic_edge_offset gives
+ * #monotone_search, the offset 0 read as not passed
+ */
+static int
+dggs_geodetic_cross_beyond(uint64 key, void *arg)
+{
+  DggsGeodeticCross *gc = (DggsGeodeticCross *) arg;
+  if (key == 0)
+  {
+    gc->lokey = 0;
+    gc->locmp = 3;
+    return 1;
+  }
+  int cmp;
+  if (! dggs_geodetic_before(gc->p0, gc->p1, gc->a, gc->b, (int64) key,
+      gc->D, &cmp))
+    return 0;
+  gc->lokey = key;
+  gc->locmp = cmp;
+  return 1;
+}
+
 /**
  * @brief Return the microsecond at which a geodetic segment crosses the
  * great circle of an edge, as the offset from the start of the segment,
@@ -4166,8 +4201,7 @@ dggs_geodetic_before(const double *p0, const double *p1, const double *a,
  * circle of the edge at the fraction f of the segment the angles give, and
  * the crossing is dated by the truncation of f D, the last offset m with
  * m / D <= f, each comparison exact (#dggs_geodetic_before). The fraction in
- * doubles @p f is the start of the search only, which gallops from it and
- * halves.
+ * doubles @p f is the start of the one search (#monotone_search) only.
  * @param[in] p0,p1 Geodetic positions of the start and end of the segment
  * @param[in] D Duration of the segment in microseconds
  * @param[in] a,b Geodetic positions of the vertices of an edge through the
@@ -4191,70 +4225,15 @@ dggs_geodetic_edge_offset(const double *p0, const double *p1, int64 D,
   int64 n = 0;
   if (isfinite(est) && est > 0.0)
     n = (est >= (double) D) ? D : llrint(est);
-  /* lo is the last offset known not to have passed the crossing, and locmp
-   * the comparison read there, 3 where none is; hi the first offset known
-   * past it, D + 1 standing for none */
-  int64 lo, hi;
-  int cmp, locmp = 3;
-  if (dggs_geodetic_before(p0, p1, a, b, n, D, &cmp))
-  {
-    lo = n;
-    locmp = cmp;
-    int64 step = 1;
-    for (;;)
-    {
-      if (lo == D)
-      {
-        hi = D + 1;
-        break;
-      }
-      int64 c = (step > D - lo) ? D : lo + step;
-      if (dggs_geodetic_before(p0, p1, a, b, c, D, &cmp))
-      {
-        lo = c;
-        locmp = cmp;
-        step *= 2;
-      }
-      else
-      {
-        hi = c;
-        break;
-      }
-    }
-  }
-  else
-  {
-    hi = n;
-    int64 step = 1;
-    for (;;)
-    {
-      int64 c = (step >= hi) ? 0 : hi - step;
-      if (c == 0)
-      {
-        lo = 0;
-        break;
-      }
-      if (dggs_geodetic_before(p0, p1, a, b, c, D, &cmp))
-      {
-        lo = c;
-        locmp = cmp;
-        break;
-      }
-      hi = c;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (dggs_geodetic_before(p0, p1, a, b, mid, D, &cmp))
-    {
-      lo = mid;
-      locmp = cmp;
-    }
-    else
-      hi = mid;
-  }
+  /* The first offset past the crossing, D + 1 standing for none, found by
+   * the one search (#monotone_search); the comparison read at the last
+   * offset before it, 3 where none is */
+  DggsGeodeticCross gc = {p0, p1, a, b, D, 0, 3};
+  uint64 key = 0;
+  (void) monotone_search((uint64) n, (uint64) D + 1,
+    &dggs_geodetic_cross_beyond, &gc, 0, &key);
+  int64 lo = (int64) key - 1;
+  int locmp = ((uint64) lo == gc.lokey) ? gc.locmp : 3;
   if (locmp == 3)
     locmp = geodetic_arc_fraction_cmp(p0, p1, a, b, lo, D);
   *whole = (locmp == 0);

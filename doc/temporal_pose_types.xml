@@ -400,6 +400,7 @@ SELECT asText(round(ARRAY[pose(ST_Point(1.123456789,1.123456789), 0.123456789),
 SRID({pose,posechain}) &#8594; integer
 setSRID({pose,posechain},integer) &#8594; {pose,posechain}
 </programlisting>
+<para>The SRID is set as <link linkend="geo_srid"><varname>setSRID</varname></link> sets it on a geometry: a negative SRID is set as the unknown SRID 0 and an SRID beyond the reserved range is folded into it. The invalid SRID is refused.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(pose 'Pose(SRID=5676;Point(1 1), 0.3)');
 -- 5676
@@ -1506,6 +1507,7 @@ SELECT asText(atStbox(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0
 SRID({tpose,tposechain}) &#8594; integer
 setSRID({tpose,tposechain},integer) &#8594; {tpose,tposechain}
 </programlisting>
+<para>The SRID is set as <link linkend="geo_srid"><varname>setSRID</varname></link> sets it on a geometry, an SRID beyond the reserved range being folded into it, and the values and the bounding box take that one SRID. The invalid SRID is refused, and so is the unknown SRID 0, which a negative SRID is read as.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(tpose 'SRID=5676;
   [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)'));

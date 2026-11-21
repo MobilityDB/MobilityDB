@@ -8,7 +8,10 @@ on:
   push:
     paths:
       - '.github/workflows/meos_macos.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'pgtypes/**'
       - 'postgis/**'
@@ -19,7 +22,10 @@ on:
   pull_request:
     paths:
       - '.github/workflows/meos_macos.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'pgtypes/**'
       - 'postgis/**'
@@ -43,7 +49,16 @@ jobs:
 
       - name: Install dependencies (Homebrew)
         run: |
-          brew install json-c proj cmake ninja h3 gdal libxml2 zlib
+          brew install json-c proj cmake ninja gdal libxml2 zlib
+
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a formula carries
+        # whatever release it last took and releases state different vertices.
+        # The install name is absolute, so libmeos finds it without an rpath.
+        run: |
+          sudo .github/scripts/install-h3.sh /usr/local \
+            -DCMAKE_INSTALL_NAME_DIR=/usr/local/lib
 
       - name: Configure (MEOS=ON, no PostgreSQL extension)
         run: |

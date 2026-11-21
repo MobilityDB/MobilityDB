@@ -308,6 +308,10 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   /* Project the temporal number to the timespan of the box (if any) */
   Temporal *temp1 = hast ?
     temporal_restrict_tstzspan(temp, &inter, REST_AT) : (Temporal *) temp;
+  /* The two spans meet while no value lies inside the intersection, which a
+   * discrete or a step value can do, as #nad_tgeo_stbox reads it */
+  if (! temp1)
+    return distance_sentinel(temptype_basetype(temp->temptype));
   /* Test if the bounding boxes overlap */
   TBox box1;
   tnumber_set_tbox(temp1, &box1);

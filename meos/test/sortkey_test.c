@@ -340,7 +340,7 @@ int main(void)
   corpus_check("tstzspan");
 
   /* A null value or a null size is reported rather than dereferenced, and a
-   * set type without a sort key is reported */
+   * set of geometries, which are ordered by value, has a sort key */
   size_t size;
   int one = 1;
   Set *set = intset_make(&one, 1);
@@ -359,7 +359,8 @@ int main(void)
   key = set_sortkey(geoms, &size);
   printf("set_sortkey(geomset, size): %s, errno %d\n", key ? "a key" : "NULL",
     meos_errno());
-  assert(key == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
+  assert(key != NULL && meos_errno() == 0);
+  free(key);
   meos_errno_reset();
   key = set_sortkey(set, &size);
   printf("set_sortkey(set, size): %s of %zu bytes, errno %d\n",

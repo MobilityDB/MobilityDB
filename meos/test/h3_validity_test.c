@@ -63,6 +63,7 @@ int main(void)
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
+  meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
 
   /* A resolution 10 cell, its seven resolution 11 children and a set of
@@ -122,6 +123,34 @@ int main(void)
   free(res);
 
   free(children); free(one); free(ints);
+
+  /* A cell states SRID 4326, so a temporal cell or a set of cells takes that
+   * SRID and refuses another, whether instant or sequence */
+  Temporal *tinst = th3index_in("831c02fffffffff@2001-01-01");
+  Temporal *tseq = th3index_in("[831c02fffffffff@2001-01-01, "
+    "831c02fffffffff@2001-01-02]");
+  assert(tinst && tseq);
+  const Temporal *temps[] = {tinst, tseq};
+  for (int i = 0; i < 2; i++)
+  {
+    Temporal *t = tspatial_set_srid(temps[i], 3857);
+    printf("tspatial_set_srid(th3index, 3857): %s, errno %d\n",
+      t ? "a value" : "NULL", meos_errno());
+    assert(t == NULL);
+    assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+    meos_errno_reset();
+    t = tspatial_set_srid(temps[i], 4326);
+    assert(t && tspatial_srid(t) == 4326 && meos_errno() == 0);
+    free(t);
+  }
+  one = h3index_to_set(parent);
+  Set *s = spatialset_set_srid(one, 3857);
+  printf("spatialset_set_srid(h3indexset, 3857): %s, errno %d\n",
+    s ? "a value" : "NULL", meos_errno());
+  assert(s == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  free(tinst); free(tseq); free(one);
 
   /* Finalize MEOS */
   meos_finalize();

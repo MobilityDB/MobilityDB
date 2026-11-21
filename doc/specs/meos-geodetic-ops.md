@@ -12,8 +12,8 @@
 
 | | |
 |---|---|
-| Version | v0.1.0 |
-| Scope | What a geodetic spatiotemporal box holds, what its geography is, and how a value is found to lie in it |
+| Version | v0.2.0 |
+| Scope | What a geodetic spatiotemporal box holds, what its geography is, how a value is found to lie in it, and how far apart two boxes lie |
 | Reference | `meos/src/geo/stbox.c` (box and its geography), `meos/src/geo/tgeo_restrict.c` (restriction to a box), `meos/src/temporal/tcellindex.c` (box of a geodetic path), `meos/src/h3/h3_geo.c` (an H3 cell meeting a box) |
 
 ## 1. Scope and intent
@@ -129,13 +129,37 @@ cells is kept by the one owning it alone.
 S2 cells are not restricted to a box: MEOS reads no geodetic S2 cell yet, and their restriction
 raises an error.
 
-## 7. Out of scope
+## 7. The distance between two geodetic boxes
 
-The distance between geodetic values, and from a geodetic value to a geodetic box, which a later
-version states. The area and the perimeter of a geodetic box, whose exact values are the zone area
-of the rectangle and its two meridian and two parallel arcs.
+The distance between two geodetic boxes, which `stbox |=| stbox` answers and through which a set of
+geographies answers its distance to a geography or to another set, is the distance between the
+regions their bounds state, as section 5 reads a box, never between the polygons of their corners.
+Boxes whose regions meet are at distance 0. Otherwise the nearest points of the two regions are
+found on the sphere and measured as PostGIS measures two geography points, on the WGS 84 spheroid
+or, when asked, on the sphere, as PostGIS finds the nearest points of two geographies before
+measuring them:
 
-## 8. References
+- boxes sharing a longitude are nearest along a meridian, between their facing parallels;
+- otherwise the nearest points lie on the facing meridians, the bounds the least angle apart
+  around the globe, each latitude chosen in closed form against the interval of the other box.
+
+For the geography set `{"Point(28.57 56.03)", ...}` whose box covers the longitudes 28.57 to 79.16
+and the latitudes 21.19 to 56.03, the geography `Point(67.99 57.83)`, above that box but inside the
+polygon of its corners, lies at 200888.3 metres, the distance along its meridian to the parallel
+56.03, where the polygon of the corners answers 0.
+
+Measured against PostGIS on the rectangles of the bounds, their parallels densified to 0.01 degree,
+over the 1617 pairs of geography sets of the test tables and the 1617 distances of a set to a
+geography: every distance agrees within the densification, the largest relative difference being
+1.4e-6 between two sets and 5.1e-5 between a set and a geography.
+
+## 8. Out of scope
+
+The distance between geodetic values, and from a geodetic value to a geodetic box other than
+through its own box, which a later version states. The area and the perimeter of a geodetic box,
+whose exact values are the zone area of the rectangle and its two meridian and two parallel arcs.
+
+## 9. References
 
 - [Exact Geometry](meos-exact-geometry.md)
 - [Cells and Trajectories](meos-cell-walks.md)

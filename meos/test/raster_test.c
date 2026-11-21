@@ -770,6 +770,35 @@ int main(void)
   assert(tfloat_start_value(masked) == 10.0);
   free(masked_str); free(masked);
 
+  /* A region away from the upper left corner keeps the pixels it covers at
+   * their place. The region below spans x in [1,3] and y in [0,2], the two
+   * right columns of the two lower rows, so the clip answers two pixels by two
+   * whose corner is (1, 2), and pixel(2,2) = 50 and pixel(3,3) = 90 answer what
+   * they answered before the clip */
+  GSERIALIZED *region_lr = geom_in("SRID=4326;POLYGON((1 0,3 0,3 2,1 2,1 0))",
+    -1);
+  assert(region_lr != NULL);
+  meos_errno_reset();
+  Raster *cropped_lr = raster_clip(rast_values, NULL, 0, region_lr, NULL, 0,
+    true, false);
+  assert(cropped_lr != NULL);
+  assert(meos_errno() == 0);
+  assert(raster_width(cropped_lr) == 2);
+  assert(raster_height(cropped_lr) == 2);
+  assert(raster_upper_left_x(cropped_lr) == 1.0);
+  assert(raster_upper_left_y(cropped_lr) == 2.0);
+  Temporal *traj_lr = tgeompoint_in("SRID=4326;{POINT(1.5 1.5)@2001-01-01,"
+    " POINT(2.5 0.5)@2001-01-02}");
+  assert(traj_lr != NULL);
+  meos_errno_reset();
+  Temporal *kept_lr = raster_value(traj_lr, cropped_lr, 1, true, "nearest");
+  assert(kept_lr != NULL);
+  assert(meos_errno() == 0);
+  assert(temporal_num_instants(kept_lr) == 2);
+  assert(tfloat_start_value(kept_lr) == 50.0);
+  assert(tfloat_end_value(kept_lr) == 90.0);
+  free(kept_lr); free(traj_lr); free(cropped_lr); free(region_lr);
+
   /* A geometry in another reference system states its positions in different
    * units, which is an error and not an empty answer */
   GSERIALIZED *region_3857 = geom_in("SRID=3857;POLYGON((0 1,2 1,2 3,0 3,0 1))",
@@ -1142,6 +1171,44 @@ int main(void)
   assert(bandstats_count(NULL) == -1);
   assert(! bandstats_mean(NULL, &field) && ! bandstats_mean(st, NULL));
   assert(meos_errno() != 0);
+  /* The statistics are written as PostgreSQL writes the summarystats record
+   * and read back with the fields they state, and the copy holds the same
+   * fields. The standard deviation is sqrt(623.4375), which PostgreSQL writes
+   * 24.968730444297723 */
+  char *st_text = bandstats_out(st, &size);
+  printf("bandstats_out(raster_summary_stats(raster, 1, true)): %s\n",
+    st_text);
+  assert(strcmp(st_text, "(8,430,53.75,24.968730444297723,10,90)") == 0);
+  assert(size == strlen(st_text) + 1);
+  BandStats *st_back = bandstats_in(st_text);
+  assert(st_back != NULL && st_back->count == 8 && st_back->sum == 430.0 &&
+    st_back->mean == 53.75 && st_back->stddev == st->stddev &&
+    st_back->min == 10.0 && st_back->max == 90.0);
+  BandStats *st_copy = bandstats_copy(st);
+  assert(st_copy != NULL && memcmp(st_copy, st, sizeof(BandStats)) == 0);
+  free(st_text); free(st_back); free(st_copy);
+  /* Statistics counting no pixel are written and read with no value */
+  st_text = bandstats_out(&none, &size);
+  assert(strcmp(st_text, "(0,,,,,)") == 0);
+  st_back = bandstats_in(st_text);
+  assert(st_back != NULL && st_back->count == 0);
+  free(st_text); free(st_back);
+  /* A column is read as PostgreSQL reads it, quoted or not, and the
+   * statistics of a record counting no pixel read 0 */
+  st_back = bandstats_in("(\"8\",430,53.75,\"24.9\",10,90)");
+  assert(st_back != NULL && st_back->count == 8 && st_back->stddev == 24.9);
+  free(st_back);
+  st_back = bandstats_in("(0,1,,,,)");
+  assert(st_back != NULL && st_back->count == 0 && st_back->sum == 0.0);
+  free(st_back);
+  /* A record missing a column, with a fractional count or holding an
+   * infinity is refused */
+  meos_errno_reset();
+  assert(bandstats_in("(8,430,53.75,24.9,10)") == NULL);
+  assert(bandstats_in("(1.5,1,1,0,1,1)") == NULL);
+  assert(bandstats_in("(1,Infinity,1,0,1,1)") == NULL);
+  assert(bandstats_in(NULL) == NULL && bandstats_copy(NULL) == NULL);
+  assert(meos_errno() != 0);
   free(st);
 
   /* Counting the nodata pixel counts the value it holds, -9999, so the count
@@ -1165,6 +1232,103 @@ int main(void)
   assert(raster_summary_stats(rast_values, 2, true) == NULL);
   assert(raster_summary_stats(NULL, 1, true) == NULL);
   assert(meos_errno() != 0);
+
+  /* The statistics of finite pixels are answered however large the sums and
+   * squares they are taken from, and a sum beyond DBL_MAX is an overflow, as
+   * every number of a MEOS value is finite (doc/specs/meos-finite-values.md):
+   * two pixels of 1.7e308 sum beyond it; -1.7e308 beside 1.7e308 deviate by
+   * 1.7e308, whose square the doubles do not hold; 1.7e308, 1.7e308 and
+   * -1.7e308 sum to 1.7e308 though the first two sum beyond it, and deviate by
+   * 1.7e308 sqrt(8/9). The aggregate over the band answers what the single
+   * call answers */
+  const double finite_cases[4][3] = {{1.7e308, 1.7e308, 0.0},
+    {-1.7e308, 1.7e308, 0.0}, {1.7e308, 0.0, 0.0},
+    {1.7e308, 1.7e308, -1.7e308}};
+  const int finite_npix[4] = {2, 2, 1, 3};
+  const double finite_sum[4] = {0.0, 0.0, 1.7e308, 1.7e308};
+  const double finite_stddev[4] = {0.0, 1.7e308, 0.0,
+    1.6027753706895077e308};
+  for (int i = 0; i < 4; i++)
+  {
+    int n = finite_npix[i];
+    bool fin_nodata[3] = {false, false, false};
+    bool fin_noset[3] = {false, false, false};
+    Raster *fin_grid = raster_make_empty(n, 1, 0, 1, 1, -1, 0, 0, 4326);
+    Raster *fin_empty = raster_add_band(fin_grid, 1, "64BF", 0, 0, false);
+    Raster *fin = raster_set_values(fin_empty, 1, 1, 1, n, 1, finite_cases[i],
+      fin_nodata, fin_noset, n, 1, n, false);
+    assert(fin != NULL);
+    meos_errno_reset();
+    BandStats *fin_st = raster_summary_stats(fin, 1, true);
+    int fin_err = meos_errno();
+    meos_errno_reset();
+    RasterStatsState *fin_state = raster_summary_stats_transfn(NULL, fin, 1,
+      true);
+    assert(fin_state != NULL);
+    BandStats *fin_agg = raster_summary_stats_finalfn(fin_state);
+    int fin_agg_err = meos_errno();
+    if (i == 0)
+    {
+      printf("raster_summary_stats(1.7e308, 1.7e308): error %d\n", fin_err);
+      assert(fin_st == NULL && fin_err == MEOS_ERR_VALUE_OUT_OF_RANGE);
+      assert(fin_agg == NULL && fin_agg_err == MEOS_ERR_VALUE_OUT_OF_RANGE);
+    }
+    else
+    {
+      assert(fin_st != NULL && fin_err == 0 && (int) fin_st->count == n);
+      printf("raster_summary_stats(case %d): sum %.17g, mean %.17g, "
+        "stddev %.17g\n", i, fin_st->sum, fin_st->mean, fin_st->stddev);
+      assert(fin_st->sum == finite_sum[i]);
+      assert(fin_st->mean == finite_sum[i] / n);
+      assert(fabs(fin_st->stddev - finite_stddev[i]) <=
+        4 * DBL_EPSILON * finite_stddev[i]);
+      assert(fin_agg != NULL && fin_agg_err == 0 &&
+        fin_agg->count == fin_st->count && fin_agg->sum == fin_st->sum &&
+        fin_agg->mean == fin_st->mean && fin_agg->stddev == fin_st->stddev);
+    }
+    free(fin_st); free(fin_agg);
+    free(fin); free(fin_empty); free(fin_grid);
+  }
+
+  /* Across rasters as well: 1.7e308 in one raster and -1.7e308 in the next
+   * deviate by 1.7e308, read on, combined, or through the bytes of a state */
+  double fin_one[1] = {1.7e308}, fin_two[1] = {-1.7e308};
+  bool fin_nod[1] = {false}, fin_nos[1] = {false};
+  Raster *fin_base_grid = raster_make_empty(1, 1, 0, 1, 1, -1, 0, 0, 4326);
+  Raster *fin_base = raster_add_band(fin_base_grid, 1, "64BF", 0, 0, false);
+  Raster *fin_a = raster_set_values(fin_base, 1, 1, 1, 1, 1, fin_one, fin_nod,
+    fin_nos, 1, 1, 1, false);
+  Raster *fin_b = raster_set_values(fin_base, 1, 1, 1, 1, 1, fin_two, fin_nod,
+    fin_nos, 1, 1, 1, false);
+  assert(fin_a != NULL && fin_b != NULL);
+  meos_errno_reset();
+  RasterStatsState *fin_run = raster_summary_stats_transfn(NULL, fin_a, 1,
+    true);
+  fin_run = raster_summary_stats_transfn(fin_run, fin_b, 1, true);
+  size_t fin_size;
+  uint8_t *fin_bytes = rasterstatsstate_serialize(fin_run, &fin_size);
+  RasterStatsState *fin_back = rasterstatsstate_deserialize(fin_bytes,
+    fin_size);
+  BandStats *fin_read = raster_summary_stats_finalfn(fin_run);
+  BandStats *fin_from_bytes = raster_summary_stats_finalfn(fin_back);
+  RasterStatsState *fin_sa = raster_summary_stats_transfn(NULL, fin_a, 1,
+    true);
+  RasterStatsState *fin_sb = raster_summary_stats_transfn(NULL, fin_b, 1,
+    true);
+  fin_sa = raster_summary_stats_combinefn(fin_sa, fin_sb);
+  BandStats *fin_comb = raster_summary_stats_finalfn(fin_sa);
+  assert(meos_errno() == 0);
+  assert(fin_read != NULL && fin_from_bytes != NULL && fin_comb != NULL);
+  printf("summary statistics of 1.7e308 and -1.7e308 across two rasters: "
+    "stddev %.17g\n", fin_read->stddev);
+  assert(fin_read->count == 2 && fin_read->sum == 0.0 &&
+    fabs(fin_read->stddev - 1.7e308) <= 4 * DBL_EPSILON * 1.7e308);
+  assert(fin_from_bytes->sum == fin_read->sum &&
+    fin_from_bytes->stddev == fin_read->stddev);
+  assert(fin_comb->count == 2 && fin_comb->sum == 0.0 &&
+    fabs(fin_comb->stddev - 1.7e308) <= 4 * DBL_EPSILON * 1.7e308);
+  free(fin_read); free(fin_from_bytes); free(fin_comb); free(fin_bytes);
+  free(fin_sb); free(fin_a); free(fin_b); free(fin_base); free(fin_base_grid);
 
   /* Reclassifying maps the values of a band onto the classes an expression
    * names. The band holds 10, 30, 40, 50, 60, 70, 80 and 90 outside its

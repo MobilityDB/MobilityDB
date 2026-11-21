@@ -100,47 +100,35 @@ geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution)
 GSERIALIZED *
 h3index_cell_to_point(H3Index cell)
 {
-  LatLng ll;
-  if (cellToLatLng(cell, &ll) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  double lon, lat;
+  if (! h3_cell_center_lonlat(cell, &lon, &lat))
     return NULL;
-  }
   /* Planar (non-geodetic) lon/lat point, as the geometry it is */
-  return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
-    false, false, SRID_DEFAULT);
+  return geopoint_make(lon, lat, 0.0, false, false, SRID_DEFAULT);
 }
 
 /**
- * @brief Return an SRID 4326 polygon built from a libh3 CellBoundary,
- * geodetic or planar as its caller states
- * @details The ring closes by repeating vertex 0. The cell and the
+ * @brief Return an SRID 4326 polygon built from the @p n points of a
+ * boundary in degrees, geodetic or planar as its caller states
+ * @details The ring closes by repeating the first point. The cell and the
  * directed-edge boundary adapters share it.
- * @param[in] bnd Boundary
+ * @param[in] lon,lat Points of the boundary
+ * @param[in] n Number of points
  * @param[in] geodetic True when the polygon is geodetic
  */
 GSERIALIZED *
-cell_boundary_to_gs(const CellBoundary *bnd, bool geodetic)
+cell_boundary_to_gs(const double *lon, const double *lat, int n,
+  bool geodetic)
 {
-  POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE,
-    bnd->numVerts + 1);
-  for (int v = 0; v < bnd->numVerts; v++)
+  POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE, n + 1);
+  for (int v = 0; v < n; v++)
   {
-    POINT4D pt;
-    pt.x = radsToDegs(bnd->verts[v].lng);
-    pt.y = radsToDegs(bnd->verts[v].lat);
-    pt.z = 0.0;
-    pt.m = 0.0;
+    POINT4D pt = { lon[v], lat[v], 0.0, 0.0 };
     ptarray_append_point(pa, &pt, LW_TRUE);
   }
-  /* Close the ring. */
-  POINT4D pt0;
-  pt0.x = radsToDegs(bnd->verts[0].lng);
-  pt0.y = radsToDegs(bnd->verts[0].lat);
-  pt0.z = 0.0;
-  pt0.m = 0.0;
+  /* Close the ring on the first point */
+  POINT4D pt0 = { lon[0], lat[0], 0.0, 0.0 };
   ptarray_append_point(pa, &pt0, LW_TRUE);
-
   LWPOLY *poly = lwpoly_construct_empty(SRID_DEFAULT, LW_FALSE, LW_FALSE);
   lwpoly_add_ring(poly, pa);
   lwgeom_set_geodetic(lwpoly_as_lwgeom(poly), geodetic);
@@ -158,13 +146,11 @@ cell_boundary_to_gs(const CellBoundary *bnd, bool geodetic)
 GSERIALIZED *
 h3index_cell_to_boundary(H3Index cell)
 {
-  CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  double lon[H3_BOUNDARY_MAX], lat[H3_BOUNDARY_MAX];
+  int n = h3_cell_boundary_lonlat(cell, lon, lat);
+  if (n < 0)
     return NULL;
-  }
-  return cell_boundary_to_gs(&bnd, false);
+  return cell_boundary_to_gs(lon, lat, n, false);
 }
 
 /**
@@ -174,14 +160,10 @@ h3index_cell_to_boundary(H3Index cell)
 GSERIALIZED *
 h3index_cell_to_geogpoint(H3Index cell)
 {
-  LatLng ll;
-  if (cellToLatLng(cell, &ll) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  double lon, lat;
+  if (! h3_cell_center_lonlat(cell, &lon, &lat))
     return NULL;
-  }
-  return geopoint_make(radsToDegs(ll.lng), radsToDegs(ll.lat), 0.0,
-    false, true, SRID_DEFAULT);
+  return geopoint_make(lon, lat, 0.0, false, true, SRID_DEFAULT);
 }
 
 /**
@@ -191,13 +173,11 @@ h3index_cell_to_geogpoint(H3Index cell)
 GSERIALIZED *
 h3index_cell_to_geog(H3Index cell)
 {
-  CellBoundary bnd;
-  if (cellToBoundary(cell, &bnd) != E_SUCCESS)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  double lon[H3_BOUNDARY_MAX], lat[H3_BOUNDARY_MAX];
+  int n = h3_cell_boundary_lonlat(cell, lon, lat);
+  if (n < 0)
     return NULL;
-  }
-  return cell_boundary_to_gs(&bnd, true);
+  return cell_boundary_to_gs(lon, lat, n, true);
 }
 
 /*****************************************************************************

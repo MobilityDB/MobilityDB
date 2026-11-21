@@ -1978,6 +1978,27 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
       return NULL;
     }
   }
+  /* A crs that states an SRID states the one of the value. The values of the
+   * network points, the cell indexes and the point clouds take no SRID from
+   * the crs, so a crs stating another one contradicts the value, as a WKB
+   * header does in #temporal_from_wkb_state */
+  if (result && pszName && spatial && srid != SRID_UNKNOWN)
+  {
+    int32_t srid_value = tspatial_srid(result);
+    if (srid_value != SRID_UNKNOWN && srid_value != srid)
+    {
+      json_object_put(poObj);
+      pfree(result);
+#if RGEO
+      if (gs)
+        pfree(gs);
+#endif /* RGEO */
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "The SRID of the MFJSON (%d) does not match the SRID of the %s (%d)",
+        srid, meostype_name(temptype), srid_value);
+      return NULL;
+    }
+  }
   json_object_put(poObj);
 #if RGEO
   if (temptype_orig == T_TRGEOMETRY && temptype == T_TPOSE)
@@ -2588,10 +2609,19 @@ raquet_from_wkb_state(meos_wkb_parse_state *s)
 {
   uint64 quadbin = (uint64) int64_from_wkb_state(s);
   uint8_t pixtype = byte_from_wkb_state(s);
-  uint16_t width = (uint16_t) int32_from_wkb_state(s);
-  uint16_t height = (uint16_t) int32_from_wkb_state(s);
+  int32 width = int32_from_wkb_state(s);
+  int32 height = int32_from_wkb_state(s);
   bool has_nodata = (bool) byte_from_wkb_state(s);
   double nodata = double_from_wkb_state(s);
+  /* The dimensions are read in the type the WKB writes them and tested before
+   * they size the payload, since a tile holds at most UINT16_MAX pixels a side */
+  if (width <= 0 || height <= 0 || width > UINT16_MAX || height > UINT16_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "The width and height of a raquet tile in WKB must be between 1 and %d: "
+      "%d x %d", UINT16_MAX, width, height);
+    return PointerGetDatum(NULL);
+  }
   /* A zero size is the unknown-pixel-type signal of #raquet_pixtype_size */
   size_t pixsize = raquet_pixtype_size((MeosPixType) pixtype);
   if (pixsize == 0)

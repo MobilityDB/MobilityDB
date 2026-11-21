@@ -29,7 +29,10 @@ on:
   push:
     paths:
       - '.github/workflows/fedora.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -40,7 +43,10 @@ on:
   pull_request:
     paths:
       - '.github/workflows/fedora.yml'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -61,7 +67,7 @@ jobs:
           dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
             postgresql-server-devel postgis \
             proj-devel json-c-devel \
-            gdal-devel h3-devel \
+            gdal-devel \
             autoconf automake libtool libxml2-devel zlib-devel which \
             redhat-rpm-config
           gcc --version | head -1
@@ -71,6 +77,13 @@ jobs:
       # The checkout belongs to another uid inside the container.
       - name: Trust the checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a package carries
+        # whatever release it last took and releases state different vertices.
+        # It goes into /usr, which the loader of the image searches.
+        run: .github/scripts/install-h3.sh /usr
 
       # RASTER needs GDAL and H3 needs libh3; -DALL=ON turns both on, so the
       # families that only need a C library are all compiled here.
@@ -108,7 +121,7 @@ jobs:
         run: |
           dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
             postgresql-server postgresql-server-devel postgis \
-            proj-devel json-c-devel gdal-devel h3-devel \
+            proj-devel json-c-devel gdal-devel \
             autoconf automake libtool libxml2-devel zlib-devel which \
             redhat-rpm-config
           locale
@@ -117,6 +130,13 @@ jobs:
 
       - name: Trust the checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a package carries
+        # whatever release it last took and releases state different vertices.
+        # It goes into /usr, which the loader of the image searches.
+        run: .github/scripts/install-h3.sh /usr
 
       # initdb refuses to run as root, and the suite creates its own cluster,
       # so the build and the tests belong to an unprivileged user.
@@ -148,7 +168,11 @@ jobs:
           # compiles into its own library, so the checkout is cloned beside it.
           git clone --depth 1 --recurse-submodules --branch v4.2.3 \
             https://github.com/postgis/h3-pg.git h3-pg-checkout
-          cmake -S h3-pg-checkout -B h3-pg-build -DCMAKE_BUILD_TYPE=Release
+          # The H3 core it builds installs into CMAKE_INSTALL_PREFIX, which a
+          # local directory keeps apart from the release MobilityDB builds on;
+          # the extension itself installs where pg_config names
+          cmake -S h3-pg-checkout -B h3-pg-build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$PWD/h3-pg-prefix"
           cmake --build h3-pg-build -j$(nproc)
           cmake --install h3-pg-build
           # Installing into the cluster needs root, and the configure below runs

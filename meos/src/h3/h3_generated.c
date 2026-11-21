@@ -43,6 +43,7 @@
 #include <h3api.h>
 /* MEOS */
 #include <meos.h>
+#include "h3/h3index.h"
 
 /*****************************************************************************/
 
@@ -54,8 +55,7 @@ bool
 h3_are_neighbor_cells_meos(H3Index origin, H3Index destination)
 {
   int neighboring = {0};
-  if ((areNeighborCells(origin, destination, &neighboring)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(areNeighborCells(origin, destination, &neighboring));
   return neighboring;
 }
 
@@ -68,13 +68,13 @@ H3Index
 h3_cells_to_directed_edge_meos(H3Index origin, H3Index destination)
 {
   H3Index edge = {0};
-  if ((cellsToDirectedEdge(origin, destination, &edge)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(cellsToDirectedEdge(origin, destination, &edge));
   return edge;
 }
 
 /**
- * @brief Return true if the provided H3Index is a valid unidirectional edge index
+ * @brief Return true if the provided H3Index is a valid unidirectional edge
+ * index
  * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_is_valid_directed_edge
  */
 bool
@@ -84,28 +84,26 @@ h3_is_valid_directed_edge_meos(H3Index edge)
 }
 
 /**
- * @brief Return the origin hexagon from the unidirectional edge H3Index.
+ * @brief Return the origin hexagon from the unidirectional edge H3Index
  * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_origin
  */
 H3Index
 h3_get_directed_edge_origin_meos(H3Index edge)
 {
   H3Index origin = {0};
-  if ((getDirectedEdgeOrigin(edge, &origin)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(getDirectedEdgeOrigin(edge, &origin));
   return origin;
 }
 
 /**
- * @brief Return the destination hexagon from the unidirectional edge H3Index.
+ * @brief Return the destination hexagon from the unidirectional edge H3Index
  * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_destination
  */
 H3Index
 h3_get_directed_edge_destination_meos(H3Index edge)
 {
   H3Index destination = {0};
-  if ((getDirectedEdgeDestination(edge, &destination)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(getDirectedEdgeDestination(edge, &destination));
   return destination;
 }
 
@@ -117,8 +115,7 @@ H3Index
 h3_cell_to_parent_meos(H3Index origin, int32 resolution)
 {
   H3Index parent = {0};
-  if ((cellToParent(origin, resolution, &parent)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(cellToParent(origin, resolution, &parent));
   return parent;
 }
 
@@ -131,34 +128,31 @@ H3Index
 h3_cell_to_center_child_meos(H3Index origin, int32 resolution)
 {
   H3Index child = {0};
-  if ((cellToCenterChild(origin, resolution, &child)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(cellToCenterChild(origin, resolution, &child));
   return child;
 }
 
 /**
- * @brief Return
+ * @brief Return the position of a cell among the children of its parent
  * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_child_pos
  */
 int64
 h3_cell_to_child_pos_meos(H3Index child, int32 parentRes)
 {
   int64_t childPos = {0};
-  if ((cellToChildPos(child, parentRes, &childPos)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(cellToChildPos(child, parentRes, &childPos));
   return childPos;
 }
 
 /**
- * @brief Return
+ * @brief Return the child of a cell at a position among its children
  * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_child_pos_to_cell
  */
 H3Index
 h3_child_pos_to_cell_meos(int64 childPos, H3Index parent, int32 childRes)
 {
   H3Index child = {0};
-  if ((childPosToCell(childPos, parent, childRes, &child)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(childPosToCell(childPos, parent, childRes, &child));
   return child;
 }
 
@@ -220,26 +214,23 @@ int64
 h3_get_num_cells_meos(int32 resolution)
 {
   int64_t cells = {0};
-  if ((getNumCells(resolution, &cells)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(getNumCells(resolution, &cells));
   return cells;
 }
 
 /**
- * @brief Return the distance in grid cells between the two indexes.
- * @details Return a negative number if finding the distance failed.
- * Finding the distance can fail because the two indexes are not comparable
- * (different resolutions), too far apart, or are separated by pentagonal
- * distortion. This is the same set of limitations as the local IJ coordinate
- * space functions.
+ * @brief Return the distance in grid cells between the two indexes
+ * @details The distance cannot be found when the two indexes are not
+ * comparable (different resolutions), too far apart, or separated by
+ * pentagonal distortion, the limitations of the local IJ coordinate space
+ * functions; the error libh3 returns is then raised.
  * @note Extracted from h3-pg/h3/src/binding/traversal.c :: h3_grid_distance
  */
 int64
 h3_grid_distance_meos(H3Index originIndex, H3Index h3Index)
 {
   int64_t distance = {0};
-  if ((gridDistance(originIndex, h3Index, &distance)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(gridDistance(originIndex, h3Index, &distance));
   return distance;
 }
 
@@ -251,8 +242,7 @@ H3Index
 h3_cell_to_vertex_meos(H3Index cell, int32 vertexNum)
 {
   H3Index vertex = {0};
-  if ((cellToVertex(cell, vertexNum, &vertex)) != E_SUCCESS)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
+  ensure_h3_success(cellToVertex(cell, vertexNum, &vertex));
   return vertex;
 }
 

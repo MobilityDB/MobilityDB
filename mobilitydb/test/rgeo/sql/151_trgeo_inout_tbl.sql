@@ -18,6 +18,8 @@ SELECT DISTINCT asEWKT(trgeometryFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl
 SELECT DISTINCT asText(trgeometryFromMFJSON(asMFJSON(temp))) = asText(temp) FROM tbl_trgeometry2d;
 
 SELECT DISTINCT setSRID(trgeometryFromBinary(asBinary(temp)), 5676) = temp FROM tbl_trgeometry2d;
+-- The value states one SRID, its poses' and its reference geometry's
+SELECT DISTINCT ST_SRID(geometry(setSRID(trgeometryFromBinary(asBinary(temp)), 5676))) FROM tbl_trgeometry2d;
 
 SELECT DISTINCT trgeometryFromEWKB(asEWKB(temp)) = temp FROM tbl_trgeometry2d;
 

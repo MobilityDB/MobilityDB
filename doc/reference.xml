@@ -981,7 +981,7 @@
 	<sect1>
 		<title>Temporal Geometry Types</title>
 		<sect2>
-			<title>Functions on Geometries</title>
+			<title>Static Geometries</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="geo_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
@@ -1020,6 +1020,9 @@
 					<para><link linkend="geo_spatialrels"><varname>contains</varname>, <varname>covers</varname>, <varname>disjoint</varname>, <varname>intersects</varname>, <varname>touches</varname>, <varname>geoEquals</varname></link>: Return true if two geometries satisfy a spatial relationship</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_orderingequals"><varname>orderingEquals</varname></link>: Return true if two geometries have the same vertices in the same order</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Return true if two geometries are within a distance</para>
 				</listitem>
 				<listitem>
@@ -1030,6 +1033,21 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_accessors"><varname>boundary</varname>, <varname>reverse</varname>, <varname>numGeometries</varname>, <varname>geometryN</varname>, <varname>numPoints</varname></link>: Return the boundary, the reversal or the parts of a geometry</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_srid"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_memsize"><varname>memSize</varname></link>: Return the size in bytes of a geometry or a geography</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_isempty"><varname>isEmpty</varname></link>: Return true if a geometry or a geography is empty</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_points"><varname>points</varname>, <varname>pointN</varname></link>: Return the vertices of a geometry or one of them</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_azimuth"><varname>azimuth</varname></link>: Return the azimuth of the segment joining two points</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Return the point at a fraction of a line, the part between two fractions, or the fraction closest to a point</para>
@@ -1053,7 +1071,10 @@
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Return the region two geometries share</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Return the region two geometries cover together</para>
+					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Return the region two geometries, or an array of geometries or of geographies, cover together</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_unaryunion"><varname>unaryUnion</varname></link>: Return the union of the parts of a geometry</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_difference"><varname>difference</varname></link>: Return the region of the first geometry that the second does not cover</para>
@@ -3729,10 +3750,13 @@
 						<para><link linkend="pcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</para>
+						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Return any named dimension of a pcpoint</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier (inherited from the schema)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpoint_transform"><varname>transform</varname></link>: Transform to the schema of another pcid</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpatch_numPoints"><varname>numPoints</varname></link>: Return the number of points of a pcpatch</para>
@@ -3831,7 +3855,7 @@
 						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Return a tpcbox with coordinates rounded to a given number of decimal digits</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Return a tpcbox stating a reference system its schema does not state</para>
+						<para><link linkend="tpcbox_transform"><varname>transform</varname></link>: Transform to the schema of another pcid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3920,6 +3944,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_SRID"><varname>SRID</varname></link>: Return the SRID inherited from the schema</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_transform"><varname>transform</varname></link>: Transform to the schema of another pcid</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Project a tpcpoint onto a spatial dimension, yielding a tfloat</para>

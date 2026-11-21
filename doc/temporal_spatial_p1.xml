@@ -10,36 +10,8 @@
 <chapter xml:id="tgeo_p1">
 	<title>Temporal Geometry Types (Part 1)</title>
 
-	<sect1 xml:id="tspatial">
-		<title>Spatiotemporal Types</title>
-		<para>MobilityDB provides a set of spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), <varname>tposechain</varname> (temporal pose chain), <varname>trgeometry</varname> (temporal rigid geometry), <varname>th3index</varname>, <varname>tquadbin</varname>, and <varname>ts2cell</varname> (the temporal DGGS cell indexes), and <varname>tpcpoint</varname> (temporal point cloud point) and <varname>tpcpatch</varname> (temporal point cloud patch). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.</para>
-
-		<figure xml:id="tspatial_fig" float="start">
-			<title>Hierarchy of spatiotemporal types in MobilityDB.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PDF" width="100%" scalefit="1" fileref="images/tspatial.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" width="100%" scalefit="1" fileref="images/tspatial.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="images/tspatial.png"/></imageobject>
-			</mediaobject>
-		</figure>
-
-		<para>In this chapter and the following one we cover the type <varname>TGeo</varname> and its subtypes, that is, the spatiotemporal types derived from the PostGIS types <varname>geometry</varname> and <varname>geography</varname>. In the subsequent chapters we continue describing the remaining spatiotemporal types.</para>
-
-		<para><xref linkend="tpoint_tgeo" /> illustrates the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024. The data is obtained from the National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). As illustrated in the figure, the type <varname>tgeompoint</varname> allows <emphasis>linear</emphasis> interpolation, while the type <varname>tgeometry</varname> only allows <emphasis>step</emphasis> interpolation.</para>
-
-		<figure xml:id="tpoint_tgeo" float="start">
-			<title>Illustration of the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeompoint.png"/></imageobject>
-			</mediaobject>
-			<mediaobject>
-				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeometry.png"/></imageobject>
-			</mediaobject>
-		</figure>
-	</sect1>
-
 	<sect1 xml:id="geo_funcs">
-		<title>Functions on Geometries</title>
+		<title>Static Geometries</title>
 
 		<para>The functions in this section answer a question about a geometry rather than about a temporal type. Each states how it reads a geometry bounded by circular arcs, since an answer built from the arcs themselves and an answer built from a polygonal approximation of them are not the same answer.</para>
 
@@ -272,7 +244,7 @@ SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,
 relate(geometry,geometry) → text
 relate(geometry,geometry,text) → boolean
 </programlisting>
-				<para>The matrix states, for each pair drawn from the interior, the boundary and the exterior of the first geometry and of the second, the dimension of what they share: <literal>F</literal> where they share nothing, <literal>0</literal>, <literal>1</literal> or <literal>2</literal> where they share points, a curve or an area. A circular arc is read on its own circle rather than on a chain of segments approximating it, and the interior and the boundary of a geometry collection are those of the union of its members. With a pattern, the function answers whether the matrix matches it, as <varname>ST_Relate</varname> with three arguments does: a character <literal>T</literal> of the pattern matches any of <literal>0</literal>, <literal>1</literal> and <literal>2</literal>, and a character <literal>*</literal> matches anything.</para>
+				<para>The matrix states, for each pair drawn from the interior, the boundary and the exterior of the first geometry and of the second, the dimension of what they share: <literal>F</literal> where they share nothing, <literal>0</literal>, <literal>1</literal> or <literal>2</literal> where they share points, a curve or an area. A circular arc is read on its own circle rather than on a chain of segments approximating it, and the interior and the boundary of a geometry collection are those of the union of its members. With a pattern, the function answers whether the matrix matches it, as <varname>ST_Relate</varname> with three arguments does: a character <literal>T</literal> of the pattern matches any of <literal>0</literal>, <literal>1</literal> and <literal>2</literal>, and a character <literal>*</literal> matches anything. A pattern is nine characters among <literal>T</literal>, <literal>F</literal>, <literal>*</literal>, <literal>0</literal>, <literal>1</literal> and <literal>2</literal>, read in any case; a pattern of another length or holding another character raises an error.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT relate(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Linestring(2 2,6 2)');
 -- 1020F1102
@@ -313,6 +285,23 @@ SELECT touches(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(4 2)')
 SELECT intersects(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
 -- false
 SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 0)');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_orderingequals">
+				<indexterm significance="normal"><primary><varname>orderingEquals</varname></primary></indexterm>
+				<para>Return true if two geometries have the same vertices in the same order</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+orderingEquals(geometry,geometry) → boolean
+</programlisting>
+				<para>It answers as the PostGIS function <varname>ST_OrderingEquals</varname>, where <varname>geoEquals</varname> compares the sets of points.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(0 0,1 1)');
+-- true
+SELECT orderingEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0 0)');
+-- false
+SELECT geoEquals(geometry 'Linestring(0 0,1 1)', geometry 'Linestring(1 1,0 0)');
 -- true
 </programlisting>
 			</listitem>
@@ -418,6 +407,93 @@ SELECT ST_AsText(geometryN(geometry 'MultiPoint(1 1,5 5)', 2));
 -- POINT(5 5)
 SELECT numPoints(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))');
 -- 5
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_srid">
+				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Return or set the spatial reference identifier of a geometry or a geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+SRID({geometry,geography}) → integer
+setSRID({geometry,geography},integer) → {geometry,geography}
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>: a negative SRID is set as the unknown SRID 0 and an SRID beyond the reserved range is folded into it. The invalid SRID is refused.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(geometry 'SRID=3812;Point(1 1)');
+-- 3812
+SELECT SRID(geography 'Point(4.35 50.85)');
+-- 4326
+SELECT ST_AsEWKT(setSRID(geometry 'Point(1 1)', 3812));
+-- SRID=3812;POINT(1 1)
+SELECT setSRID(geometry 'Point(1 1)', 1000001);
+-- ERROR:  The SRID is invalid
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_memsize">
+				<indexterm significance="normal"><primary><varname>memSize</varname></primary></indexterm>
+				<para>Return the size in bytes of a geometry or a geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+memSize({geometry,geography}) → integer
+</programlisting>
+				<para>It answers as the PostGIS function <varname>ST_MemSize</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT memSize(geometry 'Point(1 2)');
+-- 32
+SELECT memSize(geometry 'Linestring(0 0,4 0,4 3)');
+-- 80
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_isempty">
+				<indexterm significance="normal"><primary><varname>isEmpty</varname></primary></indexterm>
+				<para>Return true if a geometry or a geography is empty</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+isEmpty({geometry,geography}) → boolean
+</programlisting>
+				<para>It answers as the PostGIS function <varname>ST_IsEmpty</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isEmpty(geometry 'Point empty');
+-- true
+SELECT isEmpty(geography 'Point(4.35 50.85)');
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_points">
+				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>pointN</varname></primary></indexterm>
+				<para>Return the vertices of a geometry or one of them</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+points(geometry) → geometry
+pointN(geometry,integer) → geometry
+</programlisting>
+				<para>Each answers as the PostGIS function of the same name with the prefix <varname>ST_</varname>: <varname>points</varname> is a multipoint holding every vertex, and <varname>pointN</varname> counts the vertices of a line from 1, a negative number counting from its end, and answers <varname>NULL</varname> beyond them.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(points(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'));
+-- MULTIPOINT((0 0),(4 0),(4 4),(0 4),(0 0))
+SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', 2));
+-- POINT(6 2)
+SELECT ST_AsText(pointN(geometry 'Linestring(2 2,6 2,6 5)', -1));
+-- POINT(6 5)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_azimuth">
+				<indexterm significance="normal"><primary><varname>azimuth</varname></primary></indexterm>
+				<para>Return the azimuth of the segment joining two points</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+azimuth(geometry,geometry) → float
+</programlisting>
+				<para>The azimuth is the angle in radians clockwise from the north, as the PostGIS function <varname>ST_Azimuth</varname> answers it, and is <varname>NULL</varname> for two equal points.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(1 1)')::numeric, 6);
+-- 0.785398
+SELECT round(azimuth(geometry 'Point(0 0)', geometry 'Point(-1 0)')::numeric, 6);
+-- 4.712389
+SELECT azimuth(geometry 'Point(1 1)', geometry 'Point(1 1)');
+-- NULL
 </programlisting>
 			</listitem>
 
@@ -557,15 +633,38 @@ SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 
 			<listitem xml:id="geo_geounion">
 				<indexterm significance="normal"><primary><varname>geoUnion</varname></primary></indexterm>
-				<para>Return the region two geometries cover together</para>
+				<para>Return the region two geometries, or an array of geometries or of geographies, cover together</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geoUnion(geometry,geometry) → geometry
+geoUnion(geometry[]) → geometry
+geoUnion(geography[]) → geography
 </programlisting>
-				<para><varname>UNION</varname> is a reserved word of SQL, so this one carries the name of the type it answers over, as <varname>setUnion</varname> and <varname>spanUnion</varname> do. Two geometries that do not meet are answered as a multipolygon.</para>
+				<para><varname>UNION</varname> is a reserved word of SQL, so this one carries the name of the type it answers over, as <varname>setUnion</varname> and <varname>spanUnion</varname> do. Two geometries that do not meet are answered as a multipolygon. The union of an array answers as the PostGIS function <varname>ST_Union</varname> over an array, and that of an empty array is <varname>NULL</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(geoUnion(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
 -- POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
+SELECT ST_AsText(geoUnion(ARRAY[geometry 'Polygon((0 0,2 0,2 2,0 2,0 0))',
+  'Polygon((1 1,3 1,3 3,1 3,1 1))', 'Polygon((5 5,6 5,6 6,5 6,5 5))']));
+-- MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)),((0 0,2 0,2 1,3 1,3 3,1 3,1 2,0 2,0 0)))
+SELECT ST_AsText(geoUnion(ARRAY[geography 'Point(1 1)', 'Point(2 2)', 'Point(1 1)']));
+-- MULTIPOINT((1 1),(2 2))
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_unaryunion">
+				<indexterm significance="normal"><primary><varname>unaryUnion</varname></primary></indexterm>
+				<para>Return the union of the parts of a geometry</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+unaryUnion(geometry) → geometry
+</programlisting>
+				<para>It answers as the PostGIS function <varname>ST_UnaryUnion</varname>, and the union of an empty geometry is that geometry.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(unaryUnion(geometry
+  'MultiPolygon(((0 0,2 0,2 2,0 2,0 0)),((1 1,3 1,3 3,1 3,1 1)))'));
+-- POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))
+SELECT ST_AsText(unaryUnion(geometry 'MultiLinestring((0 0,2 0),(1 0,3 0))'));
+-- LINESTRING(0 0,2 0,3 0)
 </programlisting>
 			</listitem>
 
@@ -603,6 +702,34 @@ SELECT symDifference(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 </programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tspatial">
+		<title>Spatiotemporal Types</title>
+		<para>MobilityDB provides a set of spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), <varname>tposechain</varname> (temporal pose chain), <varname>trgeometry</varname> (temporal rigid geometry), <varname>th3index</varname>, <varname>tquadbin</varname>, and <varname>ts2cell</varname> (the temporal DGGS cell indexes), and <varname>tpcpoint</varname> (temporal point cloud point) and <varname>tpcpatch</varname> (temporal point cloud patch). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.</para>
+
+		<figure xml:id="tspatial_fig" float="start">
+			<title>Hierarchy of spatiotemporal types in MobilityDB.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" width="100%" scalefit="1" fileref="images/tspatial.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" width="100%" scalefit="1" fileref="images/tspatial.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" width="100%" scalefit="1" fileref="images/tspatial.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>In this chapter and the following one we cover the type <varname>TGeo</varname> and its subtypes, that is, the spatiotemporal types derived from the PostGIS types <varname>geometry</varname> and <varname>geography</varname>. In the subsequent chapters we continue describing the remaining spatiotemporal types.</para>
+
+		<para><xref linkend="tpoint_tgeo" /> illustrates the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024. The data is obtained from the National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). As illustrated in the figure, the type <varname>tgeompoint</varname> allows <emphasis>linear</emphasis> interpolation, while the type <varname>tgeometry</varname> only allows <emphasis>step</emphasis> interpolation.</para>
+
+		<figure xml:id="tpoint_tgeo" float="start">
+			<title>Illustration of the use of the <varname>tgeompoint</varname> (top) and the <varname>tgeometry</varname> (bottom) types for modelling the trajectory and the wind swath of tropical storms in 2024.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeompoint.png"/></imageobject>
+			</mediaobject>
+			<mediaobject>
+				<imageobject><imagedata format="PNG" scale='30' fileref="images/tgeometry.png"/></imageobject>
+			</mediaobject>
+		</figure>
 	</sect1>
 
 	<sect1 xml:id="tgeo_notation">

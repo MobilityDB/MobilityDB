@@ -2038,13 +2038,28 @@ ddb_abs(DDBound a)
 }
 
 /**
+ * @brief Return the quotient of two pairs of doubles, the value of #ddb_div
+ * without its bound
+ * @details The residual method of #ddb_nearest_root: the quotient in doubles
+ * corrected by the residual `a - q b` is a pair of doubles
+ */
+static pg_attribute_always_inline DDBound
+dd_div(DDBound a, DDBound b)
+{
+  double bv = b.hi + b.lo;
+  DDBound q1 = { (a.hi + a.lo) / bv, 0.0, 0.0 }, q;
+  DDBound res = dd_sub(a, dd_mul(q1, b));
+  two_sum(q1.hi, (res.hi + res.lo) / bv, &q.hi, &q.lo);
+  q.e = 0.0;
+  return q;
+}
+
+/**
  * @brief Set @p r to the quotient of two bounded values with its bound, or
  * return false where the divisor does not lie above its bound
- * @details The residual method of #ddb_nearest_root: the quotient in doubles
- * corrected by the residual `a - q b` is a pair of doubles `q`; its bound is
- * the residual of the values held, read again, over `b`, plus what the
- * bounds of the operands move the quotient,
- * `|A / B - a / b| <= (e_a + |a / b| e_b) / (b - e_b)`
+ * @details The quotient is #dd_div's; its bound is the residual of the
+ * values held, read again, over `b`, plus what the bounds of the operands
+ * move the quotient, `|A / B - a / b| <= (e_a + |a / b| e_b) / (b - e_b)`
  */
 static bool
 ddb_div(DDBound a, DDBound b, DDBound *r)
@@ -2054,14 +2069,7 @@ ddb_div(DDBound a, DDBound b, DDBound *r)
     return false;
   DDBound a0 = a, b0 = b;
   a0.e = b0.e = 0.0;
-  double bv = b.hi + b.lo;
-  DDBound q1;
-  q1.hi = (a.hi + a.lo) / bv;
-  q1.lo = q1.e = 0.0;
-  DDBound res = ddb_sub(a0, ddb_mul(q1, b0));
-  DDBound q;
-  two_sum(q1.hi, (res.hi + res.lo) / bv, &q.hi, &q.lo);
-  q.e = 0.0;
+  DDBound q = dd_div(a0, b0);
   DDBound res2 = ddb_sub(a0, ddb_mul(q, b0));
   double e1 = ddb_mag_up(res2) / blow;
   double e2 = (a.e + (fabs(q.hi) + fabs(q.lo) + e1) * DDB_UP * b.e) *
@@ -2074,10 +2082,25 @@ ddb_div(DDBound a, DDBound b, DDBound *r)
 }
 
 /**
+ * @brief Return the square root of a pair of doubles, the value of
+ * #ddb_sqrt without its bound
+ * @details The residual method of #dd_div: the root in doubles corrected by
+ * the residual `a - s^2` is a pair of doubles
+ */
+static pg_attribute_always_inline DDBound
+dd_sqrt(DDBound a)
+{
+  DDBound s1 = { sqrt(a.hi + a.lo), 0.0, 0.0 }, s;
+  DDBound res = dd_sub(a, dd_mul(s1, s1));
+  two_sum(s1.hi, (res.hi + res.lo) / (2.0 * s1.hi), &s.hi, &s.lo);
+  s.e = 0.0;
+  return s;
+}
+
+/**
  * @brief Set @p r to the square root of a bounded value with its bound, or
  * return false where the value does not lie above its bound
- * @details The residual method of #ddb_div: the root in doubles corrected by
- * the residual `a - s^2` is a pair of doubles `s`, and
+ * @details The root is #dd_sqrt's, and
  * `|sqrt(a) - s| = |a - s^2| / (sqrt(a) + s) <= |a - s^2| / sqrt(a)`, plus
  * `|sqrt(A) - sqrt(a)| <= e_a / sqrt(a)`, sqrt(a) bounded below by the root
  * of the lower bound of the value
@@ -2090,13 +2113,7 @@ ddb_sqrt(DDBound a, DDBound *r)
     return false;
   DDBound a0 = a;
   a0.e = 0.0;
-  DDBound s1;
-  s1.hi = sqrt(a.hi + a.lo);
-  s1.lo = s1.e = 0.0;
-  DDBound res = ddb_sub(a0, ddb_mul(s1, s1));
-  DDBound s;
-  two_sum(s1.hi, (res.hi + res.lo) / (2.0 * s1.hi), &s.hi, &s.lo);
-  s.e = 0.0;
+  DDBound s = dd_sqrt(a0);
   DDBound res2 = ddb_sub(a0, ddb_mul(s, s));
   double slow = sqrt(alow) / DDB_UP;
   s.e = (ddb_mag_up(res2) + a.e * DDB_UP) * DDB_UP / slow;
@@ -2128,7 +2145,8 @@ ddb_div_int(DDBound a, int k)
 
 /**
  * @brief Set @p r to the degrees of atan(t), the true t in [0, 1], with
- * their bound, or return false where a bound cannot be kept
+ * their bound, or return false where a bound cannot be kept, by halvings of
+ * the angle: the definition of the entries of #atan_ratio_degrees_core
  * @details The twin of #fix_atan_bound in bounded pairs of doubles: three
  * halvings t / (1 + sqrt(1 + t^2)), each halving the angle exactly, bring
  * t below tan(pi / 32) < 0.1, where the series of the arctangent alternates
@@ -2138,7 +2156,7 @@ ddb_div_int(DDBound a, int k)
  * #ddb_div_int, #ddb_sqrt), so the bound is on the degrees of the true t
  */
 static bool
-ddb_atan_degrees(DDBound t, DDBound *r)
+ddb_atan_degrees_halving(DDBound t, DDBound *r)
 {
   DDBound one;
   one.hi = 1.0;
@@ -2180,6 +2198,138 @@ ddb_atan_degrees(DDBound t, DDBound *r)
   return isfinite(r->hi) && isfinite(r->lo) && isfinite(r->e);
 }
 
+/** @brief Number of steps of the table of #atan_ratio_degrees_core in [0, 1] */
+#define DDB_ATAN_STEPS 128
+
+/** @brief Number of terms the series of #atan_ratio_degrees_core may read */
+#define DDB_ATAN_TERMS 30
+
+/** @brief The tables of the arctangent of a thread, in one structure so
+ * that a call reads the address of all of them once */
+typedef struct
+{
+  DDBound atan[DDB_ATAN_STEPS + 1];  /**< The degrees of atan(k / #DDB_ATAN_STEPS)
+                                         with their bound, stated once each by
+                                         #ddb_atan_degrees_halving */
+  bool atan_set[DDB_ATAN_STEPS + 1]; /**< Whether each is stated */
+  DDBound inv[DDB_ATAN_TERMS];       /**< The reciprocals 1 / (2n + 1) of the
+                                         coefficients of the series with their
+                                         bound, stated once each by
+                                         #ddb_div_int */
+  int ninv;                          /**< The number of reciprocals stated, the
+                                         first ones */
+} DdbAtanTables;
+
+/** @brief The tables of the arctangent of each thread (#DdbAtanTables) */
+static MEOS_TLS DdbAtanTables MEOS_DDB_ATAN;
+
+/** @brief Address of #MEOS_DDB_ATAN, read once by each caller */
+MEOS_TLS_ADDRESS(DdbAtanTables, atan_tables, MEOS_DDB_ATAN)
+
+/**
+ * @brief Set @p r to the degrees of atan(n / d), the true ratio in [0, 1]
+ * and d positive, every operation bounded where @p bounded holds, or return
+ * false where a bound cannot be kept: the one evaluation of
+ * #ddb_atan_ratio_nearest and #dd_gnomonic_point_nearest, which the compiler
+ * states once for each value of @p bounded
+ * @details With c = k / 128 the step nearest n / d, atan(n / d) = atan(c) +
+ * atan(u) for u = (n - c d) / (d + c n), |u| below 1/256 and a little more,
+ * one division for the ratio and its reduction together: the first term is
+ * the entry of the table (#DdbAtanTables), the second the series of the
+ * arctangent, which alternates with decreasing terms and stops at a power of
+ * u below @p stop, bounding the rest, times 180 / pi. Every operation carries
+ * the bound of its operands, so the bound is on the degrees of the true
+ * ratio; an entry is stated by the halvings of #ddb_atan_degrees_halving
+ */
+static pg_attribute_always_inline bool
+atan_ratio_degrees_core(DdbAtanTables *tab, DDBound n, DDBound d,
+  double stop, bool bounded, DDBound *r)
+{
+  DDBound *atan_tab = tab->atan, *inv = tab->inv;
+  bool *atan_set = tab->atan_set;
+  double dh = d.hi + d.lo;
+  if (! (dh > 0.0))
+    return false;
+  double th = (n.hi + n.lo) / dh;
+  if (! (th >= -0.5 && th <= 1.5))
+    return false;
+  int k = (int) lrint(Max(0.0, Min(1.0, th)) * DDB_ATAN_STEPS);
+  if (! atan_set[k])
+  {
+    DDBound c = { (double) k / DDB_ATAN_STEPS, 0.0, 0.0 };
+    if (! ddb_atan_degrees_halving(c, &atan_tab[k]))
+      return false;
+    atan_set[k] = true;
+  }
+  DDBound c = { (double) k / DDB_ATAN_STEPS, 0.0, 0.0 };
+  DDBound u;
+  if (bounded)
+  {
+    if (! ddb_div(ddb_sub(n, ddb_mul(c, d)), ddb_add(d, ddb_mul(c, n)), &u))
+      return false;
+  }
+  else
+    u = dd_div(dd_sub(n, dd_mul(c, d)), dd_add(d, dd_mul(c, n)));
+  DDBound u2 = { u.hi * u.hi, 0.0, 0.0 };
+  if (bounded)
+    u2 = ddb_mul(u, u);
+  /* The number of terms N: the first power u^(2N + 1) below the stop, read
+   * on magnitudes rounded up; the rest of the series alternates and
+   * decreases, so it lies within its first term, below that power */
+  double pmag = ddb_mag_up(u), u2mag = ddb_mag_up(u2);
+  int nterms = 0;
+  while (pmag >= stop)
+  {
+    if (++nterms >= DDB_ATAN_TERMS)
+      return false;
+    pmag = pmag * u2mag * DDB_UP;
+  }
+  /* The reciprocals are stated in order, so one count says which are */
+  while (tab->ninv <= nterms)
+  {
+    DDBound one = { 1.0, 0.0, 0.0 };
+    inv[tab->ninv] = ddb_div_int(one, 2 * tab->ninv + 1);
+    tab->ninv++;
+  }
+  DDBound deg = { DDB_DEG_HI, DDB_DEG_LO, DDB_DEG_ERR };
+  if (bounded)
+  {
+    /* u (1/1 - u^2 (1/3 - u^2 (1/5 - ...))) by Horner's scheme */
+    DDBound s = inv[nterms];
+    for (int i = nterms - 1; i >= 0; i--)
+      s = ddb_sub(inv[i], ddb_mul(u2, s));
+    DDBound sum = ddb_mul(u, s);
+    sum.e = (sum.e + pmag) * DDB_UP;
+    *r = ddb_add(atan_tab[k], ddb_mul(sum, deg));
+  }
+  else
+  {
+    /* atan(u) = u - corr for corr = u t (1/3 - t (1/5 - t (1/7 - ...))),
+     * t = u^2: corr is at most |u| t / 3, below 2^-16 |u|, so it is read in
+     * doubles, with
+     * a relative error below 2^-49 (the roundings of t, of the Horner steps
+     * of an alternating series whose terms decrease, and of the products,
+     * and the low double of u left out), only u being a pair of doubles, as
+     * #point_distance_offset_dd holds its leading value exactly and reads
+     * its small correction in doubles with the bound of that reading */
+    double t = u.hi * u.hi, corr = 0.0;
+    if (nterms > 0)
+    {
+      double w = inv[nterms].hi;
+      for (int i = nterms - 1; i >= 1; i--)
+        w = inv[i].hi - t * w;
+      corr = u.hi * (t * w);
+    }
+    DDBound cc = { corr, 0.0, 0.0 };
+    *r = dd_add(atan_tab[k], dd_mul(dd_sub(u, cc), deg));
+    /* What the arithmetic leaves out is the caller's to bound: here the rest
+     * of the series, the error of the correction, both in degrees, and the
+     * bound of the entry of the table */
+    r->e = ((pmag + fabs(corr) * 0x1p-48) * 64.0 + atan_tab[k].e) * DDB_UP;
+  }
+  return isfinite(r->hi) && isfinite(r->lo) && isfinite(r->e);
+}
+
 /**
  * @brief Set @p result to the double nearest the bounded positive value
  * @p a, signed by @p sign, where its bound places it strictly inside the
@@ -2210,83 +2360,145 @@ ddb_degrees_nearest(DDBound a, double sign, double *result)
 }
 
 /**
+ * @brief Set @p result to the double nearest @p sign times the degrees
+ * offset + scale atan(n / d), the series read to @p stop and every
+ * operation bounded where @p bounded holds, @p err added to the bound
+ * otherwise, where that bound decides it, and return false where it cannot:
+ * the step #ddb_atan_ratio_nearest and #dd_gnomonic_point_nearest share
+ */
+static pg_attribute_always_inline bool
+atan_ratio_nearest_at(DdbAtanTables *tab, DDBound n, DDBound d,
+  double scale, double offset, double sign, double stop, bool bounded,
+  double err, double *result)
+{
+  DDBound deg;
+  if (! atan_ratio_degrees_core(tab, n, d, stop, bounded, &deg))
+    return false;
+  deg.hi *= scale;
+  deg.lo *= scale;
+  deg.e *= fabs(scale);
+  if (offset != 0.0)
+  {
+    DDBound k = { offset, 0.0, 0.0 };
+    double e = deg.e;
+    deg = bounded ? ddb_add(k, deg) : dd_add(k, deg);
+    if (! bounded)
+      deg.e = e;
+  }
+  deg.e += err;
+  return ddb_degrees_nearest(deg, sign, result);
+}
+
+/**
+ * @brief Set @p result to the double nearest @p sign times the degrees
+ * offset + scale atan(n / d), the true ratio in [0, 1], d positive, @p scale
+ * 1, -1 or 2, where bounded pairs of doubles decide it, and return false
+ * where they cannot
+ * @details The series of the arctangent is read first to 2^-80 and, where
+ * that bound leaves the degrees within it of a midpoint between two doubles,
+ * again to 2^-112: the bound carried is rigorous at both, so the first
+ * answers whenever it can and the second only where it must, as
+ * #mercator_lat_nearest reads bounded pairs before its exact enclosure
+ * (#atan_ratio_degrees_core, #ddb_degrees_nearest)
+ */
+static bool
+ddb_atan_ratio_nearest(DDBound n, DDBound d, double scale, double offset,
+  double sign, double *result)
+{
+  static const double stops[2] = { 0x1p-80, 0x1p-112 };
+  DdbAtanTables *tab = atan_tables();
+  for (int i = 0; i < 2; i++)
+    if (atan_ratio_nearest_at(tab, n, d, scale, offset, sign, stops[i], true,
+        0.0, result))
+      return true;
+  return false;
+}
+
+/**
+ * @brief Set @p result to the double nearest the degrees of atan2(y, x) of
+ * two bounded values, the longitude of a vector, where bounded pairs of
+ * doubles decide it, and return false where they cannot
+ * @details atan2(|y|, x) is the degrees of atan(|y| / |x|), or 180 less them
+ * for a negative x, where |y| < |x|, and 90 less or plus those of
+ * atan(|x| / |y|) otherwise (#ddb_atan_ratio_nearest); the
+ * signs of x and y and the side of |y| against |x| must be decided
+ */
+static bool
+ddb_atan2_degrees_nearest(DDBound Y, DDBound X, double *result)
+{
+  int sy = ddb_sign(Y), sx = ddb_sign(X);
+  if (sy == 0 || sx == 0)
+    return false;
+  X = ddb_abs(X);
+  Y = ddb_abs(Y);
+  int side = ddb_sign(ddb_sub(X, Y));
+  if (side == 0)
+    return false;
+  double sign = sy > 0 ? 1.0 : -1.0;
+  if (side > 0)
+    return sx > 0 ? ddb_atan_ratio_nearest(Y, X, 1.0, 0.0, sign, result) :
+      ddb_atan_ratio_nearest(Y, X, -1.0, 180.0, sign, result);
+  return sx > 0 ? ddb_atan_ratio_nearest(X, Y, -1.0, 90.0, sign, result) :
+    ddb_atan_ratio_nearest(X, Y, 1.0, 90.0, sign, result);
+}
+
+/**
+ * @brief Set @p result to the double nearest the degrees of
+ * atan2(z, sqrt(x^2 + y^2)) of three bounded values, the latitude of a
+ * vector, where bounded pairs of doubles decide it, and return false where
+ * they cannot
+ * @details With r = sqrt(x^2 + y^2), atan2(|z|, r) is the degrees of
+ * atan(|z| / r) where |z| < r and 90 less those of atan(r / |z|) where |z|
+ * > r, the side read from the sign of z^2 - r^2, which must be decided, as
+ * must the sign of z (#ddb_atan_ratio_nearest)
+ */
+static bool
+ddb_lat_degrees_nearest(DDBound X, DDBound Y, DDBound Z, double *result)
+{
+  int sz = ddb_sign(Z);
+  if (sz == 0)
+    return false;
+  DDBound r;
+  Z = ddb_abs(Z);
+  DDBound rr = ddb_add(ddb_mul(X, X), ddb_mul(Y, Y));
+  int side = ddb_sign(ddb_sub(ddb_mul(Z, Z), rr));
+  if (side == 0 || ! ddb_sqrt(rr, &r))
+    return false;
+  double sign = sz > 0 ? 1.0 : -1.0;
+  return side < 0 ? ddb_atan_ratio_nearest(Z, r, 1.0, 0.0, sign, result) :
+    ddb_atan_ratio_nearest(r, Z, -1.0, 90.0, sign, result);
+}
+
+/**
  * @brief Set @p result to the double nearest the longitude in degrees of the
  * vector of integers @p v, atan2(y, x), x and y not 0, where bounded pairs
  * of doubles decide it, and return false where they cannot
- * @details atan2(|y|, x) is the degrees of atan(|y| / |x|), or 180 less them
- * for a negative x, where |y| < |x|, and 90 less or plus those of
- * atan(|x| / |y|) otherwise (#ddb_atan_degrees, #ddb_degrees_nearest)
+ * (#ddb_atan2_degrees_nearest)
  */
 bool
 ddb_vector_lon_nearest(const int64 *v, double *result)
 {
-  int64 x = v[0], y = v[1];
   DDBound X, Y;
-  if (x == 0 || y == 0 || ! ddb_set_int64(x, &X) || ! ddb_set_int64(y, &Y))
+  if (v[0] == 0 || v[1] == 0 || ! ddb_set_int64(v[0], &X) ||
+      ! ddb_set_int64(v[1], &Y))
     return false;
-  X = ddb_abs(X);
-  Y = ddb_abs(Y);
-  uint64 ax = x < 0 ? (uint64) 0 - (uint64) x : (uint64) x;
-  uint64 ay = y < 0 ? (uint64) 0 - (uint64) y : (uint64) y;
-  bool low = ay < ax;
-  DDBound t, deg, k;
-  if (! ddb_div(low ? Y : X, low ? X : Y, &t) || ! ddb_atan_degrees(t, &deg))
-    return false;
-  k.lo = k.e = 0.0;
-  if (low)
-  {
-    if (x < 0)
-    {
-      k.hi = 180.0;
-      deg = ddb_sub(k, deg);
-    }
-  }
-  else
-  {
-    k.hi = 90.0;
-    deg = (x > 0) ? ddb_sub(k, deg) : ddb_add(k, deg);
-  }
-  return ddb_degrees_nearest(deg, y > 0 ? 1.0 : -1.0, result);
+  return ddb_atan2_degrees_nearest(Y, X, result);
 }
 
 /**
  * @brief Set @p result to the double nearest the latitude in degrees of the
  * vector of integers @p v, atan2(z, sqrt(x^2 + y^2)), z and x^2 + y^2 not 0,
  * where bounded pairs of doubles decide it, and return false where they
- * cannot
- * @details With r = sqrt(x^2 + y^2), atan2(|z|, r) is the degrees of
- * atan(|z| / r) where |z| < r and 90 less those of atan(r / |z|) where |z|
- * > r, the side read from the sign of z^2 - r^2, which must be decided
- * (#ddb_atan_degrees, #ddb_degrees_nearest)
+ * cannot (#ddb_lat_degrees_nearest)
  */
 bool
 ddb_vector_lat_nearest(const int64 *v, double *result)
 {
-  int64 z = v[2];
-  DDBound X, Y, Z, r, t, deg;
-  if (z == 0 || ! ddb_set_int64(v[0], &X) || ! ddb_set_int64(v[1], &Y) ||
-      ! ddb_set_int64(z, &Z))
+  DDBound X, Y, Z;
+  if (v[2] == 0 || ! ddb_set_int64(v[0], &X) || ! ddb_set_int64(v[1], &Y) ||
+      ! ddb_set_int64(v[2], &Z))
     return false;
-  Z = ddb_abs(Z);
-  DDBound rr = ddb_add(ddb_mul(X, X), ddb_mul(Y, Y));
-  int side = ddb_sign(ddb_sub(ddb_mul(Z, Z), rr));
-  if (side == 0 || ! ddb_sqrt(rr, &r))
-    return false;
-  if (side < 0)
-  {
-    if (! ddb_div(Z, r, &t) || ! ddb_atan_degrees(t, &deg))
-      return false;
-  }
-  else
-  {
-    DDBound k;
-    if (! ddb_div(r, Z, &t) || ! ddb_atan_degrees(t, &deg))
-      return false;
-    k.hi = 90.0;
-    k.lo = k.e = 0.0;
-    deg = ddb_sub(k, deg);
-  }
-  return ddb_degrees_nearest(deg, z > 0 ? 1.0 : -1.0, result);
+  return ddb_lat_degrees_nearest(X, Y, Z, result);
 }
 
 /**
@@ -2297,7 +2509,7 @@ ddb_vector_lat_nearest(const int64 *v, double *result)
  * tanh(t / 2) = m / (m + 2) for m = e^t - 1, which keeps its relative
  * accuracy as t nears 0: m is the series of e^(t/8) - 1, every term positive
  * and the rest below the last term read, then three doublings of the angle,
- * m (2 + m) each (#ddb_atan_degrees, #ddb_degrees_nearest)
+ * m (2 + m) each (#ddb_atan_ratio_nearest)
  */
 bool
 ddb_mercator_lat_nearest(double r, double *result)
@@ -2305,7 +2517,7 @@ ddb_mercator_lat_nearest(double r, double *result)
   double ar = fabs(r);
   if (! (ar > 0x1p-900 && ar <= 1.0))
     return false;
-  DDBound pi, x, two, m, p, t, deg;
+  DDBound pi, x, two, m, p;
   pi.hi = DDB_PI_HI;
   pi.lo = DDB_PI_LO;
   pi.e = DDB_PI_ERR;
@@ -2334,12 +2546,415 @@ ddb_mercator_lat_nearest(double r, double *result)
     return false;
   for (int i = 0; i < 3; i++)
     m = ddb_mul(m, ddb_add(two, m));
-  if (! ddb_div(m, ddb_add(m, two), &t) || ! ddb_atan_degrees(t, &deg))
+  return ddb_atan_ratio_nearest(m, ddb_add(m, two), 2.0, 0.0,
+    r > 0 ? 1.0 : -1.0, result);
+}
+
+/**
+ * @brief Set @p r to the bounded value of a decimal literal and return true,
+ * or false where the bounds do not allow it
+ * @details Its digits are summed in pairs of doubles and divided by the power
+ * of ten, both exact while below 2^106 and bounded beyond (#ddb_div)
+ */
+static bool
+ddb_of_decimal(const char *s, DDBound *r)
+{
+  bool neg = (*s == '-');
+  if (*s == '-' || *s == '+')
+    s++;
+  DDBound acc = { 0.0, 0.0, 0.0 }, ten = { 10.0, 0.0, 0.0 };
+  int q = -1;
+  for (; *s; s++)
+  {
+    if (*s == '.')
+    {
+      q = 0;
+      continue;
+    }
+    DDBound d = { *s - '0', 0.0, 0.0 };
+    acc = ddb_add(ddb_mul(acc, ten), d);
+    if (q >= 0)
+      q++;
+  }
+  q = Max(q, 0);
+  DDBound p = { 1.0, 0.0, 0.0 };
+  for (int i = 0; i < q; i++)
+    p = ddb_mul(p, ten);
+  if (! ddb_div(acc, p, r))
     return false;
-  deg.hi *= 2.0;
-  deg.lo *= 2.0;
-  deg.e *= 2.0;
-  return ddb_degrees_nearest(deg, r > 0 ? 1.0 : -1.0, result);
+  if (neg)
+  {
+    r->hi = - r->hi;
+    r->lo = - r->lo;
+  }
+  return true;
+}
+
+/**
+ * @brief Set @p s and @p c to the sine and the cosine of the bounded angle
+ * @p x in radians, |x| below 10^6, and return true, or false where the bound
+ * does not allow it, the twin of #atan_ratio_degrees_core
+ * @details The angle less the multiple k pi / 2 its double is nearest, pi
+ * read as #DDB_PI_HI + #DDB_PI_LO within #DDB_PI_ERR, lies within pi / 4 and
+ * a little more; there the series of the sine and the cosine alternate with
+ * decreasing terms, so the rest of each lies within the last term read, and
+ * the quadrant k mod 4 turns them back
+ */
+static bool
+ddb_sincos(DDBound x, DDBound *s, DDBound *c)
+{
+  if (! isfinite(x.hi) || fabs(x.hi) > 1.0e6)
+    return false;
+  int64 kq = llrint(x.hi / M_PI_2);
+  DDBound half = { 0.5 * DDB_PI_HI, 0.5 * DDB_PI_LO, 0.5 * DDB_PI_ERR };
+  DDBound K = { (double) kq, 0.0, 0.0 };
+  DDBound y = ddb_sub(x, ddb_mul(K, half));
+  if (! (fabs(y.hi) < 0.8))
+    return false;
+  DDBound y2 = ddb_mul(y, y);
+  DDBound ps = y, pc = { 1.0, 0.0, 0.0 }, ss = y, cc = pc;
+  bool done = false;
+  for (int n = 1; n < 30 && ! done; n++)
+  {
+    ps = ddb_div_int(ddb_mul(ps, y2), (2 * n) * (2 * n + 1));
+    pc = ddb_div_int(ddb_mul(pc, y2), (2 * n - 1) * (2 * n));
+    ss = (n % 2) ? ddb_sub(ss, ps) : ddb_add(ss, ps);
+    cc = (n % 2) ? ddb_sub(cc, pc) : ddb_add(cc, pc);
+    double ms = ddb_mag_up(ps), mc = ddb_mag_up(pc);
+    if (ms < 0x1p-112 && mc < 0x1p-112)
+    {
+      ss.e = (ss.e + ms) * DDB_UP;
+      cc.e = (cc.e + mc) * DDB_UP;
+      done = true;
+    }
+  }
+  if (! done)
+    return false;
+  DDBound nss = { - ss.hi, - ss.lo, ss.e }, ncc = { - cc.hi, - cc.lo, cc.e };
+  switch (((kq % 4) + 4) % 4)
+  {
+    case 0: *s = ss; *c = cc; break;
+    case 1: *s = cc; *c = nss; break;
+    case 2: *s = nss; *c = ncc; break;
+    default: *s = ncc; *c = ss; break;
+  }
+  return true;
+}
+
+/** @brief Number of resolutions whose gnomonic scale a face keeps */
+#define DDB_GNOMONIC_RES 16
+
+/** @brief The constants of a face of an icosahedral gnomonic grid in
+ * bounded pairs of doubles: the center c, the unnormalized north at it n,
+ * n x c, |n|, |n| c, the sine and the cosine of the azimuth of the first axis
+ * less the turn of the angle, the gnomonic length of the unit, sqrt 3 and
+ * sqrt 7, and the scale k of each resolution, on the grid of the resolution
+ * and on its substrate, stated where first read (#ddb_gnomonic_scale) */
+typedef struct
+{
+  const char *center[3], *axis, *rotation, *gnomonic;  /**< Its literals */
+  DDBound c[3], n[3], nc[3], nnc[3], nn, sa, ca, G, s3, s7;
+  double fe;  /**< The largest bound of c, n, n x c, |n| c, |n|, sin, cos */
+  DDBound k[DDB_GNOMONIC_RES][2];
+  bool kset[DDB_GNOMONIC_RES][2];
+} DdbGnomonicFace;
+
+/** @brief Number of faces whose constants a thread keeps: the 20 faces of
+ * the icosahedron, each with and without the turn of a Class III center */
+#define DDB_GNOMONIC_FACES 48
+
+/** @brief The constants of the faces read last, per thread, their number
+ * and the next one to replace, as #MEOS_H3_BOX keeps the box of the cell
+ * read last: every point of a face reads the same ones; in one structure, so
+ * that a lookup reads its address once */
+typedef struct
+{
+  DdbGnomonicFace face[DDB_GNOMONIC_FACES];
+  int count, next;
+} DdbFaceCache;
+static MEOS_TLS DdbFaceCache MEOS_DDB_FACE;
+
+/* Whether two literals are the same, by their address or their text, NULL
+ * only for NULL */
+static bool
+ddb_same_literal(const char *a, const char *b)
+{
+  if (a == b)
+    return true;
+  return a != NULL && b != NULL && strcmp(a, b) == 0;
+}
+
+/**
+ * @brief Return the constants of the face of the point @p p, read once per
+ * thread (#DdbGnomonicFace), or NULL where the bounds do not allow them
+ */
+static DdbGnomonicFace *
+ddb_gnomonic_face(const GnomonicFacePoint *p)
+{
+  /* A grid passes its literals from one table, so the face is found by
+   * their addresses first, as #ddb_same_literal compares one literal, and
+   * by their text only where no address matches */
+  DdbFaceCache *fc = &MEOS_DDB_FACE;
+  for (int i = 0; i < fc->count; i++)
+  {
+    DdbGnomonicFace *f = &fc->face[i];
+    if (f->center[0] == p->center[0] && f->center[1] == p->center[1] &&
+        f->center[2] == p->center[2] && f->axis == p->axis &&
+        f->rotation == p->rotation && f->gnomonic == p->gnomonic)
+      return f;
+  }
+  for (int i = 0; i < fc->count; i++)
+  {
+    DdbGnomonicFace *f = &fc->face[i];
+    if (ddb_same_literal(f->center[0], p->center[0]) &&
+        ddb_same_literal(f->center[1], p->center[1]) &&
+        ddb_same_literal(f->center[2], p->center[2]) &&
+        ddb_same_literal(f->axis, p->axis) &&
+        ddb_same_literal(f->rotation, p->rotation) &&
+        ddb_same_literal(f->gnomonic, p->gnomonic))
+      return f;
+  }
+  DdbGnomonicFace f;
+  DDBound ax, three = { 3.0, 0.0, 0.0 }, seven = { 7.0, 0.0, 0.0 };
+  for (int i = 0; i < 3; i++)
+    if (! ddb_of_decimal(p->center[i], &f.c[i]))
+      return NULL;
+  if (! ddb_of_decimal(p->axis, &ax))
+    return NULL;
+  if (p->rotation)
+  {
+    /* The turn of the angle of the center of a Class III cell */
+    DDBound rot;
+    if (! ddb_of_decimal(p->rotation, &rot))
+      return NULL;
+    ax = ddb_sub(ax, rot);
+  }
+  if (! ddb_sincos(ax, &f.sa, &f.ca) ||
+      ! ddb_of_decimal(p->gnomonic, &f.G) || ! ddb_sqrt(three, &f.s3) ||
+      ! ddb_sqrt(seven, &f.s7))
+    return NULL;
+  /* n = pole - (pole . c) c, n x c and |n| */
+  DDBound zero = { 0.0, 0.0, 0.0 }, one = { 1.0, 0.0, 0.0 };
+  f.n[0] = ddb_sub(zero, ddb_mul(f.c[2], f.c[0]));
+  f.n[1] = ddb_sub(zero, ddb_mul(f.c[2], f.c[1]));
+  f.n[2] = ddb_sub(one, ddb_mul(f.c[2], f.c[2]));
+  for (int i = 0; i < 3; i++)
+  {
+    int j = (i + 1) % 3, l = (i + 2) % 3;
+    f.nc[i] = ddb_sub(ddb_mul(f.n[j], f.c[l]), ddb_mul(f.n[l], f.c[j]));
+  }
+  if (! ddb_sqrt(ddb_add(ddb_add(ddb_mul(f.n[0], f.n[0]),
+        ddb_mul(f.n[1], f.n[1])), ddb_mul(f.n[2], f.n[2])), &f.nn))
+    return NULL;
+  for (int i = 0; i < 3; i++)
+    f.nnc[i] = ddb_mul(f.nn, f.c[i]);
+  memset(f.kset, 0, sizeof(f.kset));
+  f.fe = Max(Max(f.nn.e, f.sa.e), f.ca.e);
+  for (int i = 0; i < 3; i++)
+    f.fe = Max(f.fe, Max(Max(f.c[i].e, f.n[i].e), Max(f.nc[i].e, f.nnc[i].e)));
+  for (int i = 0; i < 3; i++)
+    f.center[i] = p->center[i];
+  f.axis = p->axis;
+  f.rotation = p->rotation;
+  f.gnomonic = p->gnomonic;
+  int slot = fc->next;
+  fc->face[slot] = f;
+  fc->next = (slot + 1) % DDB_GNOMONIC_FACES;
+  if (fc->count < DDB_GNOMONIC_FACES)
+    fc->count++;
+  return &fc->face[slot];
+}
+
+/**
+ * @brief Set @p k to the gnomonic scale of the resolution @p res of the face
+ * @p f, G 7^-(res / 2) [/ sqrt 7] [/ 3 on the substrate], kept by the face
+ * where the resolution has a slot, and return true, or false where the
+ * bounds do not allow it
+ */
+static bool
+ddb_gnomonic_scale(DdbGnomonicFace *f, int res, bool substrate, DDBound *k)
+{
+  int sub = substrate ? 1 : 0;
+  bool keep = res >= 0 && res < DDB_GNOMONIC_RES;
+  if (keep && f->kset[res][sub])
+  {
+    *k = f->k[res][sub];
+    return true;
+  }
+  DDBound s = f->G;
+  for (int i = 0; i < res / 2; i++)
+    s = ddb_div_int(s, 7);
+  if (res % 2 && ! ddb_div(s, f->s7, &s))
+    return false;
+  if (substrate)
+    s = ddb_div_int(s, 3);
+  if (keep)
+  {
+    f->k[res][sub] = s;
+    f->kset[res][sub] = true;
+  }
+  *k = s;
+  return true;
+}
+
+/**
+ * @brief Set @p lon and @p lat to the doubles nearest the degrees of the
+ * longitude and the latitude of the point (x, y) of the face @p f at the
+ * scale @p k, where pairs of doubles and one bound stated for the whole
+ * evaluation decide them, each flag of @p decided true for a coordinate set
+ * @details The vector v of #ddb_gnomonic_face_point_nearest and the degrees
+ * of its angles are evaluated without a bound per operation (#dd_mul,
+ * #dd_add, #atan_ratio_nearest_at with @p bounded false), as
+ * #point_distance_offset_dd reads its value, and one bound decides. With
+ * A = |k| (|x| + |y|), every constant of the face of magnitude at most 1 and
+ * within fe of its value, k within k.e and x, y within x.e, y.e, the
+ * operands of a and b lie within (fe + k.e / |k|) A + |k| (x.e + y.e) of
+ * theirs and the components of v within
+ * fe (1 + 4A) + 2 (k.e / |k|) A + 2 |k| (x.e + y.e) of theirs; each of the
+ * at most eight operations of a component on pairs of doubles errs by at
+ * most 2^-104 of magnitudes below 1 + 2A, below 2^-98 (1 + 2A) together.
+ * The bound of v is that sum taken four times (errv). An angle moves by at
+ * most |dv| / |v_xy| (longitude) or 2 |dv| / |v| (latitude), in degrees by
+ * 180 / pi < 64, and its evaluation errs by less than 2^-90 128 degrees
+ * beyond the rest of the series and the entry of the table, which
+ * #atan_ratio_degrees_core states. A component whose double lies within
+ * 4 errv of 0 decides nothing here: its sign is the bounded path's to read
+ */
+static void
+dd_gnomonic_point_nearest(const DdbGnomonicFace *f, DDBound x, DDBound y,
+  DDBound k, double *lon, double *lat, bool *decided)
+{
+  DDBound a = dd_mul(k, dd_add(dd_mul(f->ca, x), dd_mul(f->sa, y)));
+  DDBound b = dd_mul(k, dd_sub(dd_mul(f->sa, x), dd_mul(f->ca, y)));
+  DDBound v[3];
+  for (int i = 0; i < 3; i++)
+    v[i] = dd_add(f->nnc[i], dd_add(dd_mul(a, f->n[i]), dd_mul(b, f->nc[i])));
+  double ak = fabs(k.hi);
+  if (! (ak > 0.0))
+    return;
+  double A = ak * (fabs(x.hi) + fabs(x.lo) + fabs(y.hi) + fabs(y.lo)) * DDB_UP;
+  double errv = (f->fe * (1.0 + 4.0 * A) + 2.0 * (k.e / ak) * A +
+    2.0 * ak * (x.e + y.e) + 0x1p-98 * (1.0 + 2.0 * A)) * 4.0 * DDB_UP;
+  const double stop = 0x1p-90, arith = 0x1p-90 * 128.0;
+  /* The per-thread tables of the arctangent, their address read once for
+   * both coordinates */
+  DdbAtanTables *tab = atan_tables();
+  double vx = v[0].hi, vy = v[1].hi, vz = v[2].hi;
+  DDBound X = v[0], Y = v[1], Z = v[2];
+  if (vx < 0.0) { X.hi = - X.hi; X.lo = - X.lo; }
+  if (vy < 0.0) { Y.hi = - Y.hi; Y.lo = - Y.lo; }
+  if (vz < 0.0) { Z.hi = - Z.hi; Z.lo = - Z.lo; }
+  /* The longitude, atan2(vy, vx) */
+  if (fabs(vx) > 4.0 * errv && fabs(vy) > 4.0 * errv)
+  {
+    double rxy = sqrt(vx * vx + vy * vy) / DDB_UP;
+    double err = 64.0 * 2.0 * errv / rxy + arith;
+    double sign = vy > 0.0 ? 1.0 : -1.0;
+    if (X.hi >= Y.hi)
+      decided[0] = vx > 0.0 ?
+        atan_ratio_nearest_at(tab, Y, X, 1.0, 0.0, sign, stop, false, err, lon) :
+        atan_ratio_nearest_at(tab, Y, X, -1.0, 180.0, sign, stop, false, err, lon);
+    else
+      decided[0] = vx > 0.0 ?
+        atan_ratio_nearest_at(tab, X, Y, -1.0, 90.0, sign, stop, false, err, lon) :
+        atan_ratio_nearest_at(tab, X, Y, 1.0, 90.0, sign, stop, false, err, lon);
+  }
+  /* The latitude, atan2(vz, sqrt(vx^2 + vy^2)) */
+  DDBound r = dd_sqrt(dd_add(dd_mul(v[0], v[0]), dd_mul(v[1], v[1])));
+  if (fabs(vz) > 4.0 * errv && r.hi > 4.0 * errv)
+  {
+    double vm = sqrt(vx * vx + vy * vy + vz * vz) / DDB_UP;
+    double err = 64.0 * 4.0 * errv / vm + arith;
+    double sign = vz > 0.0 ? 1.0 : -1.0;
+    decided[1] = Z.hi < r.hi ?
+      atan_ratio_nearest_at(tab, Z, r, 1.0, 0.0, sign, stop, false, err, lat) :
+      atan_ratio_nearest_at(tab, r, Z, -1.0, 90.0, sign, stop, false, err, lat);
+  }
+}
+
+/**
+ * @brief Set @p lon and @p lat to the doubles nearest the degrees of the
+ * longitude and the latitude of a point of a face of an icosahedral gnomonic
+ * grid where bounded pairs of doubles decide them, each flag of @p decided
+ * true for a coordinate set
+ * @details The direction of the point is the vector
+ * v = |n| c + k [(cos(axis) x + sin(axis) y) n + (sin(axis) x - cos(axis) y)
+ * (n x c)] of #GnomonicExact, n the unnormalized north at the center c, here
+ * on the real values of the literals and the point
+ * (x, y) = (U, W sqrt 3) / (2D), each step carrying its bound, the constants
+ * of the face read once (#ddb_gnomonic_face); its longitude and latitude are
+ * rounded by #ddb_atan2_degrees_nearest and #ddb_lat_degrees_nearest, which
+ * leave a coordinate their bounds cannot place inside the rounding cell of
+ * one double to the exact enclosure
+ */
+void
+ddb_gnomonic_face_point_nearest(const GnomonicFacePoint *p, double *lon,
+  double *lat, bool *decided)
+{
+  decided[0] = decided[1] = false;
+  DdbGnomonicFace *f = ddb_gnomonic_face(p);
+  if (! f)
+    return;
+  /* The point (U, W sqrt 3) / (2D) on the lattice */
+  DDBound U, W, D;
+  if (! p->crossing)
+  {
+    if (! ddb_set_int64(p->p0[0], &U) || ! ddb_set_int64(p->p0[1], &W) ||
+        ! ddb_set_int64(1, &D))
+      return;
+  }
+  else
+  {
+    int64 s1x = p->p1[0] - p->p0[0], s1y = p->p1[1] - p->p0[1];
+    int64 s2x = p->e1[0] - p->e0[0], s2y = p->e1[1] - p->e0[1];
+    int64 num = s2x * (p->p0[1] - p->e0[1]) - s2y * (p->p0[0] - p->e0[0]);
+    int64 den = - s2x * s1y + s1x * s2y;
+    /* A positive denominator, as #gnomonic_exact_init states it: #ddb_div
+     * divides by a value lying above its bound */
+    if (den < 0)
+    {
+      den = - den;
+      num = - num;
+    }
+    DDBound P0x, P0y, S1x, S1y, Num;
+    if (! ddb_set_int64(den, &D) || ! ddb_set_int64(num, &Num) ||
+        ! ddb_set_int64(p->p0[0], &P0x) || ! ddb_set_int64(p->p0[1], &P0y) ||
+        ! ddb_set_int64(s1x, &S1x) || ! ddb_set_int64(s1y, &S1y))
+      return;
+    U = ddb_add(ddb_mul(P0x, D), ddb_mul(Num, S1x));
+    W = ddb_add(ddb_mul(P0y, D), ddb_mul(Num, S1y));
+  }
+  DDBound x, y, k;
+  if (! p->crossing)
+  {
+    /* D = 1: the halving is exact */
+    DDBound Ws = ddb_mul(W, f->s3);
+    x.hi = 0.5 * U.hi; x.lo = 0.5 * U.lo; x.e = 0.5 * U.e;
+    y.hi = 0.5 * Ws.hi; y.lo = 0.5 * Ws.lo; y.e = 0.5 * Ws.e;
+  }
+  else
+  {
+    DDBound D2 = ddb_add(D, D);
+    if (! ddb_div(U, D2, &x) || ! ddb_div(ddb_mul(W, f->s3), D2, &y))
+      return;
+  }
+  if (! ddb_gnomonic_scale(f, p->res, p->substrate, &k))
+    return;
+  /* Pairs of doubles under one bound first, every operation bounded where
+   * that bound leaves a coordinate undecided */
+  dd_gnomonic_point_nearest(f, x, y, k, lon, lat, decided);
+  if (decided[0] && decided[1])
+    return;
+  DDBound a = ddb_mul(k, ddb_add(ddb_mul(f->ca, x), ddb_mul(f->sa, y)));
+  DDBound b = ddb_mul(k, ddb_sub(ddb_mul(f->sa, x), ddb_mul(f->ca, y)));
+  DDBound v[3];
+  for (int i = 0; i < 3; i++)
+    v[i] = ddb_add(f->nnc[i], ddb_add(ddb_mul(a, f->n[i]),
+      ddb_mul(b, f->nc[i])));
+  if (! decided[0])
+    decided[0] = ddb_atan2_degrees_nearest(v[1], v[0], lon);
+  if (! decided[1])
+    decided[1] = ddb_lat_degrees_nearest(v[0], v[1], v[2], lat);
 }
 
 /**
@@ -3784,6 +4399,95 @@ polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
 {
   PolySignArg arg = {sums, terms, nterms};
   return dyadic_pred_run_expansions(polynomial_sign_pred, &arg);
+}
+
+/* The components the total of #polynomial_sign_exact_pairs holds at most */
+#define POLY_EXACT_PAIRS_TOTAL 32
+
+/**
+ * @brief Return the sign of a polynomial in exact sums where each of its
+ * terms is exact in a pair of doubles, zero included, and 2 elsewhere
+ * @details The certificate the all-exact branches of #cross_product_sign_exact
+ * and #vector_triple_sign state for their own signs, written once for every
+ * polynomial of the ladder: a sum of at most two components is a pair
+ * exactly; the product of a pair and a sum is the sum of the products of
+ * their components, each split exactly into two doubles where it does not
+ * fall below DDB_EXACT_PRODUCT, as #ddb_mul reads a product of two doubles,
+ * and the term stays a pair where those parts add up to at most two
+ * components (#grow_expansion). The terms then add up exactly into an
+ * expansion whose largest component carries the sign of the polynomial. A
+ * term past a pair, the case of factors of many significant bits, answers 2,
+ * and the expansions of the ladder decide it. A tie of inputs that span few
+ * bits, where no bound can tell a zero, is thus decided in pairs
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ * @return -1, 0 or 1, or 2 where a term is not exact in a pair of doubles
+ */
+int
+polynomial_sign_exact_pairs(const ExactSum *sums, const PolyTerm *terms,
+  int nterms)
+{
+  double tot1[POLY_EXACT_PAIRS_TOTAL + 1], tot2[POLY_EXACT_PAIRS_TOTAL + 1];
+  double *tot = tot1, *totbuf = tot2;
+  int totlen = 0;
+  for (int i = 0; i < nterms; i++)
+  {
+    if (terms[i].coef == 0.0)
+      continue;
+    /* The term as an expansion of at most two components */
+    double t[2] = {terms[i].coef, 0.0};
+    int tlen = 1;
+    for (int k = 0; k < terms[i].deg && tlen > 0; k++)
+    {
+      const ExactSum *s = &sums[terms[i].sum[k]];
+      if (s->n > 2)
+        return 2;
+      /* The products of the components, at most eight doubles; a product
+       * splits exactly from DDB_EXACT_PRODUCT up, as #ddb_mul reads it */
+      double h1[9], h2[9];
+      double *h = h1, *hbuf = h2;
+      int hlen = 0;
+      for (int a = 0; a < tlen; a++)
+        for (int b = 0; b < s->n; b++)
+        {
+          if (t[a] == 0.0 || s->e[b] == 0.0)
+            continue;
+          double pr[2];
+          two_product(t[a], s->e[b], &pr[0], &pr[1]);
+          if (! (fabs(pr[0]) >= DDB_EXACT_PRODUCT) || ! isfinite(pr[0]))
+            return 2;
+          for (int c = 0; c < 2; c++)
+          {
+            if (pr[c] == 0.0)
+              continue;
+            hlen = grow_expansion(hlen, h, pr[c], hbuf);
+            double *sw = h;
+            h = hbuf;
+            hbuf = sw;
+          }
+        }
+      if (hlen > 2)
+        return 2;
+      for (int c = 0; c < hlen; c++)
+        t[c] = h[c];
+      tlen = hlen;
+    }
+    for (int c = 0; c < tlen; c++)
+    {
+      if (t[c] == 0.0)
+        continue;
+      totlen = grow_expansion(totlen, tot, t[c], totbuf);
+      double *sw = tot;
+      tot = totbuf;
+      totbuf = sw;
+      if (totlen > POLY_EXACT_PAIRS_TOTAL)
+        return 2;
+    }
+  }
+  if (totlen == 0)
+    return 0;
+  double top = tot[totlen - 1];
+  return (top > 0.0) - (top < 0.0);
 }
 
 /*****************************************************************************

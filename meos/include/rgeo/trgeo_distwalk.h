@@ -138,6 +138,7 @@ extern bool distrefpoly_set_static(DistRefPoly *rp, const LWPOLY *poly,
 extern void distrefpoly_set_segment(DistRefPoly *rp, double x1, double y1,
   double x2, double y2, double *cx, double *cy);
 extern void distrefpoly_set_point(DistRefPoly *rp);
+extern double *distrefpoly_xy(const DistRefPoly *rp);
 extern void distrefpoly_free(DistRefPoly *rp);
 extern bool distrefpoly_cover(const LWPOLY *poly, DistRefPoly **pieces,
   int *npieces);
@@ -237,6 +238,9 @@ extern void distevents_init(DistEvents *events);
 extern void distevents_keep_pieces(DistEvents *events);
 extern void distevents_free(DistEvents *events);
 extern double distpiece_dist(const DistPiece *p, double t);
+extern void distevents_settle(DistEvents *events, double near,
+  const double *axy, int na, const double *apose0, const double *apose1,
+  const double *bxy, int nb, const double *bpose0, const double *bpose1);
 
 extern double distwalk_ftol(const DistSegm *seg, const DistRefPoly *ra,
   const DistRefPoly *rb);

@@ -63,6 +63,13 @@ SELECT DISTINCT setSRID(trgeometryFromBinary(asBinary(temp)), 5676) = temp FROM 
  t
 (1 row)
 
+-- The value states one SRID, its poses' and its reference geometry's
+SELECT DISTINCT ST_SRID(geometry(setSRID(trgeometryFromBinary(asBinary(temp)), 5676))) FROM tbl_trgeometry2d;
+ st_srid 
+---------
+    5676
+(1 row)
+
 SELECT DISTINCT trgeometryFromEWKB(asEWKB(temp)) = temp FROM tbl_trgeometry2d;
  ?column? 
 ----------

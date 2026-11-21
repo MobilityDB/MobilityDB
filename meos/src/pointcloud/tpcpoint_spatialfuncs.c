@@ -40,6 +40,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <string.h>  /* memset */
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
@@ -56,6 +57,8 @@
 #include "temporal/type_util.h"  /* pfree_array */
 #include "geo/tgeo_spatialfuncs.h"  /* tpointinst_make_coords */
 #include "pointcloud/pcpoint.h" /* struct Pcpoint body (.pcid field) */
+#include "pointcloud/pcpatch.h"  /* pcpatch_transf_pj */
+#include "temporal/lifting.h"  /* tfunc_temporal */
 #include "pointcloud/tpc_boxops.h"  /* tpcpoint_restrict_tpcbox */
 
 /*****************************************************************************
@@ -236,6 +239,197 @@ tpcpoint_to_tgeogpoint(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Projection to a temporal float of one dimension
+ *
+ * The value of one dimension of each instant, read in the schema of the pcid
+ * the instants share, as #tpcpoint_to_tgeompoint reads its coordinates
+ *****************************************************************************/
+
+/**
+ * @brief Return in the last argument the value of the dimension of a pcpoint
+ * a request states: X, Y, Z, or the dimension of a name
+ */
+static bool
+pcpoint_schema_get_which(const Pcpoint *pt, PCSCHEMA *schema, char which,
+  const char *name, double *out)
+{
+  switch (which)
+  {
+    case 'x': return pcpoint_schema_get_x(pt, schema, out);
+    case 'y': return pcpoint_schema_get_y(pt, schema, out);
+    case 'z': return pcpoint_schema_get_z(pt, schema, out);
+    default:  return pcpoint_schema_get_dim(pt, schema, name, out);
+  }
+}
+
+/**
+ * @brief Return the temporal float instant of a dimension of a temporal
+ * pointcloud instant
+ */
+static TInstant *
+tpcpointinst_get_which(const TInstant *inst, PCSCHEMA *schema, char which,
+  const char *name)
+{
+  double v;
+  if (! pcpoint_schema_get_which(DatumGetPcpointP(tinstant_value_p(inst)),
+      schema, which, name, &v))
+    return NULL;
+  return tinstant_make(Float8GetDatum(v), T_TFLOAT, inst->t);
+}
+
+/**
+ * @brief Return the temporal float sequence of a dimension of a temporal
+ * pointcloud sequence, which keeps its interpolation
+ */
+static TSequence *
+tpcpointseq_get_which(const TSequence *seq, PCSCHEMA *schema, char which,
+  const char *name)
+{
+  TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    insts[i] = tpcpointinst_get_which(TSEQUENCE_INST_N(seq, i), schema,
+      which, name);
+    /* An instant that is not read fails the projection */
+    if (! insts[i])
+    {
+      pfree_array((void **) insts, i);
+      return NULL;
+    }
+  }
+  return tsequence_make_free(insts, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal float sequence set of a dimension of a temporal
+ * pointcloud sequence set
+ */
+static TSequenceSet *
+tpcpointseqset_get_which(const TSequenceSet *ss, PCSCHEMA *schema,
+  char which, const char *name)
+{
+  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    seqs[i] = tpcpointseq_get_which(TSEQUENCESET_SEQ_N(ss, i), schema, which,
+      name);
+    /* A sequence that is not read fails the projection */
+    if (! seqs[i])
+    {
+      pfree_array((void **) seqs, i);
+      return NULL;
+    }
+  }
+  return tsequenceset_make_free(seqs, ss->count, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal float of a dimension of a temporal pointcloud
+ * value: X, Y, Z, or the dimension a name states
+ * @details A schema without a Z dimension answers no Z, as #pcpoint_get_z
+ * answers it for one point, and a name the schema does not state is an
+ * error, as pgPointCloud's `PC_Get` raises it
+ */
+static Temporal *
+tpcpoint_get_which(const Temporal *temp, char which, const char *name)
+{
+  /* The schema is the one of the first value, read in place */
+  const Pcpoint *first = DatumGetPcpointP(
+    tinstant_value_p(temporal_start_inst(temp)));
+  PCSCHEMA *schema = meos_pc_schema(first->pcid);
+  if (! schema)
+    return NULL;
+  if (which == 'z' && ! schema->zdim)
+    return NULL;
+  if (which == 'd' && ! pc_schema_get_dimension_by_name(schema, name))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "dimension \"%s\" does not exist in schema", name);
+    return NULL;
+  }
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tpcpointinst_get_which((const TInstant *) temp,
+        schema, which, name);
+    case TSEQUENCE:
+      return (Temporal *) tpcpointseq_get_which((const TSequence *) temp,
+        schema, which, name);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tpcpointseqset_get_which(
+        (const TSequenceSet *) temp, schema, which, name);
+  }
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the X coordinate of a temporal pointcloud value as a temporal
+ * float
+ * @param[in] temp Temporal pointcloud value
+ * @errval NULL
+ * @csqlfn #Tpcpoint_get_x()
+ */
+Temporal *
+tpcpoint_get_x(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, NULL);
+  return tpcpoint_get_which(temp, 'x', NULL);
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the Y coordinate of a temporal pointcloud value as a temporal
+ * float
+ * @param[in] temp Temporal pointcloud value
+ * @errval NULL
+ * @csqlfn #Tpcpoint_get_y()
+ */
+Temporal *
+tpcpoint_get_y(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, NULL);
+  return tpcpoint_get_which(temp, 'y', NULL);
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the Z coordinate of a temporal pointcloud value as a temporal
+ * float
+ * @param[in] temp Temporal pointcloud value
+ * @return NULL where the schema of the value has no Z dimension
+ * @errval NULL
+ * @csqlfn #Tpcpoint_get_z()
+ */
+Temporal *
+tpcpoint_get_z(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, NULL);
+  return tpcpoint_get_which(temp, 'z', NULL);
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return a named dimension of a temporal pointcloud value as a
+ * temporal float
+ * @param[in] temp Temporal pointcloud value
+ * @param[in] name Name of the dimension, read as pgPointCloud's `PC_Get` reads
+ * it
+ * @errval NULL
+ * @csqlfn #Tpcpoint_get_dim()
+ */
+Temporal *
+tpcpoint_get_dim(const Temporal *temp, const char *name)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, NULL); VALIDATE_NOT_NULL(name, NULL);
+  return tpcpoint_get_which(temp, 'd', name);
+}
+
+/*****************************************************************************
  * Spatial predicates and nearest-approach distance
  *****************************************************************************/
 
@@ -379,3 +573,83 @@ tpcpoint_minus_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+/**
+ * @brief Return a pcpoint transformed into the schema of another pcid, the
+ * function #tpointcloud_transform lifts
+ * @param[in] value Point
+ * @param[in] pcid Target pcid
+ * @param[in] to Schema of the target pcid
+ * @param[in] pj Transformation, @p NULL when the SRIDs are equal
+ */
+static Datum
+datum_pcpoint_transf_pj(Datum value, Datum pcid, Datum to, Datum pj)
+{
+  return PointerGetDatum(pcpoint_transf_pj(
+    (const Pcpoint *) DatumGetPointer(value), DatumGetUInt32(pcid),
+    (const PCSCHEMA *) DatumGetPointer(to),
+    (const LWPROJ *) DatumGetPointer(pj)));
+}
+
+/**
+ * @brief Return a pcpatch transformed into the schema of another pcid, the
+ * function #tpointcloud_transform lifts
+ * @param[in] value Patch
+ * @param[in] pcid Target pcid
+ * @param[in] to Schema of the target pcid
+ * @param[in] pj Transformation, @p NULL when the SRIDs are equal
+ */
+static Datum
+datum_pcpatch_transf_pj(Datum value, Datum pcid, Datum to, Datum pj)
+{
+  return PointerGetDatum(pcpatch_transf_pj(
+    (const Pcpatch *) DatumGetPointer(value), DatumGetUInt32(pcid),
+    (const PCSCHEMA *) DatumGetPointer(to),
+    (const LWPROJ *) DatumGetPointer(pj)));
+}
+
+/**
+ * @ingroup meos_pointcloud_transf
+ * @brief Return a temporal point cloud value transformed into the schema of
+ * another pcid, which states the target SRID
+ * @details The value of each instant is transformed by #pcpoint_transf_pj or
+ * #pcpatch_transf_pj, as #tspatial_transform transforms each value of a
+ * spatiotemporal value
+ * @param[in] temp Temporal pcpoint or pcpatch
+ * @param[in] pcid Target pcid
+ * @csqlfn #Tpointcloud_transform()
+ */
+Temporal *
+tpointcloud_transform(const Temporal *temp, uint32_t pcid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  bool point = (temp->temptype == T_TPCPOINT);
+  Datum first = temporal_start_value(temp);
+  uint32_t pcid_from = point ?
+    pcpoint_get_pcid((const Pcpoint *) DatumGetPointer(first)) :
+    pcpatch_get_pcid((const Pcpatch *) DatumGetPointer(first));
+  /* The start value is a copy */
+  pfree(DatumGetPointer(first));
+  const PCSCHEMA *to;
+  LWPROJ *pj;
+  if (! pc_transform_lookup(pcid_from, pcid, &to, &pj))
+    return NULL;
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = point ? (varfunc) datum_pcpoint_transf_pj :
+    (varfunc) datum_pcpatch_transf_pj;
+  lfinfo.numparam = 3;
+  lfinfo.param[0] = UInt32GetDatum(pcid);
+  lfinfo.param[1] = PointerGetDatum(to);
+  lfinfo.param[2] = PointerGetDatum(pj);
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal(temp, &lfinfo);
+}

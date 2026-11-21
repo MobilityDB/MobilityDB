@@ -12,7 +12,10 @@ on:
     paths:
       - '.github/workflows/pgversion.yml'
       - '.github/actions/apt-resilient/**'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -26,7 +29,10 @@ on:
     paths:
       - '.github/workflows/pgversion.yml'
       - '.github/actions/apt-resilient/**'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
+      - 'core-math/**'
+      - 'h3lib/**'
       - 'meos/**'
       - 'mobilitydb/**'
       - 'pgtypes/**'
@@ -125,25 +131,18 @@ jobs:
           # available (CREATE EXTENSION, pulled in before mobilitydb), provided
           # by postgresql-${VER}-pointcloud and postgresql-${VER}-h3. lcov is
           # what only the coverage job reads, and costs nothing elsewhere.
-          sudo apt-get -y install lcov libh3-dev \
+          sudo apt-get -y install lcov \
             postgresql-${{ matrix.psql }}-pointcloud \
             postgresql-${{ matrix.psql }}-h3
 
-      - name: Locate libh3 on disk and pin its paths
-        # The pgdg libh3-dev package layout differs between releases. Find the
-        # header and library at runtime and pin -DH3_INCLUDE_DIR / -DH3_LIBRARY
-        # explicitly so CMake's find_path / find_library defaults cannot miss it.
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a package carries
+        # whatever release it last took and releases state different vertices
         run: |
-          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
-          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
-          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
-            find /usr -name 'h3api.h' 2>/dev/null
-            find /usr -name 'libh3*' 2>/dev/null
-            echo "::error::could not locate libh3 headers/library"
-            exit 1
-          fi
-          echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> $GITHUB_ENV
-          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
+          sudo .github/scripts/install-h3.sh /usr/local
+          echo "H3_INCLUDE_DIR=/usr/local/include/h3" >> $GITHUB_ENV
+          echo "H3_LIBRARY=/usr/local/lib/libh3.so" >> $GITHUB_ENV
 
       - name: Install pgPointCloud build dependencies
         # meos/src/pointcloud/CMakeLists.txt builds the vendored pgPointCloud
@@ -162,8 +161,8 @@ jobs:
           # CMakeLists.txt, so a family added later is exercised by the suite
           # without editing this workflow. Its dependencies are installed and
           # located above: H3 needs libh3, POINTCLOUD pgPointCloud's libpc.a,
-          # RASTER PostGIS raster. The libh3 paths stay pinned because the pgdg
-          # package layout differs between releases. The coverage build also
+          # RASTER PostGIS raster. The libh3 paths name the release installed
+          # above. The coverage build also
           # checks the assertions (CASSERT=ON), so that the preconditions the
           # internal functions trust are verified over the whole surface; the
           # others keep a release build, where the assertions are compiled out.

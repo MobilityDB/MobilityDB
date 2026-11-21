@@ -477,6 +477,44 @@ SELECT asText(transformPipeline(tgeompoint 'POINT(426857.9877165967 5427937.5233
  POINT(2 49)@Sun Dec 31 15:00:00 2000 PST
 (1 row)
 
+-- The pipeline states both coordinate systems, so neither SRID is read: a
+-- geometry, a set and a temporal value of the same point may each take the
+-- unknown SRID as the SRID of the result, or have it as their own
+SELECT ST_SRID(transformPipeline(geometry 'SRID=4326;Point(2 49)',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'));
+ st_srid 
+---------
+       0
+(1 row)
+
+SELECT asEWKT(transformPipeline(geomset 'SRID=4326;{"Point(2 49)"}',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
+              asewkt               
+-----------------------------------
+ {"POINT(426857.988 5427937.523)"}
+(1 row)
+
+SELECT asEWKT(transformPipeline(tgeompoint 'SRID=4326;Point(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'), 3);
+                           asewkt                           
+------------------------------------------------------------
+ POINT(426857.988 5427937.523)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(transformPipeline(geomset '{"Point(2 49)"}',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                    asewkt                    
+----------------------------------------------
+ SRID=32631;{"POINT(426857.988 5427937.523)"}
+(1 row)
+
+SELECT asEWKT(transformPipeline(tgeompoint 'Point(2 49)@2001-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+                                asewkt                                 
+-----------------------------------------------------------------------
+ SRID=32631;POINT(426857.988 5427937.523)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 --------------------------------------------------------
 WITH test1(pipeline) AS (
   SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
@@ -3410,7 +3448,11 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001
 (1 row)
 
 SELECT asText(atGeometry(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Linestring Z empty'));
-ERROR:  The geometry cannot have Z dimension
+ astext 
+--------
+ 
+(1 row)
+
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Linestring empty'));
  astext 
 --------
@@ -3482,7 +3524,11 @@ SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-
 SELECT atGeometry(tgeompoint 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
 SELECT atGeometry(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometry cannot have Z dimension
+                               atgeometry                                
+-------------------------------------------------------------------------
+ 0101000000000000000000F03F000000000000F03F@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 -- 2D
 SELECT asText(minusGeometry(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(0 0,3 3)'));
  astext 
@@ -3657,7 +3703,11 @@ SELECT asText(minusGeometry(tgeompoint '{[Point(1 1)@2001-01-01, Point(3 3)@2001
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2001-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2001-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometry cannot have Z dimension
+ minusgeometry 
+---------------
+ 
+(1 row)
+
 --------------------------------------------------------
 -- Equivalences
 WITH temp(trip, geo) AS (
@@ -3743,11 +3793,46 @@ SELECT asText(atGeometry(tgeogpoint 'SRID=4326;{Point(1 1)@2001-01-01, Point(5 5
  {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+-- A point with Z held at each instant meets a geometry with Z in three
+-- dimensions: on the tilted triangle, a quarter above it, at its vertex and on
+-- the middle of an edge; a point without Z reads the geometry in two
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(1 1 1.25)@2001-01-02, Point(3 0 0)@2001-01-03, Point(1.5 1.5 0)@2001-01-04]', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+                                                                                                    astext                                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[POINT Z (1 1 1)@Mon Jan 01 00:00:00 2001 PST, POINT Z (1 1 1)@Tue Jan 02 00:00:00 2001 PST), [POINT Z (3 0 0)@Wed Jan 03 00:00:00 2001 PST, POINT Z (1.5 1.5 0)@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minusGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2001-01-01, Point(1 1 1.25)@2001-01-02, Point(3 0 0)@2001-01-03, Point(1.5 1.5 0)@2001-01-04]', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+                                                      astext                                                      
+------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[POINT Z (1 1 1.25)@Tue Jan 02 00:00:00 2001 PST, POINT Z (1 1 1.25)@Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
+SELECT asText(atGeometry(tgeompoint '{Point(1 1 1)@2001-01-01, Point(1 1 1.25)@2001-01-02, Point(0 0 3)@2001-01-03}', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+                                            astext                                            
+----------------------------------------------------------------------------------------------
+ {POINT Z (1 1 1)@Mon Jan 01 00:00:00 2001 PST, POINT Z (0 0 3)@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(atGeometry(tgeompoint 'Point(1 1 1.25)@2001-01-01', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atGeometry(tgeompoint '{Point(1 1)@2001-01-01, Point(4 4)@2001-01-02}', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+                  astext                   
+-------------------------------------------
+ {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
 /* Errors */
 SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4326;Linestring(0 0,2 2)'));
 ERROR:  Restriction of a temporal geodetic point to a geography of type LineString is not implemented
 SELECT asText(atGeometry(tgeogpoint 'SRID=4326;Point(1 1)@2001-01-01', geography 'SRID=4269;Polygon((0 0,0 2,2 2,2 0,0 0))'));
 ERROR:  Operation on mixed SRID
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 1 2)@2001-01-02]', geometry 'Triangle Z((0 0 3,3 0 0,0 3 0,0 0 3))'));
+ERROR:  Restriction of a tgeompoint with Z in linear interpolation to a geometry with Z is not implemented
 --------------------------------------------------------
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
                  astext                  

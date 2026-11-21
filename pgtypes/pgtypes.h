@@ -702,6 +702,8 @@ extern Jsonb *pg_jsonb_strip_nulls (const Jsonb *jb, bool strip_in_arrays);
 /* Comparison functions */
 
 extern int pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2);
+extern size_t jsonb_sortkey_size(const Jsonb *jb);
+extern uint8_t *jsonb_sortkey_put(const Jsonb *jb, uint8_t *out);
 extern bool pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2);
 extern bool pg_jsonb_le(const Jsonb *jb1, const Jsonb *jb2);
 extern bool pg_jsonb_lt(const Jsonb *jb1, const Jsonb *jb2);

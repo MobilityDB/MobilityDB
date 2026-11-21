@@ -44,6 +44,8 @@
 #include "postgres.h"
 #include <utils/float.h>
 #include <utils/memutils.h>  /* TopMemoryContext */
+#include <common/hashfn.h>
+#include <common/int128.h>
 #include <pgtypes.h>
 #include <port/pg_bitutils.h>
 /* PostGIS */
@@ -118,6 +120,8 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
     Edge e;
     e.centred = false;
+    e.offset = false;
+    e.side = 0;
     e.from = e.to = NULL;
     e.cut = false;
     e.x1 = a->x; e.y1 = a->y;
@@ -170,6 +174,8 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
   const POINT2D *p = getPoint2d_cp(pt->point, 0);
   Edge e;
   e.centred = false;
+  e.offset = false;
+  e.side = 0;
   e.from = e.to = NULL;
   e.cut = false;
   e.x1 = e.x2 = e.xmin = e.xmax = p->x;
@@ -509,6 +515,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     {
       Edge e;
       e.centred = false;
+      e.offset = false;
+      e.side = 0;
       e.from = e.to = NULL;
       e.cut = false;
       e.cx = mx; e.cy = my; e.radius = radius;
@@ -550,6 +558,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     {
       Edge e;
       e.centred = false;
+      e.offset = false;
+      e.side = 0;
       e.from = e.to = NULL;
       e.cut = false;
       e.x1 = px[i]; e.y1 = py[i];
@@ -570,6 +580,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   double c2 = cx * cx + cy * cy;
   Edge e;
   e.centred = false;
+  e.offset = false;
+  e.side = 0;
   e.from = e.to = NULL;
   e.cut = false;
   /* Circumcenter of the three points */
@@ -1128,6 +1140,37 @@ linear_side_approx(const ExactSum *sums, const PolyTerm *f, int n)
   return val;
 }
 
+/* The operands of #linear_side_at and the sign at the start, for
+ * #linear_cross_beyond */
+typedef struct
+{
+  const ExactSum *sums;   /**< Exact sums the terms refer to */
+  const PolyTerm *f0;     /**< Terms of f(P0) */
+  int n0;                 /**< Number of terms of f(P0) */
+  const PolyTerm *f1;     /**< Terms of f(P1) */
+  int n1;                 /**< Number of terms of f(P1) */
+  int64 D;                /**< Duration of the segment in microseconds */
+  int s0;                 /**< Side at the start, not zero */
+} LinearCross;
+
+/**
+ * @brief Return 1 where the point is still on the side of the line it starts
+ * on, or on the line, at the microsecond of a key, 0 where it is past it: the
+ * side #linear_cross_offset gives #monotone_search
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+linear_cross_beyond(uint64 key, void *arg)
+{
+  const LinearCross *lc = (const LinearCross *) arg;
+  if (key == 0)
+    return 1;
+  return lc->s0 * linear_side_at(lc->sums, lc->f0, lc->n0, lc->f1, lc->n1,
+    lc->D, (int64) key) >= 0;
+}
+
 /**
  * @brief Return the microsecond at which a segment crosses a line given by a
  * function affine in the position, as the offset from the start of the
@@ -1138,8 +1181,8 @@ linear_side_approx(const ExactSum *sums, const PolyTerm *f, int n)
  * at which the point is still on the side of the line it starts on or on
  * the line, each side the exact sign #linear_side_at decides, so the
  * crossing is dated by the truncation of its exact parameter and no rounded
- * parameter decides it. A double estimate starts a galloping search, then a
- * bisection, on that sign.
+ * parameter decides it. A double estimate starts the one search
+ * (#monotone_search) on that sign.
  * @param[in] sums Exact sums the terms refer to
  * @param[in] f0,n0 Terms of `f(P0)` and their number
  * @param[in] f1,n1 Terms of `f(P1)` and their number
@@ -1168,57 +1211,13 @@ linear_cross_offset(const ExactSum *sums, const PolyTerm *f0, int n0,
   int64 n = 0;
   if (isfinite(est) && est > 0.0)
     n = (est >= (double) D) ? D : (int64) est;
-  /* lo is the last microsecond known on the start side, hi the first known
-   * past it, D + 1 standing for none */
-  int64 lo, hi;
-  if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, n) >= 0)
-  {
-    lo = n;
-    int64 step = 1;
-    for (;;)
-    {
-      if (lo == D)
-      {
-        hi = D + 1;
-        break;
-      }
-      int64 c = (step > D - lo) ? D : lo + step;
-      if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
-      {
-        lo = c;
-        step *= 2;
-      }
-      else
-      {
-        hi = c;
-        break;
-      }
-    }
-  }
-  else
-  {
-    hi = n;
-    int64 step = 1;
-    for (;;)
-    {
-      int64 c = (step >= hi) ? 0 : hi - step;
-      if (c == 0 || s0 * linear_side_at(sums, f0, n0, f1, n1, D, c) >= 0)
-      {
-        lo = c;
-        break;
-      }
-      hi = c;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (s0 * linear_side_at(sums, f0, n0, f1, n1, D, mid) >= 0)
-      lo = mid;
-    else
-      hi = mid;
-  }
+  /* The first microsecond past the start side, D + 1 standing for none,
+   * found by the one search (#monotone_search) */
+  LinearCross lc = {sums, f0, n0, f1, n1, D, s0};
+  uint64 key = 0;
+  (void) monotone_search((uint64) n, (uint64) D + 1, &linear_cross_beyond,
+    &lc, 0, &key);
+  int64 lo = (int64) key - 1;
   *whole = (linear_side_at(sums, f0, n0, f1, n1, D, lo) == 0);
   return lo;
 }
@@ -4449,22 +4448,19 @@ point_motion_nad_exceeds(const double *p0, const double *p1, int64 s0,
 /*****************************************************************************/
 
 /**
- * @brief Return the sign of the shoelace sum of a ring, summed exactly on
- * #DyadicWide
- * @details The path of #ring_area_sign where a product leaves the doubles or
- * part of it falls below 2^-1074: each product of two doubles is formed
- * exactly (#dyadic_wide_mul) and added with its sign (#dyadic_wide_add); a
- * product spans at most 34 limbs and the sum of every product of doubles at
- * most 67
+ * @brief Return the shoelace sum of a ring, twice the signed area it
+ * encloses, summed exactly on #DyadicWide
+ * @details Each product of two doubles is formed exactly (#dyadic_wide_mul)
+ * and added with its sign (#dyadic_wide_add); a product spans at most 34
+ * limbs and the sum of every product of doubles at most 67
+ * @param[in] ar Arena holding the values of the sum
+ * @param[in] pa Ring
  */
-static int
-ring_area_sign_wide(const POINTARRAY *pa)
+static const DyadicWide *
+ring_shoelace_wide(DyadicWideArena *ar, const POINTARRAY *pa)
 {
-  DyadicWideArena arena, *ar = &arena;
-  dyadic_wide_arena_init(ar);
-  const DyadicWide *acc, *u, *v;
+  const DyadicWide *acc = dyadic_wide_zero(ar), *u, *v;
   DyadicWide *p;
-  acc = dyadic_wide_zero(ar);
   for (uint32_t i = 0; i + 1 < pa->npoints; i++)
   {
     const POINT2D *a = getPoint2d_cp(pa, i);
@@ -4479,9 +4475,641 @@ ring_area_sign_wide(const POINTARRAY *pa)
     p->sign = - p->sign;
     acc = dyadic_wide_add(ar, acc, p);
   }
-  int sign = acc->sign;
+  return acc;
+}
+
+/**
+ * @brief Return the sign of the shoelace sum of a ring, summed exactly on
+ * #DyadicWide
+ * @details The path of #ring_area_sign where a product leaves the doubles or
+ * part of it falls below 2^-1074 (#ring_shoelace_wide)
+ */
+static int
+ring_area_sign_wide(const POINTARRAY *pa)
+{
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  int sign = ring_shoelace_wide(ar, pa)->sign;
   dyadic_wide_arena_free(ar);
   return sign;
+}
+
+/**
+ * @brief Add the area of a geometry of straight edges to a #DyadicWide,
+ * exactly, as twice its value
+ * @details The area #lwgeom_area measures: a polygon encloses its exterior
+ * ring less its holes, each the magnitude of its shoelace sum
+ * (#ring_shoelace_wide), a triangle its ring, a collection the sum of its
+ * members, and a point or a line nothing; any other type is refused, as
+ * #geo_walk_measure refuses it
+ * @param[in] ar Arena holding the values of the sum
+ * @param[in] geom Geometry
+ * @param[in,out] total Sum
+ * @errval false
+ * @pre The geometry holds no curve
+ */
+static bool
+geom_area_wide_add(DyadicWideArena *ar, const LWGEOM *geom,
+  const DyadicWide **total)
+{
+  const DyadicWide *ring;
+  switch (geom->type)
+  {
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+      {
+        if (poly->rings[i]->npoints < 3)
+          continue;
+        ring = ring_shoelace_wide(ar, poly->rings[i]);
+        /* The exterior adds its magnitude and a hole takes its away */
+        *total = dyadic_wide_add_signed(ar, *total, 1, ring,
+          ((ring->sign < 0) == (i == 0)) ? -1 : 1);
+      }
+      return true;
+    }
+    case TRIANGLETYPE:
+    {
+      const LWTRIANGLE *tri = (const LWTRIANGLE *) geom;
+      if (tri->points->npoints < 3)
+        return true;
+      ring = ring_shoelace_wide(ar, tri->points);
+      *total = dyadic_wide_add_signed(ar, *total, 1, ring,
+        (ring->sign < 0) ? -1 : 1);
+      return true;
+    }
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    {
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+      {
+        if (! geom_area_wide_add(ar, col->geoms[i], total))
+          return false;
+      }
+      return true;
+    }
+    case POINTTYPE:
+    case LINETYPE:
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+      /* A point or a line encloses nothing */
+      return true;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown geometry type: %d", geom->type);
+      return false;
+  }
+}
+
+/**
+ * @brief Return the double nearest the area of a geometry of straight edges,
+ * computed exactly, or an infinity where it rounds beyond the largest double
+ * @details Twice the area is summed exactly on #DyadicWide
+ * (#geom_area_wide_add) and its half rounded once to the nearest double, a
+ * tie going to the even one (#dyadic_wide_nearest_quotient); an area of at
+ * least DBL_MAX + 2^970, the least value rounding to infinity, is that
+ * infinity, and one between DBL_MAX and it the largest double. The path of
+ * #geom_area_sum_nearest where its filter cannot decide the nearest double
+ * @param[in] geom Geometry holding no curve
+ * @param[out] result Area
+ * @errval false
+ */
+bool
+geom_area_exact(const LWGEOM *geom, double *result)
+{
+  DyadicWideArena arena, *ar = &arena;
+  dyadic_wide_arena_init(ar);
+  const DyadicWide *total = dyadic_wide_zero(ar);
+  if (! geom_area_wide_add(ar, geom, &total))
+  {
+    dyadic_wide_arena_free(ar);
+    return false;
+  }
+  int sign = total->sign;
+  if (sign == 0)
+    *result = 0.0;
+  else
+  {
+    const DyadicWide *two = dyadic_wide_of_double(ar, 2.0);
+    const DyadicWide *mag = dyadic_wide_signed(ar, total, sign);
+    const DyadicWide *dmax = dyadic_wide_of_double(ar, DBL_MAX);
+    /* Twice the least value rounding to infinity, 2 (DBL_MAX + 2^970), and
+     * twice DBL_MAX, from which on an area rounds to DBL_MAX */
+    const DyadicWide *inf2 = dyadic_wide_mul(ar, two, dyadic_wide_add(ar, dmax,
+      dyadic_wide_of_double(ar, 0x1p970)));
+    const DyadicWide *max2 = dyadic_wide_mul(ar, two, dmax);
+    if (dyadic_wide_cmp(mag, inf2) >= 0)
+      *result = sign * INFINITY;
+    else if (dyadic_wide_cmp(mag, max2) >= 0)
+      *result = sign * DBL_MAX;
+    else
+      *result = dyadic_wide_nearest_quotient(total, two);
+  }
+  dyadic_wide_arena_free(ar);
+  return true;
+}
+
+/**
+ * @brief Add a double to the running sum of the area of a geometry
+ * @details The error of the addition is kept in its compensation (#two_sum)
+ * and the rounding of the compensation in its bound
+ */
+static inline void
+area_sum_add(AreaSum *acc, double x)
+{
+  double t, tl;
+  two_sum(acc->sum, x, &t, &tl);
+  acc->sum = t;
+  acc->err += tl;
+  acc->bound += DBL_EPSILON * fabs(acc->err);
+  return;
+}
+
+/**
+ * @brief Add the area of a ring, as a running sum of its own, to the running
+ * sum of the area of a geometry
+ * @details A ring whose sum stands clear of its bound adds its magnitude, a
+ * hole takes it away, and the bound grows by the ring's; a ring within twice
+ * its bound of 0 adds nothing and the bound grows by its whole possible
+ * magnitude
+ */
+static void
+area_sum_add_ring(AreaSum *acc, const AreaSum *ring, bool hole)
+{
+  double v = ring->sum + ring->err;
+  if (fabs(v) <= 2.0 * ring->bound)
+  {
+    acc->bound += 2.0 * fabs(v) + ring->bound;
+    return;
+  }
+  double sign = ((v < 0.0) != hole) ? -1.0 : 1.0;
+  area_sum_add(acc, sign * ring->sum);
+  area_sum_add(acc, sign * ring->err);
+  acc->bound += ring->bound;
+  return;
+}
+
+/** @brief Vertices of a block of #area_sum_ring_int, whose terms, each below
+ * 2^116, sum within 128 bits */
+#define AREA_INT_BLOCK 1024
+
+/**
+ * @brief Return the exponent of the unit of an axis of a ring that makes
+ * every coordinate an integer from 2^52 to 2^57, or `INT_MIN` where the
+ * exponents of the coordinates spread too far
+ * @details The exponent field of the bitwise AND of the magnitudes of the
+ * coordinates is at most the least of their exponents and that of their OR
+ * at least the largest, reductions that need no comparison, as
+ * #dyadic_wide_of_double reads the exponent field of a double. Where the two
+ * differ by at most 4 and neither is that of 0, a subnormal or an infinity,
+ * the unit 56 bits below the largest exponent makes every magnitude scaled by
+ * it at least 2^52, so an integer, and below 2^57
+ * @param[in] andbits,orbits Bitwise AND and OR of the coordinates of the axis
+ */
+static int
+area_int_unit(uint64 andbits, uint64 orbits)
+{
+  int lo = (int) ((andbits >> 52) & 0x7FF), hi = (int) ((orbits >> 52) & 0x7FF);
+  if (lo == 0 || hi == 0x7FF || hi - lo > 4)
+    return INT_MIN;
+  return hi - 1023 - 56;
+}
+
+/**
+ * @brief Return the exponent of the unit of an axis from the bounds of the
+ * axis in a box, or `INT_MIN` where the box reaches 0 or the largest float
+ * on it
+ * @details The least magnitude of the coordinates is at least that of the
+ * bound nearer 0 and the largest at most that of the other one, so their
+ * exponent fields bound those of every coordinate, as the bitwise AND and OR
+ * of #area_int_unit bound them. A bound of a stored box rounds outwards to
+ * the floats save beyond the largest float, where it is that float
+ * (#next_float_down), so a bound reaching it bounds nothing
+ * @param[in] lo,hi Bounds of the axis
+ */
+static int
+area_box_unit(double lo, double hi)
+{
+  double min, max;
+  if (lo <= - (double) FLT_MAX || hi >= (double) FLT_MAX)
+    return INT_MIN;
+  if (lo > 0.0)
+  {
+    min = lo; max = hi;
+  }
+  else if (hi < 0.0)
+  {
+    min = - hi; max = - lo;
+  }
+  else
+    return INT_MIN;
+  uint64 andbits, orbits;
+  memcpy(&andbits, &min, sizeof(andbits));
+  memcpy(&orbits, &max, sizeof(orbits));
+  return area_int_unit(andbits, orbits);
+}
+
+/**
+ * @brief Initialize the running sum of the area of a geometry
+ * @details The stored box of a planar geometry bounds its coordinates,
+ * rounded outwards to floats, so the unit of each axis is read once from it
+ * (#area_box_unit) and holds for every ring; the box is read in place, as
+ * #geom_spatialrel reads it. A geometry with no stored box, a geodetic one,
+ * whose box is geocentric, and an axis whose box reaches 0 leave each ring to
+ * read its own (#area_sum_ring_int)
+ * @param[out] acc Running sum
+ * @param[in] gs Geometry
+ */
+void
+area_sum_init(AreaSum *acc, const GSERIALIZED *gs)
+{
+  acc->sum = acc->err = acc->bound = 0.0;
+  acc->ok = true;
+  acc->unitx = acc->unity = INT_MIN;
+  acc->isum = 0;
+  const float *box = gserialized_is_geodetic(gs) ? NULL :
+    gserialized_get_float_box_p(gs, NULL);
+  if (box)
+  {
+    acc->unitx = area_box_unit(box[0], box[1]);
+    acc->unity = area_box_unit(box[2], box[3]);
+  }
+  return;
+}
+
+/**
+ * @brief Add the exact value of a 128-bit integer times 2^e to a running sum,
+ * in pieces of 32 bits, and return false where a piece is not a double
+ * @details The integer is its signed high half times 2^64 plus its unsigned
+ * low half, and each half two pieces of 32 bits, each a double exactly where
+ * the lowest weight stays at or above 2^-1074 and the value below the largest
+ * double
+ */
+static bool
+area_sum_add_int128(AreaSum *acc, int128 v, int e)
+{
+  int64 hi = (int64) (v >> 64);
+  uint64 lo = (uint64) v;
+  /* Pieces of weight 2^96, 2^64, 2^32 and 1, the highest signed */
+  int64 p3 = hi >> 32;
+  uint64 p2 = ((uint64) hi) & 0xFFFFFFFFULL;
+  uint64 p1 = lo >> 32, p0 = lo & 0xFFFFFFFFULL;
+  /* Where every weight is a normal double the pieces are its products
+   * (#pow2_double), each exact or infinite as #ldexp makes it */
+  double pieces[4];
+  if (e >= -1022 && e + 96 <= 1023)
+  {
+    pieces[0] = (double) p3 * pow2_double(96 + e);
+    pieces[1] = (double) p2 * pow2_double(64 + e);
+    pieces[2] = (double) p1 * pow2_double(32 + e);
+    pieces[3] = (double) p0 * pow2_double(e);
+  }
+  else
+  {
+    pieces[0] = ldexp((double) p3, 96 + e);
+    pieces[1] = ldexp((double) p2, 64 + e);
+    pieces[2] = ldexp((double) p1, 32 + e);
+    pieces[3] = ldexp((double) p0, e);
+  }
+  for (int k = 0; k < 4; k++)
+    if (! isfinite(pieces[k]))
+      return false;
+  for (int k = 0; k < 4; k++)
+    if (pieces[k] != 0.0)
+      area_sum_add(acc, pieces[k]);
+  return true;
+}
+
+/**
+ * @brief Return the sum of a block of the shoelace products of a ring on
+ * integers, `X_i (Y_(i-1) - Y_(i+1))` for its @p n next vertices, added to
+ * @p start
+ * @details Inlined at each of its calls, so that a constant @p ndims gives the
+ * loop a constant stride. Four vertices a step, so that the three values
+ * carried from one vertex to the next take their new places once a step
+ * @param[in] p Coordinates of the first vertex of the block
+ * @param[in] n Number of vertices of the block, at most #AREA_INT_BLOCK
+ * @param[in] ndims Number of coordinates of a point
+ * @param[in] sx,sy Scales making the coordinates of each axis integers
+ * @param[in] start Sum the block is added to
+ * @param[in,out] x1,y0,y1 The scaled X of the vertex before the next one and
+ * the scaled Y of the two vertices before it, carried from block to block
+ */
+static pg_attribute_always_inline INT128
+area_int_block(const double *p, uint32_t n, uint32_t ndims, double sx,
+  double sy, INT128 start, int64 *x1, int64 *y0, int64 *y1)
+{
+  INT128 block = start;
+  int64 xa = *x1, ya = *y0, yb = *y1;
+  const double *end = p + (size_t) (n & ~3u) * ndims;
+  for (; p < end; p += 4 * ndims)
+  {
+    int64 x2 = p[0] * sx, y2 = p[1] * sy;
+    int64 x3 = p[ndims] * sx, y3 = p[ndims + 1] * sy;
+    int64 x4 = p[2 * ndims] * sx, y4 = p[2 * ndims + 1] * sy;
+    int64 x5 = p[3 * ndims] * sx, y5 = p[3 * ndims + 1] * sy;
+    int128_add_int64_mul_int64(&block, xa, ya - y2);
+    int128_add_int64_mul_int64(&block, x2, yb - y3);
+    int128_add_int64_mul_int64(&block, x3, y2 - y4);
+    int128_add_int64_mul_int64(&block, x4, y3 - y5);
+    xa = x5;
+    ya = y4;
+    yb = y5;
+  }
+  for (uint32_t k = n & 3u; k > 0; k--, p += ndims)
+  {
+    int64 x2 = p[0] * sx, y2 = p[1] * sy;
+    int128_add_int64_mul_int64(&block, xa, ya - y2);
+    ya = yb;
+    yb = y2;
+    xa = x2;
+  }
+  *x1 = xa; *y0 = ya; *y1 = yb;
+  return block;
+}
+
+/**
+ * @brief Add the area of a ring to the running sum exactly on integers, or
+ * return false where its coordinates are not integers of one unit
+ * @details The unit of each axis is the one of the running sum, read once
+ * for the geometry from its box (#area_sum_init), or else read once for the
+ * ring (#area_int_unit), and every coordinate scaled by it is then an integer from
+ * 2^52 to 2^57, converted with no test. The shoelace sum is taken in the form
+ * GEOS's `Area::ofRingSigned` takes it, one product a vertex, on the
+ * coordinates themselves, `X_i (Y_(i-1) - Y_(i+1))`: the sum is exact, so it
+ * needs no origin at the first vertex, whose own product closes the ring. Each
+ * product is below 2^116, added exactly in 128 bits by PostgreSQL's
+ * #int128_add_int64_mul_int64, so a block of #AREA_INT_BLOCK vertices sums
+ * within 128 bits. A ring of one block on the units of the box adds its
+ * magnitude, or takes it away for a hole, to the exact integer sum of the
+ * geometry (`isum`), which is rounded once (#area_sum_nearest); where that
+ * sum would leave 128 bits it is added first to the running sum
+ * (#area_sum_add_int128). On units of its own, or past one block, the sum
+ * of each block times the product of the units is added exactly to a
+ * running sum of the ring, whose magnitude is twice the area of the ring,
+ * read as #area_sum_ring reads its own (#area_sum_add_ring). It costs about
+ * 15 operations a vertex, where the compensated sum of #area_sum_ring costs
+ * about ninety
+ */
+static bool
+area_sum_ring_int(AreaSum *acc, const double *c, uint32_t npoints,
+  uint32_t ndims, bool hole)
+{
+  int ex = acc->unitx, ey = acc->unity;
+  const double *p = c;
+  if (ex == INT_MIN || ey == INT_MIN)
+  {
+    uint64 ax = ~((uint64) 0), ox = 0, ay = ~((uint64) 0), oy = 0;
+    for (uint32_t i = 0; i < npoints; i++, p += ndims)
+    {
+      uint64 bx, by;
+      memcpy(&bx, &p[0], sizeof(bx));
+      memcpy(&by, &p[1], sizeof(by));
+      ax &= bx; ox |= bx; ay &= by; oy |= by;
+    }
+    ex = area_int_unit(ax, ox);
+    ey = area_int_unit(ay, oy);
+  }
+  /* The scales are normal doubles and the lowest piece of a block is at or
+   * above 2^-1074 */
+  if (ex == INT_MIN || ey == INT_MIN || ex < -1022 || ey < -1022 ||
+      ex + ey < -1074)
+    return false;
+  /* The units lie from 2^-1022 to 2^967, so their inverses are normal */
+  double sx = pow2_double(- ex), sy = pow2_double(- ey);
+  int64 x0 = c[0] * sx, y0 = c[1] * sy;
+  int64 x1 = c[ndims] * sx, y1 = c[ndims + 1] * sy;
+  /* The product of the first vertex, X_0 (Y_(n-2) - Y_1), the ring closing
+   * on it: the sum is exact, so it needs no origin moved to the first
+   * vertex */
+  INT128 first = int64_to_int128(0);
+  int128_add_int64_mul_int64(&first, x0,
+    (int64) (c[(size_t) (npoints - 2) * ndims + 1] * sy) - y1);
+  p = c + 2 * ndims;
+  if (ex == acc->unitx && ey == acc->unity && npoints - 2 <= AREA_INT_BLOCK)
+  {
+    int128 v = (ndims == 2) ?
+      area_int_block(p, npoints - 2, 2, sx, sy, first, &x1, &y0, &y1) :
+      area_int_block(p, npoints - 2, ndims, sx, sy, first, &x1, &y0, &y1);
+    if ((v < 0) != hole)
+      v = - v;
+    int128 sum;
+    if (__builtin_add_overflow(acc->isum, v, &sum))
+    {
+      if (! area_sum_add_int128(acc, acc->isum, ex + ey))
+        return false;
+      sum = v;
+    }
+    acc->isum = sum;
+    return true;
+  }
+  AreaSum ring = {0.0, 0.0, 0.0, true, INT_MIN, INT_MIN, 0};
+  uint32_t i = 1;
+  while (i + 1 < npoints)
+  {
+    uint32_t n = (npoints - 1 - i > AREA_INT_BLOCK) ?
+      AREA_INT_BLOCK : npoints - 1 - i;
+    /* A ring of two coordinates a point, the one most often read, takes the
+     * loop of a constant stride */
+    INT128 block = (ndims == 2) ?
+      area_int_block(p, n, 2, sx, sy, first, &x1, &y0, &y1) :
+      area_int_block(p, n, ndims, sx, sy, first, &x1, &y0, &y1);
+    first = int64_to_int128(0);
+    p += n * ndims;
+    i += n;
+    if (! area_sum_add_int128(&ring, block, ex + ey))
+      return false;
+  }
+  area_sum_add_ring(acc, &ring, hole);
+  return true;
+}
+
+/**
+ * @brief Add the area of a ring of serialized coordinates to the running sum
+ * of the area of a geometry, with a bound on its error
+ * @details A ring whose coordinates are integers of one unit is summed
+ * exactly on them (#area_sum_ring_int). Any other ring is summed in doubles,
+ * one product a vertex as #area_sum_ring_int takes it,
+ * `(X_i - X_0) (Y_(i-1) - Y_(i+1))`, about its first vertex as PostGIS reads
+ * it (#ptarray_signed_area), so its terms do not cancel at projected
+ * coordinates. Each difference is its rounded value and the error of that
+ * rounding (#two_sum), each product of two rounded differences its rounded
+ * value and the error of that rounding (#two_product_split), and the rounded
+ * products are summed exactly into a
+ * running double and the errors of its additions (#two_sum). The sum of the
+ * running double and of every error is the shoelace sum exactly; the errors,
+ * each within a unit in the last place of the magnitude of the terms, are
+ * summed in doubles, so the ring is the running double plus a double within
+ * `16 (m + 2)^2 eps^2` of the sum `mag` of the magnitudes of the rounded
+ * products for m edges, a generous bound on the rounding of a sum of about
+ * `17 m` errors, each within `(2 m + 4) eps / 2` of `mag`, and within
+ * 2^-1074 of every product whose error falls below the doubles, and is added
+ * to the running sum by #area_sum_add_ring. A difference or a product
+ * beyond 2^995, which the split of a product does not keep exact, or a sum
+ * leaving the doubles, marks the sum as unreadable in doubles
+ * @param[in,out] acc Running sum
+ * @param[in] c Coordinates of the ring
+ * @param[in] npoints Number of points of the ring
+ * @param[in] ndims Number of coordinates of a point
+ * @param[in] hole True for a hole, whose area is taken away
+ */
+void
+area_sum_ring(AreaSum *acc, const double *c, uint32_t npoints,
+  uint32_t ndims, bool hole)
+{
+  if (npoints < 3 || ! acc->ok)
+    return;
+  if (area_sum_ring_int(acc, c, npoints, ndims, hole))
+    return;
+  const double x0 = c[0];
+  double s = 0.0, e = 0.0, mag = 0.0, big = 0.0;
+  const double *p = c + ndims;
+  /* One product a vertex, (X_i - X_0) (Y_(i-1) - Y_(i+1)), as
+   * #area_sum_ring_int takes it, the two end terms vanishing */
+  for (uint32_t i = 1; i + 1 < npoints; i++, p += ndims)
+  {
+    double dx, dxl, dy, dyl, a, al, t, tl;
+    two_sum(p[0], - x0, &dx, &dxl);
+    two_sum(p[1 - (ptrdiff_t) ndims], - p[ndims + 1], &dy, &dyl);
+    big = Max(big, Max(fabs(dx), fabs(dy)));
+    /* (dx + dxl) (dy + dyl) */
+    two_product_split(dx, dy, &a, &al);
+    two_sum(s, a, &t, &tl);
+    s = t;
+    e += (tl + al) + (dx * dyl + dxl * dy + dxl * dyl);
+    mag += fabs(a);
+  }
+  double m = (double) npoints + 1.0;
+  double bound = 16.0 * m * m * DBL_EPSILON * DBL_EPSILON * mag +
+    16.0 * m * 0x1p-1074;
+  if (! isfinite(s) || ! isfinite(e) || ! isfinite(bound) || big > 0x1p995)
+  {
+    acc->ok = false;
+    return;
+  }
+  AreaSum ring = {s, e, bound, true, INT_MIN, INT_MIN, 0};
+  area_sum_add_ring(acc, &ring, hole);
+  return;
+}
+
+/* Twice an area, nonnegative, as a value and a remainder within a bound, which
+ * #area_half_side places against the midpoints of the doubles */
+typedef struct
+{
+  double hi;     /**< The value */
+  double lo;     /**< The remainder */
+  double bound;  /**< A bound on the error of hi + lo */
+} AreaHalfSide;
+
+/**
+ * @brief The side of half the value of @p arg against the upper midpoint of
+ * the double of bit pattern @p bits, or 2 where the bound cannot tell
+ * @details The side #nearest_double_search reads, as #ddb_nearest_root_side
+ * places a root: with `c` that double and `cu` the one above it, half the
+ * value passes the midpoint `(c + cu) / 2` exactly where the value passes
+ * `c + cu`, which #two_sum holds exactly, so the difference is formed on two
+ * doubles with the bound of the value and the rounding of its last sums
+ */
+static int
+area_half_side(uint64 bits,
+  /* The signature of #NearestBitsSide, whose other sides write through it, as
+   * #tpoint_motion_dwithin_interval (tgeo_distance.c:4571) marks the
+   * signature of its callback */
+  /* cppcheck-suppress constParameterCallback */
+  void *arg)
+{
+  const AreaHalfSide *a = (const AreaHalfSide *) arg;
+  double c, cu;
+  uint64 ubits = bits + 1;
+  memcpy(&c, &bits, sizeof(c));
+  memcpy(&cu, &ubits, sizeof(cu));
+  if (! (c >= 0.0 && cu < INFINITY))
+    return 2;
+  double s, se, dh, dl;
+  two_sum(c, cu, &s, &se);
+  two_sum(a->hi, - s, &dh, &dl);
+  double rest = dl + (a->lo - se);
+  double v = dh + rest;
+  double bound = a->bound * (1.0 + 4.0 * DBL_EPSILON) +
+    4.0 * DBL_EPSILON * (fabs(dh) + fabs(dl) + fabs(a->lo) + fabs(se)) +
+    0x1p-1074;
+  if (v > bound)
+    return 1;
+  if (v < - bound)
+    return -1;
+  return 2;
+}
+
+/**
+ * @brief Return true and the double nearest the area of a geometry summed by
+ * #area_sum_ring where the bound of the sum decides it, false otherwise
+ * @details A geometry whose rings are all summed in its 128-bit integer is
+ * that integer times the product of the units, halved: its conversion to a
+ * double is correctly rounded, a tie going to the even one, and the scaling
+ * by a power of two is exact where the area is a normal double. Otherwise
+ * the integer is added to the running sum (#area_sum_add_int128), whose
+ * running double and error add up, exactly (#two_sum), to
+ * a double and a remainder; twice the area lies within the bound of their
+ * sum, so the double is the one nearest it wherever the remainder and the
+ * bound together stay below half the gap to either neighbour. Halving it is
+ * exact from 2^-1021 on. An area of 0 is decided where the sum is 0 with no
+ * error. Every other case is the exact path's (#geom_area_exact)
+ * @param[in] acc Running sum
+ * @param[out] result Area
+ */
+bool
+area_sum_nearest(const AreaSum *acc, double *result)
+{
+  if (! acc->ok)
+    return false;
+  AreaSum all;
+  if (acc->isum != 0)
+  {
+    int e = acc->unitx + acc->unity - 1;
+    if (acc->sum == 0.0 && acc->err == 0.0 && acc->bound == 0.0)
+    {
+      double d = (double) acc->isum;
+      int k = ilogb(d) + e;
+      if (k >= -1022 && k <= 1023)
+      {
+        *result = ldexp(d, e);
+        return true;
+      }
+    }
+    all = *acc;
+    if (! area_sum_add_int128(&all, acc->isum, e + 1))
+      return false;
+    acc = &all;
+  }
+  double hi, lo;
+  two_sum(acc->sum, acc->err, &hi, &lo);
+  if (! isfinite(hi) || ! isfinite(lo))
+    return false;
+  if (hi == 0.0)
+  {
+    if (lo != 0.0 || acc->bound != 0.0)
+      return false;
+    *result = 0.0;
+    return true;
+  }
+  /* The area is half of hi + lo, within half the bound: the one search
+   * places it against the midpoints of the doubles, its sign carried apart */
+  AreaHalfSide side = { fabs(hi), (hi < 0.0) ? - lo : lo, acc->bound };
+  if (side.hi < 0x1p-1021)
+    return false;
+  double c = side.hi / 2.0;
+  uint64 bits, found;
+  memcpy(&bits, &c, sizeof(bits));
+  if (! nearest_double_search(bits, &area_half_side, &side,
+      NEAREST_FILTER_BUDGET, &found))
+    return false;
+  memcpy(&c, &found, sizeof(c));
+  *result = (hi < 0.0) ? - c : c;
+  return true;
 }
 
 /**
@@ -4636,12 +5264,41 @@ dwithin_grid_start(double est, int64 lo, int64 hi)
  */
 typedef int (*GridSignFn)(const void *ctx, int64 n);
 
+/* The sign of a grid search and the side #monotone_search reads of it,
+ * the key being the offset from @p lo (#grid_search_beyond) */
+typedef struct
+{
+  const void *ctx;   /**< Operands of the sign */
+  GridSignFn fn;     /**< Sign read at a microsecond */
+  int64 lo;          /**< Microsecond of the key 0 */
+  bool last;         /**< True for #grid_sign_last, false for #grid_sign_first */
+} GridSearch;
+
+/**
+ * @brief Return 1 where the microsecond of a key lies below the answer of a
+ * grid search, 0 otherwise: for #grid_sign_last where the sign is not
+ * positive there, for #grid_sign_first where it is positive; the key 0 is
+ * @p lo, below the answer
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+grid_search_beyond(uint64 key, void *arg)
+{
+  const GridSearch *g = (const GridSearch *) arg;
+  if (key == 0)
+    return 1;
+  int s = g->fn(g->ctx, g->lo + (int64) key);
+  return g->last ? (s <= 0) : (s > 0);
+}
+
 /**
  * @brief Return the largest @p n in [@p lo, @p hi) at which the sign @p fn
  * reads is not positive, that sign being not positive at @p lo, positive at
  * @p hi and changing once in between
- * @details A gallop from the estimate @p est brackets the answer, then halving
- * the bracket finds it, as #dyadic_wide_nearest_root finds its answer
+ * @details The one search (#monotone_search) from the estimate @p est finds
+ * the first microsecond at which the sign is positive
  */
 static int64
 grid_sign_last(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
@@ -4650,46 +5307,11 @@ grid_sign_last(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
   if (hi - lo <= 1)
     return lo;
   int64 start = dwithin_grid_start(est, lo, hi);
-  int64 step = 1;
-  if (fn(ctx, start) <= 0)
-  {
-    lo = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? lo + step : hi;
-      if (next == hi || fn(ctx, next) > 0)
-      {
-        hi = next;
-        break;
-      }
-      lo = next;
-      step *= 2;
-    }
-  }
-  else
-  {
-    hi = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? hi - step : lo;
-      if (next == lo || fn(ctx, next) <= 0)
-      {
-        lo = next;
-        break;
-      }
-      hi = next;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (fn(ctx, mid) <= 0)
-      lo = mid;
-    else
-      hi = mid;
-  }
-  return lo;
+  GridSearch g = {ctx, fn, lo, true};
+  uint64 key = 0;
+  (void) monotone_search((uint64) (start - lo), (uint64) (hi - lo),
+    &grid_search_beyond, &g, 0, &key);
+  return lo + (int64) key - 1;
 }
 
 /**
@@ -4704,46 +5326,11 @@ grid_sign_first(const void *ctx, GridSignFn fn, int64 lo, int64 hi,
   if (hi - lo <= 1)
     return hi;
   int64 start = dwithin_grid_start(est, lo, hi);
-  int64 step = 1;
-  if (fn(ctx, start) <= 0)
-  {
-    hi = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? hi - step : lo;
-      if (next == lo || fn(ctx, next) > 0)
-      {
-        lo = next;
-        break;
-      }
-      hi = next;
-      step *= 2;
-    }
-  }
-  else
-  {
-    lo = start;
-    while (true)
-    {
-      int64 next = (hi - lo > step) ? lo + step : hi;
-      if (next == hi || fn(ctx, next) <= 0)
-      {
-        hi = next;
-        break;
-      }
-      lo = next;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    int64 mid = lo + (hi - lo) / 2;
-    if (fn(ctx, mid) <= 0)
-      hi = mid;
-    else
-      lo = mid;
-  }
-  return hi;
+  GridSearch g = {ctx, fn, lo, false};
+  uint64 key = 0;
+  (void) monotone_search((uint64) (start - lo), (uint64) (hi - lo),
+    &grid_search_beyond, &g, 0, &key);
+  return lo + (int64) key;
 }
 
 /* The sign of `D^2 q(n / D)` (#dwithin_grid_sign) */
@@ -6182,6 +6769,58 @@ point_motion_point_offset_bounds(const double *c1, const double *c2,
   return false;
 }
 
+/* The operands of the gap of a moving disc to a point and its exact parts,
+ * set at the first side the filters leave open, for
+ * #point_motion_offset_side */
+typedef struct
+{
+  const double *c1, *c2, *p;   /**< Ends of the centre and the point */
+  int ndims;                   /**< Number of coordinates */
+  double r1, r2;               /**< Radii at the ends */
+  bool gapset;                 /**< True where gap is set */
+  PointMotionGap gap;          /**< Exact parts of the quadratic */
+} PointMotionOffsetSide;
+
+/**
+ * @brief Return the sign of the offset at which a moving disc reaches a
+ * point against the upper midpoint of the double of bit pattern @p bits: the
+ * side #point_motion_point_offset_exact gives #nearest_double_search
+ * @details Positive where the disc is certainly never within the upper
+ * neighbour, negative where it is certainly within the double itself, the
+ * filter answering every step but those next to the answer, and otherwise
+ * the sign of the gap at the midpoint, read by
+ * #point_motion_gap_sign_filter and else exactly
+ */
+static int
+point_motion_offset_side(uint64 bits, void *arg)
+{
+  PointMotionOffsetSide *ps = (PointMotionOffsetSide *) arg;
+  double cc, nn;
+  uint64 b2 = bits + 1;
+  memcpy(&cc, &bits, sizeof(cc));
+  memcpy(&nn, &b2, sizeof(nn));
+  if (! isinf(nn) && point_motion_dwithin_ever_filter(ps->c1, ps->c2, ps->p,
+      ps->ndims, ps->r1, ps->r2, nn) == 0)
+    return 1;
+  if (point_motion_dwithin_ever_filter(ps->c1, ps->c2, ps->p, ps->ndims,
+      ps->r1, ps->r2, cc) == 1)
+    return -1;
+  double hh = isinf(nn) ? ldexp(1.0, 970) : (nn - cc) / 2.0;
+  int s = point_motion_gap_sign_filter(ps->c1, ps->c2, ps->p, ps->ndims,
+    ps->r1, ps->r2, cc, hh);
+  if (s == 2)
+  {
+    if (! ps->gapset)
+    {
+      point_motion_gap_init(&ps->gap, ps->c1, ps->c2, ps->p, ps->ndims,
+        ps->r1, ps->r2);
+      ps->gapset = true;
+    }
+    s = point_motion_gap_sign_at(&ps->gap, cc, hh);
+  }
+  return s;
+}
+
 /**
  * @brief Return the least distance of a disc moving linearly to a point, less
  * the radius, the double nearest its exact value, or 0 where the disc reaches
@@ -6220,105 +6859,22 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
   double c = point_motion_offset_estimate(c1, c2, p, ndims, r1, r2);
   uint64_t bits;
   memcpy(&bits, &c, sizeof(bits));
-  /* The exact parts of the quadratic, set at the first side the filters of
-   * #point_motion_gap_sign_filter leave open, and freed on return */
-  PointMotionGap gap;
-  bool gapset = false;
-#define PMO_BEYOND(bb, res) \
-  do { \
-    double cc, nn; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nn, &b2, sizeof(nn)); \
-    /* Beyond where certainly never within the upper neighbour, and not \
-     * where certainly within the double itself: the filter answers every \
-     * step but those next to the answer */ \
-    if (! isinf(nn) && point_motion_dwithin_ever_filter(c1, c2, p, ndims, \
-        r1, r2, nn) == 0) \
-    { \
-      (res) = true; \
-      break; \
-    } \
-    if (point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, cc) == 1) \
-    { \
-      (res) = false; \
-      break; \
-    } \
-    double hh = isinf(nn) ? ldexp(1.0, 970) : (nn - cc) / 2.0; \
-    int s = point_motion_gap_sign_filter(c1, c2, p, ndims, r1, r2, cc, hh); \
-    if (s == 2) \
-    { \
-      if (! gapset) \
-      { \
-        point_motion_gap_init(&gap, c1, c2, p, ndims, r1, r2); \
-        gapset = true; \
-      } \
-      s = point_motion_gap_sign_at(&gap, cc, hh); \
-    } \
-    (res) = s > 0 || (s == 0 && (b1 & 1) != 0); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  PMO_BEYOND(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (true)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      PMO_BEYOND(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    while (true)
-    {
-      if (hi == 0)
-      {
-        if (gapset)
-          point_motion_gap_free(&gap);
-        return 0.0;
-      }
-      lo = (hi > step) ? hi - step : 0;
-      PMO_BEYOND(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      if (lo == 0)
-      {
-        if (gapset)
-          point_motion_gap_free(&gap);
-        return 0.0;
-      }
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    PMO_BEYOND(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef PMO_BEYOND
-  if (gapset)
-    point_motion_gap_free(&gap);
+  /* The one search for the nearest double (#nearest_double_search) */
+  PointMotionOffsetSide side;
+  memset(&side, 0, sizeof(side));
+  side.c1 = c1;
+  side.c2 = c2;
+  side.p = p;
+  side.ndims = ndims;
+  side.r1 = r1;
+  side.r2 = r2;
+  uint64 found = 0;
+  (void) nearest_double_search(bits, &point_motion_offset_side, &side, 0,
+    &found);
+  if (side.gapset)
+    point_motion_gap_free(&side.gap);
   double result;
-  memcpy(&result, &hi, sizeof(result));
+  memcpy(&result, &found, sizeof(result));
   return result;
 }
 
@@ -7167,6 +7723,8 @@ edge_disk_circle(const double *p, double r, Edge *c)
   c->etype = EDGE_POLYARC;
   c->cx = p[0]; c->cy = p[1]; c->radius = r;
   c->centred = true;
+  c->offset = false;
+  c->side = 0;
   c->ccw = true;
   c->x1 = c->x2 = p[0] - r;
   c->y1 = c->y2 = p[1];
@@ -8560,6 +9118,55 @@ segment_interior_certify_pairs(const SegmentPairs *pv, double f, double g,
   return false;
 }
 
+/* The values the distance of the interiors of two segments is read against
+ * a midpoint with, for #segment_interior_side */
+typedef struct
+{
+  const SegmentPairs *pv;   /**< Evaluation in pairs of doubles */
+  ExactSum *sums;           /**< Exact sums, the sum SI_M written per side */
+  const PolyTerm *terms;    /**< Terms of (e . n)^2 - m^2 (n . n) */
+  int nt;                   /**< Number of terms */
+  int k;                    /**< Exponent of the scaling of the sums */
+  double f1, f2;            /**< Factors of that scaling */
+  double pscale;            /**< Scale of the values of the pairs */
+} SegmentInteriorSide;
+
+/**
+ * @brief Return the sign of the distance of the interiors of two segments
+ * against the upper midpoint of the double of bit pattern @p bits, or 2
+ * where a candidate or a half gap scaled below 2^-179 leaves a product of
+ * six outside the doubles: the side #segment_interior_distance gives
+ * #nearest_double_search
+ * @details The evaluation in pairs of doubles first, which tells every
+ * midpoint clear of the distance by more than its bound, then
+ * #polynomial_sign_exact
+ */
+static int
+segment_interior_side(uint64 bits, void *arg)
+{
+  SegmentInteriorSide *si = (SegmentInteriorSide *) arg;
+  double cc, nx;
+  uint64 b2 = bits + 1;
+  memcpy(&cc, &bits, sizeof(cc));
+  memcpy(&nx, &b2, sizeof(nx));
+  if ((cc != 0.0 && double_lowest_set_bit(cc) + si->k < -179) ||
+      (! isinf(nx) && double_lowest_set_bit(nx - cc) - 1 + si->k < -179))
+    return 2;
+  double hh = isinf(nx) ? ldexp(1.0, 970 + si->k) :
+    (nx - cc) * si->f1 * si->f2 / 2.0;
+  double hp = isinf(nx) ? ldexp(1.0, 970) * si->pscale :
+    (nx - cc) / 2.0 * si->pscale;
+  int sign = segment_interior_mid_sign(si->pv->en, si->pv->nn,
+    cc * si->pscale, hp);
+  if (sign == 0)
+  {
+    const double mt[2] = {cc * si->f1 * si->f2, hh};
+    exact_sum_set(&si->sums[SI_M], mt, 2);
+    sign = polynomial_sign_exact(si->sums, si->terms, si->nt);
+  }
+  return sign;
+}
+
 /**
  * @brief Return true where the nearest points of two segments in 3D lie
  * inside both, setting in @p result the double nearest their distance
@@ -8827,94 +9434,17 @@ segment_interior_distance(const double *a, const double *b, const double *c,
   uint64_t bits;
   memcpy(&bits, &cand, sizeof(bits));
 
-  /* The answer is the smallest bit pattern that is not beyond: gallop from the
-   * candidate to bracket it, then halve the bracket. A candidate or a half
-   * gap scaled below 2^-179 leaves a product of six outside the doubles, and
-   * the values are then read on #DyadicWide */
-  bool wide = false;
-#define SI_BEYOND(bb, res) \
-  do { \
-    double cc, nx; \
-    uint64_t b1 = (bb), b2 = (bb) + 1; \
-    memcpy(&cc, &b1, sizeof(cc)); \
-    memcpy(&nx, &b2, sizeof(nx)); \
-    if ((cc != 0.0 && double_lowest_set_bit(cc) + k < -179) || \
-        (! isinf(nx) && double_lowest_set_bit(nx - cc) - 1 + k < -179)) \
-    { \
-      wide = true; \
-      (res) = false; \
-      break; \
-    } \
-    double hh = isinf(nx) ? ldexp(1.0, 970 + k) : (nx - cc) * f1 * f2 / 2.0; \
-    /* The evaluation in pairs of doubles first, which tells every midpoint \
-     * clear of the distance by more than its bound */ \
-    double hp = isinf(nx) ? ldexp(1.0, 970) * pscale : \
-      (nx - cc) / 2.0 * pscale; \
-    int sign = segment_interior_mid_sign(pv.en, pv.nn, cc * pscale, hp); \
-    if (sign == 0) \
-    { \
-      const double mt[2] = {cc * f1 * f2, hh}; \
-      exact_sum_set(&sums[SI_M], mt, 2); \
-      sign = polynomial_sign_exact(sums, terms, nt); \
-    } \
-    (res) = sign > 0 || (sign == 0 && (b1 & 1) != 0); \
-  } while (0)
-  uint64_t lo, hi;
-  bool beyond;
-  SI_BEYOND(bits, beyond);
-  if (beyond)
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    uint64_t step = 1;
-    lo = bits;
-    const uint64_t inf_bits = 0x7FF0000000000000ULL;
-    while (! wide)
-    {
-      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
-      if (hi == inf_bits)
-        break;
-      SI_BEYOND(hi, beyond);
-      if (! beyond)
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
-    uint64_t step = 1;
-    hi = bits;
-    lo = 0;
-    while (! wide && hi > 0)
-    {
-      lo = (hi > step) ? hi - step : 0;
-      SI_BEYOND(lo, beyond);
-      if (beyond)
-        break;
-      hi = lo;
-      step *= 2;
-    }
-    if (! wide && hi == 0)
-    {
-      *result = 0.0;
-      return true;
-    }
-  }
-  /* lo is beyond, hi is not, and the answer is the least not beyond */
-  while (! wide && hi - lo > 1)
-  {
-    uint64_t mid = lo + (hi - lo) / 2;
-    SI_BEYOND(mid, beyond);
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef SI_BEYOND
-  if (wide)
+  /* The answer is the smallest bit pattern whose upper midpoint the distance
+   * does not pass, found by the one search for the nearest double
+   * (#nearest_double_search); a candidate or a half gap scaled below 2^-179
+   * leaves a product of six outside the doubles, and the values are then
+   * read on #DyadicWide */
+  SegmentInteriorSide side = {&pv, sums, terms, nt, k, f1, f2, pscale};
+  uint64 found = 0;
+  if (! nearest_double_search(bits, &segment_interior_side, &side, 0,
+      &found))
     return segment_interior_wide(a, b, c, d, result);
-  memcpy(result, &hi, sizeof(double));
+  memcpy(result, &found, sizeof(double));
   return true;
 }
 
@@ -10890,6 +11420,14 @@ tower_same_k(DyadicCtx *ctx, const DyadicX *x, const DyadicX *y, int k)
 static bool
 tangent_same_pair(const TangentPoint *a, const TangentPoint *b)
 {
+  /* The ends of the offset of an input arc carry the root of its circle
+   * (#tower_point_radial), which only the ends of an offset of that arc
+   * share: its points fix it */
+  if (a->arc || b->arc)
+    return a->arc && b->arc && a->arc->half == b->arc->half &&
+      a->arc->s[0] == b->arc->s[0] && a->arc->s[1] == b->arc->s[1] &&
+      a->arc->m[0] == b->arc->m[0] && a->arc->m[1] == b->arc->m[1] &&
+      a->arc->e[0] == b->arc->e[0] && a->arc->e[1] == b->arc->e[1];
   if (a->c1x == b->c1x && a->c1y == b->c1y && a->r1 == b->r1 &&
       a->c2x == b->c2x && a->c2y == b->c2y && a->r2 == b->r2)
     return true;
@@ -10944,6 +11482,56 @@ typedef struct
   TowerNum x, y, w;
 } TowerPoint;
 
+/**
+ * @brief Set the circle of an arc exactly and return the sign of its turn
+ * @details The circle runs through the start S, middle M and end E of the
+ * arc, or, for a half circle, stands on the diameter from S to E. Its centre
+ * is (cx / w, cy / w) taken from an origin, w not negative, and r2 is the
+ * square of its radius times w^2. With a = S - M, b = E - M and D = 2 a x b,
+ * the centre is M + N / D, N = (|a|^2 b_y - |b|^2 a_y, |b|^2 a_x - |a|^2 b_x),
+ * as #arcarc_centre_exact forms it in the arithmetic of an arena: here
+ * w = |D|, the sign of D carried through N, and r2 = |w a - N|^2, the radius
+ * to S. The half circle has w 2, the centre S + E and r2 |S - E|^2, and its
+ * turn is 0. Three points on one line have w 0, which no circle has
+ */
+static int
+tower_arc_circle(DyadicCtx *ctx, const double *s, const double *m,
+  const double *e, bool half, double ox, double oy, DyadicX *cx, DyadicX *cy,
+  DyadicX *w, DyadicX *r2)
+{
+  if (half)
+  {
+    *w = dx_val(ctx, 2.0);
+    *cx = dx_add(ctx, dx_diff(ctx, s[0], ox), dx_diff(ctx, e[0], ox));
+    *cy = dx_add(ctx, dx_diff(ctx, s[1], oy), dx_diff(ctx, e[1], oy));
+    DyadicX dx = dx_diff(ctx, s[0], e[0]), dy = dx_diff(ctx, s[1], e[1]);
+    *r2 = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
+    return 0;
+  }
+  DyadicX ax = dx_diff(ctx, s[0], m[0]), ay = dx_diff(ctx, s[1], m[1]);
+  DyadicX bx = dx_diff(ctx, e[0], m[0]), by = dx_diff(ctx, e[1], m[1]);
+  DyadicX a2 = dx_add(ctx, dx_mul(ctx, ax, ax), dx_mul(ctx, ay, ay));
+  DyadicX b2 = dx_add(ctx, dx_mul(ctx, bx, bx), dx_mul(ctx, by, by));
+  DyadicX nx = dx_sub(ctx, dx_mul(ctx, a2, by), dx_mul(ctx, b2, ay));
+  DyadicX ny = dx_sub(ctx, dx_mul(ctx, b2, ax), dx_mul(ctx, a2, bx));
+  DyadicX d = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, ax, by),
+    dx_mul(ctx, ay, bx)), 2.0);
+  /* The sign of D is minus the turn of S, M, E, read on the doubles
+   * exactly whatever tier the arithmetic runs in (#cross_product_sign) */
+  int sd = - cross_product_sign(s[0], s[1], m[0], m[1], s[0], s[1], e[0],
+    e[1]);
+  double k = (sd < 0) ? -1.0 : 1.0;
+  nx = dx_scale(ctx, nx, k);
+  ny = dx_scale(ctx, ny, k);
+  *w = dx_scale(ctx, d, k);
+  *cx = dx_add(ctx, dx_mul(ctx, *w, dx_diff(ctx, m[0], ox)), nx);
+  *cy = dx_add(ctx, dx_mul(ctx, *w, dx_diff(ctx, m[1], oy)), ny);
+  DyadicX rx = dx_sub(ctx, dx_mul(ctx, *w, ax), nx);
+  DyadicX ry = dx_sub(ctx, dx_mul(ctx, *w, ay), ny);
+  *r2 = dx_add(ctx, dx_mul(ctx, rx, rx), dx_mul(ctx, ry, ry));
+  return sd;
+}
+
 /* A point given by doubles */
 static void
 tower_point_xy(DyadicCtx *ctx, double px, double py, double ox, double oy,
@@ -10957,19 +11545,86 @@ tower_point_xy(DyadicCtx *ctx, double px, double py, double ox, double oy,
 }
 
 /**
+ * @brief Set a point where the offset of an input arc ends, exactly
+ * @details The sibling of #tower_point_tangent for the ends of the offset
+ * of an arc (#TangentPoint, member arc). The circle of the arc through S,
+ * M and E is the one #tower_arc_circle forms, centre c / w and squared
+ * radius r2 / w^2, w positive, so for A the end asked n = w (A - O) - c is
+ * (A - C) w and the unit vector from C to A is n / sqrt(r2): the point is
+ * A + side r n / sqrt(r2), over r2 the point A r2 + side r n sqrt(r2). With
+ * @p along nonzero the point lies past it by r along the tangent of the
+ * circle there, counterclockwise for 1 and clockwise for -1, the corner of
+ * the square cap of a curve ending in the arc: rot(n) = (-ny, nx) added
+ * along r times over sqrt(r2), in the same root. The tower has the one root
+ * sqrt(r2), the same number for every point of one arc. An arc whose three
+ * points lie on one line has no centre, which marks the arithmetic unsafe
+ */
+static void
+tower_point_radial(DyadicCtx *ctx, const TangentPoint *tp, double ox,
+  double oy, TowerPoint *out)
+{
+  assert(tp->arc);
+  const ExactArc *arc = tp->arc;
+  DyadicX cx, cy, w, r2;
+  if (tower_arc_circle(ctx, arc->s, arc->m, arc->e, arc->half, ox, oy, &cx,
+      &cy, &w, &r2) == 0 && ! arc->half)
+    ctx->arena.unsafe = true;
+  if (tp->k == 2)
+  {
+    /* The centre c / w, in the root of the circle with no part on it */
+    out->t.depth = 1;
+    out->t.key[0] = NULL;
+    out->t.h[0].c[0] = r2;
+    tower_set(ctx, cx, 1, out->x.c);
+    tower_set(ctx, cy, 1, out->y.c);
+    tower_set(ctx, w, 1, out->w.c);
+    return;
+  }
+  const double *a = tp->k ? arc->e : arc->s;
+  double ax = a[0], ay = a[1];
+  DyadicX px = dx_diff(ctx, ax, ox), py = dx_diff(ctx, ay, oy);
+  DyadicX nx = dx_sub(ctx, dx_mul(ctx, w, px), cx);
+  DyadicX ny = dx_sub(ctx, dx_mul(ctx, w, py), cy);
+  DyadicX sr = dx_scale(ctx, dx_val(ctx, tp->r1), (double) tp->side);
+  out->t.depth = 1;
+  out->t.key[0] = NULL;
+  out->t.h[0].c[0] = r2;
+  out->x.c[0] = dx_mul(ctx, px, r2);
+  out->x.c[1] = dx_mul(ctx, sr, nx);
+  out->y.c[0] = dx_mul(ctx, py, r2);
+  out->y.c[1] = dx_mul(ctx, sr, ny);
+  if (tp->along)
+  {
+    DyadicX ar = dx_scale(ctx, dx_val(ctx, tp->r1), (double) tp->along);
+    out->x.c[1] = dx_sub(ctx, out->x.c[1], dx_mul(ctx, ar, ny));
+    out->y.c[1] = dx_add(ctx, out->y.c[1], dx_mul(ctx, ar, nx));
+  }
+  tower_set(ctx, r2, 1, out->w.c);
+  return;
+}
+
+/**
  * @brief Set a point where the common tangent of two circles touches one of
  * them, exactly
  * @details For circles (C1, r1) and (C2, r2) with d = C2 - C1 and
  * E = |d|^2 - (r1 - r2)^2 > 0, the tangent on the side @p side of C1 -> C2,
  * 1 its left, touches circle k at Ck + rk u with the unit normal
  * u = ((r1 - r2) d + side sqrt(E) rot(d)) / |d|^2, rot(x, y) = (-y, x):
- * the points #trapezoid_make constructs by angles, Ta for side 1. The tower
- * has the one root sqrt(E)
+ * the points #trapezoid_make constructs by angles, Ta for side 1. A point
+ * past it along the line of the centres (#TangentPoint, member along), of
+ * two circles of one radius, adds along rk sqrt(E) d, sqrt(E) being |d|.
+ * The tower has the one root sqrt(E)
  */
 static void
 tower_point_tangent(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   double oy, TowerPoint *out)
 {
+  /* The end of the offset of an input arc (#tower_point_radial) */
+  if (tp->arc)
+  {
+    tower_point_radial(ctx, tp, ox, oy, out);
+    return;
+  }
   DyadicX dx = dx_diff(ctx, tp->c2x, tp->c1x);
   DyadicX dy = dx_diff(ctx, tp->c2y, tp->c1y);
   DyadicX dr = dx_diff(ctx, tp->r1, tp->r2);
@@ -10987,45 +11642,357 @@ tower_point_tangent(DyadicCtx *ctx, const TangentPoint *tp, double ox,
   out->y.c[0] = dx_add(ctx, dx_mul(ctx,
     dx_diff(ctx, tp->k ? tp->c2y : tp->c1y, oy), d2), dx_mul(ctx, rkdr, dy));
   out->y.c[1] = dx_mul(ctx, srk, dx);
+  if (tp->along)
+  {
+    assert(tp->r1 == tp->r2);
+    DyadicX ark = dx_scale(ctx, rk, (double) tp->along);
+    out->x.c[1] = dx_add(ctx, out->x.c[1], dx_mul(ctx, ark, dx));
+    out->y.c[1] = dx_add(ctx, out->y.c[1], dx_mul(ctx, ark, dy));
+  }
   tower_set(ctx, d2, 1, out->w.c);
   return;
 }
 
-/**
- * @brief Set a point where two circles cross, the meeting sigma, and return
- * the sign of the number under its root: none where it is negative, a
- * touching where it is zero
- * @details With d = C2 - C1, D = |d|^2 and g = D + r1^2 - r2^2 the
- * meetings are C1 + (g d + sigma sqrt(4 r1^2 D - g^2) rot(d)) / (2 D), the
- * points #arcarc_meet_exact places for two centred arcs
- */
-static int
-tower_point_circles(DyadicCtx *ctx, double c1x, double c1y, double r1,
-  double c2x, double c2y, double r2, int sigma, double ox, double oy,
-  TowerPoint *out)
+/* The circle of an arc of an arrangement of tangent points in a tower: its
+ * centre (x / w, y / w) taken from an origin, w positive and holding no
+ * root, and its squared radius times w^2, rr, a number of the tower t. A
+ * centred arc is the circle of its doubles, w 1 and t holding no root
+ * (unit); the offset of an input arc has the rational centre of that arc
+ * and the radius R + side r, R a root (#edges_add_offset_arc) */
+typedef struct
 {
-  DyadicX dx = dx_diff(ctx, c2x, c1x), dy = dx_diff(ctx, c2y, c1y);
-  DyadicX dd = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
-  DyadicX a = dx_val(ctx, r1), b = dx_val(ctx, r2);
-  DyadicX g = dx_sub(ctx, dx_add(ctx, dd, dx_mul(ctx, a, a)),
-    dx_mul(ctx, b, b));
-  DyadicX h = dx_sub(ctx, dx_scale(ctx, dx_mul(ctx, dx_mul(ctx, a, a), dd),
-    4.0), dx_mul(ctx, g, g));
-  int sh = dx_sign(ctx, h);
-  if (sh < 0)
-    return sh;
-  DyadicX w = dx_scale(ctx, dd, 2.0);
+  Tower t;
+  DyadicX x, y, w;
+  TowerNum rr;
+  bool unit;
+} TowerCircle;
+
+/**
+ * @brief Set the circle of a centred arc or of an offset arc in a tower
+ * @details The sibling of #tower_point_radial for the circle the ends of an
+ * offset lie on, taken from an origin. A centred arc is the circle of its
+ * doubles. The offset of an input arc of circle c / w and squared radius
+ * r2 / w^2 (#tower_arc_circle) has the radius R + side r, R w = sqrt(r2), so
+ * rr = (R + side r)^2 w^2 = r2 + r^2 w^2 + 2 side r w sqrt(r2): the tower
+ * has the one root sqrt(r2), the root of the ends of the offset
+ */
+static void
+tower_circle_of(DyadicCtx *ctx, const Edge *e, double ox, double oy,
+  TowerCircle *out)
+{
+  /* An offset is a centred arc whose doubles do not hold its circle */
+  if (! e->offset)
+  {
+    assert(e->centred);
+    out->t.depth = 0;
+    out->x = dx_diff(ctx, e->cx, ox);
+    out->y = dx_diff(ctx, e->cy, oy);
+    out->w = dx_val(ctx, 1.0);
+    DyadicX r = dx_val(ctx, e->radius);
+    out->rr.c[0] = dx_mul(ctx, r, r);
+    out->unit = true;
+    return;
+  }
+  const double s[2] = {e->sx, e->sy}, m[2] = {e->mx, e->my},
+    en[2] = {e->ex, e->ey};
+  DyadicX r2;
+  if (tower_arc_circle(ctx, s, m, en, e->diameter, ox, oy, &out->x, &out->y,
+      &out->w, &r2) == 0 && ! e->diameter)
+    ctx->arena.unsafe = true;
+  DyadicX rw = dx_mul(ctx, dx_val(ctx, e->radius), out->w);
   out->t.depth = 1;
   out->t.key[0] = NULL;
-  out->t.h[0].c[0] = h;
-  out->x.c[0] = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, c1x, ox), w),
-    dx_mul(ctx, g, dx));
-  out->x.c[1] = dx_scale(ctx, dy, (double) - sigma);
-  out->y.c[0] = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, c1y, oy), w),
-    dx_mul(ctx, g, dy));
-  out->y.c[1] = dx_scale(ctx, dx, (double) sigma);
-  tower_set(ctx, w, 1, out->w.c);
+  out->t.h[0].c[0] = r2;
+  out->rr.c[0] = dx_add(ctx, r2, dx_mul(ctx, rw, rw));
+  out->rr.c[1] = dx_scale(ctx, rw, 2.0 * e->side);
+  out->unit = false;
+  return;
+}
+
+/* The centre and the squared radius of a circle as two points of its tower,
+ * for #tower_points_read to read them in the tower of a question: the
+ * centre, and rr as the x of a point whose y is 0 and w 1 */
+static void
+tower_circle_points(DyadicCtx *ctx, const TowerCircle *c, TowerPoint *cp,
+  TowerPoint *rp)
+{
+  int n = 1 << c->t.depth;
+  cp->t = c->t;
+  rp->t = c->t;
+  for (int m = 0; m < n; m++)
+  {
+    DyadicX z = dx_val(ctx, 0.0);
+    cp->x.c[m] = cp->y.c[m] = cp->w.c[m] = z;
+    rp->y.c[m] = rp->w.c[m] = z;
+    rp->x.c[m] = c->rr.c[m];
+  }
+  cp->x.c[0] = c->x; cp->y.c[0] = c->y; cp->w.c[0] = c->w;
+  rp->w.c[0] = dx_val(ctx, 1.0);
+  return;
+}
+
+static bool tower_points_read(DyadicCtx *ctx, const TowerPoint *const *pts,
+  int n, Tower *t, DyadicX (*xyw)[3][TOWER_SIZE]);
+
+/**
+ * @brief Return how the radii of two circles of a tower compare
+ * @details The circles are those of #TowerCircle, of squared radii
+ * rr1 / W1^2 and rr2 / W2^2, so the radii compare as rr1 W2^2 and rr2 W1^2,
+ * read in the tower of both: -1, 0 or 1, 2 where it is not told
+ */
+static int
+tower_circles_radius_cmp(DyadicCtx *ctx, const TowerCircle *c1,
+  const TowerCircle *c2)
+{
+  TowerPoint q1, r1, q2, r2;
+  tower_circle_points(ctx, c1, &q1, &r1);
+  tower_circle_points(ctx, c2, &q2, &r2);
+  const TowerPoint *pts[2] = {&r1, &r2};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  DyadicX a[TOWER_SIZE], b[TOWER_SIZE];
+  tower_mulx_k(ctx, v[0][0], dx_mul(ctx, c2->w, c2->w), k, a);
+  tower_mulx_k(ctx, v[1][0], dx_mul(ctx, c1->w, c1->w), k, b);
+  tower_sub_k(ctx, a, b, k, a);
+  int s = tower_sign_k(ctx, &t, a, k);
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Set a point where two circles cross
+ * @details The circles are those of a tower (#TowerCircle) and the meeting
+ * is sigma; the result is the sign of the number under its root: none where
+ * it is negative, a touching where it is zero, 2 where the point is not
+ * built. With d = C2 - C1, D = |d|^2 and g = D + r1^2 - r2^2 the meetings
+ * are C1 + (g d + sigma sqrt(4 r1^2 D - g^2) rot(d)) / (2 D), the points
+ * #arcarc_meet_exact places for two arcs. With the centres X1 / W1 and
+ * X2 / W2 and the squared radii rr1 / W1^2 and rr2 / W2^2, every term
+ * scaled by W1 W2: d' = X2 W1 - X1 W2, D' = |d'|^2,
+ * g' = D' + rr1 W2^2 - rr2 W1^2, h' = 4 rr1 W2^2 D' - g'^2 and the meetings
+ * (2 D' W2 X1 + g' d' + sigma sqrt(h') rot(d')) / (2 D' W1 W2), in the
+ * tower of the radii with sqrt(h') above it. Two centred arcs have W 1 and
+ * radii of no root
+ */
+static int
+tower_point_circles(DyadicCtx *ctx, const TowerCircle *c1,
+  const TowerCircle *c2, int sigma, TowerPoint *out)
+{
+  TowerPoint q1, r1, q2, r2;
+  tower_circle_points(ctx, c1, &q1, &r1);
+  tower_circle_points(ctx, c2, &q2, &r2);
+  const TowerPoint *pts[2] = {&r1, &r2};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v) || t.depth == TOWER_MAXDEPTH)
+    return 2;
+  int k = t.depth, half = 1 << k;
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, c2->x, c1->w),
+    dx_mul(ctx, c1->x, c2->w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, c2->y, c1->w),
+    dx_mul(ctx, c1->y, c2->w));
+  DyadicX dd = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
+  DyadicX a1[TOWER_SIZE], a2[TOWER_SIZE], g[TOWER_SIZE], h[TOWER_SIZE],
+    u[TOWER_SIZE];
+  /* rr1 W2^2 and rr2 W1^2 */
+  tower_mulx_k(ctx, v[0][0], dx_mul(ctx, c2->w, c2->w), k, a1);
+  tower_mulx_k(ctx, v[1][0], dx_mul(ctx, c1->w, c1->w), k, a2);
+  tower_sub_k(ctx, a1, a2, k, g);
+  g[0] = dx_add(ctx, g[0], dd);
+  tower_mulx_k(ctx, a1, dx_scale(ctx, dd, 4.0), k, h);
+  tower_mul_k(ctx, &t, g, g, k, u);
+  tower_sub_k(ctx, h, u, k, h);
+  int sh = tower_sign_k(ctx, &t, h, k);
+  if (dyadic_ctx_unsafe(ctx))
+    return 2;
+  if (sh < 0)
+    return sh;
+  out->t = t;
+  memcpy(out->t.h[k].c, h, sizeof(DyadicX) * half);
+  out->t.key[k] = NULL;
+  out->t.depth = k + 1;
+  DyadicX z = dx_val(ctx, 0.0);
+  DyadicX twodw2 = dx_scale(ctx, dx_mul(ctx, dd, c2->w), 2.0);
+  /* x = 2 D' W2 X1 + g' dx - sigma dy sqrt(h'), y alike with sigma dx */
+  tower_mulx_k(ctx, g, dx, k, out->x.c);
+  out->x.c[0] = dx_add(ctx, out->x.c[0], dx_mul(ctx, twodw2, c1->x));
+  tower_mulx_k(ctx, g, dy, k, out->y.c);
+  out->y.c[0] = dx_add(ctx, out->y.c[0], dx_mul(ctx, twodw2, c1->y));
+  for (int m = 0; m < half; m++)
+  {
+    out->x.c[half + m] = out->y.c[half + m] = z;
+    out->w.c[m] = out->w.c[half + m] = z;
+  }
+  out->x.c[half] = dx_scale(ctx, dy, (double) - sigma);
+  out->y.c[half] = dx_scale(ctx, dx, (double) sigma);
+  out->w.c[0] = dx_mul(ctx, twodw2, c1->w);
   return sh;
+}
+
+typedef struct
+{
+  const Edge *p, *q;
+} TowerCirclesArg;
+
+static int
+tower_circles_meet_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCirclesArg *o = arg;
+  double ox = o->p->cx, oy = o->p->cy;
+  TowerCircle c1, c2;
+  tower_circle_of(ctx, o->p, ox, oy, &c1);
+  tower_circle_of(ctx, o->q, ox, oy, &c2);
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, c2.x, c1.w), dx_mul(ctx, c1.x, c2.w));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, c2.y, c1.w), dx_mul(ctx, c1.y, c2.w));
+  int sd = dx_sign(ctx, dx_add(ctx, dx_mul(ctx, dx, dx),
+    dx_mul(ctx, dy, dy)));
+  if (dyadic_ctx_unsafe(ctx))
+    return 2;
+  if (sd == 0)
+  {
+    /* One centre: one circle where the radii are equal, else apart */
+    int rc = tower_circles_radius_cmp(ctx, &c1, &c2);
+    return (rc == 2) ? 2 : ((rc == 0) ? 3 : -1);
+  }
+  TowerPoint pt;
+  int sh = tower_point_circles(ctx, &c1, &c2, 1, &pt);
+  return (sh == 2) ? 2 : sh;
+}
+
+typedef struct
+{
+  const double *in[3], *out[3];
+  int inarc, outarc;
+  int *dot;
+} WalkTurnArg;
+
+/* The direction of an element of a walk at its end (@p atend) or its start,
+ * times a positive factor, taken from the origin O: a segment's B - A; an
+ * arc's radius there, w (P - O) - c (#tower_arc_circle), turned a quarter
+ * in the sense it runs, counterclockwise where the turn of its start,
+ * middle and end is positive */
+static void
+walk_direction(DyadicCtx *ctx, const double *const *pt, int arc, bool atend,
+  double ox, double oy, DyadicX *dx, DyadicX *dy)
+{
+  if (! arc)
+  {
+    *dx = dx_diff(ctx, pt[2][0], pt[0][0]);
+    *dy = dx_diff(ctx, pt[2][1], pt[0][1]);
+    return;
+  }
+  DyadicX cx, cy, w, r2;
+  /* A half circle on its diameter turns in the sense its kind gives, 2
+   * counterclockwise and -2 clockwise, as its three points cannot */
+  bool half = (arc == 2 || arc == -2);
+  int sd = tower_arc_circle(ctx, pt[0], pt[1], pt[2], half, ox, oy, &cx,
+    &cy, &w, &r2);
+  if (half)
+    sd = (arc > 0) ? -1 : 1;
+  else if (sd == 0)
+    ctx->arena.unsafe = true;
+  const double *p = atend ? pt[2] : pt[0];
+  DyadicX nx = dx_sub(ctx, dx_mul(ctx, w, dx_diff(ctx, p[0], ox)), cx);
+  DyadicX ny = dx_sub(ctx, dx_mul(ctx, w, dx_diff(ctx, p[1], oy)), cy);
+  /* The sign of D is minus the turn, so the arc runs counterclockwise
+   * where sd is negative: rot(n) = (-ny, nx) */
+  double s = (sd < 0) ? 1.0 : -1.0;
+  *dx = dx_scale(ctx, ny, - s);
+  *dy = dx_scale(ctx, nx, s);
+  return;
+}
+
+static int
+walk_turn_pred(DyadicCtx *ctx, const void *arg)
+{
+  const WalkTurnArg *o = arg;
+  double ox = o->in[2][0], oy = o->in[2][1];
+  DyadicX ax, ay, bx, by;
+  walk_direction(ctx, o->in, o->inarc, true, ox, oy, &ax, &ay);
+  walk_direction(ctx, o->out, o->outarc, false, ox, oy, &bx, &by);
+  int cross = dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, ax, by),
+    dx_mul(ctx, ay, bx)));
+  *o->dot = dx_sign(ctx, dx_add(ctx, dx_mul(ctx, ax, bx),
+    dx_mul(ctx, ay, by)));
+  return dyadic_ctx_unsafe(ctx) ? 2 : cross;
+}
+
+/**
+ * @brief Return how a walk turns at the point where one element ends and
+ * the next starts, decided exactly
+ * @details Each element is a segment from A to B (kind 0), an arc through
+ * its start, middle and end, three doubles (kind 1), or a half circle on the
+ * diameter from its start to its end turning counterclockwise (kind 2) or
+ * clockwise (kind -2), and @p in ends where @p out starts.
+ * The result is the sign of the cross product of their directions there,
+ * 1 for a left turn, and @p dot the sign of their dot product, so that a
+ * walk running on reads 0 and 1 and one turning back 0 and -1; 2 where it
+ * is not told. The direction of an arc is its tangent in the sense it runs
+ * (#tower_arc_circle), as #buffer_round_walk_offsets reads the turn of two
+ * segments
+ */
+int
+walk_turn_sign(const double *const in[3], int inarc,
+  const double *const out[3], int outarc, int *dot)
+{
+  assert(in); assert(out); assert(dot);
+  WalkTurnArg arg = {{in[0], in[1], in[2]}, {out[0], out[1], out[2]},
+    inarc, outarc, dot};
+  return dyadic_pred_run(walk_turn_pred, &arg);
+}
+
+typedef struct
+{
+  const Edge *p, *q;
+  bool radius;
+} TowerCirclesCmpArg;
+
+static int
+tower_circles_cmp_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCirclesCmpArg *o = arg;
+  double ox = o->p->cx, oy = o->p->cy;
+  TowerCircle c1, c2;
+  tower_circle_of(ctx, o->p, ox, oy, &c1);
+  tower_circle_of(ctx, o->q, ox, oy, &c2);
+  if (o->radius)
+    return tower_circles_radius_cmp(ctx, &c1, &c2);
+  /* y1 / w1 - y2 / w2, both w positive */
+  int s = dx_sign(ctx, dx_sub(ctx, dx_mul(ctx, c1.y, c2.w),
+    dx_mul(ctx, c2.y, c1.w)));
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return how the centres or the radii of two circles compare
+ * @details The circles are those of centred arcs a tower holds
+ * (#tower_circle_of), an offset of an input arc among them: with
+ * @p radius their radii, else the heights of their centres, decided
+ * exactly, -1, 0 or 1, 2 where it is not told
+ */
+int
+tower_circles_cmp(const Edge *p, const Edge *q, bool radius)
+{
+  assert(p); assert(q); assert(p->centred); assert(q->centred);
+  TowerCirclesCmpArg arg = {p, q, radius};
+  return dyadic_pred_run(tower_circles_cmp_pred, &arg);
+}
+
+/**
+ * @brief Return how two circles of centred arcs meet, decided exactly
+ * @details As #arcarc_meet_exact counts the meetings of two arcs, for
+ * circles a tower holds (#tower_circle_of), an offset of an input arc among
+ * them: -1 apart, 0 touching, 1 crossing at two points, 3 one circle, 2
+ * where it is not told
+ */
+int
+tower_circles_meet(const Edge *p, const Edge *q)
+{
+  assert(p); assert(q); assert(p->centred); assert(q->centred);
+  TowerCirclesArg arg = {p, q};
+  return dyadic_pred_run(tower_circles_meet_pred, &arg);
 }
 
 /* The coordinates of several points read in one tower, the tower of all
@@ -11090,31 +12057,48 @@ tower_point_lines(DyadicCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
  * root sigma along the line, and return the sign of the number under its
  * root: none where it is negative, a touching where it is zero, 2 where the
  * point is not built
- * @details With U = P0 - C w0 and V = P1 w0 - P0 w1 the line is
- * P0 / w0 + t V / (w0 w1), and it meets the circle at
- * t = (-(V.U) + sigma sw1 sqrt(D)) w1 / (V.V), sw1 the sign of w1 and
- * D = (V.U)^2 - (V.V) (U.U - r^2 w0^2): the point
- * (P0 (V.V) + (-(V.U) + sigma sw1 sqrt(D)) V) / (w0 (V.V)), in the tower of
- * the line with sqrt(D) above it. Sigma 1 is the farther along P0 -> P1
+ * @details For the circle of centre C / cw, cw positive, and squared radius
+ * rr / cw^2 (#TowerCircle), with U = P0 cw - C w0 and V = P1 w0 - P0 w1 the
+ * line is P0 / w0 + t V / (w0 w1), and it meets the circle where
+ * |U + mu V|^2 = rr w0^2, mu = t cw / w1:
+ * mu = (-(V.U) + sigma sw1 sqrt(D)) / (V.V), sw1 the sign of w1 and
+ * D = (V.U)^2 - (V.V) (U.U - rr w0^2): the point
+ * (P0 cw (V.V) + (-(V.U) + sigma sw1 sqrt(D)) V) / (w0 cw (V.V)), in the
+ * tower of the line and the circle with sqrt(D) above it. Sigma 1 is the
+ * farther along P0 -> P1. A circle of doubles has cw 1 and asks nothing
+ * more of the line
  */
 static int
 tower_point_line_circle(DyadicCtx *ctx, const TowerPoint *p0,
-  const TowerPoint *p1, double cx, double cy, double r, int sigma, double ox,
-  double oy, TowerPoint *out)
+  const TowerPoint *p1, const TowerCircle *circ, int sigma, TowerPoint *out)
 {
-  const TowerPoint *pts[2] = {p0, p1};
-  DyadicX c[2][3][TOWER_SIZE];
+  TowerPoint cp, rp;
+  const TowerPoint *pts[4] = {p0, p1, &cp, &rp};
+  DyadicX c[4][3][TOWER_SIZE];
   Tower t;
-  if (! tower_points_read(ctx, pts, 2, &t, c) || t.depth == TOWER_MAXDEPTH)
+  if (! circ->unit)
+    tower_circle_points(ctx, circ, &cp, &rp);
+  if (! tower_points_read(ctx, pts, circ->unit ? 2 : 4, &t, c) ||
+      t.depth == TOWER_MAXDEPTH)
     return 2;
   int k = t.depth;
   DyadicX ux[TOWER_SIZE], uy[TOWER_SIZE], vx[TOWER_SIZE], vy[TOWER_SIZE],
     a[TOWER_SIZE], b[TOWER_SIZE];
-  /* U = P0 - C w0 */
-  tower_mulx_k(ctx, c[0][2], dx_diff(ctx, cx, ox), k, a);
-  tower_sub_k(ctx, c[0][0], a, k, ux);
-  tower_mulx_k(ctx, c[0][2], dx_diff(ctx, cy, oy), k, a);
-  tower_sub_k(ctx, c[0][1], a, k, uy);
+  /* U = P0 cw - C w0, the centre holding no root */
+  if (circ->unit)
+  {
+    memcpy(ux, c[0][0], sizeof(DyadicX) * (1 << k));
+    memcpy(uy, c[0][1], sizeof(DyadicX) * (1 << k));
+  }
+  else
+  {
+    tower_mulx_k(ctx, c[0][0], circ->w, k, ux);
+    tower_mulx_k(ctx, c[0][1], circ->w, k, uy);
+  }
+  tower_mulx_k(ctx, c[0][2], circ->x, k, a);
+  tower_sub_k(ctx, ux, a, k, ux);
+  tower_mulx_k(ctx, c[0][2], circ->y, k, a);
+  tower_sub_k(ctx, uy, a, k, uy);
   /* V = P1 w0 - P0 w1 */
   tower_mul_k(ctx, &t, c[1][0], c[0][2], k, a);
   tower_mul_k(ctx, &t, c[0][0], c[1][2], k, b);
@@ -11132,10 +12116,12 @@ tower_point_line_circle(DyadicCtx *ctx, const TowerPoint *p0,
   tower_mul_k(ctx, &t, ux, ux, k, a);
   tower_mul_k(ctx, &t, uy, uy, k, b);
   tower_add_k(ctx, a, b, k, uu);
-  /* U.U - r^2 w0^2 */
-  DyadicX rr = dx_val(ctx, r);
+  /* U.U - rr w0^2 */
   tower_mul_k(ctx, &t, c[0][2], c[0][2], k, a);
-  tower_mulx_k(ctx, a, dx_mul(ctx, rr, rr), k, a);
+  if (circ->unit)
+    tower_mulx_k(ctx, a, circ->rr.c[0], k, a);
+  else
+    tower_mul_k(ctx, &t, a, c[3][0], k, a);
   tower_sub_k(ctx, uu, a, k, uu);
   tower_mul_k(ctx, &t, vu, vu, k, a);
   tower_mul_k(ctx, &t, vv, uu, k, b);
@@ -11152,17 +12138,21 @@ tower_point_line_circle(DyadicCtx *ctx, const TowerPoint *p0,
   out->t.depth = k + 1;
   int half = 1 << k;
   double s = (double) (sigma * sw1);
-  /* x = x0 (V.V) - (V.U) Vx + s Vx sqrt(D) */
+  /* x = x0 cw (V.V) - (V.U) Vx + s Vx sqrt(D) */
   DyadicX *o[2] = {out->x.c, out->y.c};
   DyadicX *vc[2] = {vx, vy};
   for (int j = 0; j < 2; j++)
   {
     tower_mul_k(ctx, &t, c[0][j], vv, k, a);
+    if (! circ->unit)
+      tower_mulx_k(ctx, a, circ->w, k, a);
     tower_mul_k(ctx, &t, vu, vc[j], k, b);
     tower_sub_k(ctx, a, b, k, o[j]);
     tower_scale_k(ctx, vc[j], s, k, o[j] + half);
   }
   tower_mul_k(ctx, &t, c[0][2], vv, k, out->w.c);
+  if (! circ->unit)
+    tower_mulx_k(ctx, out->w.c, circ->w, k, out->w.c);
   tower_set(ctx, dx_val(ctx, 0.0), k, out->w.c + half);
   return disc;
 }
@@ -11207,10 +12197,44 @@ tower_orient(DyadicCtx *ctx, const TowerPoint *p, const TowerPoint *q,
 static void
 tangent_point_round(const TangentPoint *tp, double *x, double *y)
 {
+  if (tp->arc)
+  {
+    /* The end of the offset of an input arc, on the line from the centre of
+     * its circle in doubles, which the arc carries (#exact_arc_bound),
+     * through that end, and past it along the tangent there where @p along
+     * asks it */
+    const ExactArc *arc = tp->arc;
+    if (tp->k == 2)
+    {
+      *x = arc->cx;
+      *y = arc->cy;
+      return;
+    }
+    const double *a = tp->k ? arc->e : arc->s;
+    double ax = a[0], ay = a[1];
+    double nx = ax - arc->cx, ny = ay - arc->cy;
+    if (arc->err < 0.0)
+    {
+      /* An arc nearly straight: the direction from its centre tends to the
+       * normal of its chord on the side it bulges to */
+      double cxs = arc->e[0] - arc->s[0], cys = arc->e[1] - arc->s[1];
+      int turn = cross_product_sign(arc->s[0], arc->s[1], arc->m[0],
+        arc->m[1], arc->s[0], arc->s[1], arc->e[0], arc->e[1]);
+      nx = (turn > 0) ? cys : - cys;
+      ny = (turn > 0) ? - cxs : cxs;
+    }
+    double l = tp->r1 / hypot(nx, ny);
+    double f = tp->side * l, g = tp->along * l;
+    *x = ax + f * nx - g * ny;
+    *y = ay + f * ny + g * nx;
+    return;
+  }
   double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
   double d2 = dx * dx + dy * dy, dr = tp->r1 - tp->r2;
-  double se = tp->side * sqrt(fmax(d2 - dr * dr, 0.0));
-  double ux = (dr * dx - se * dy) / d2, uy = (dr * dy + se * dx) / d2;
+  double e = sqrt(fmax(d2 - dr * dr, 0.0));
+  double se = tp->side * e, ae = tp->along * e;
+  double ux = (dr * dx - se * dy + ae * dx) / d2;
+  double uy = (dr * dy + se * dx + ae * dy) / d2;
   double rk = tp->k ? tp->r2 : tp->r1;
   *x = (tp->k ? tp->c2x : tp->c1x) + rk * ux;
   *y = (tp->k ? tp->c2y : tp->c1y) + rk * uy;
@@ -11267,15 +12291,23 @@ meet_tower_build(DyadicCtx *ctx, const MeetPoint *m, double ox, double oy,
     {
       TowerPoint p0, p1;
       towerseg_ends(ctx, m->p, ox, oy, &p0, &p1);
-      int disc = tower_point_line_circle(ctx, &p0, &p1, m->q->cx, m->q->cy,
-        m->q->radius, m->sigma, ox, oy, out);
+      TowerCircle circ;
+      tower_circle_of(ctx, m->q, ox, oy, &circ);
+      int disc = tower_point_line_circle(ctx, &p0, &p1, &circ, m->sigma,
+        out);
       return (disc == 2) ? 2 : ((disc < 0) ? 0 : 1);
     }
     case MEET_ARCARC:
-      if (! m->p->centred || ! m->q->centred)
+    {
+      if ((! m->p->centred && ! m->p->offset) ||
+          (! m->q->centred && ! m->q->offset))
         return 0;
-      return tower_point_circles(ctx, m->p->cx, m->p->cy, m->p->radius,
-        m->q->cx, m->q->cy, m->q->radius, m->sigma, ox, oy, out) < 0 ? 0 : 1;
+      TowerCircle c1, c2;
+      tower_circle_of(ctx, m->p, ox, oy, &c1);
+      tower_circle_of(ctx, m->q, ox, oy, &c2);
+      int sh = tower_point_circles(ctx, &c1, &c2, m->sigma, out);
+      return (sh == 2) ? 2 : ((sh < 0) ? 0 : 1);
+    }
     default:
       return 0;
   }
@@ -11374,52 +12406,31 @@ typedef struct
   int sab;           /**< Sign of A x B, 0 for a half circle */
 } TowerArc;
 
-/* The circle of an arc as #TowerArc holds it. With a = S - M and b = E - M the
- * centre is M + N / D, as #arcarc_centre_exact forms it, D = 2 a x b; the arc
- * turns counterclockwise where a x b is negative */
+/* The circle of an arc as #TowerArc holds it (#tower_arc_circle), the radii
+ * to its ends being w (P - O) - c; the arc turns counterclockwise where the
+ * turn of S, M, E is negative */
 static void
 tower_arc_read(DyadicCtx *ctx, const ExactArc *arc, double ox, double oy,
   TowerArc *out)
 {
+  int sd = tower_arc_circle(ctx, arc->s, arc->m, arc->e, arc->half, ox, oy,
+    &out->cx, &out->cy, &out->w, &out->r2);
+  DyadicX rax = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->s[0], ox)),
+    out->cx);
+  DyadicX ray = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->s[1], oy)),
+    out->cy);
+  DyadicX rbx = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->e[0], ox)),
+    out->cx);
+  DyadicX rby = dx_sub(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->e[1], oy)),
+    out->cy);
   if (arc->half)
   {
-    out->w = dx_val(ctx, 2.0);
-    out->cx = dx_add(ctx, dx_diff(ctx, arc->s[0], ox),
-      dx_diff(ctx, arc->e[0], ox));
-    out->cy = dx_add(ctx, dx_diff(ctx, arc->s[1], oy),
-      dx_diff(ctx, arc->e[1], oy));
-    out->ax = dx_diff(ctx, arc->s[0], arc->e[0]);
-    out->ay = dx_diff(ctx, arc->s[1], arc->e[1]);
-    out->bx = dx_diff(ctx, arc->e[0], arc->s[0]);
-    out->by = dx_diff(ctx, arc->e[1], arc->s[1]);
-    out->r2 = dx_add(ctx, dx_mul(ctx, out->ax, out->ax),
-      dx_mul(ctx, out->ay, out->ay));
+    /* The half circle runs counterclockwise from S to E */
+    out->ax = rax; out->ay = ray;
+    out->bx = rbx; out->by = rby;
     out->sab = 0;
     return;
   }
-  DyadicX ax = dx_diff(ctx, arc->s[0], arc->m[0]);
-  DyadicX ay = dx_diff(ctx, arc->s[1], arc->m[1]);
-  DyadicX bx = dx_diff(ctx, arc->e[0], arc->m[0]);
-  DyadicX by = dx_diff(ctx, arc->e[1], arc->m[1]);
-  DyadicX a2 = dx_add(ctx, dx_mul(ctx, ax, ax), dx_mul(ctx, ay, ay));
-  DyadicX b2 = dx_add(ctx, dx_mul(ctx, bx, bx), dx_mul(ctx, by, by));
-  DyadicX nx = dx_sub(ctx, dx_mul(ctx, a2, by), dx_mul(ctx, b2, ay));
-  DyadicX ny = dx_sub(ctx, dx_mul(ctx, b2, ax), dx_mul(ctx, a2, bx));
-  DyadicX d = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, ax, by),
-    dx_mul(ctx, ay, bx)), 2.0);
-  int sd = dx_sign(ctx, d);
-  /* With w = |D|, the sign carried through N */
-  double k = (sd < 0) ? -1.0 : 1.0;
-  nx = dx_scale(ctx, nx, k);
-  ny = dx_scale(ctx, ny, k);
-  out->w = dx_scale(ctx, d, k);
-  out->cx = dx_add(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->m[0], ox)), nx);
-  out->cy = dx_add(ctx, dx_mul(ctx, out->w, dx_diff(ctx, arc->m[1], oy)), ny);
-  DyadicX rax = dx_sub(ctx, dx_mul(ctx, out->w, ax), nx);
-  DyadicX ray = dx_sub(ctx, dx_mul(ctx, out->w, ay), ny);
-  DyadicX rbx = dx_sub(ctx, dx_mul(ctx, out->w, bx), nx);
-  DyadicX rby = dx_sub(ctx, dx_mul(ctx, out->w, by), ny);
-  out->r2 = dx_add(ctx, dx_mul(ctx, rax, rax), dx_mul(ctx, ray, ray));
   /* Clockwise the arc is the sweep from E to S */
   out->ax = (sd < 0) ? rax : rbx;
   out->ay = (sd < 0) ? ray : rby;
@@ -12121,11 +13132,13 @@ towerseg_meet_circle(DyadicCtx *ctx, const Edge *p, const Edge *q,
   double ox = p->x1, oy = p->y1;
   TowerPoint pe[2], y[2];
   towerseg_ends(ctx, p, ox, oy, &pe[0], &pe[1]);
+  TowerCircle circ;
+  tower_circle_of(ctx, q, ox, oy, &circ);
   int disc = 0;
   for (int r = 0; r < 2; r++)
   {
-    disc = tower_point_line_circle(ctx, &pe[0], &pe[1], q->cx, q->cy,
-      q->radius, r ? 1 : -1, ox, oy, &y[r]);
+    disc = tower_point_line_circle(ctx, &pe[0], &pe[1], &circ, r ? 1 : -1,
+      &y[r]);
     if (disc == 2)
       return -2;
     if (disc < 0)
@@ -12245,13 +13258,27 @@ meets_order_tower_pred(DyadicCtx *ctx, const void *arg)
     return 2;
   int k = t.depth, turn = o->ccw ? 1 : -1, cls[2];
   DyadicX rx[2][TOWER_SIZE], ry[2][TOWER_SIZE], u[TOWER_SIZE];
+  /* The circle of the arc, its centre C / cw holding no root
+   * (#tower_circle_of) */
+  TowerCircle circ;
+  tower_circle_of(ctx, e, ox, oy, &circ);
   for (int i = 0; i < 2; i++)
   {
-    /* The radius times w: P - C w */
-    tower_mulx_k(ctx, v[i][2], dx_diff(ctx, e->cx, ox), k, u);
-    tower_sub_k(ctx, v[i][0], u, k, rx[i]);
-    tower_mulx_k(ctx, v[i][2], dx_diff(ctx, e->cy, oy), k, u);
-    tower_sub_k(ctx, v[i][1], u, k, ry[i]);
+    /* The radius times w cw, cw positive: P cw - C w */
+    if (circ.unit)
+    {
+      memcpy(rx[i], v[i][0], sizeof(DyadicX) * (1 << k));
+      memcpy(ry[i], v[i][1], sizeof(DyadicX) * (1 << k));
+    }
+    else
+    {
+      tower_mulx_k(ctx, v[i][0], circ.w, k, rx[i]);
+      tower_mulx_k(ctx, v[i][1], circ.w, k, ry[i]);
+    }
+    tower_mulx_k(ctx, v[i][2], circ.x, k, u);
+    tower_sub_k(ctx, rx[i], u, k, rx[i]);
+    tower_mulx_k(ctx, v[i][2], circ.y, k, u);
+    tower_sub_k(ctx, ry[i], u, k, ry[i]);
     int sw = tower_sign_k(ctx, &t, v[i][2], k);
     /* (-1, 0) x V = -Vy */
     int side = - tower_sign_k(ctx, &t, ry[i], k) * sw * turn;
@@ -12418,6 +13445,143 @@ meet_point_x_side(const MeetPoint *m, double ox, double d)
 
 typedef struct
 {
+  const MeetPoint *m;
+  const Edge *c;
+  bool alongx;
+  int sr;
+} TowerCircleSideArg;
+
+/* The radius of a circle times its w (#TowerCircle), rho cw, as the x of a
+ * point of its tower whose y is 0 and w 1: the radius of a centred arc, and
+ * for an offset s (sqrt(r2) + side r cw), s its sign, the offset running on
+ * the far side of the centre where it is negative (#edges_add_offset_arc);
+ * false where that sign is not told */
+static bool
+tower_circle_rho(DyadicCtx *ctx, const Edge *e, const TowerCircle *c,
+  TowerPoint *rp)
+{
+  int n = 1 << c->t.depth;
+  DyadicX z = dx_val(ctx, 0.0);
+  rp->t = c->t;
+  for (int m = 0; m < n; m++)
+    rp->x.c[m] = rp->y.c[m] = rp->w.c[m] = z;
+  rp->w.c[0] = dx_val(ctx, 1.0);
+  if (c->unit)
+  {
+    rp->x.c[0] = dx_val(ctx, e->radius);
+    return true;
+  }
+  rp->x.c[0] = dx_mul(ctx, dx_val(ctx, e->side * e->radius), c->w);
+  rp->x.c[1] = dx_val(ctx, 1.0);
+  int s = tower_sign_k(ctx, &c->t, rp->x.c, 1);
+  if (dyadic_ctx_unsafe(ctx))
+    return false;
+  if (s < 0)
+    tower_scale_k(ctx, rp->x.c, -1.0, 1, rp->x.c);
+  return true;
+}
+
+static int
+meet_point_circle_side_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCircleSideArg *o = arg;
+  double ox = o->c->cx, oy = o->c->cy;
+  TowerPoint p, q;
+  if (meet_tower_build(ctx, o->m, ox, oy, &p) != 1)
+    return 2;
+  TowerCircle circ;
+  tower_circle_of(ctx, o->c, ox, oy, &circ);
+  if (! tower_circle_rho(ctx, o->c, &circ, &q))
+    return 2;
+  const TowerPoint *pts[2] = {&p, &q};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  DyadicX u[TOWER_SIZE], a[TOWER_SIZE];
+  /* X cw - c W - sr rho cw W, the centre c / cw holding no root */
+  tower_mulx_k(ctx, v[0][o->alongx ? 0 : 1], circ.w, k, u);
+  tower_mulx_k(ctx, v[0][2], o->alongx ? circ.x : circ.y, k, a);
+  tower_sub_k(ctx, u, a, k, u);
+  if (o->alongx && o->sr != 0)
+  {
+    tower_mul_k(ctx, &t, v[0][2], v[1][0], k, a);
+    tower_scale_k(ctx, a, (double) o->sr, k, a);
+    tower_sub_k(ctx, u, a, k, u);
+  }
+  int s = tower_sign_k(ctx, &t, u, k) * tower_sign_k(ctx, &t, v[0][2], k);
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+static int
+tower_circles_right_cmp_pred(DyadicCtx *ctx, const void *arg)
+{
+  const TowerCirclesArg *o = arg;
+  double ox = o->p->cx, oy = o->p->cy;
+  TowerCircle c1, c2;
+  TowerPoint r1, r2;
+  tower_circle_of(ctx, o->p, ox, oy, &c1);
+  tower_circle_of(ctx, o->q, ox, oy, &c2);
+  if (! tower_circle_rho(ctx, o->p, &c1, &r1) ||
+      ! tower_circle_rho(ctx, o->q, &c2, &r2))
+    return 2;
+  const TowerPoint *pts[2] = {&r1, &r2};
+  DyadicX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  /* (x1 + rho1 w1) w2 - (x2 + rho2 w2) w1, both w positive */
+  DyadicX a[TOWER_SIZE], b[TOWER_SIZE];
+  memcpy(a, v[0][0], sizeof(DyadicX) * (1 << k));
+  a[0] = dx_add(ctx, a[0], c1.x);
+  tower_mulx_k(ctx, a, c2.w, k, a);
+  memcpy(b, v[1][0], sizeof(DyadicX) * (1 << k));
+  b[0] = dx_add(ctx, b[0], c2.x);
+  tower_mulx_k(ctx, b, c1.w, k, b);
+  tower_sub_k(ctx, a, b, k, a);
+  int s = tower_sign_k(ctx, &t, a, k);
+  return dyadic_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return how the points of two circles furthest along x compare
+ * @details The circles are those of centred arcs a tower holds
+ * (#tower_circle_of), an offset of an input arc among them: cx + r against
+ * cx + r, decided exactly, -1, 0 or 1, 2 where it is not told
+ */
+int
+tower_circles_right_cmp(const Edge *p, const Edge *q)
+{
+  assert(p); assert(q); assert(p->centred); assert(q->centred);
+  TowerCirclesArg arg = {p, q};
+  return dyadic_pred_run(tower_circles_right_cmp_pred, &arg);
+}
+
+/**
+ * @brief Return the side of a line through a circle the point of a meeting
+ * lies on, decided exactly
+ * @details The line is the horizontal one through the centre of the circle
+ * of a centred arc, or with @p alongx the vertical one through its centre
+ * moved by @p sr times its radius: 1 above or right of it, -1 below or left,
+ * 0 on it, 2 where it is not told. A centred arc holds its circle in its
+ * doubles (#meet_point_y_side, #meet_point_x_side); an offset of an input arc
+ * holds it in a tower (#tower_circle_of)
+ */
+int
+meet_point_circle_side(const MeetPoint *m, const Edge *c, bool alongx, int sr)
+{
+  assert(m); assert(c); assert(c->centred);
+  if (! c->offset)
+    return alongx ? meet_point_x_side(m, c->cx, sr * c->radius) :
+      meet_point_y_side(m, c->cy);
+  TowerCircleSideArg arg = {m, c, alongx, sr};
+  return dyadic_pred_run(meet_point_circle_side_pred, &arg);
+}
+
+typedef struct
+{
   const MeetPoint *a, *b;
 } TowerXArg;
 
@@ -12476,10 +13640,38 @@ tower_f_div(ArcsegFilter a, ArcsegFilter b, double *v, double *e)
   return isfinite(*v) && isfinite(*e);
 }
 
+/* The quotient of two pairs of doubles with bounds (#DDBound), as a double v
+ * and a bound e on its error: v = n / d rounded, and the exact quotient lies
+ * within |n - v d| / |d| of it, the residual formed in pairs of doubles and
+ * the bounds of both taken with it, so that the bound is as tight as the
+ * pairs hold the values, as #tower_f_div reads a quotient of filters in
+ * doubles; false where the bound on d holds zero */
+static bool
+tower_dd_quotient(DDBound n, DDBound d, double *v, double *e)
+{
+  double dlo = fabs(d.hi) - fabs(d.lo) - d.e;
+  if (! (dlo > 0.0) || ! isfinite(n.hi) || ! isfinite(d.hi))
+    return false;
+  double q = (n.hi + n.lo) / (d.hi + d.lo);
+  if (! isfinite(q))
+    return false;
+  DDBound qd = {q, 0.0, 0.0};
+  DDBound r = ddb_sub(n, ddb_mul(qd, d));
+  /* |r| bounds |n - q d| up to the errors of n and of the product, which
+   * r.e carries, and |q| d.e the error of d */
+  double rr = (fabs(r.hi) + fabs(r.lo) + r.e + fabs(q) * d.e) *
+    (1.0 + 4.0 * DBL_EPSILON);
+  *v = q;
+  *e = (rr / dlo) * (1.0 + 4.0 * DBL_EPSILON) + DBL_MIN;
+  return isfinite(*e);
+}
+
 typedef struct
 {
   const MeetPoint *m;
   double *x, *y, *box;
+  double *bracket;      /**< The bracket of each coordinate the steps of a
+                             tier told, which the next one goes on from */
 } TowerBoundsArg;
 
 /* A double as an unsigned integer whose order is that of the doubles */
@@ -12505,7 +13697,9 @@ tower_key_double(uint64_t key)
 /* Narrow [lo, hi], two doubles holding org + num / den of a tower, to two
  * consecutive doubles, or to one where it is a double: bisected in the order
  * of the doubles, each step decided exactly by the sign of
- * num - (m - org) den. False where a sign is not told */
+ * num - (m - org) den. False where a sign is not told, [lo, hi] then holding
+ * the bracket the steps told narrowed it to, every one of them exact, from
+ * which the next tier of the arithmetic goes on (#meet_point_bounds_pred) */
 static bool
 tower_bisect(DyadicCtx *ctx, const Tower *t, const DyadicX *num,
   const DyadicX *den, int k, double org, double *lo, double *hi)
@@ -12523,7 +13717,11 @@ tower_bisect(DyadicCtx *ctx, const Tower *t, const DyadicX *num,
     tower_sub_k(ctx, num, md, k, md);
     int s = tower_sign_k(ctx, t, md, k) * sd;
     if (dyadic_ctx_unsafe(ctx))
+    {
+      *lo = tower_key_double(klo);
+      *hi = tower_key_double(khi);
       return false;
+    }
     if (s == 0)
     {
       klo = khi = kmid;
@@ -12548,9 +13746,18 @@ meet_point_origin(const MeetPoint *m, double *ox, double *oy)
   switch (m->kind)
   {
     case MEET_TANGENT:
+    {
+      /* The end of an offset lies about the end of its input arc */
+      if (m->tp->arc)
+      {
+        const double *a = (m->tp->k == 1) ? m->tp->arc->e : m->tp->arc->s;
+        *ox = a[0]; *oy = a[1];
+        return;
+      }
       *ox = m->tp->k ? m->tp->c2x : m->tp->c1x;
       *oy = m->tp->k ? m->tp->c2y : m->tp->c1y;
       return;
+    }
     case MEET_LINES:
     case MEET_LINECIRCLE:
       *ox = m->p->x1; *oy = m->p->y1;
@@ -12582,9 +13789,13 @@ meet_point_bounds_pred(DyadicCtx *ctx, const void *arg)
   double *val[2] = {o->x, o->y};
   for (int j = 0; j < 2; j++)
   {
-    ArcsegFilter f = tower_filter_k(ctx, &p.t, num[j], k);
+    /* In pairs of doubles the quotient is read to their precision
+     * (#tower_dd_quotient), else as a double with a bound */
     double v, e;
-    bool told = tower_f_div(f, fw, &v, &e);
+    bool told = ctx->dd ?
+      tower_dd_quotient(tower_dd_k(ctx, &p.t, num[j], k),
+        tower_dd_k(ctx, &p.t, p.w.c, k), &v, &e) :
+      tower_f_div(tower_filter_k(ctx, &p.t, num[j], k), fw, &v, &e);
     /* The coordinate is the origin plus the offset, the sum rounded once,
      * which adds half a unit in its last place to the bound */
     double c = 0.0, ce = 0.0;
@@ -12600,8 +13811,17 @@ meet_point_bounds_pred(DyadicCtx *ctx, const void *arg)
      * bounds nothing, as at the crossing of two nearly parallel segments */
     if (! told || ce > 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN)
     {
+      /* From the narrower of the filter's box and the bracket a cheaper
+       * tier left, each holding the coordinate exactly; a tier that cannot
+       * tell a step keeps what its steps told for the next one */
       double lo = told ? c - ce : - DBL_MAX, hi = told ? c + ce : DBL_MAX;
-      if (! tower_bisect(ctx, &p.t, num[j], p.w.c, k, org[j], &lo, &hi))
+      lo = Max(lo, o->bracket[2 * j]);
+      hi = Min(hi, o->bracket[2 * j + 1]);
+      bool done = tower_bisect(ctx, &p.t, num[j], p.w.c, k, org[j], &lo,
+        &hi);
+      o->bracket[2 * j] = lo;
+      o->bracket[2 * j + 1] = hi;
+      if (! done)
         return 2;
       c = lo;
       o->box[2 * j] = lo; o->box[2 * j + 1] = hi;
@@ -12616,10 +13836,11 @@ meet_point_bounds_pred(DyadicCtx *ctx, const void *arg)
 }
 
 /* A point where the common tangent of two circles of one radius touches one
- * of them, Ck + side r rot(d) / |d| as #tangent_point_round reads it, and a
- * box holding it exactly: each operation rounds to nearest, so the offset is
- * off by less than 12 units of the machine epsilon of its size and the sum
- * by half a unit of its own, a bound taken four times over. False for two
+ * of them, Ck + r (along d + side rot(d)) / |d| as #tangent_point_round reads
+ * it, and a box holding it exactly: each operation rounds to nearest, so each
+ * term of the offset is off by less than 12 units of the machine epsilon of
+ * its size and the sum by half a unit of its own, a bound taken four times
+ * over. False for two
  * radii, or where the squares leave the range the bound holds in, which
  * #meet_point_bounds_pred places in the tower instead */
 static bool
@@ -12632,15 +13853,16 @@ tangent_point_bounds(const TangentPoint *tp, double *x, double *y,
   double d2 = dx * dx + dy * dy;
   if (! (d2 > 0x1p-900 && d2 < 0x1p900))
     return false;
-  double f = tp->side * tp->r1 / sqrt(d2);
-  double ox = - f * dy, oy = f * dx;
+  double l = tp->r1 / sqrt(d2);
+  double f = tp->side * l, g = tp->along * l;
+  double ox = g * dx - f * dy, oy = f * dx + g * dy;
   double cx = tp->k ? tp->c2x : tp->c1x, cy = tp->k ? tp->c2y : tp->c1y;
   *x = cx + ox;
   *y = cy + oy;
-  double ex = 48.0 * DBL_EPSILON * fabs(ox) + 2.0 * DBL_EPSILON * fabs(*x) +
-    4.0 * DBL_MIN;
-  double ey = 48.0 * DBL_EPSILON * fabs(oy) + 2.0 * DBL_EPSILON * fabs(*y) +
-    4.0 * DBL_MIN;
+  double ex = 48.0 * DBL_EPSILON * (fabs(g * dx) + fabs(f * dy)) +
+    2.0 * DBL_EPSILON * fabs(*x) + 4.0 * DBL_MIN;
+  double ey = 48.0 * DBL_EPSILON * (fabs(f * dx) + fabs(g * dy)) +
+    2.0 * DBL_EPSILON * fabs(*y) + 4.0 * DBL_MIN;
   if (! isfinite(*x) || ! isfinite(*y) || ! isfinite(ex) || ! isfinite(ey))
     return false;
   box[0] = *x - ex; box[1] = *x + ex;
@@ -12653,8 +13875,8 @@ tangent_point_bounds(const TangentPoint *tp, double *x, double *y,
  * two circles of one radius, given the point as #tangent_point_bounds
  * rounds it, as the ends of a segment between tangent points carry it
  * (#edges_add_tangent_segment): the bound of #tangent_point_bounds with the
- * offset, whose length the rounding keeps below twice the radius, taken at
- * twice the radius
+ * offset, whose length the rounding keeps below twice the radius, the sqrt(2)
+ * radii of a point past the circle included, taken at twice the radius
  * @return False where #tangent_point_bounds does not read the point off the
  * doubles
  */
@@ -12689,7 +13911,8 @@ static inline bool
 towerseg_offset(const Edge *e, int *s)
 {
   const TangentPoint *a = e->from, *b = e->to;
-  if (! a || ! b || a->r1 != a->r2 || a->side != b->side || a->k == b->k ||
+  if (! a || ! b || a->along || b->along || a->r1 != a->r2 ||
+      a->side != b->side || a->k == b->k ||
       a->c1x != b->c1x || a->c1y != b->c1y || a->c2x != b->c2x ||
       a->c2y != b->c2y || a->r1 != b->r1)
     return false;
@@ -13002,7 +14225,8 @@ offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
   double box[4])
 {
   int s;
-  if (! m->p || ! m->q || ! m->q->centred || ! towerseg_offset(m->p, &s))
+  if (! m->p || ! m->q || ! m->q->centred || m->q->offset ||
+      ! towerseg_offset(m->p, &s))
     return false;
   if (offset_line_circle_plain(m, s, x, y, box))
     return true;
@@ -13092,7 +14316,7 @@ static pg_noinline bool
 equal_circles_bounds(const MeetPoint *m, double *x, double *y, double box[4])
 {
   if (! m->p || ! m->q || ! m->p->centred || ! m->q->centred ||
-      m->p->radius != m->q->radius)
+      m->p->offset || m->q->offset || m->p->radius != m->q->radius)
     return false;
   if (equal_circles_plain(m, x, y, box))
     return true;
@@ -13136,7 +14360,8 @@ meet_point_bounds(const MeetPoint *m, double *x, double *y, double box[4])
     return true;
   if (m->kind == MEET_ARCARC && equal_circles_bounds(m, x, y, box))
     return true;
-  TowerBoundsArg arg = {m, x, y, box};
+  double bracket[4] = {- DBL_MAX, DBL_MAX, - DBL_MAX, DBL_MAX};
+  TowerBoundsArg arg = {m, x, y, box, bracket};
   return dyadic_pred_run(meet_point_bounds_pred, &arg) == 1;
 }
 
@@ -13187,12 +14412,25 @@ tower_edge_direction(DyadicCtx *ctx, const Edge *e, bool ccw, bool out,
     return;
   }
   {
-    /* (P - C w) times the sign of w */
+    /* (P cw - C w) times the sign of w, the centre C / cw of the circle
+     * holding no root and cw positive (#tower_circle_of) */
+    TowerCircle circ;
+    tower_circle_of(ctx, e, ox, oy, &circ);
     DyadicX vx[TOWER_SIZE], vy[TOWER_SIZE];
-    tower_mulx_k(ctx, pc[2], dx_diff(ctx, e->cx, ox), k, u);
-    tower_sub_k(ctx, pc[0], u, k, vx);
-    tower_mulx_k(ctx, pc[2], dx_diff(ctx, e->cy, oy), k, u);
-    tower_sub_k(ctx, pc[1], u, k, vy);
+    if (circ.unit)
+    {
+      memcpy(vx, pc[0], sizeof(DyadicX) * (1 << k));
+      memcpy(vy, pc[1], sizeof(DyadicX) * (1 << k));
+    }
+    else
+    {
+      tower_mulx_k(ctx, pc[0], circ.w, k, vx);
+      tower_mulx_k(ctx, pc[1], circ.w, k, vy);
+    }
+    tower_mulx_k(ctx, pc[2], circ.x, k, u);
+    tower_sub_k(ctx, vx, u, k, vx);
+    tower_mulx_k(ctx, pc[2], circ.y, k, u);
+    tower_sub_k(ctx, vy, u, k, vy);
     double sw = (double) tower_sign_k(ctx, t, pc[2], k);
     /* Counterclockwise the radius (x, y) turns to (-y, x) */
     tower_scale_k(ctx, vy, ccw ? - sw : sw, k, dx);
@@ -13303,10 +14541,25 @@ edges_turn_cmp_meet_pred(DyadicCtx *ctx, const void *arg)
       bool left1 = (o->ccw1 == o->out1), left2 = (o->ccw2 == o->out2);
       if (left1 != left2)
         return left1 ? 1 : -1;
-      double r1 = o->e1->radius, r2 = o->e2->radius;
-      if (r1 == r2)
+      int rc;
+      if (! o->e1->offset && ! o->e2->offset)
+      {
+        double r1 = o->e1->radius, r2 = o->e2->radius;
+        rc = (r1 < r2) ? -1 : ((r1 > r2) ? 1 : 0);
+      }
+      else
+      {
+        /* The radius of an offset is a root (#tower_circles_radius_cmp) */
+        TowerCircle c1, c2;
+        tower_circle_of(ctx, o->e1, ox, oy, &c1);
+        tower_circle_of(ctx, o->e2, ox, oy, &c2);
+        rc = tower_circles_radius_cmp(ctx, &c1, &c2);
+        if (rc == 2)
+          return 2;
+      }
+      if (rc == 0)
         return 2;
-      return ((r1 < r2) == left1) ? 1 : -1;
+      return ((rc < 0) == left1) ? 1 : -1;
     }
   }
   return 2;
@@ -13354,7 +14607,8 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
    * its centres plus the one offset f rot(d), f = side r / |d|
    * (#tangent_point_bounds): read once, the same doubles, the edge written
    * in its place in the array */
-  if (from->r1 == from->r2 && to->r1 == to->r2 && from->r1 == to->r1 &&
+  if (! from->along && ! to->along && from->r1 == from->r2 &&
+      to->r1 == to->r2 && from->r1 == to->r1 &&
       from->side == to->side && from->k != to->k &&
       from->c1x == to->c1x && from->c1y == to->c1y &&
       from->c2x == to->c2x && from->c2y == to->c2y)
@@ -13450,6 +14704,76 @@ edges_add_tangent_arc(MeosArray *edges, double cx, double cy, double radius,
   edges_add_circle(edges, cx, cy, radius, ccw);
   Edge *e = &((Edge *) edges->elems)[edges->count - 1];
   e->from = from; e->to = to;
+  return;
+}
+
+/**
+ * @brief Add to an edge array the offset of an input arc by a distance,
+ * between the points where it ends (#TangentPoint, member arc), which no
+ * double holds: the offset of an arc of a buffer, the sibling of
+ * #edges_add_tangent_arc for the arc about the centre of an input arc
+ * @details The input arc its ends carry (#ExactArc), through its start,
+ * middle and end or on its diameter, has a circle, of centre C and radius R,
+ * fixed by those doubles exactly; the offset is the arc about C of radius R + side r,
+ * side and r those of its ends, from @p from to @p to in the sense @p ccw,
+ * the points of radius R + side r on the lines from C through the ends of
+ * the input arc. Where R + side r is negative the offset runs on the far
+ * side of C, its points c + (R + side r) u for u the direction of a point of
+ * the input arc, which is still the arc of radius |R + side r| turning in
+ * the sense @p ccw. Every exact question about it reads the three input
+ * points, the side and the distance (#tower_circle_of); its centre and its
+ * ends are rounded once, and its box is that of the whole circle widened by
+ * the rounding of those doubles
+ * @param[in,out] edges Edge array
+ * @param[in] ccw Whether the arc turns counterclockwise about C
+ * @param[in] from,to The ends, of one input arc, distance and side; they
+ * outlive the edge array
+ */
+void
+edges_add_offset_arc(MeosArray *edges, bool ccw, const TangentPoint *from,
+  const TangentPoint *to)
+{
+  assert(edges); assert(from); assert(to);
+  assert(from->arc); assert(to->arc == from->arc); assert(from->r1 > 0.0);
+  assert(from->side == to->side && from->r1 == to->r1);
+  if (edges->count >= edges->capacity)
+    edge_array_reserve(edges, 1);
+  Edge *e = &((Edge *) edges->elems)[edges->count++];
+  memset(e, 0, sizeof(Edge));
+  e->etype = EDGE_POLYARC;
+  e->centred = true;
+  e->offset = true;
+  e->ccw = ccw;
+  e->from = from; e->to = to;
+  e->radius = from->r1;
+  e->side = from->side;
+  /* The input arc and its circle in doubles, which it carries
+   * (#exact_arc_bound) */
+  const ExactArc *arc = from->arc;
+  e->sx = arc->s[0]; e->sy = arc->s[1];
+  e->mx = arc->m[0]; e->my = arc->m[1];
+  e->ex = arc->e[0]; e->ey = arc->e[1];
+  e->diameter = arc->half;
+  e->cx = arc->cx;
+  e->cy = arc->cy;
+  double rho = fabs(arc->r + from->side * from->r1);
+  tangent_point_round(from, &e->x1, &e->y1);
+  tangent_point_round(to, &e->x2, &e->y2);
+  e->theta0 = atan2(e->y1 - e->cy, e->x1 - e->cx);
+  e->theta1 = atan2(e->y2 - e->cy, e->x2 - e->cx);
+  /* The box of the whole circle, widened by the bound on its centre in
+   * doubles; where #exact_arc_bound reads no circle in doubles, as for an
+   * arc nearly straight, the whole plane */
+  if (arc->err < 0.0 || ! isfinite(rho))
+  {
+    e->xmin = e->ymin = - DBL_MAX;
+    e->xmax = e->ymax = DBL_MAX;
+    return;
+  }
+  double m = arc->err + 0x1p-40 * (fabs(e->cx) + fabs(e->cy) + rho +
+    from->r1);
+  e->xmin = e->cx - rho - m; e->xmax = e->cx + rho + m;
+  e->ymin = e->cy - rho - m; e->ymax = e->cy + rho + m;
   return;
 }
 
@@ -14720,13 +16044,9 @@ typedef struct
 
 /**
  * @brief Set the centre and the square of the radius of a feature, exactly
- * @details The circle through S, M and E, with m = M - S, n = E - S and
- * D = m x n, has its centre at S + K / (2 D) for
- * K = (|m|^2 n_y - |n|^2 m_y, |n|^2 m_x - |m|^2 n_x), so that w = 2 |D| and
- * rw = |K|^2, the sign of D being the exact turn of the three points
- * (#cross_product_sign). The circle on the diameter from S to E has its
- * centre at S + n / 2, and a whole circle the centre and the radius it is
- * given
+ * @details The circle through S, M and E, or on the diameter from S to E,
+ * is the one #tower_arc_circle forms, and a whole circle the centre and the
+ * radius it is given
  */
 static void
 hull_exact(DyadicCtx *ctx, const HullAt *f, double ox, double oy,
@@ -14750,27 +16070,11 @@ hull_exact(DyadicCtx *ctx, const HullAt *f, double ox, double oy,
     out->rw = dx_mul(ctx, r, r);
     return;
   }
-  DyadicX nx = dx_diff(ctx, e->ex, e->sx), ny = dx_diff(ctx, e->ey, e->sy);
-  DyadicX kx = nx, ky = ny;
-  if (e->diameter)
-    out->w = dx_val(ctx, 2.0);
-  else
-  {
-    DyadicX mx = dx_diff(ctx, e->mx, e->sx), my = dx_diff(ctx, e->my, e->sy);
-    DyadicX mm = dx_add(ctx, dx_mul(ctx, mx, mx), dx_mul(ctx, my, my));
-    DyadicX nn = dx_add(ctx, dx_mul(ctx, nx, nx), dx_mul(ctx, ny, ny));
-    double turn = (double) cross_product_sign(e->sx, e->sy, e->mx, e->my,
-      e->sx, e->sy, e->ex, e->ey);
-    kx = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, mm, ny), dx_mul(ctx, nn, my)),
-      turn);
-    ky = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, nn, mx), dx_mul(ctx, mm, nx)),
-      turn);
-    out->w = dx_scale(ctx, dx_sub(ctx, dx_mul(ctx, mx, ny),
-      dx_mul(ctx, my, nx)), 2.0 * turn);
-  }
-  out->px = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, e->sx, ox), out->w), kx);
-  out->py = dx_add(ctx, dx_mul(ctx, dx_diff(ctx, e->sy, oy), out->w), ky);
-  out->rw = dx_add(ctx, dx_mul(ctx, kx, kx), dx_mul(ctx, ky, ky));
+  /* The circle through the three points, or on the diameter */
+  const double sp[2] = {e->sx, e->sy}, mp[2] = {e->mx, e->my},
+    ep[2] = {e->ex, e->ey};
+  tower_arc_circle(ctx, sp, mp, ep, e->diameter, ox, oy, &out->px, &out->py,
+    &out->w, &out->rw);
   return;
 }
 
@@ -17453,13 +18757,41 @@ meos_is_simple(const LWGEOM *geom, bool *result)
  *****************************************************************************/
 
 /**
+ * @brief Read the coordinates of a vertex in the form by which a geometry is
+ * compared, ordered and hashed
+ * @details A geography vertex denotes a point of the sphere, which two
+ * longitudes name on the antimeridian, 180 and -180, and every longitude
+ * names at a pole. The longitude -180 is read as 180 and the longitude of a
+ * pole as 0, so that one point of the sphere is one value; a zero of either
+ * sign is read as 0, as #float8_eq compares it
+ * @param[in,out] coords Coordinates, x and y first
+ * @param[in] n Number of coordinates
+ * @param[in] geodetic True for a geography vertex
+ */
+static void
+vertex_canon(double *coords, int n, bool geodetic)
+{
+  if (geodetic)
+  {
+    if (fabs(coords[1]) == 90.0)
+      coords[0] = 0.0;
+    else if (coords[0] == -180.0)
+      coords[0] = 180.0;
+  }
+  /* Adding +0 turns a zero of negative sign into +0, rounding to nearest,
+   * and leaves every other double as it is */
+  for (int i = 0; i < n; i++)
+    coords[i] += 0.0;
+}
+
+/**
  * @brief Set in the output array the coordinates by which a point is
  * compared, ordered and hashed, and return their number
  * @details A geography point denotes a point of the sphere, which two
  * longitudes name on the antimeridian, 180 and -180, and every longitude
  * names at a pole. The longitude -180 is read as 180 and the longitude of a
  * pole as 0, so that one point of the sphere is one value for #geopoint_eq,
- * #geopoint_cmp, #geopoint_sortkey_put and #geopoint_hash; a zero of either
+ * #geopoint_cmp and #geopoint_hash; a zero of either
  * sign is read as 0, as #float8_eq compares it
  * @param[in] gs Point
  * @param[out] coords Its coordinates, the Z coordinate last where it has one
@@ -17480,17 +18812,7 @@ geopoint_coords(const GSERIALIZED *gs, double *coords)
     coords[0] = point->x; coords[1] = point->y;
     n = 2;
   }
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-  {
-    if (fabs(coords[1]) == 90.0)
-      coords[0] = 0.0;
-    else if (coords[0] == -180.0)
-      coords[0] = 180.0;
-  }
-  /* Adding +0 turns a zero of negative sign into +0, rounding to nearest,
-   * and leaves every other double as it is */
-  for (int i = 0; i < n; i++)
-    coords[i] += 0.0;
+  vertex_canon(coords, n, FLAGS_GET_GEODETIC(gs->gflags));
   return n;
 }
 
@@ -17538,35 +18860,292 @@ geopoint_hash(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return the number of bytes of the sort key of a point
+ * @brief Return the 64-bit hash of a point under a seed
+ * @details The hash reads the coordinates #geopoint_hash reads, so that two
+ * points #geopoint_eq holds equal have one hash
  * @param[in] gs Point
+ * @param[in] seed Seed
  */
-size_t
-geopoint_sortkey_size(const GSERIALIZED *gs)
+uint64
+geopoint_hash_extended(const GSERIALIZED *gs, uint64 seed)
 {
-  return (FLAGS_GET_Z(gs->gflags) ? 3 : 2) * datum_sortkey_size(T_FLOAT8);
+  double coords[3];
+  int n = geopoint_coords(gs, coords);
+  uint64 result = float8_hash_extended(coords[0], seed);
+  for (int i = 1; i < n; i++)
+  {
+    result = (result << 1) | (result >> 63);
+    result ^= float8_hash_extended(coords[i], seed);
+  }
+  return result;
+}
+
+/*****************************************************************************
+ * Geometries ordered by value
+ *****************************************************************************/
+
+/**
+ * @brief Write a count as four bytes most significant first, or count them
+ * when the buffer is NULL
+ */
+static size_t
+geo_sortkey_count(uint32_t count, uint8_t *out)
+{
+  if (out)
+  {
+    for (int i = 0; i < 4; i++)
+      out[i] = (uint8_t) (count >> (8 * (3 - i)));
+  }
+  return 4;
 }
 
 /**
- * @brief Write the sort key of a point
- * @details The key is the coordinates as #geopoint_coords reads them, in the
- * order #geopoint_cmp compares them, each written as a double
- * @param[in] gs Point
- * @param[out] out Buffer of #geopoint_sortkey_size bytes
+ * @brief Write the key of a point array, or count its bytes when the buffer
+ * is NULL
+ * @details The key is the number of vertices, then each vertex as its
+ * coordinates in the order x, y, z, m, each read by #vertex_canon and
+ * written as #datum_sortkey_put writes a float
+ */
+static size_t
+geo_sortkey_ptarray(const POINTARRAY *pa, bool geodetic, uint8_t *out)
+{
+  size_t result = geo_sortkey_count(pa->npoints, out);
+  bool hasz = FLAGS_GET_Z(pa->flags), hasm = FLAGS_GET_M(pa->flags);
+  int n = 2 + (hasz ? 1 : 0) + (hasm ? 1 : 0);
+  size_t d = datum_sortkey_size(T_FLOAT8);
+  for (uint32_t i = 0; i < pa->npoints; i++)
+  {
+    POINT4D p;
+    getPoint4d_p(pa, i, &p);
+    double coords[4] = {p.x, p.y, 0.0, 0.0};
+    int k = 2;
+    if (hasz)
+      coords[k++] = p.z;
+    if (hasm)
+      coords[k++] = p.m;
+    vertex_canon(coords, n, geodetic);
+    for (int j = 0; j < n; j++)
+    {
+      if (out)
+        datum_sortkey_put(Float8GetDatum(coords[j]), T_FLOAT8, out + result);
+      result += d;
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Write the key of a geometry below its SRID and flags, or count its
+ * bytes when the buffer is NULL
+ * @details The key is the geometry type as a byte, then the counts of its
+ * parts, rings or vertices, each before the elements it governs, down to the
+ * vertices, which #geo_sortkey_ptarray writes
+ */
+static size_t
+geo_sortkey_lwgeom(const LWGEOM *geom, bool geodetic, uint8_t *out)
+{
+  size_t result = 1;
+  if (out)
+    out[0] = geom->type;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      return result + geo_sortkey_ptarray(((const LWPOINT *) geom)->point,
+        geodetic, out ? out + result : NULL);
+    case LINETYPE:
+      return result + geo_sortkey_ptarray(((const LWLINE *) geom)->points,
+        geodetic, out ? out + result : NULL);
+    case CIRCSTRINGTYPE:
+      return result + geo_sortkey_ptarray(((const LWCIRCSTRING *) geom)->points,
+        geodetic, out ? out + result : NULL);
+    case TRIANGLETYPE:
+      return result + geo_sortkey_ptarray(((const LWTRIANGLE *) geom)->points,
+        geodetic, out ? out + result : NULL);
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      result += geo_sortkey_count(poly->nrings, out ? out + result : NULL);
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        result += geo_sortkey_ptarray(poly->rings[i], geodetic,
+          out ? out + result : NULL);
+      return result;
+    }
+    case CURVEPOLYTYPE:
+    {
+      const LWCURVEPOLY *poly = (const LWCURVEPOLY *) geom;
+      result += geo_sortkey_count(poly->nrings, out ? out + result : NULL);
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        result += geo_sortkey_lwgeom(poly->rings[i], geodetic,
+          out ? out + result : NULL);
+      return result;
+    }
+    default:
+    {
+      /* Every other type is a collection of geometries */
+      assert(lwgeom_is_collection(geom));
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      result += geo_sortkey_count(coll->ngeoms, out ? out + result : NULL);
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        result += geo_sortkey_lwgeom(coll->geoms[i], geodetic,
+          out ? out + result : NULL);
+      return result;
+    }
+  }
+}
+
+/**
+ * @brief Write the sort key of a geometry or a geography, or count its bytes
+ * when the buffer is NULL
+ * @details The key holds the fields in the order #geo_cmp compares them: the
+ * SRID, written as an integer, whether the value has a Z coordinate, an M
+ * coordinate and whether it is geodetic, one byte each, then the geometry as
+ * #geo_sortkey_lwgeom writes it: its type, the counts of its parts, rings and
+ * vertices each before what it governs, and its coordinates as numbers, a
+ * zero of either sign being 0 and a geography read on the sphere
+ * (#vertex_canon). Every field ends where its bytes say it does, so two keys
+ * compared byte by byte order the values as #geo_cmp does and two values have
+ * the same key exactly when #geo_eq holds
+ */
+static size_t
+geo_sortkey_write(const GSERIALIZED *gs, uint8_t *out)
+{
+  size_t i4 = datum_sortkey_size(T_INT4);
+  if (out)
+  {
+    datum_sortkey_put(Int32GetDatum(gserialized_get_srid(gs)), T_INT4, out);
+    out[i4] = FLAGS_GET_Z(gs->gflags) ? 1 : 0;
+    out[i4 + 1] = FLAGS_GET_M(gs->gflags) ? 1 : 0;
+    out[i4 + 2] = FLAGS_GET_GEODETIC(gs->gflags) ? 1 : 0;
+  }
+  size_t result = i4 + 3;
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  result += geo_sortkey_lwgeom(geom, FLAGS_GET_GEODETIC(gs->gflags),
+    out ? out + result : NULL);
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a geometry or a
+ * geography, which #geo_sortkey_write states
+ * @param[in] gs Geometry or geography
+ */
+size_t
+geo_sortkey_size(const GSERIALIZED *gs)
+{
+  assert(gs);
+  return geo_sortkey_write(gs, NULL);
+}
+
+/**
+ * @brief Write the sort key of a geometry or a geography, which
+ * #geo_sortkey_write states
+ * @param[in] gs Geometry or geography
+ * @param[out] out Buffer of #geo_sortkey_size bytes
  * @return The first byte after the key
  */
 uint8_t *
-geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
+geo_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
 {
-  double coords[3];
-  int ncoords = geopoint_coords(gs, coords);
-  size_t n = datum_sortkey_size(T_FLOAT8);
-  for (int i = 0; i < ncoords; i++)
-  {
-    datum_sortkey_put(Float8GetDatum(coords[i]), T_FLOAT8, out);
-    out += n;
-  }
-  return out;
+  assert(gs); assert(out);
+  return out + geo_sortkey_write(gs, out);
+}
+
+/**
+ * @brief Return true if two geometries are points of one SRID and one set of
+ * flags without an M coordinate, which #geopoint_cmp, #geopoint_eq and
+ * #geopoint_hash read as #geo_sortkey_write orders them
+ */
+static bool
+geo_point_pair(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  return gserialized_get_type(gs1) == POINTTYPE &&
+    gserialized_get_type(gs2) == POINTTYPE &&
+    gs1->gflags == gs2->gflags && ! FLAGS_GET_M(gs1->gflags) &&
+    gserialized_get_srid(gs1) == gserialized_get_srid(gs2);
+}
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first geometry or
+ * geography is less than, equal to, or greater than the second one
+ * @details The values are ordered by value, field by field in the order
+ * #geo_sortkey_write writes them: the SRID, the Z, M and geodetic flags, the
+ * geometry type, so that a point precedes any other geometry, the counts of
+ * the parts, rings and vertices before what they govern, so that an empty
+ * geometry precedes a non-empty one of its type, and the coordinates as
+ * numbers. Two points of one SRID and one set of flags are ordered by their
+ * coordinates (#geopoint_cmp), which is the same order
+ * @param[in] gs1,gs2 Geometries or geographies
+ */
+int
+geo_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (geo_point_pair(gs1, gs2))
+    return geopoint_cmp(gs1, gs2);
+  size_t n1 = geo_sortkey_write(gs1, NULL);
+  size_t n2 = geo_sortkey_write(gs2, NULL);
+  uint8_t *k1 = palloc(n1), *k2 = palloc(n2);
+  geo_sortkey_write(gs1, k1);
+  geo_sortkey_write(gs2, k2);
+  int c = memcmp(k1, k2, Min(n1, n2));
+  pfree(k1); pfree(k2);
+  if (c)
+    return c < 0 ? -1 : 1;
+  return (n1 > n2) - (n1 < n2);
+}
+
+/**
+ * @brief Return true if two geometries or geographies are equal by value,
+ * which #geo_cmp answers 0 for
+ * @param[in] gs1,gs2 Geometries or geographies
+ */
+bool
+geo_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (geo_point_pair(gs1, gs2))
+    return geopoint_eq(gs1, gs2);
+  return geo_cmp(gs1, gs2) == 0;
+}
+
+/**
+ * @brief Return the 32-bit hash of a geometry or a geography, which two values
+ * #geo_eq holds equal share
+ * @details A point without an M coordinate hashes its coordinates
+ * (#geopoint_hash), and any other value the bytes of its sort key
+ * @param[in] gs Geometry or geography
+ */
+uint32
+geo_hash(const GSERIALIZED *gs)
+{
+  if (gserialized_get_type(gs) == POINTTYPE && ! FLAGS_GET_M(gs->gflags))
+    return geopoint_hash(gs);
+  size_t n = geo_sortkey_write(gs, NULL);
+  uint8_t *key = palloc(n);
+  geo_sortkey_write(gs, key);
+  uint32 result = hash_bytes(key, (int) n);
+  pfree(key);
+  return result;
+}
+
+/**
+ * @brief Return the 64-bit hash of a geometry or a geography under a seed,
+ * which two values #geo_eq holds equal share
+ * @details A point without an M coordinate hashes its coordinates
+ * (#geopoint_hash_extended), and any other value the bytes of its sort key
+ * @param[in] gs Geometry or geography
+ * @param[in] seed Seed
+ */
+uint64
+geo_hash_extended(const GSERIALIZED *gs, uint64 seed)
+{
+  if (gserialized_get_type(gs) == POINTTYPE && ! FLAGS_GET_M(gs->gflags))
+    return geopoint_hash_extended(gs, seed);
+  size_t n = geo_sortkey_write(gs, NULL);
+  uint8_t *key = palloc(n);
+  geo_sortkey_write(gs, key);
+  uint64 result = hash_bytes_extended(key, (int) n, seed);
+  pfree(key);
+  return result;
 }
 
 /**
@@ -20600,6 +22179,52 @@ relate_segments_intersect(const Edge *a, const Edge *b)
 }
 
 /**
+ * @brief Classify the point where a straight linear edge crosses a straight
+ * boundary edge with respect to the complete linear geometry
+ * @details The point is the one the two input segments determine
+ * (#relate_segments_intersect), in general no pair of doubles, so it is not
+ * located by a rounded construction of it. It lies on the linear geometry, on
+ * @p line, and is in its boundary where an odd number of the endpoints
+ * #relate_point_on_linear_boundary counts are that point. The two segments
+ * meet at that one point, so an endpoint is that point exactly where it lies
+ * on both input segments, a question on input vertices
+ * (#point_on_segment_exact)
+ * @param[in] line,boundary Edges whose input segments cross at one point
+ * @param[in] edges,nedges Edges of the linear geometry
+ * @return 0 for the interior, 1 for the boundary, as #relate_point_in_linear
+ */
+static int
+relate_crossing_in_linear(const Edge *line, const Edge *boundary,
+  Edge **edges, int nedges)
+{
+  Edge la, lb;
+  relate_input_segment(line->cut ? line->sx : line->x1,
+    line->cut ? line->sy : line->y1, line->cut ? line->ex : line->x2,
+    line->cut ? line->ey : line->y2, &la);
+  relate_input_segment(boundary->cut ? boundary->sx : boundary->x1,
+    boundary->cut ? boundary->sy : boundary->y1,
+    boundary->cut ? boundary->ex : boundary->x2,
+    boundary->cut ? boundary->ey : boundary->y2, &lb);
+  int count = 0;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype != EDGE_LINESEG && e->etype != EDGE_LINEARC)
+      continue;
+    if (! relate_edge_nonempty(e))
+      continue;
+    for (int k = 0; k < 2; k++)
+    {
+      double x = k == 0 ? e->x1 : e->x2, y = k == 0 ? e->y1 : e->y2;
+      if (point_on_segment_exact(x, y, la.x1, la.y1, la.x2, la.y2) &&
+          point_on_segment_exact(x, y, lb.x1, lb.y1, lb.x2, lb.y2))
+        count++;
+    }
+  }
+  return count & 1;
+}
+
+/**
  * @brief Process the intersection between one linear edge and one polygon
  * boundary edge
  * @details Updates the DE-9IM cells corresponding to the intersection between
@@ -20628,12 +22253,9 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
     }
 
     /* Point intersection */
-    double x = line->x1 + r.t0 * line->dx;
-    double y = line->y1 + r.t0 * line->dy;
-    int lloc = relate_point_in_linear(x, y, all_lines, nlines, false);
-    if (lloc == 0)
+    if (relate_crossing_in_linear(line, boundary, all_lines, nlines) == 0)
       de9im_add(&m->ib, 0);
-    else if (lloc == 1)
+    else
       m->bb = 0;
     relate_add_parameter(r.t0, params, nparams, maxparams);
     return;
@@ -20732,11 +22354,62 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
 }
 
 /**
+ * @brief Return true if a piece of a straight linear edge lies on the
+ * boundary of an area, for an area whose boundary edges are all straight
+ * @details A straight boundary edge holds a stretch of positive length of the
+ * linear edge exactly where the two lie on one line, a sign of cross products
+ * of input coordinates (#cross_product_sign), and the piece lies between its
+ * ends, read along the linear edge as #relate_boundary_piece_covered reads a
+ * piece of a boundary edge
+ * @param[in] line Straight linear edge
+ * @param[in] tm Parameter of the middle of the piece along @p line
+ * @param[in] ra Edges of the area
+ * @param[out] arcs True where the area has a circular edge, whose answer this
+ * function does not give
+ */
+static bool
+relate_line_piece_on_boundary(const Edge *line, double tm,
+  const RelateEdges *ra, bool *arcs)
+{
+  double lx1 = line->cut ? line->sx : line->x1;
+  double ly1 = line->cut ? line->sy : line->y1;
+  double lx2 = line->cut ? line->ex : line->x2;
+  double ly2 = line->cut ? line->ey : line->y2;
+  double dx = line->x2 - line->x1, dy = line->y2 - line->y1;
+  bool alongx = fabs(dx) >= fabs(dy);
+  *arcs = false;
+  for (int i = 0; i < ra->nedges; i++)
+  {
+    const Edge *b = ra->edges[i];
+    if (b->etype == EDGE_POLYARC)
+    {
+      *arcs = true;
+      continue;
+    }
+    if (b->etype != EDGE_POLYSEG || ! relate_edge_nonempty(b))
+      continue;
+    if (cross_product_sign(lx1, ly1, lx2, ly2, lx1, ly1, b->x1, b->y1) != 0 ||
+        cross_product_sign(lx1, ly1, lx2, ly2, lx1, ly1, b->x2, b->y2) != 0)
+      continue;
+    double t1 = alongx ? (b->x1 - line->x1) / dx : (b->y1 - line->y1) / dy;
+    double t2 = alongx ? (b->x2 - line->x1) / dx : (b->y2 - line->y1) / dy;
+    if (Min(t1, t2) <= tm && tm <= Max(t1, t2))
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Classify the open portion of a linear edge between two consecutive
  * parameters
  * @details Since the portion contains no intersection with the polygon
  * boundary, one representative point is sufficient to determine whether the
- * complete open portion belongs to the polygon interior or exterior.
+ * complete open portion belongs to the polygon interior or exterior. The
+ * point is constructed and read within the band of the boundary, so a
+ * straight portion read on a boundary of straight edges lies on it exactly
+ * where a boundary edge lies on its line and holds it
+ * (#relate_line_piece_on_boundary); otherwise it lies inside or outside, read
+ * by parity alone (#relate_point_in_area_parity)
  */
 static void
 relate_linear_area_interval(const Edge *line, double t0, double t1,
@@ -20748,6 +22421,31 @@ relate_linear_area_interval(const Edge *line, double t0, double t1,
   double x, y;
   relate_edge_point(line, tm, &x, &y);
   int loc = relate_point_in_area_index(x, y, ra, false);
+  if (loc == 1 && line->etype == EDGE_LINESEG && relate_edge_nonempty(line))
+  {
+    bool arcs;
+    if (! relate_line_piece_on_boundary(line, tm, ra, &arcs) && ! arcs)
+    {
+      /* A whole edge, cut nowhere, that meets no boundary edge, which the
+       * exact segment kernel decides on the input vertices
+       * (#linesegm_intersect), lies with both its ends strictly on one side
+       * of the boundary, the side its first vertex is located on exactly; a
+       * piece between two cuts is read at its constructed middle by parity */
+      bool apart = (t0 == 0.0 && t1 == 1.0 && ! line->cut);
+      for (int i = 0; apart && i < ra->nedges; i++)
+      {
+        const Edge *b = ra->edges[i];
+        if (b->etype != EDGE_POLYSEG)
+          continue;
+        if (linesegm_intersect(line->x1, line->y1, line->x2, line->y2, b->x1,
+              b->y1, b->x2, b->y2).type != INTERSECT_NONE)
+          apart = false;
+      }
+      int vloc = apart ?
+        relate_point_in_area_index(line->x1, line->y1, ra, true) : 1;
+      loc = (vloc != 1) ? vloc : relate_point_in_area_parity(x, y, ra);
+    }
+  }
   switch (loc)
   {
     case 0:
@@ -21238,6 +22936,53 @@ relate_linear_area_stop(const MeosDE9IM *m, int want, const RelateQuery *q,
 }
 
 /**
+ * @brief Return true if a piece of a straight boundary edge of an area lies
+ * in a linear geometry
+ * @details A straight linear edge holds a stretch of positive length of the
+ * boundary edge exactly where the two lie on one line, a sign of cross
+ * products of input coordinates (#cross_product_sign), and the piece lies
+ * between its ends: the boundary is split at the parameters of those ends
+ * (#relate_area_edge_parameter), so the parameter @p tm of the middle of a
+ * piece lies within that stretch or outside it, read on the same doubles. A
+ * circular linear edge is read at the middle of the piece within its band
+ * (#point_on_arc)
+ * @param[in] boundary Straight boundary edge
+ * @param[in] tm Parameter of the middle of the piece along @p boundary
+ * @param[in] lines,nlines Edges of the linear geometry
+ */
+static bool
+relate_boundary_piece_covered(const Edge *boundary, double tm, Edge **lines,
+  int nlines)
+{
+  double bx1 = boundary->cut ? boundary->sx : boundary->x1;
+  double by1 = boundary->cut ? boundary->sy : boundary->y1;
+  double bx2 = boundary->cut ? boundary->ex : boundary->x2;
+  double by2 = boundary->cut ? boundary->ey : boundary->y2;
+  for (int i = 0; i < nlines; i++)
+  {
+    const Edge *e = lines[i];
+    if (e->etype == EDGE_LINEARC)
+    {
+      double x, y;
+      relate_area_edge_point(boundary, tm, &x, &y);
+      if (point_on_arc(x, y, e))
+        return true;
+      continue;
+    }
+    if (e->etype != EDGE_LINESEG || ! relate_edge_nonempty(e))
+      continue;
+    if (cross_product_sign(bx1, by1, bx2, by2, bx1, by1, e->x1, e->y1) != 0 ||
+        cross_product_sign(bx1, by1, bx2, by2, bx1, by1, e->x2, e->y2) != 0)
+      continue;
+    double t1 = relate_area_edge_parameter(boundary, e->x1, e->y1);
+    double t2 = relate_area_edge_parameter(boundary, e->x2, e->y2);
+    if (Min(t1, t2) <= tm && tm <= Max(t1, t2))
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Compute the DE-9IM matrix for a linear geometry and an areal geometry
  * @details Only the cells named in @p want are answered, and the walk over the
  * edges of the linear geometry stops once each of them holds the largest
@@ -21336,15 +23081,20 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
           relate_area_add_parameter(relate_area_edge_parameter(boundary,
             ix[k], iy[k]), bparams, &nbparams, maxbparams);
         /* A linear edge running along the boundary edge ends somewhere on
-         * it, and the boundary is split there as well */
+         * it, and the boundary is split there as well; an end that is an
+         * input vertex lies on a straight boundary edge exactly where it
+         * lies on it (#point_on_segment_exact) */
         for (int endpoint = 0; endpoint < 2; endpoint++)
         {
           double x = endpoint == 0 ? line->x1 : line->x2;
           double y = endpoint == 0 ? line->y1 : line->y2;
           bool on = boundary->etype == EDGE_POLYARC ?
             point_on_arc(x, y, boundary) :
-            point_on_segment(x, y, boundary->x1, boundary->y1, boundary->x2,
-              boundary->y2);
+            (line->cut ?
+              point_on_segment(x, y, boundary->x1, boundary->y1,
+                boundary->x2, boundary->y2) :
+              point_on_segment_exact(x, y, boundary->x1, boundary->y1,
+                boundary->x2, boundary->y2));
           if (on)
             relate_area_add_parameter(relate_area_edge_parameter(boundary, x,
               y), bparams, &nbparams, maxbparams);
@@ -21355,9 +23105,18 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       {
         if (bparams[k + 1] - bparams[k] <= MEOS_GEOM_TOLERANCE)
           continue;
+        double tm = (bparams[k] + bparams[k + 1]) * 0.5;
+        if (boundary->etype == EDGE_POLYSEG)
+        {
+          if (! relate_boundary_piece_covered(boundary, tm, lines, nl))
+          {
+            m->eb = 1;
+            break;
+          }
+          continue;
+        }
         double x, y;
-        relate_area_edge_point(boundary, (bparams[k] + bparams[k + 1]) * 0.5,
-          &x, &y);
+        relate_area_edge_point(boundary, tm, &x, &y);
         if (relate_point_in_linear(x, y, lines, nl, false) == 2)
         {
           m->eb = 1;
@@ -21469,6 +23228,18 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
        * geometry, and its linear location is read only where the query reads
        * either of them */
       int aloc = relate_point_in_area_index(x, y, &ra, true);
+      /* An edge of positive length leaving an input vertex that lies
+       * strictly inside or outside the area stays on that side for a
+       * stretch of positive length, however near the boundary the vertex
+       * lies, so that side is read off the vertex, exactly, rather than off
+       * a piece the parameters above may be too close to delimit */
+      if (relate_edge_nonempty(line) && isfinite(x) && isfinite(y))
+      {
+        if (aloc == 0)
+          de9im_add(&m->ii, 1);
+        else if (aloc == 2)
+          de9im_add(&m->ie, 1);
+      }
       static const int icell[3] = {DE9IM_II, DE9IM_IB, DE9IM_IE};
       static const int bcell[3] = {DE9IM_BI, DE9IM_BB, DE9IM_BE};
       if (! (want & (icell[aloc] | bcell[aloc])))
@@ -23728,6 +25499,32 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
   Edge **edges = palloc(sizeof(Edge *) * Max(nall, 1));
   for (int i = 0; i < nall; i++)
     edges[i] = (Edge *) meos_array_get_intl(all, i);
+  /* The component each areal edge belongs to. The boundary of one component
+   * meets itself only at the vertices its rings share, which cut nothing, so
+   * an edge is cut only where the edge of ANOTHER component meets it: a
+   * tangent meeting of two adjacent edges of one ring, read a few units in
+   * the last place inside the edge, would otherwise cut it into a sliver.
+   * The collection's edges and its components' edges are read by the same
+   * extraction (#geom_extract_edges) member after member, so the areal edges
+   * of the collection are those of its components in order; where the counts
+   * do not show it, every edge is cut against every other */
+  int *ecomp = palloc(sizeof(int) * Max(nall, 1));
+  int nareal = 0, ncompedges = 0;
+  for (int i = 0; i < nall; i++)
+    if (relate_area_boundary_edge(edges[i]))
+      nareal++;
+  for (int c = 0; c < ncomp; c++)
+    ncompedges += comps[c].nedges;
+  for (int i = 0, c = 0, left = comps[0].nedges; i < nall; i++)
+  {
+    ecomp[i] = -1;
+    if (nareal != ncompedges || ! relate_area_boundary_edge(edges[i]))
+      continue;
+    while (left == 0 && c + 1 < ncomp)
+      left = comps[++c].nedges;
+    ecomp[i] = c;
+    left--;
+  }
   RelateEdges re;
   relate_edges_init(&re, edges, nall, index);
   MeosArray *candidates = re.index ? index_result_create() : NULL;
@@ -23759,7 +25556,8 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     {
       int j = candidates ? (int) INDEX_RESULT_ID_N(candidates, c) : c;
       const Edge *other = edges[j];
-      if (j == i || ! relate_area_boundary_edge(other))
+      if (j == i || ! relate_area_boundary_edge(other) ||
+          (ecomp[i] >= 0 && ecomp[i] == ecomp[j]))
         continue;
       double ix[2], iy[2];
       bool overlap;
@@ -23846,6 +25644,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     meos_array_destroy(candidates);
   relate_edges_clear(&re);
   pfree(edges);
+  pfree(ecomp);
 
   relate_comps_free(comps, ncomp);
   return result;

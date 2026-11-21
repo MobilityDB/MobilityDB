@@ -52,6 +52,38 @@ SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
  SRID=5676;Cbuffer(POINT(1 1),0.5)
 (1 row)
 
+-- setSRID reads an SRID as ST_SetSRID reads it, and the values and the
+-- bounding box of a temporal circular buffer state that one SRID
+WITH s(srid) AS (VALUES (3857), (1000000), (999999999))
+SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)),
+  SRID(setSRID(cbuffer 'Cbuffer(Point(1 1),0.5)', srid)),
+  SRID(setSRID(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', srid)),
+  SRID(setSRID(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02]', srid)::stbox)
+FROM s;
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 1000000 > SRID_MAXIMUM converted to 999001
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+NOTICE:  SRID value 999999999 > SRID_MAXIMUM converted to 999000
+   srid    | st_srid |  srid  |  srid  |  srid  
+-----------+---------+--------+--------+--------
+      3857 |    3857 |   3857 |   3857 |   3857
+   1000000 |  999001 | 999001 | 999001 | 999001
+ 999999999 |  999000 | 999000 | 999000 | 999000
+(3 rows)
+
+SELECT SRID(setSRID(cbuffer 'Cbuffer(Point(1 1),0.5)', -1));
+NOTICE:  SRID value -1 converted to the officially unknown SRID value 0
+ srid 
+------
+    0
+(1 row)
+
+SELECT setSRID(cbuffer 'Cbuffer(Point(1 1),0.5)', 1000001);
+ERROR:  The SRID is invalid
 SELECT asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
                           asbinary                          
 ------------------------------------------------------------
@@ -208,6 +240,18 @@ SELECT transformPipeline(cbuffer 'Cbuffer(SRID=32631;Point(595032 5634013),10)',
 ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
 SELECT transform(cbufferset '{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}', 4326);
 ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
+-- A circular buffer states its SRID inside itself, which must be the SRID of
+-- its set
+SELECT asEWKT(cbufferset 'SRID=25832;{"Cbuffer(SRID=25832;Point(651337 6058377),10)"}');
+                      asewkt                      
+--------------------------------------------------
+ SRID=25832;{"Cbuffer(POINT(651337 6058377),10)"}
+(1 row)
+
+SELECT asEWKT(cbufferset 'SRID=25832;{"Cbuffer(SRID=3857;Point(651337 6058377),10)"}');
+ERROR:  The SRID of the cbuffer (3857) does not match the SRID of the cbufferset (25832)
+LINE 1: SELECT asEWKT(cbufferset 'SRID=25832;{"Cbuffer(SRID=3857;Poi...
+                                 ^
 -------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------

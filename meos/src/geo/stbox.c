@@ -51,6 +51,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
+#include "temporal/tcellindex.h"
 #include "temporal/spanset.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
@@ -911,9 +912,66 @@ point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
 }
 
 /**
+ * @brief Extend a box of longitudes and latitudes by the great circles joining
+ * the consecutive points of a point array
+ */
+static void
+ptarray_extend_lonlat_box(const POINTARRAY *pa, STBox *box)
+{
+  for (uint32_t k = 1; k < pa->npoints; k++)
+  {
+    const POINT2D *p1 = getPoint2d_cp(pa, k - 1);
+    const POINT2D *p2 = getPoint2d_cp(pa, k);
+    dggs_lonlat_segment_extend_box(p1->x, p1->y, p2->x, p2->y, &box->xmin,
+      &box->ymin, &box->xmax, &box->ymax);
+  }
+  return;
+}
+
+/**
+ * @brief Extend the box of a geography by the great circles of its edges
+ * @details A geography joins its vertices by great circles, which rise above,
+ * or fall below, both of their ends, so the box of the vertices alone does not
+ * hold the geography, as #tgeoinstarr_extend_stbox_geodetic extends the box of
+ * a temporal geography point by the great circles it travels
+ */
+static void
+lwgeom_extend_lonlat_box(const LWGEOM *geom, STBox *box)
+{
+  if (lwgeom_is_empty(geom))
+    return;
+  switch (geom->type)
+  {
+    case LINETYPE:
+      ptarray_extend_lonlat_box(((const LWLINE *) geom)->points, box);
+      return;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        ptarray_extend_lonlat_box(poly->rings[i], box);
+      return;
+    }
+    default:
+    {
+      /* A point has no edge; a multi-geometry or a collection reads each of
+       * its parts */
+      const LWCOLLECTION *coll = lwgeom_as_lwcollection(geom);
+      if (! coll)
+        return;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        lwgeom_extend_lonlat_box(coll->geoms[i], box);
+      return;
+    }
+  }
+}
+
+/**
  * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument the spatiotemporal box of a
  * geometry/geography
+ * @details The box of a geography holds the great circles of its edges
+ * (#lwgeom_extend_lonlat_box)
  * @param[in] gs Geometry/geography
  * @param[out] result Spatiotemporal box
  */
@@ -955,11 +1013,13 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *result)
    * a geodetic result where the coordinates are expressed in the unit sphere
    */
   lwgeom_calculate_gbox_cartesian(geom, &gbox);
-  lwgeom_free(geom);
   result->xmin = gbox.xmin;
   result->xmax = gbox.xmax;
   result->ymin = gbox.ymin;
   result->ymax = gbox.ymax;
+  if (geodetic)
+    lwgeom_extend_lonlat_box(geom, result);
+  lwgeom_free(geom);
   if (hasz)
   {
     result->zmin = gbox.zmin;
@@ -1899,6 +1959,8 @@ stbox_srid(const STBox *box)
 /**
  * @ingroup meos_geo_box_srid
  * @brief Return a spatiotemporal box with the coordinates set to an SRID
+ * @details The invalid SRID is refused and any other SRID is clamped as
+ * #geo_set_srid clamps it
  * @param[in] box Spatiotemporal box
  * @param[in] srid SRID
  * @csqlfn #Stbox_set_srid()
@@ -1908,10 +1970,10 @@ stbox_set_srid(const STBox *box, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_has_X(T_STBOX, box->flags))
+  if (! ensure_has_X(T_STBOX, box->flags) || ! ensure_srid_valid(srid))
     return NULL;
   STBox *result = stbox_copy(box);
-  result->srid = srid;
+  result->srid = clamp_srid(srid);
   return result;
 }
 

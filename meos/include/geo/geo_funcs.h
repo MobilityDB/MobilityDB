@@ -91,18 +91,58 @@ typedef enum
 #define MEOS_GEOM_TOLERANCE 1e-12
 
 /**
+ * @brief The points that define an arc of a geometry, the doubles it holds
+ */
+typedef struct
+{
+  double s[2];       /**< Start */
+  double m[2];       /**< Middle, not read for a half circle */
+  double e[2];       /**< End */
+  bool half;         /**< The half of the circle on the diameter from the start
+                          to the end that runs counterclockwise between them */
+  double cx, cy, r;  /**< Its circle in doubles (#exact_arc_bound) */
+  double err;        /**< How far that circle may lie from the exact one, or
+                          negative where it is not read */
+} ExactArc;
+
+/**
  * @brief A point where a common tangent of two circles touches one of them,
  * which no double holds in general: what defines it, exactly
+ * @details With @p along nonzero, which two circles of one radius r alone
+ * carry, the point lies past that one by r along the line of the centres:
+ * Ck + r (along d + side rot(d)) / |d|, d = C2 - C1, a corner of the square
+ * cap of a buffer, where its offset meets the tangent across the end
+ *
+ * With @p arc given, it is instead the point where the offset of that input
+ * arc ends: the arc's points fix its circle, of centre C, and the point lies
+ * on the circle of radius r1 about its start (@p k 0) or its end (@p k 1), on
+ * the line through C, away from C for @p side 1 and toward it for -1: the end
+ * of the arc of radius R + side r1 about C. With @p k 2 it is C itself, the
+ * apex of the strip of an arc no larger than the distance. No double holds it
+ * in general.
+ * The arc is held out of line, as an edge holds its tangent points, so that
+ * a point where a tangent touches a circle keeps its size
  */
 typedef struct
 {
   double c1x, c1y, r1;           /**< The first circle */
   double c2x, c2y, r2;           /**< The second circle */
-  int side;                      /**< 1 for the tangent on the left of the
+  int8_t side;                   /**< 1 for the tangent on the left of the
                                       first centre to the second, -1 for the
                                       one on its right */
-  int k;                         /**< 0 for the point on the first circle, 1
-                                      for the one on the second */
+  int8_t k;                      /**< 0 for the point on the first circle, 1
+                                      for the one on the second; for the end
+                                      of the offset of an arc, 0 its start, 1
+                                      its end and 2 the centre of the arc */
+  int8_t along;                  /**< 0 for the point on the circle, 1 or -1
+                                      for the one past it by the radius along
+                                      C2 - C1 or C1 - C2; for the end of the
+                                      offset of an arc, along the tangent of
+                                      its circle there, counterclockwise or
+                                      clockwise */
+  const ExactArc *arc;           /**< The input arc whose offset ends at the
+                                      point, NULL for a point where a tangent
+                                      touches a circle */
 } TangentPoint;
 
 /**
@@ -134,6 +174,25 @@ typedef struct
                                       circle furthest along -x, rounded once,
                                       and it holds no (sx,sy), (mx,my) or
                                       (ex,ey) (#edges_add_circle) */
+  bool offset;                   /**< The arc is the offset by @p radius of
+                                      an input arc, between its ends @p from
+                                      and @p to (#TangentPoint, member
+                                      radial), which carry the three input
+                                      points fixing the circle of that arc:
+                                      the arc about its centre of radius
+                                      R + side radius, side that of its ends,
+                                      in the sense @p ccw. It is a centred
+                                      arc whose doubles do not hold its
+                                      circle: @p centred is set, (cx,cy)
+                                      hold its centre rounded once and
+                                      @p radius the distance, the input arc
+                                      is (sx,sy), (mx,my), (ex,ey) and its
+                                      side @p side, so every exact question
+                                      reads its circle in a tower from them
+                                      (#edges_add_offset_arc) */
+  int side;                      /**< For an offset, 1 where its radius is
+                                      that of the input arc plus the
+                                      distance, -1 where minus it */
   const TangentPoint *from, *to; /**< For a segment whose ends are points
                                       where tangents touch circles, which no
                                       double holds, those points, (x1,y1) and
@@ -295,20 +354,6 @@ extern void linesegm_crossing_exact(const double *a, const double *b,
   const double *c, const double *d, double *x, double *y);
 extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, int ndims, double r);
-/**
- * @brief The points that define an arc of a geometry, the doubles it holds
- */
-typedef struct
-{
-  double s[2];       /**< Start */
-  double m[2];       /**< Middle, not read for a half circle */
-  double e[2];       /**< End */
-  bool half;         /**< The half of the circle on the diameter from the start
-                          to the end that runs counterclockwise between them */
-  double cx, cy, r;  /**< Its circle in doubles (#exact_arc_bound) */
-  double err;        /**< How far that circle may lie from the exact one, or
-                          negative where it is not read */
-} ExactArc;
 
 extern void exact_arc_bound(ExactArc *arc, double box[4]);
 extern void exact_arc_from_edge(const Edge *e, ExactArc *arc);
@@ -402,6 +447,14 @@ extern int geog_motion_dwithin_crossings_exact(const POINT2D *a0,
 extern int geog_motion_dwithin_at_wide(const POINT2D *a0, const POINT2D *a1,
   const POINT2D *b0, const POINT2D *b1, double dist, double radius, int64 D,
   int64 n);
+/* Two convex bodies in rigid motion, decided on their poses (geo_trig.c) */
+extern int rigid_convex_apart(const double *axy, int na,
+  const double *apose0, const double *apose1, const double *bxy, int nb,
+  const double *bpose0, const double *bpose1, double t0, double t1,
+  double *tmeet);
+extern double rigid_convex_distance(const double *axy, int na,
+  const double *apose0, const double *apose1, const double *bxy, int nb,
+  const double *bpose0, const double *bpose1, double t);
 extern int point_motion_contains_disc_sign(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, int *asign);
@@ -473,6 +526,30 @@ extern void edges_add_circle(MeosArray *edges, double cx, double cy,
   double radius, bool ccw);
 extern int ring_area_sign(const POINTARRAY *pa);
 extern bool ring_encloses_no_area(const POINTARRAY *pa);
+
+/**
+ * @brief Running sum of twice the area of the rings of a geometry, a double
+ * and its compensation, with a bound on its error (#area_sum_ring)
+ */
+typedef struct
+{
+  double sum;    /**< Rounded running sum */
+  double err;    /**< Compensation of the running sum */
+  double bound;  /**< Bound on the error of `sum + err` */
+  bool ok;       /**< False once a ring is not read in doubles */
+  int unitx;     /**< Exponent of the integer unit of the X axis of every
+                   ring, `INT_MIN` where each ring reads its own */
+  int unity;     /**< Exponent of the integer unit of the Y axis of every
+                   ring, `INT_MIN` where each ring reads its own */
+  int128 isum;   /**< Exact sum on those units of the rings summed in one
+                   128-bit integer (#area_sum_ring) */
+} AreaSum;
+
+extern void area_sum_init(AreaSum *acc, const GSERIALIZED *gs);
+extern void area_sum_ring(AreaSum *acc, const double *c, uint32_t npoints,
+  uint32_t ndims, bool hole);
+extern bool area_sum_nearest(const AreaSum *acc, double *result);
+extern bool geom_area_exact(const LWGEOM *geom, double *result);
 extern int mec_radius_cmp(POINT2D *pts, int count, double radius);
 
 /* How a meeting of two edges arises, the data that place it exactly */
@@ -531,12 +608,21 @@ extern void edges_add_tangent_segment(MeosArray *edges,
   const TangentPoint *from, const TangentPoint *to);
 extern void edges_add_tangent_arc(MeosArray *edges, double cx, double cy,
   double radius, bool ccw, const TangentPoint *from, const TangentPoint *to);
+extern void edges_add_offset_arc(MeosArray *edges, bool ccw,
+  const TangentPoint *from, const TangentPoint *to);
 extern int towerseg_meet(const Edge *p, const Edge *q, TowerMeet out[2]);
 extern int meets_order_tower(const Edge *e, bool ccw, const MeetPoint *a,
   const MeetPoint *b);
 extern int towerseg_side(const Edge *s, double px, double py);
 extern int meet_point_y_side(const MeetPoint *m, double py);
 extern int meet_point_x_side(const MeetPoint *m, double ox, double d);
+extern int meet_point_circle_side(const MeetPoint *m, const Edge *c,
+  bool alongx, int sr);
+extern int tower_circles_meet(const Edge *p, const Edge *q);
+extern int tower_circles_cmp(const Edge *p, const Edge *q, bool radius);
+extern int walk_turn_sign(const double *const in[3], int inarc,
+  const double *const out[3], int outarc, int *dot);
+extern int tower_circles_right_cmp(const Edge *p, const Edge *q);
 extern int meets_x_cmp(const MeetPoint *a, const MeetPoint *b);
 extern bool tangent_point_box(const TangentPoint *tp, double x, double y,
   double box[4]);
@@ -748,10 +834,15 @@ extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **points, int count,
 extern bool ensure_valid_geo_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern size_t geopoint_sortkey_size(const GSERIALIZED *gs);
-extern uint8_t *geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out);
+extern size_t geo_sortkey_size(const GSERIALIZED *gs);
+extern uint8_t *geo_sortkey_put(const GSERIALIZED *gs, uint8_t *out);
+extern int geo_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geo_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern uint32 geo_hash(const GSERIALIZED *gs);
+extern uint64 geo_hash_extended(const GSERIALIZED *gs, uint64 seed);
 extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern uint32 geopoint_hash(const GSERIALIZED *gs);
+extern uint64 geopoint_hash_extended(const GSERIALIZED *gs, uint64 seed);
 extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool same_spatial_dimensionality(int16 flags1, int16 flags2);
 extern bool mline_type(const GSERIALIZED *gs);
@@ -1685,6 +1776,30 @@ extern double vector_lon_nearest(const int64 *v);
 extern double vector_lat_nearest(const int64 *v);
 extern double rational_nearest(int64 num, int64 den);
 extern double mercator_lat_nearest(double r);
+
+/**
+ * @brief A point of a face of an icosahedral gnomonic grid, the vertex of an
+ * H3 cell of decision D8 of the cell walks (geo_trig.c)
+ * @details The constants are the decimal literals of the grid read exactly;
+ * a point of the lattice is (2x, 2y / sqrt 3) of its planar point (x, y)
+ */
+typedef struct
+{
+  const char *center[3];  /**< Center of the face, a vector */
+  const char *axis;       /**< Azimuth of its first axis, in radians */
+  const char *rotation;   /**< Turn of the angle of the point, or NULL */
+  const char *gnomonic;   /**< Gnomonic length of the unit at resolution 0 */
+  int res;                /**< Resolution, each one a factor 1 / sqrt 7 */
+  bool substrate;         /**< The grid is the substrate, a third of it */
+  int64 p0[2], p1[2];     /**< Points of the lattice */
+  int64 e0[2], e1[2];     /**< Ends of a face edge, on the lattice */
+  bool crossing;          /**< The point is the crossing of p0 p1 with e0 e1 */
+} GnomonicFacePoint;
+
+extern void gnomonic_face_point_nearest(const GnomonicFacePoint *p,
+  double *lon, double *lat);
+extern void ddb_gnomonic_face_point_nearest(const GnomonicFacePoint *p,
+  double *lon, double *lat, bool *decided);
 extern int geodetic_arc_fraction_cmp(const double *p0, const double *p1,
   const double *a, const double *b, int64 num, int64 den);
 

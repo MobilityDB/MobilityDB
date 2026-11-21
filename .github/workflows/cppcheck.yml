@@ -13,6 +13,7 @@ on:
     paths:
       - '.github/workflows/cppcheck.yml'
       - '.github/actions/apt-resilient/**'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
       - 'CMakeLists.txt'
       - 'meos/src/**'
@@ -23,6 +24,7 @@ on:
     paths:
       - '.github/workflows/cppcheck.yml'
       - '.github/actions/apt-resilient/**'
+      - '.github/scripts/install-h3.sh'
       - 'cmake/**'
       - 'CMakeLists.txt'
       - 'meos/src/**'
@@ -51,7 +53,7 @@ jobs:
       - uses: ./.github/actions/apt-resilient
 
       - name: Add the PostgreSQL APT repository
-        # Provides libh3-dev and the postgresql-server-dev package that the
+        # Provides the postgresql-server-dev package that the
         # vendored pgPointCloud build below needs for pg_config.
         run: |
           sudo apt-get install -y curl ca-certificates gnupg
@@ -69,25 +71,18 @@ jobs:
             libproj-dev \
             libgdal-dev \
             libjson-c-dev \
-            libh3-dev \
             postgresql-server-dev-17 \
             autoconf automake libtool libxml2-dev zlib1g-dev
           cppcheck --version
 
-      - name: Locate libh3 on disk and pin its paths
-        # The pgdg libh3-dev package layout differs between releases; find the
-        # header and library at runtime and pin -DH3_INCLUDE_DIR / -DH3_LIBRARY.
+      - name: Install the H3 release MobilityDB supports
+        # Built from its tag by .github/scripts/install-h3.sh, the release
+        # H3_REQUIRED_VERSION of CMakeLists.txt names, since a package carries
+        # whatever release it last took and releases state different vertices
         run: |
-          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
-          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
-          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
-            find /usr -name 'h3api.h' 2>/dev/null
-            find /usr -name 'libh3*' 2>/dev/null
-            echo "::error::could not locate libh3 headers/library"
-            exit 1
-          fi
-          echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> $GITHUB_ENV
-          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
+          sudo .github/scripts/install-h3.sh /usr/local
+          echo "H3_INCLUDE_DIR=/usr/local/include/h3" >> $GITHUB_ENV
+          echo "H3_LIBRARY=/usr/local/lib/libh3.so" >> $GITHUB_ENV
 
       - name: Configure (generate compile_commands.json)
         run: |
@@ -130,6 +125,8 @@ jobs:
             --suppress='*:pointcloud-pg/*' \
             --suppress='*:*/core-math/*' \
             --suppress='*:core-math/*' \
+            --suppress='*:*/h3lib/*' \
+            --suppress='*:h3lib/*' \
             --suppress='*:*lwin_wkt_lex*' \
             --suppress='*:*lwin_wkt_parse*' \
             --suppress='*:*jsonpath_gram*' \
@@ -263,7 +260,7 @@ jobs:
           # slips the suppress glob. Cppcheck sometimes reports paths
           # by basename (especially flex/bison-generated files), so we
           # also match a list of vendored basenames.
-          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/")
+          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/", "h3lib/")
           VENDORED_BASENAMES = (
               # liblwgeom flex/bison-generated parsers
               "lwin_wkt_lex.c", "lwin_wkt_lex.l",
@@ -329,7 +326,7 @@ jobs:
           # The classes the job enables, and "error", which cppcheck always
           # reports; "information" describes the run, not the code.
           SEVERITIES = {"error", "warning", "style", "performance", "portability"}
-          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/")
+          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/", "core-math/", "h3lib/")
           VENDORED_BASENAMES = (
               "lwin_wkt_lex.c", "lwin_wkt_lex.l",
               "lwin_wkt_parse.c", "lwin_wkt_parse.y",

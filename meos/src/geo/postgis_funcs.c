@@ -521,6 +521,7 @@ geo_copy(const GSERIALIZED *gs)
  * value, which #geo_copy duplicates
  * @param[in] gs Geometry
  * @errval INT_MAX
+ * @csqlfn #Geo_mem_size()
  */
 int
 geo_mem_size(const GSERIALIZED *gs)
@@ -612,6 +613,7 @@ geogpoint_make3dz(int32_t srid, double x, double y, double z)
  * @ingroup meos_geo_base_srid
  * @brief Get the SRID of a geometry/geography
  * @param[in] gs Geometry
+ * @csqlfn #Geo_srid()
  */
 int32_t
 geo_srid(const GSERIALIZED *gs)
@@ -624,14 +626,20 @@ geo_srid(const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_base_srid
  * @brief Set the SRID of a geometry/geography
+ * @details The invalid SRID is refused, as #cbuffer_set_srid refuses it; any
+ * other SRID is clamped into the range of the reference systems as PostGIS
+ * clamps it, a negative SRID reading as the unknown SRID 0
  * @param[in] gs Geometry
  * @param[in] srid SRID
+ * @csqlfn #Geo_set_srid()
  */
 GSERIALIZED *
 geo_set_srid(const GSERIALIZED *gs, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_srid_valid(srid))
+    return NULL;
   GSERIALIZED *result = geo_copy(gs);
   gserialized_set_srid(result, srid);
   return result;
@@ -639,8 +647,9 @@ geo_set_srid(const GSERIALIZED *gs, int32_t srid)
 
 /**
  * @ingroup meos_geo_base_accessor
- * @brief Get the SRID of a geometry/geography
+ * @brief Return true if a geometry/geography is empty
  * @param[in] gs Geometry
+ * @csqlfn #Geo_is_empty()
  */
 bool
 geo_is_empty(const GSERIALIZED *gs)
@@ -971,40 +980,6 @@ typedef enum
 } WalkStatus;
 
 /**
- * @brief Return the signed area of a ring of serialized coordinates
- * @details Mirrors #ptarray_signed_area term by term, in the same order, on
- * the coordinates read in place rather than through a point array
- * @param[in] c Coordinates of the ring
- * @param[in] npoints Number of points of the ring
- * @param[in] ndims Number of coordinates of a point
- */
-static pg_attribute_always_inline double
-ring_signed_area(const double *c, uint32_t npoints, uint32_t ndims)
-{
-  if (npoints < 3)
-    return 0.0;
-  /* A term reads three consecutive points P1, P2, P3 as
-   * (P2.x - x0) * (P1.y - P3.y). The loop adds two terms per step, in their
-   * order, carrying over the coordinates of P1 and P2 the next step reads */
-  double sum = 0.0;
-  double x0 = c[0];
-  double y_p1 = c[1], x_p2 = c[ndims], y_p2 = c[ndims + 1];
-  const double *end = c + (size_t) npoints * ndims;
-  const double *p3 = c + 2 * ndims;
-  for (; p3 + ndims < end; p3 += 2 * ndims)
-  {
-    sum += (x_p2 - x0) * (y_p1 - p3[1]);
-    sum += (p3[0] - x0) * (y_p2 - p3[ndims + 1]);
-    y_p1 = p3[1];
-    x_p2 = p3[ndims];
-    y_p2 = p3[ndims + 1];
-  }
-  if (p3 < end)
-    sum += (x_p2 - x0) * (y_p1 - p3[1]);
-  return sum / 2.0;
-}
-
-/**
  * @brief Return the length of a segment whose largest difference of
  * coordinates lies outside 2^-500 to 2^500
  * @details The differences are scaled by the power of two that brings the
@@ -1098,17 +1073,20 @@ line_length_3d(const double *c, uint32_t npoints, uint32_t ndims)
 /**
  * @brief Read the measure of the polygon serialized at a position, as
  * #lwpoly_area and #lwpoly_perimeter_2d measure it, without deserializing it
- * @details Each ring is read on the serialized coordinates by
- * #ring_signed_area and #ring_length_2d, the terms of the PostGIS functions in
- * their order. A polygon has no length.
+ * @details Each ring is read on the serialized coordinates, its length by
+ * #ring_length_2d, the terms of the PostGIS function in their order, and its
+ * area added to a running sum (#area_sum_ring), the exterior adding and the
+ * holes taking away. A polygon has no length.
  * @param[in] p Position of the polygon in the serialized form
  * @param[in] ndims Number of coordinates of a point
  * @param[in] measure Measure
+ * @param[in,out] acc Running sum of the area, for #WALK_AREA
  * @param[out] size Number of bytes the polygon takes
+ * @return The perimeter, or 0 for an area, which @p acc holds
  */
 static pg_attribute_always_inline double
 poly_walk_measure(const uint8_t *p, uint32_t ndims, WalkMeasure measure,
-  size_t *size)
+  AreaSum *acc, size_t *size)
 {
   uint32_t num;
   memcpy(&num, p + 4, 4);
@@ -1126,16 +1104,8 @@ poly_walk_measure(const uint8_t *p, uint32_t ndims, WalkMeasure measure,
     memcpy(&npoints, counts + 4 * i, 4);
     if (measure == WALK_PERIMETER)
       value += ring_length_2d(pts, npoints, ndims);
-    else if (measure == WALK_AREA && npoints >= 3)
-    {
-      /* The area as #lwpoly_area computes it, the outer ring positive and
-       * the inner ones negative */
-      double ringarea = fabs(ring_signed_area(pts, npoints, ndims));
-      if (i == 0)
-        value += ringarea;
-      else
-        value -= ringarea;
-    }
+    else if (measure == WALK_AREA)
+      area_sum_ring(acc, pts, npoints, ndims, i > 0);
     pts += npoints * ndims;
   }
   *size = (size_t) ((const uint8_t *) pts - p);
@@ -1153,6 +1123,8 @@ poly_walk_measure(const uint8_t *p, uint32_t ndims, WalkMeasure measure,
  * @param[in] p Position of the geometry in the serialized form
  * @param[in] flags Flags of the point arrays
  * @param[in] measure Measure
+ * @param[in,out] acc Running sum of the area, for #WALK_AREA, which holds
+ * the area in place of @p result
  * @param[out] result Measure of the geometry
  * @param[out] size Number of bytes the geometry takes
  * @return #WALK_CURVE for a geometry holding a curve, which is measured on its
@@ -1161,14 +1133,12 @@ poly_walk_measure(const uint8_t *p, uint32_t ndims, WalkMeasure measure,
  */
 static WalkStatus
 geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
-  double *result, size_t *size)
+  AreaSum *acc, double *result, size_t *size)
 {
   uint32_t type, num;
   memcpy(&type, p, 4);
   memcpy(&num, p + 4, 4);
   size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
-  POINTARRAY pa;
-  pa.flags = flags;
   *result = 0.0;
   switch (type)
   {
@@ -1191,33 +1161,20 @@ geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
       return WALK_DONE;
     case TRIANGLETYPE:
     {
-      pa.npoints = pa.maxpoints = num;
-      pa.serialized_pointlist = (uint8_t *) (p + 8);
+      /* The serialized form stores the coordinates as doubles aligned on 8
+       * bytes, as #poly_walk_measure reads them */
+      const void *coords = p + 8;
       if (measure == WALK_PERIMETER)
-      {
-        const void *coords = p + 8;
         *result = ring_length_2d(coords, num, (uint32_t) FLAGS_NDIMS(flags));
-      }
-      else if (measure == WALK_AREA && num)
-      {
-        /* The area as #lwtriangle_area computes it */
-        double area = 0.0;
-        POINT2D p1, p2;
-        for (uint32_t i = 0; i < num - 1; i++)
-        {
-          getPoint2d_p(&pa, i, &p1);
-          getPoint2d_p(&pa, i + 1, &p2);
-          area += (p1.x * p2.y) - (p1.y * p2.x);
-        }
-        area /= 2.0;
-        *result = fabs(area);
-      }
+      else if (measure == WALK_AREA)
+        /* The area as #lwtriangle_area computes it, that of its ring */
+        area_sum_ring(acc, coords, num, (uint32_t) FLAGS_NDIMS(flags), false);
       *size = 8 + num * ptsize;
       return WALK_DONE;
     }
     case POLYGONTYPE:
       *result = poly_walk_measure(p, (uint32_t) FLAGS_NDIMS(flags), measure,
-        size);
+        acc, size);
       return WALK_DONE;
     case MULTIPOINTTYPE:
     case MULTILINETYPE:
@@ -1232,8 +1189,8 @@ geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
       {
         double sub;
         size_t subsize;
-        WalkStatus status = geo_walk_measure(p + off, flags, measure, &sub,
-          &subsize);
+        WalkStatus status = geo_walk_measure(p + off, flags, measure, acc,
+          &sub, &subsize);
         if (status != WALK_DONE)
           return status;
         value += sub;
@@ -1305,9 +1262,9 @@ lwgeom_length_lines(const LWGEOM *geom)
 }
 
 /**
- * @brief Return the measure of a geometry other than a polygon, read on its
- * serialized form by #geo_walk_measure, or on its deserialized form when it
- * holds a curve, as #meos_area, #lwgeom_length_lines and
+ * @brief Return the length or the perimeter of a geometry other than a
+ * polygon, read on its serialized form by #geo_walk_measure, or on its
+ * deserialized form when it holds a curve, as #lwgeom_length_lines and
  * #lwgeom_perimeter_2d measure it
  * @errval DBL_MAX
  */
@@ -1317,25 +1274,37 @@ geom_walk_measure_any(const GSERIALIZED *gs, const uint8_t *p, lwflags_t flags,
 {
   double result;
   size_t size;
-  WalkStatus status = geo_walk_measure(p, flags, measure, &result, &size);
+  WalkStatus status = geo_walk_measure(p, flags, measure, NULL, &result,
+    &size);
   if (status == WALK_ERROR)
     return DBL_MAX;
   if (status == WALK_DONE)
     return result;
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  if (measure == WALK_AREA)
-    result = meos_area(lwgeom);
-  else if (measure == WALK_LENGTH)
-    result = lwgeom_length_lines(lwgeom);
-  else
-    result = lwgeom_perimeter_2d(lwgeom);
+  result = (measure == WALK_LENGTH) ? lwgeom_length_lines(lwgeom) :
+    lwgeom_perimeter_2d(lwgeom);
   lwgeom_free(lwgeom);
   return result;
 }
 
 /**
- * @brief Return the measure of a geometry read on its serialized form, a
- * polygon by #poly_walk_measure and any other geometry by
+ * @brief Return the flags of the point arrays of a serialized geometry: its
+ * dimensions, no bounding box, and read only, since they reference the
+ * serialized form
+ */
+static inline lwflags_t
+gs_walk_flags(const GSERIALIZED *gs)
+{
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, G2FLAGS_GET_Z(gs->gflags));
+  FLAGS_SET_M(flags, G2FLAGS_GET_M(gs->gflags));
+  FLAGS_SET_READONLY(flags, 1);
+  return flags;
+}
+
+/**
+ * @brief Return the length or the perimeter of a geometry read on its
+ * serialized form, a polygon by #poly_walk_measure and any other geometry by
  * #geom_walk_measure_any
  * @errval DBL_MAX
  */
@@ -1351,58 +1320,109 @@ geom_walk_measure(const GSERIALIZED *gs, WalkMeasure measure)
   {
     size_t size;
     return poly_walk_measure(p, (uint32_t) G2FLAGS_NDIMS(gs->gflags), measure,
-      &size);
+      NULL, &size);
   }
-  /* The flags of the point arrays: the dimensions of the serialized form, no
-   * bounding box, and read only, since they reference the serialized form */
-  lwflags_t flags = 0;
-  FLAGS_SET_Z(flags, G2FLAGS_GET_Z(gs->gflags));
-  FLAGS_SET_M(flags, G2FLAGS_GET_M(gs->gflags));
-  FLAGS_SET_READONLY(flags, 1);
-  return geom_walk_measure_any(gs, p, flags, measure);
+  return geom_walk_measure_any(gs, p, gs_walk_flags(gs), measure);
 }
 
 /**
- * @brief Return the area, the length or the perimeter of a geometry
- * @details A length or a perimeter is walked as it is, each segment measured
- * scaled where its squares would overflow or underflow (#ring_length_2d), and
- * raises an error where it exceeds the largest double (#ensure_finite_result).
- * An area multiplies differences of coordinates, which overflows beyond 2^511
- * and underflows below 2^-511, so a geometry whose largest coordinate lies
- * outside 2^-500 to 2^500 is read scaled by the power of two that brings it
- * to 2^500, exactly or with an error (#geo_scale_pow2), as the analytic
- * distances read far operands (#nad_tpoint_geo_analytic): the products of its
- * differences stay below the largest double, and its smallest differences
- * stay as far above the denormals as they can. A power is at most 2^1022, the
- * largest whose inverse is a normal double, which brings a denormal largest
- * coordinate above 2^-52. The area scales back by the square of that power
- * and raises an error where it exceeds the largest double. Every other
- * geometry is measured as it is
+ * @brief Return the area of a geometry holding a curve, as #meos_area
+ * measures it
+ * @details An arc encloses a circular segment, whose area is not a rational
+ * of the coordinates, so the area is measured in doubles. Its products of
+ * differences of coordinates overflow beyond 2^511 and underflow below
+ * 2^-511, so a geometry whose largest coordinate lies outside 2^-500 to 2^500
+ * is read scaled by the power of two that brings it to 2^500, exactly or with
+ * an error (#geo_scale_pow2), as the analytic distances read far operands
+ * (#nad_tpoint_geo_analytic). A power is at most 2^1022, the largest whose
+ * inverse is a normal double, which brings a denormal largest coordinate
+ * above 2^-52. The area scales back by the square of that power and raises
+ * an error where it exceeds the largest double
+ * @errval DBL_MAX
+ */
+static double
+geom_area_curve(const GSERIALIZED *gs)
+{
+  double mag = geo_magnitude(gs);
+  int shift = 0;
+  GSERIALIZED *scaled = NULL;
+  if (mag != 0.0 && (mag < 0x1p-500 || mag > 0x1p500))
+  {
+    shift = Min(500 - ilogb(mag), DBL_MAX_EXP - 2);
+    scaled = geo_scale_pow2(gs, ldexp(1.0, shift));
+    if (! scaled)
+      return DBL_MAX;
+  }
+  LWGEOM *lwgeom = lwgeom_from_gserialized(scaled ? scaled : gs);
+  double result = ldexp(meos_area(lwgeom), -2 * shift);
+  lwgeom_free(lwgeom);
+  if (scaled)
+    pfree(scaled);
+  return ensure_finite_result(result) ? result : DBL_MAX;
+}
+
+/**
+ * @brief Return the area of a geometry, the double nearest its exact value
+ * for a geometry of straight edges
+ * @details The area of a geometry of straight edges is a rational of its
+ * coordinates, half the sum of the shoelace sums of its rings, so its answer
+ * is the double nearest it, a tie going to the even one, as a distance
+ * answers the double nearest it. The rings are read on the serialized form
+ * into a compensated sum with a bound on its error (#area_sum_ring), which
+ * decides the nearest double wherever the bound stands clear of the
+ * midpoints to its neighbours (#area_sum_nearest); elsewhere, as where a
+ * product leaves the doubles or the area is 0, the area is summed exactly on
+ * the deserialized form (#geom_area_exact). An area beyond the largest double
+ * raises an error (#ensure_finite_result). A geometry holding a curve is
+ * measured by #geom_area_curve
+ * @errval DBL_MAX
+ */
+static double
+geom_area_walk(const GSERIALIZED *gs)
+{
+  /* The geometry starts at the type word preceding the number of points */
+  const uint8_t *p = gs_geometry_ptr(gs);
+  uint32_t type;
+  memcpy(&type, p, 4);
+  AreaSum acc;
+  area_sum_init(&acc, gs);
+  double result;
+  size_t size;
+  /* A polygon, the geometry most often measured, is read without the walk */
+  if (type == POLYGONTYPE)
+    poly_walk_measure(p, (uint32_t) G2FLAGS_NDIMS(gs->gflags), WALK_AREA,
+      &acc, &size);
+  else
+  {
+    WalkStatus status = geo_walk_measure(p, gs_walk_flags(gs), WALK_AREA,
+      &acc, &result, &size);
+    if (status == WALK_ERROR)
+      return DBL_MAX;
+    if (status == WALK_CURVE)
+      return geom_area_curve(gs);
+  }
+  if (area_sum_nearest(&acc, &result))
+    return result;
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  bool ok = geom_area_exact(lwgeom, &result);
+  lwgeom_free(lwgeom);
+  return (ok && ensure_finite_result(result)) ? result : DBL_MAX;
+}
+
+/**
+ * @brief Return the length or the perimeter of a geometry
+ * @details It is walked as it is, each segment measured scaled where its
+ * squares would overflow or underflow (#ring_length_2d), and raises an error
+ * where it exceeds the largest double (#ensure_finite_result)
  * @errval DBL_MAX
  */
 static double
 geom_measure(const GSERIALIZED *gs, WalkMeasure measure)
 {
-  if (measure != WALK_AREA)
-  {
-    double length = geom_walk_measure(gs, measure);
-    if (length == DBL_MAX)
-      return DBL_MAX;
-    return ensure_finite_result(length) ? length : DBL_MAX;
-  }
-  double mag = geo_magnitude(gs);
-  if (mag == 0.0 || (mag >= 0x1p-500 && mag <= 0x1p500))
-    return geom_walk_measure(gs, measure);
-  int shift = Min(500 - ilogb(mag), DBL_MAX_EXP - 2);
-  GSERIALIZED *scaled = geo_scale_pow2(gs, ldexp(1.0, shift));
-  if (! scaled)
+  double length = geom_walk_measure(gs, measure);
+  if (length == DBL_MAX)
     return DBL_MAX;
-  double r = geom_walk_measure(scaled, measure);
-  pfree(scaled);
-  if (r == DBL_MAX)
-    return DBL_MAX;
-  double result = ldexp(r, -2 * shift);
-  return ensure_finite_result(result) ? result : DBL_MAX;
+  return ensure_finite_result(length) ? length : DBL_MAX;
 }
 
 /**
@@ -1414,7 +1434,9 @@ geom_measure(const GSERIALIZED *gs, WalkMeasure measure)
  *   - area(polygon) = the area it encloses, its holes taken out
  *   - area(curve polygon) = the same, read on its circular arcs (#meos_area)
  *
- * Uses Euclidean 2D computation even if input is 3D.
+ * Uses Euclidean 2D computation even if input is 3D. The area of a geometry
+ * of straight edges is the double nearest its exact value at every magnitude
+ * of its coordinates, a tie going to the even one (#geom_area_walk).
  * @param[in] gs Geometry
  * @errval DBL_MAX
  * @note An empty geometry encloses nothing, so its area is 0. The question has
@@ -1429,7 +1451,7 @@ geom_area(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  return geom_measure(gs, WALK_AREA);
+  return geom_area_walk(gs);
 }
 
 /**
@@ -5095,6 +5117,7 @@ geo_segmentize(const GSERIALIZED *gs, double max_seg_length)
  * @param[in] gs1,gs2 Geometries
  * @param[out] result Result
  * @return Return false on exception (same point)
+ * @csqlfn #Geom_azimuth()
  */
 bool
 geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
@@ -5337,6 +5360,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
  * @brief Return a MultiPoint containing all the coordinates of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_points()
  */
 GSERIALIZED *
 geo_points(const GSERIALIZED *gs)
@@ -6161,25 +6185,33 @@ geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2, size_t *size_out)
  * @param[in] p Pattern
  * @details The pattern is matched against the native DE-9IM intersection
  * matrix, so a circular arc is met on its own circle rather than on the chords
- * a linearization would put in its place, and an empty operand meets nothing
+ * a linearization would put in its place, and an empty operand meets nothing.
+ * The pattern is nine symbols among `T`, `F`, `*`, `0`, `1` and `2`, read in
+ * any case as PostGIS reads it; any other length or symbol is refused, as
+ * GEOS refuses it. The pattern of the caller is left as it is
  * @note PostGIS function: @p relate_pattern(PG_FUNCTION_ARGS)
- * Note also the the pattern may be modified in the function
  * @csqlfn #Geom_relate_pattern()
  */
 bool
-geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
+geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  const char *p)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(p, false);
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return false;
+  if (strlen(p) != 9 || strspn(p, "TtFf*012") != 9)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Invalid DE-9IM pattern \"%s\": nine symbols among T, F, *, 0, 1 and 2 "
+      "are expected", p);
+    return false;
+  }
 
   /* The pattern alphabet is upper case */
-  for (size_t i = 0; i < strlen(p); i++ )
-  {
-    if ( p[i] == 't' ) p[i] = 'T';
-    if ( p[i] == 'f' ) p[i] = 'F';
-  }
+  char patt[10];
+  for (int i = 0; i < 10; i++)
+    patt[i] = (p[i] == 't') ? 'T' : (p[i] == 'f') ? 'F' : p[i];
 
   /* A pattern is one of the entries PostGIS prepares its operands for, so it
    * reads the edges a geometry has already been read as rather than building
@@ -6195,12 +6227,13 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
   char matrix[10];
   bool covered = same && meos_relate_self_ctx(ctx1, matrix);
   if (covered)
-    result = de9im_match(matrix, p);
+    result = de9im_match(matrix, patt);
   else
   {
     if (same)
       relate_ctx_twin(gs2, &ctx2, &made2);
-    covered = ctx1 && ctx2 && meos_relate_pattern_ctx(ctx1, ctx2, p, &result);
+    covered = ctx1 && ctx2 &&
+      meos_relate_pattern_ctx(ctx1, ctx2, patt, &result);
   }
   relate_ctx_return(ctx1, ent1);
   relate_ctx_return(ctx2, ent2);
@@ -7726,6 +7759,7 @@ union_lifted(GSERIALIZED *result, GSERIALIZED **gsarr, int count)
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
  * @errval NULL
+ * @csqlfn #Geom_array_union()
  */
 GSERIALIZED *
 geom_array_union(GSERIALIZED **gsarr, int count)
@@ -7776,6 +7810,7 @@ geom_array_union(GSERIALIZED **gsarr, int count)
  * question: a geodesic is not the segment joining two positions in degree
  * space, and two geodesics meet where those segments need not, so the answer
  * awaits an overlay that works on the spheroid.
+ * @csqlfn #Geog_array_union()
  */
 GSERIALIZED *
 geog_array_union(GSERIALIZED **gsarr, int count)
@@ -7917,6 +7952,7 @@ geo_arealess_parts_as_lines(const LWGEOM *geom)
  * @param[in] gs Geometry
  * @note PostGIS function: @p ST_UnaryUnion(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
+ * @csqlfn #Geom_unary_union()
  */
 GSERIALIZED *
 geom_unary_union(const GSERIALIZED *gs)
@@ -7925,6 +7961,11 @@ geom_unary_union(const GSERIALIZED *gs)
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_geodetic_geo(gs))
     return NULL;
+  /* The union of the empty set is the empty set, of the type and the SRID of
+   * the argument, as PostGIS function ST_UnaryUnion answers it and as
+   * #geo_segmentize answers an empty geometry */
+  if (gserialized_is_empty(gs))
+    return geo_copy(gs);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs) ;
   /* The native routes dissolve the PROJECTION of a geometry carrying Z or M,
@@ -9983,6 +10024,7 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
  * @details Two values in different spatial reference systems are not the
  * same whatever their coordinates, as for the circular buffers and the poses
  * @param[in] gs1,gs2 Geometries/geographies
+ * @csqlfn #Geo_same()
  */
 bool
 geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -10265,6 +10307,7 @@ geog_from_geojson(const char *geojson)
  * @brief Return a geography from a geometry
  * @param[in] gs Geometry
  * @note PostGIS function: @p geography_from_geometry(PG_FUNCTION_ARGS)
+ * @sqlfn geography()
  */
 GSERIALIZED *
 geom_to_geog(const GSERIALIZED *gs)
@@ -10307,6 +10350,7 @@ geom_to_geog(const GSERIALIZED *gs)
  * @brief Return a geometry from a geography
  * @param[in] gs Geography
  * @note PostGIS function: @p geometry_from_geography(PG_FUNCTION_ARGS)
+ * @sqlfn geometry()
  */
 GSERIALIZED *
 geog_to_geom(const GSERIALIZED *gs)
@@ -10719,56 +10763,50 @@ mec_value(uint64 key)
   return d;
 }
 
+/* The circle and the coordinate a search reads, the keys counted from that
+ * of the most negative double, for #mec_nearest_beyond */
+typedef struct
+{
+  MecExact *e;     /**< Exact sums of the circle */
+  int which;       /**< Coordinate of the centre, or the radius */
+  uint64 minkey;   /**< Key of -DBL_MAX */
+} MecSearch;
+
+/**
+ * @brief Return 1 where the coordinate lies beyond the upper midpoint of the
+ * double of a key, 0 where it does not: the side #mec_nearest gives
+ * #monotone_search, the most negative double read as beyond
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+mec_nearest_beyond(uint64 key, void *arg)
+{
+  const MecSearch *ms = (const MecSearch *) arg;
+  if (key == 0)
+    return 1;
+  return mec_beyond(ms->e, ms->which, mec_value(ms->minkey + key)) ? 1 : 0;
+}
+
 /**
  * @brief Return the double nearest a coordinate of the centre or the radius
  * of the circle of #MecExact, a tie going to the even one
- * @details The answer is the smallest double that is not beyond (#mec_beyond):
- * gallop from the candidate to bracket it, then halve the bracket. A zero is
- * the positive one. Mirrors #point_segment_distance_offset_exact
+ * @details The answer is the smallest double that is not beyond (#mec_beyond),
+ * found by the one search (#monotone_search) over the keys of the signed
+ * doubles (#mec_key). A zero is the positive one
  */
 static double
 mec_nearest(MecExact *e, int which, double cand)
 {
   const uint64 maxkey = mec_key(DBL_MAX), minkey = mec_key(-DBL_MAX);
-  uint64 lo, hi, step = 1;
   if (! isfinite(cand))
     cand = 0.0;
-  uint64 key = mec_key(cand);
-  if (mec_beyond(e, which, cand))
-  {
-    /* The answer is above: lo is beyond, hi is not */
-    lo = key;
-    while (true)
-    {
-      hi = (step > maxkey - lo) ? maxkey : lo + step;
-      if (hi == maxkey || ! mec_beyond(e, which, mec_value(hi)))
-        break;
-      lo = hi;
-      step *= 2;
-    }
-  }
-  else
-  {
-    /* The answer is at or below: hi is not beyond, lo is beyond */
-    hi = key;
-    while (true)
-    {
-      lo = (step > hi - minkey) ? minkey : hi - step;
-      if (lo == minkey || mec_beyond(e, which, mec_value(lo)))
-        break;
-      hi = lo;
-      step *= 2;
-    }
-  }
-  while (hi - lo > 1)
-  {
-    uint64 mid = lo + (hi - lo) / 2;
-    if (mec_beyond(e, which, mec_value(mid)))
-      lo = mid;
-    else
-      hi = mid;
-  }
-  double result = mec_value(hi);
+  MecSearch ms = {e, which, minkey};
+  uint64 key = 0;
+  (void) monotone_search(mec_key(cand) - minkey, maxkey - minkey,
+    &mec_nearest_beyond, &ms, 0, &key);
+  double result = mec_value(minkey + key);
   return (result == 0.0) ? 0.0 : result;
 }
 
@@ -11336,6 +11374,7 @@ geo_typename(int type)
  * @param[in] n Number (1-based)
  * @return  Return @p NULL if there is no LINESTRING(..) in GEOMETRY or @p n
  * is out of bounds.
+ * @csqlfn #Line_point_n()
  */
 GSERIALIZED *
 line_point_n(const GSERIALIZED *gs, int n)

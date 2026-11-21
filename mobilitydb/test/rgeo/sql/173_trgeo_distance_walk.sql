@@ -334,3 +334,44 @@ SELECT count(*),
 FROM r;
 
 -------------------------------------------------------------------------------
+
+-- A body that passes a point at a gap of a few units in the last place never
+-- meets it.  The square translates with its top edge on y = 1, below the point
+-- by 1 and 8 units in the last place of 1, and by 1 unit in the last place of
+-- 1001; the turning squares pass a point placed off the path of a vertex,
+-- whose least distance, at 50 digits, is 8.9e-16 and 8.7e-16.  The rows in3
+-- move the point of a turning square inward by three times its gap, inside
+-- the body, which meets it.
+WITH graze(id, trg, pt) AS (VALUES
+  ('tr0', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01 00:00:00+00, Pose(Point(4 0),0)@2001-01-01 01:00:00+00]',
+    geometry 'Point(2 1.0000000000000002)'),
+  ('tr3', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01 00:00:00+00, Pose(Point(4 0),0)@2001-01-01 01:00:00+00]',
+    geometry 'Point(2 1.0000000000000018)'),
+  ('trs0', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(1000 1000),0)@2001-01-01 00:00:00+00, Pose(Point(1004 1000),0)@2001-01-01 01:00:00+00]',
+    geometry 'Point(1002 1001.0000000000001)'),
+  ('tu0', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-2.841180108621131 0.2127224988320826),-1.4498288881649064)@2001-01-01 00:00:00+00, Pose(Point(-0.42187149151487446 1.7417261964494983),-1.5737886466241637)@2001-01-01 01:00:00+00]',
+    geometry 'Point(-0.8738230275897635 -0.143695531316099)'),
+  ('tu0in3', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-2.841180108621131 0.2127224988320826),-1.4498288881649064)@2001-01-01 00:00:00+00, Pose(Point(-0.42187149151487446 1.7417261964494983),-1.5737886466241637)@2001-01-01 01:00:00+00]',
+    geometry 'Point(-0.8738230275897655 -0.14369553131609725)'),
+  ('tu4in3', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-0.9822519486962804 -2.4342444507526144),-1.550034631065332)@2001-01-01 00:00:00+00, Pose(Point(-1.299632845546983 2.8127209184804425),-1.3333808392065838)@2001-01-01 01:00:00+00]',
+    geometry 'Point(-0.004018987135662167 -1.3870264405192438)'),
+  ('tu5', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0.5969953328912379 0.9523122653399194),0.4000326467447808)@2001-01-01 00:00:00+00, Pose(Point(1.668265141084417 1.9303679372535276),1.9594784816486817)@2001-01-01 01:00:00+00]',
+    geometry 'Point(0.7240157965653433 2.7025195255739507)'))
+SELECT id, eIntersects(trg, pt), nearestApproachDistance(trg, pt) > 0
+FROM graze ORDER BY id;
+
+-------------------------------------------------------------------------------
+
+-- A body that turns by less than 1e-6 radians turns in the walk as the
+-- database places it: at the middle of the segment the square, 1000 units
+-- from its rotation center, has turned by 2.5e-7, which raises its top edge
+-- by 2.5e-4 to meet the point, and the temporal distance there is the
+-- distance of the body placed by valueAtTimestamp, 0.
+WITH small(trg, pt, t) AS (VALUES
+  (trgeometry 'Polygon((999 -1,1001 -1,1001 1,999 1,999 -1));[Pose(Point(0 0),0)@2001-01-01 00:00:00+00, Pose(Point(0 0),5e-7)@2001-01-01 01:00:00+00]',
+    geometry 'Point(1000 1.0001)', timestamptz '2001-01-01 00:30:00+00'))
+SELECT valueAtTimestamp(tDistance(trg, pt), t),
+  ST_Distance(valueAtTimestamp(trg, t), pt)
+FROM small;
+
+-------------------------------------------------------------------------------

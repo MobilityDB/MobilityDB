@@ -192,6 +192,28 @@ int main(void)
     rel_phs, errno_phs);
   assert(rel_phs == true);
   assert(errno_phs == 0);
+  /* A pattern is read in any case and left as the caller wrote it, so a
+   * string constant is a pattern like any other */
+  meos_errno_reset();
+  bool rel_lower = geom_relate_pattern(through, coll, "t********");
+  int errno_lower = meos_errno();
+  printf("geom_relate_pattern(through, collection, lower case): %d, errno %d\n",
+    rel_lower, errno_lower);
+  assert(rel_lower == true);
+  assert(errno_lower == 0);
+  /* A pattern of any length but nine, or with a symbol outside the DE-9IM
+   * alphabet, is refused */
+  const char *badpatts[] = {"T*F", "T********F", "T*******X", ""};
+  for (size_t i = 0; i < sizeof(badpatts) / sizeof(badpatts[0]); i++)
+  {
+    meos_errno_reset();
+    bool rel_bad = geom_relate_pattern(through, coll, badpatts[i]);
+    int errno_bad = meos_errno();
+    printf("geom_relate_pattern(through, collection, \"%s\"): %d, errno %d\n",
+      badpatts[i], rel_bad, errno_bad);
+    assert(rel_bad == false);
+    assert(errno_bad == MEOS_ERR_INVALID_ARG_VALUE);
+  }
   free(coll); free(away); free(through); free(tin); free(phs);
   meos_errno_reset();
 
@@ -467,6 +489,96 @@ int main(void)
       i, gm ? gm : "(NULL)", meos_errno());
     assert(gm != NULL);
     assert(strcmp(gm, lineends[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
+  /* The first line crosses the slanted edge of the triangle at a point the
+   * doubles cannot hold, and the second line ends at (3.05 0.95), the double
+   * nearest that crossing, which lies off the edge, inside the triangle. The
+   * crossing is in the interior of the lines and the end is not on the
+   * boundary of the triangle: the interior meets the boundary at a point, and
+   * no boundary meets a boundary. In the second pair the second line ends at
+   * the crossing itself, (3 1), which is then in the boundary of the lines,
+   * on the boundary of the triangle. CGAL's exact kernel answers both */
+  struct { const char *a, *b, *matrix; } crossends[] = {
+    { "MULTILINESTRING((1.1 0.3,5.3 1.7),(3.05 0.95,2.68 0.44))",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1010F0212" },
+    { "MULTILINESTRING((1 0.5,5 1.5),(3 1,2.5 0.5))",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1F1000212" },
+  };
+  for (size_t i = 0; i < sizeof(crossends) / sizeof(crossends[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(crossends[i].a, -1);
+    GSERIALIZED *gb = geom_in(crossends[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb, &size_out);
+    printf("geom_relate(a line end near a crossing, %zu): %s, errno %d\n",
+      i, gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, crossends[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
+  /* A line starting four units in the last place outside the slanted edge of
+   * the triangle and running inwards, and one starting four units inside and
+   * running outwards: each has a stretch of positive length on the side of
+   * its start, however short, so its interior meets both the interior and the
+   * exterior of the triangle. CGAL's exact kernel answers both */
+  struct { const char *a, *b, *matrix; } nearstarts[] = {
+    { "LINESTRING(3.0500000000000016 0.95,2.68 0.44)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1010F0212" },
+    { "LINESTRING(3.049999999999998 0.95,3.46 1.24)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "1010F0212" },
+  };
+  for (size_t i = 0; i < sizeof(nearstarts) / sizeof(nearstarts[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(nearstarts[i].a, -1);
+    GSERIALIZED *gb = geom_in(nearstarts[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb, &size_out);
+    printf("geom_relate(a line starting near an edge, %zu): %s, errno %d\n",
+      i, gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, nearstarts[i].matrix) == 0);
+    assert(meos_errno() == 0);
+    free(gm); free(ga); free(gb);
+  }
+  meos_errno_reset();
+
+  /* A line runs along the boundary of an area only where it lies on the line
+   * of a boundary edge. Traced one unit in the last place outside the slanted
+   * edge of the triangle, the line lies outside it; traced one unit inside,
+   * it lies inside and ends on the bottom edge; traced exactly, the whole ring
+   * lies on the boundary, which it covers. CGAL's exact kernel answers the
+   * first two */
+  struct { const char *a, *b, *matrix; } alongs[] = {
+    { "LINESTRING(4.000000000000001 0,1.0000000000000002 3)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "FF1FF0212" },
+    { "LINESTRING(3.9999999999999996 0,0.9999999999999999 3)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "101F00212" },
+    { "LINESTRING(0 0,4 0,1 3,0 0)",
+      "POLYGON((0 0,4 0,1 3,0 0))", "F1FFFF2F2" },
+  };
+  for (size_t i = 0; i < sizeof(alongs) / sizeof(alongs[0]); i++)
+  {
+    GSERIALIZED *ga = geom_in(alongs[i].a, -1);
+    GSERIALIZED *gb = geom_in(alongs[i].b, -1);
+    assert(ga != NULL);
+    assert(gb != NULL);
+    meos_errno_reset();
+    char *gm = geom_relate(ga, gb, &size_out);
+    printf("geom_relate(a line along an edge, %zu): %s, errno %d\n",
+      i, gm ? gm : "(NULL)", meos_errno());
+    assert(gm != NULL);
+    assert(strcmp(gm, alongs[i].matrix) == 0);
     assert(meos_errno() == 0);
     free(gm); free(ga); free(gb);
   }
@@ -2257,6 +2369,57 @@ int main(void)
   assert(meos_errno() == 0);
   free(apt); free(aln); free(ahole); free(amulti);
   meos_errno_reset();
+
+  /* The area of a geometry of straight edges is the double nearest its exact
+   * value, a tie going to the even one, at every magnitude of its coordinates.
+   * A square at projected coordinates less a hole within 1e-9 of it encloses
+   * 3.927212674136797e-07, which a sum of its terms in doubles reads as
+   * 3.9272163121495396e-07; a triangle reaching from subnormal coordinates to
+   * 1e307 encloses 3.3118017121875465e-17, its products leaving the doubles
+   * at both ends; a unit square and a triangle of legs 2^-26 enclose
+   * 1 + 2^-53, a tie that goes to 1, and with legs 3 2^-26 and 2^-26
+   * 1 + 3 2^-53, a tie that goes to 1 + 2^-51; a rectangle of 1e154 by
+   * 1.7e154 encloses their product, twice of which leaves the doubles, and a
+   * square of side 1.5e154 an area beyond them, which raises */
+  struct { const char *wkt; double area; } exact_areas[] = {
+    {"POLYGON((500000.1 6000000.3,500100.8 6000000.3,500100.8 6000101.0,"
+      "500000.1 6000101.0,500000.1 6000000.3),(500000.10000000097 "
+      "6000000.300000001,500100.79999999894 6000000.300000001,"
+      "500100.79999999894 6000100.999999999,500000.10000000097 "
+      "6000100.999999999,500000.10000000097 6000000.300000001))",
+      0x1.a5ae666656c00p-22},
+    {"POLYGON((-2.4194e-319 -2.4194e-319,1.584721628692562e+307 "
+      "9.264240401570348e+307,-2.41944e-319 -2.41964e-319,"
+      "-2.4194e-319 -2.4194e-319))", 0x1.3175b4ff1d11bp-55},
+    {"MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((0 0,1.4901161193847656e-08 0,"
+      "0 1.4901161193847656e-08,0 0)))", 1.0},
+    {"MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((0 0,4.470348358154297e-08 0,"
+      "0 1.4901161193847656e-08,0 0)))", 0x1.0000000000002p+0},
+    {"POLYGON((0 0,1e154 0,1e154 1.7e154,0 1.7e154,0 0))", 1e154 * 1.7e154},
+  };
+  for (size_t i = 0; i < sizeof(exact_areas) / sizeof(exact_areas[0]); i++)
+  {
+    GSERIALIZED *g = geom_in(exact_areas[i].wkt, -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    double a = geom_area(g);
+    printf("exact area %zu: %a, nearest %a, errno %d\n", i, a,
+      exact_areas[i].area, meos_errno());
+    assert(a == exact_areas[i].area);
+    assert(meos_errno() == 0);
+    free(g);
+  }
+  GSERIALIZED *aover = geom_in(
+    "POLYGON((0 0,1.5e154 0,1.5e154 1.5e154,0 1.5e154,0 0))", -1);
+  assert(aover != NULL);
+  meos_errno_reset();
+  double aov = geom_area(aover);
+  printf("area beyond the doubles: %g, errno %d\n", aov, meos_errno());
+  assert(aov == DBL_MAX);
+  assert(meos_errno() == MEOS_ERR_VALUE_OUT_OF_RANGE);
+  free(aover);
+  meos_errno_reset();
+
   /* A geodetic geometry is refused, as it is by the other planar measures */
   GSERIALIZED *ageog = geog_in("SRID=4326;POLYGON((0 0,1 0,1 1,0 1,0 0))", -1);
   assert(ageog != NULL);

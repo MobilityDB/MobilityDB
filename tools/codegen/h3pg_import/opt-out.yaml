@@ -1,7 +1,7 @@
 # Functions from h3-pg the extractor should NOT transform automatically.
 # Each entry names a source file and a function; that function is skipped
-# during generation and is expected to be implemented by hand in
-# meos/src/h3/h3_adapter.c (declared in meos/include/h3/h3_adapter.h).
+# during generation. Its reason names the MEOS function written by hand in
+# meos/src/h3 that implements it, or states that MEOS does not implement it.
 #
 # Reasons to opt out:
 #   * varlena-heavy body (POLYGON, GSERIALIZED, array types) needing lwgeom
@@ -16,13 +16,13 @@ skip:
   # ---- h3/src/binding/indexing.c ------------------------------------------
   - file: h3-pg/h3/src/binding/indexing.c
     fn:   h3_latlng_to_cell
-    why:  uses PG Point varlena, GUC h3_guc_strict, ASSERT macros; rewritten in h3_adapter.c as h3_gs_point_to_cell() operating on GSERIALIZED
+    why:  uses PG Point varlena, GUC h3_guc_strict, ASSERT macros; implemented by geo_to_h3index_cell in meos/src/h3/th3index_latlng.c
   - file: h3-pg/h3/src/binding/indexing.c
     fn:   h3_cell_to_latlng
-    why:  returns PG Point varlena; rewritten in h3_adapter.c as h3_cell_to_gs_point()
+    why:  returns PG Point varlena; implemented by h3index_cell_to_point in meos/src/h3/th3index_latlng.c
   - file: h3-pg/h3/src/binding/indexing.c
     fn:   h3_cell_to_boundary
-    why:  returns PG POLYGON varlena + uses PG_NARGS/GUC h3_guc_extend_antimeridian; rewritten in h3_adapter.c as h3_cell_to_gs_boundary()
+    why:  returns PG POLYGON varlena + uses PG_NARGS/GUC h3_guc_extend_antimeridian; implemented by h3index_cell_to_boundary in meos/src/h3/th3index_latlng.c
 
   # ---- h3_postgis/src/*.c -------------------------------------------------
   # The entire h3_postgis/ tree is PostGIS-WKB plumbing and is opt-out
@@ -94,41 +94,41 @@ skip:
     why:  set-returning; v2 scope
   - file: h3-pg/h3/src/binding/traversal.c
     fn:   h3_cell_to_local_ij
-    why:  returns PG Point varlena; rewritten in h3_adapter.c
+    why:  returns PG Point varlena; implemented by h3_cell_to_local_ij_meos in meos/src/h3/th3index_traversal.c
   - file: h3-pg/h3/src/binding/traversal.c
     fn:   h3_local_ij_to_cell
-    why:  takes PG Point varlena arg; rewritten in h3_adapter.c
+    why:  takes PG Point varlena arg; implemented by h3_local_ij_to_cell_meos in meos/src/h3/th3index_traversal.c
 
-  # Complex returns / args needing manual lwgeom-aware adapter:
+  # Complex returns / args needing lwgeom-aware code written by hand:
   - file: h3-pg/h3/src/binding/edge.c
     fn:   h3_directed_edge_to_cells
-    why:  returns PG record (TupleDesc + HeapTuple); rewritten in h3_adapter.c
+    why:  returns PG record (TupleDesc + HeapTuple); not implemented in MEOS
   - file: h3-pg/h3/src/binding/edge.c
     fn:   h3_directed_edge_to_boundary
-    why:  returns PG POLYGON varlena + GUC h3_guc_extend_antimeridian; rewritten in h3_adapter.c
+    why:  returns PG POLYGON varlena + GUC h3_guc_extend_antimeridian; implemented by h3_directed_edge_to_gs_boundary in meos/src/h3/th3index_edges.c
   - file: h3-pg/h3/src/binding/inspection.c
     fn:   h3_get_icosahedron_faces
-    why:  returns PG INT[] array; rewritten in h3_adapter.c
+    why:  returns PG INT[] array; implemented by h3_get_icosahedron_faces in meos/src/h3/h3index_sets.c
   - file: h3-pg/h3/src/binding/miscellaneous.c
     fn:   h3_great_circle_distance
-    why:  takes PG Point varlena args; rewritten in h3_adapter.c
+    why:  takes PG Point varlena args; implemented by h3_gs_great_circle_distance_meos in meos/src/h3/th3index_metrics.c
   - file: h3-pg/h3/src/binding/vertex.c
     fn:   h3_vertex_to_latlng
-    why:  returns PG Point varlena; rewritten in h3_adapter.c
+    why:  returns PG Point varlena; implemented by h3_vertex_to_gs_point in meos/src/h3/th3index_vertices.c
 
   # Unit-string functions: the text_to_cstring(PG_GETARG_TEXT_PP) read +
   # ASSERT() error fall-through is awkward to template; cleaner to
-  # implement once in h3_adapter.c using a single h3_unit_from_cstring()
-  # dispatcher and call libh3's *Km2 / *M2 / *Rads2 variants directly.
+  # implement once with the H3Unit enum of meos/include/h3/th3index_internal.h
+  # and call libh3's *Km2 / *M2 / *Rads2 variants directly.
   - file: h3-pg/h3/src/binding/miscellaneous.c
     fn:   h3_get_hexagon_area_avg
-    why:  text-arg unit dispatch; rewritten in h3_adapter.c
+    why:  text-arg unit dispatch; not implemented in MEOS
   - file: h3-pg/h3/src/binding/miscellaneous.c
     fn:   h3_cell_area
-    why:  text-arg unit dispatch; rewritten in h3_adapter.c
+    why:  text-arg unit dispatch; implemented by h3_cell_area_meos in meos/src/h3/th3index_metrics.c
   - file: h3-pg/h3/src/binding/miscellaneous.c
     fn:   h3_get_hexagon_edge_length_avg
-    why:  text-arg unit dispatch; rewritten in h3_adapter.c
+    why:  text-arg unit dispatch; not implemented in MEOS
   - file: h3-pg/h3/src/binding/miscellaneous.c
     fn:   h3_edge_length
-    why:  text-arg unit dispatch; rewritten in h3_adapter.c
+    why:  text-arg unit dispatch; implemented by h3_edge_length_meos in meos/src/h3/th3index_metrics.c

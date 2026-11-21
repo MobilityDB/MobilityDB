@@ -1689,7 +1689,6 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
 }
 
 /**
- * @ingroup meos_internal_cbuffer_accessor
  * @brief Return the points or radii or radius of a temporal circular buffer
  * @csqlfn #Tcbuffer_points()
  */
@@ -2069,16 +2068,6 @@ tcbuffer_minus_cbuffer(const Temporal *temp, const Cbuffer *cb)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_cbuffer_restrict
- * @brief Return a temporal circular buffer restricted to a spatiotemporal box
- * @param[in] temp Temporal value
- * @param[in] box Spatiotemporal box
- * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @param[in] border_inc True when the box contains the upper border, otherwise
- * the upper border is assumed as outside of the box.
- * @csqlfn #Tcbuffer_at_stbox()
- */
-/**
  * @brief Return true when some unit of a temporal circular buffer can reach the
  * space of the box @p box
  * @details A disk meets a box exactly when its centre lies within the radius of
@@ -2142,6 +2131,16 @@ tcbuffer_may_reach_box(const Temporal *temp, const STBox *box)
   return false;
 }
 
+/**
+ * @ingroup meos_internal_cbuffer_restrict
+ * @brief Return a temporal circular buffer restricted to a spatiotemporal box
+ * @param[in] temp Temporal value
+ * @param[in] box Spatiotemporal box
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
+ * @csqlfn #Tcbuffer_at_stbox()
+ */
 Temporal *
 tcbuffer_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc UNUSED, bool atfunc)

@@ -189,6 +189,48 @@ CREATE TABLE tbl_tstzspanset_big (
 \set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tstzspanset_big.data'
 COPY tbl_tstzspanset_big (k, t) FROM :'filename';
 
+CREATE TABLE tbl_tbigint (
+    k integer PRIMARY KEY,
+    temp tbigint
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint.data'
+COPY tbl_tbigint (k, temp) FROM :'filename';
+
+CREATE TABLE tbl_tbigint_big (
+    k integer PRIMARY KEY,
+    temp tbigint
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint_big.data'
+COPY tbl_tbigint_big (k, temp) FROM :'filename';
+
+CREATE TABLE tbl_tbigint_discseq (
+    k integer PRIMARY KEY,
+    temp tbigint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint_discseq.data'
+COPY tbl_tbigint_discseq (k, temp) FROM :'filename';
+
+CREATE TABLE tbl_tbigint_inst (
+    k integer PRIMARY KEY,
+    temp tbigint(Instant)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint_inst.data'
+COPY tbl_tbigint_inst (k, temp) FROM :'filename';
+
+CREATE TABLE tbl_tbigint_seqset (
+    k integer PRIMARY KEY,
+    temp tbigint(SequenceSet)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint_seqset.data'
+COPY tbl_tbigint_seqset (k, temp) FROM :'filename';
+
+CREATE TABLE tbl_tbigint_contseq (
+    k integer PRIMARY KEY,
+    temp tbigint(Sequence)
+);
+\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint_contseq.data'
+COPY tbl_tbigint_contseq (k, temp) FROM :'filename';
+
 CREATE TABLE tbl_tbool (
     k integer PRIMARY KEY,
     temp tbool
@@ -422,10 +464,3 @@ COPY tbl_ttext_contseq (k, temp) FROM :'filename';
 
 -- Launch the ANALYZE deamon to avoid that it is launched during the tests
 ANALYZE;
-
-CREATE TABLE tbl_tbigint_big (
-    k integer PRIMARY KEY,
-    temp tbigint
-);
-\set filename :srcdir '/mobilitydb/test/temporal/data/tbl_tbigint_big.data'
-COPY tbl_tbigint_big (k, temp) FROM :'filename';

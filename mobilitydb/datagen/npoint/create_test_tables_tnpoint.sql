@@ -98,7 +98,7 @@ FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_discseq;
 CREATE TABLE tbl_tnpoint_discseq AS
-SELECT k, random_tnpoint_discseq(lown, highn, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
+SELECT k, random_tnpoint_discseq(lown, highn, '2001-01-01', '2001-12-31', 10, 1, 10) AS temp
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_contseq;

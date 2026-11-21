@@ -981,7 +981,7 @@
 	<sect1>
 		<title>Temporal Geometry Types</title>
 		<sect2>
-			<title>Funciones sobre Geometrías</title>
+			<title>Geometrías estáticas</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="geo_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación de texto conocido (WKT) o la representación extendida de texto conocido (EWKT) &Z_support; &geography_support;</para>
@@ -1020,6 +1020,9 @@
 					<para><link linkend="geo_spatialrels"><varname>contains</varname>, <varname>covers</varname>, <varname>disjoint</varname>, <varname>intersects</varname>, <varname>touches</varname>, <varname>geoEquals</varname></link>: Devuelve verdadero si dos geometrías satisfacen una relación espacial</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_orderingequals"><varname>orderingEquals</varname></link>: Devuelve verdadero si dos geometrías tienen los mismos vértices en el mismo orden</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_dwithin"><varname>dwithin</varname></link>: Devuelve verdadero si dos geometrías están a una distancia dada</para>
 				</listitem>
 				<listitem>
@@ -1030,6 +1033,21 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_accessors"><varname>boundary</varname>, <varname>reverse</varname>, <varname>numGeometries</varname>, <varname>geometryN</varname>, <varname>numPoints</varname></link>: Devuelve la frontera, la inversión o las partes de una geometría</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_srid"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial de una geometría o una geografía</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_memsize"><varname>memSize</varname></link>: Devuelve el tamaño en bytes de una geometría o una geografía</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_isempty"><varname>isEmpty</varname></link>: Devuelve verdadero si una geometría o una geografía está vacía</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_points"><varname>points</varname>, <varname>pointN</varname></link>: Devuelve los vértices de una geometría o uno de ellos</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_azimuth"><varname>azimuth</varname></link>: Devuelve el acimut del segmento que une dos puntos</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_lines"><varname>lineInterpolatePoint</varname>, <varname>lineSubstring</varname>, <varname>lineLocatePoint</varname></link>: Devuelve el punto en una fracción de una línea, la parte entre dos fracciones o la fracción más cercana a un punto</para>
@@ -1053,7 +1071,10 @@
 					<para><link linkend="geo_intersection"><varname>intersection</varname></link>: Devuelve la región que dos geometrías comparten</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Devuelve la región que dos geometrías cubren en conjunto</para>
+					<para><link linkend="geo_geounion"><varname>geoUnion</varname></link>: Devuelve la región que dos geometrías, o un arreglo de geometrías o de geografías, cubren en conjunto</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_unaryunion"><varname>unaryUnion</varname></link>: Devuelve la unión de las partes de una geometría</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="geo_difference"><varname>difference</varname></link>: Devuelve la región de la primera geometría que la segunda no cubre</para>
@@ -3720,10 +3741,13 @@
 						<para><link linkend="pcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Devuelve una coordenada de un pcpoint, NULL si la dimensión está ausente del esquema</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Devuelve cualquier dimensión con nombre de un pcpoint, NULL si el nombre es desconocido para el esquema</para>
+						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Devuelve cualquier dimensión con nombre de un pcpoint</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial (heredado del esquema)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pcpoint_transform"><varname>transform</varname></link>: Transforma al esquema de otro pcid</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="pcpatch_numPoints"><varname>numPoints</varname></link>: Devuelve el número de puntos de un pcpatch</para>
@@ -3822,7 +3846,7 @@
 						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Devuelve un tpcbox con las coordenadas redondeadas al número de dígitos decimales indicado</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Devuelve un tpcbox que declara un sistema de referencia que su esquema no declara</para>
+						<para><link linkend="tpcbox_transform"><varname>transform</varname></link>: Transforma al esquema de otro pcid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3911,6 +3935,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_SRID"><varname>SRID</varname></link>: Devuelve el SRID heredado del esquema</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_transform"><varname>transform</varname></link>: Transforma al esquema de otro pcid</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpoint_getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Proyecta un tpcpoint sobre una dimensión espacial, produciendo un tfloat</para>

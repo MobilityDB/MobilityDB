@@ -38,6 +38,25 @@ SELECT tgeompoint(tgeometry 'Interp=Step;{[Linestring(1 1,2 2)@2001-01-01, Point
 SELECT SRID(geomset '{"SRID=5676;Point(1 1)", "SRID=5676;Point(2 2)"}');
 SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
 
+-- setSRID reads an SRID as ST_SetSRID reads it, an SRID above the maximum
+-- folding into the reserved range, and the values and the bounding box of a
+-- temporal point or a set state that one SRID
+WITH s(srid) AS (VALUES (3857), (1000000), (999999999)),
+t AS (SELECT srid, ST_SRID(ST_SetSRID(geometry 'Point(1 1)', srid)) AS expected,
+  setSRID(stbox 'STBOX X((1,1),(2,2))', srid) AS box,
+  setSRID(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
+    [Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]}', srid) AS temp,
+  setSRID(geomset '{"Point(1 1)", "Point(2 2)"}', srid) AS gs FROM s)
+SELECT srid, expected, SRID(box), SRID(temp), SRID(temp::stbox),
+  ST_SRID(endValue(temp)), SRID(gs), SRID(gs::stbox), ST_SRID(endValue(gs))
+FROM t;
+-- The invalid SRID is refused, and a negative SRID is set as the unknown SRID
+-- 0, on a temporal point and a set as on a geometry
+SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 1000001);
+SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', 1000001);
+SELECT setSRID(tgeompoint 'Point(1 1)@2001-01-01', -1);
+SELECT setSRID(geomset '{"Point(1 1)"}', -1);
+
 -- Tests independent of the PROJ version
 WITH test(geoset) AS (
   SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )

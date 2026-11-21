@@ -33,4 +33,5 @@ mobilitydb_add_tests(SETUP load_pointcloud
     415_tpc_typmod 420_tpcpoint 421_tpcpoint_mfjson 430_tpcpatch
     431_tpcpatch_cmp 432_tpcpatch_mfjson 438_tpc_distance
     443_tpcpoint_spatialrels 444_tpcpoint_tempspatialrels
-    448_tpcpatch_tempspatialrels 449_tpcpatch_spatialrels)
+    448_tpcpatch_tempspatialrels 449_tpcpatch_spatialrels
+    451_pointcloud_transform)

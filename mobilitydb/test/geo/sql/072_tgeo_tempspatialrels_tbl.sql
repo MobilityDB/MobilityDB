@@ -43,7 +43,7 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tDisjoint(temp, g) ?= tru
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tIntersects(temp, g) ?= t
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
@@ -89,9 +89,9 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tDwithin(temp, g, 10) IS 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry t2
   WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -105,9 +105,9 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
   
 -- Mixed 2D/3D
-SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry3d t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------

@@ -187,6 +187,8 @@ INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('#>> tnpoint', (SELECT COUNT(*)
 INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_span t2 WHERE t1.temp #&> t2.t)::text);
 INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('#&> stbox', (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp #&> t2.b)::text);
 INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('#&> tnpoint', (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_val t2 WHERE t1.temp #&> t2.temp)::text);
+INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('?&& stbox', (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp ?&& t2.b)::text);
+INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('%&& stbox', (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp %&& t2.b)::text);
 INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('stbox >> tnpoint', (SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b >> t1.temp)::text);
 INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('tstzspan && tnpoint', (SELECT COUNT(*) FROM tbl_tnpoint_span t2, tbl_tnpoint_idx t1 WHERE t2.t && t1.temp)::text);
 INSERT INTO test_tnpoint_idx(op, no_idx) VALUES ('stbox && tnpoint', (SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b && t1.temp)::text);
@@ -391,6 +393,12 @@ WHERE op = '#&> stbox';
 UPDATE test_tnpoint_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_val t2 WHERE t1.temp #&> t2.temp)::text,
   rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tnpoint';
+UPDATE test_tnpoint_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp ?&& t2.b)::text,
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tnpoint_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp %&& t2.b)::text,
+  rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_tnpoint_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> tnpoint';
@@ -633,6 +641,12 @@ WHERE op = '#&> stbox';
 UPDATE test_tnpoint_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_val t2 WHERE t1.temp #&> t2.temp)::text,
   quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tnpoint';
+UPDATE test_tnpoint_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp ?&& t2.b)::text,
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tnpoint_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp %&& t2.b)::text,
+  quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_tnpoint_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> tnpoint';
@@ -875,6 +889,12 @@ WHERE op = '#&> stbox';
 UPDATE test_tnpoint_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_val t2 WHERE t1.temp #&> t2.temp)::text,
   kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_val t2 WHERE t1.temp #&> t2.temp')
 WHERE op = '#&> tnpoint';
+UPDATE test_tnpoint_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp ?&& t2.b)::text,
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tnpoint_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp %&& t2.b)::text,
+  kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_idx t1, tbl_tnpoint_box t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
 UPDATE test_tnpoint_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_box t2, tbl_tnpoint_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> tnpoint';
@@ -953,7 +973,7 @@ SELECT COUNT(*) FROM tbl_tnpoint_idx;
 SELECT COUNT(*) FROM test_tnpoint_idx;
  count 
 -------
-    77
+    79
 (1 row)
 
 SELECT op, no_idx FROM test_tnpoint_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
@@ -965,6 +985,7 @@ SELECT op, no_idx FROM test_tnpoint_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
  #>> stbox            | 290727
  #>> tnpoint          | 159984
  #>> tstzspan         | 302150
+ %&& stbox            | 112
  && stbox             | 471
  && stbox x           | 202287
  && tnpoint           | 75
@@ -1001,6 +1022,7 @@ SELECT op, no_idx FROM test_tnpoint_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
  >> stbox             | 41912
  >> stbox x           | 34199
  >> tnpoint           | 19634
+ ?&& stbox            | 369
  @> stbox             | 47
  @> stbox x           | 95105
  @> tnpoint           | 31
@@ -1033,7 +1055,7 @@ SELECT op, no_idx FROM test_tnpoint_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
  ~= stbox x           | 10
  ~= tnpoint           | 17
  ~= tstzspan          | 12
-(74 rows)
+(76 rows)
 
 -- The distances of the nearest values are compared, not stated
 SELECT op FROM test_tnpoint_idx WHERE op LIKE '%|=|%' AND no_idx IS NULL ORDER BY op;
@@ -1139,7 +1161,7 @@ CREATE INDEX tbl_tnpoint_allthesame_quadtree ON tbl_tnpoint_allthesame USING spg
 SELECT COUNT(*) FROM tbl_tnpoint_allthesame WHERE temp && (SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))', xmin(b), ymin(b), xmax(b), ymax(b))) FROM (SELECT temp::stbox AS b FROM tbl_tnpoint_allthesame WHERE temp IS NOT NULL LIMIT 1) s);
  count 
 -------
- 12380
+ 10100
 (1 row)
 
 SET enable_seqscan = off;
@@ -1152,7 +1174,7 @@ SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tnpoint_allthesame WH
 SELECT COUNT(*) FROM tbl_tnpoint_allthesame WHERE temp && (SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))', xmin(b), ymin(b), xmax(b), ymax(b))) FROM (SELECT temp::stbox AS b FROM tbl_tnpoint_allthesame WHERE temp IS NOT NULL LIMIT 1) s);
  count 
 -------
- 12380
+ 10100
 (1 row)
 
 RESET enable_seqscan;

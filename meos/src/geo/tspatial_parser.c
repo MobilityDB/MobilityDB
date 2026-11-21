@@ -53,37 +53,37 @@
 
 /**
  * @brief Parse a SRID specification from the buffer
+ * @details The specification is `SRID=` followed by an integer and ended by
+ * `,` or `;`, the delimiter being gobbled. The SRID is read as
+ * `wkt_lexer_read_srid` of the PostGIS parser reads it, a negative SRID being
+ * the unknown SRID 0 and an SRID above the maximum folding into the reserved
+ * range. A specification that is not of this form is left in the buffer,
+ * where the parse of what follows refuses it, as the PostGIS parser does.
+ * @param[in,out] str Buffer, advanced past the specification when one is read
+ * @param[out] srid SRID read, `SRID_UNKNOWN` when none is
+ * @return True when a specification is read
  */
 bool
 srid_parse(const char **str, int *srid)
 {
-  int32_t srid_read = SRID_UNKNOWN;
-  bool result = false;
+  *srid = SRID_UNKNOWN;
   p_whitespace(str);
   /* Starts with "SRID=". The SRID specification must be gobbled for all
-   * types excepted TInstant. We cannot use the atoi() function
-   * because this requires a string terminated by '\0' and we cannot
-   * modify the string in case it must be passed to the #tcbufferinst_parse
-   * function. */
-  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
-  {
-    /* Move str to the start of the number part */
-    *str += 5;
-    int delim = 0;
-    /* Delimiter will be either ',' or ';' depending on whether interpolation
-       is given after */
-    while ((*str)[delim] != ',' && (*str)[delim] != ';' && 
-      (*str)[delim] != '\0')
-    {
-      srid_read = srid_read * 10 + (*str)[delim] - '0';
-      delim++;
-    }
-    /* Set str after the delimiter */
-    *str += delim + 1;
-    result = true;
-  }
-  *srid = srid_read;
-  return result;
+   * types excepted TInstant. The buffer is not modified, in case it must be
+   * passed to the #tcbufferinst_parse function. */
+  if (pg_strncasecmp(*str, "SRID=", 5) != 0)
+    return false;
+  const char *start = *str + 5;
+  char *end;
+  long value = strtol(start, &end, 10);
+  /* Delimiter will be either ',' or ';' depending on whether interpolation
+     is given after */
+  if (end == start || (*end != ',' && *end != ';'))
+    return false;
+  *srid = clamp_srid((int32_t) value);
+  /* Set str after the delimiter */
+  *str = end + 1;
+  return true;
 }
 
 /**

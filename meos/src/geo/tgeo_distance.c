@@ -4956,6 +4956,128 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
+ * @brief Return the latitude in [@p lo, @p hi], in radians, of the point
+ * nearest on the sphere to the point of latitude @p phi on a meridian whose
+ * longitude differs by an angle of cosine @p c
+ * @details The cosine of the distance between the two points,
+ * sin(phi) sin(x) + c cos(phi) cos(x), peaks at x = atan2(sin(phi),
+ * c cos(phi)) and falls away from it, so the nearest latitude is that peak
+ * when the interval holds it and otherwise an end of the interval. MEOS has
+ * no routine for the nearest point of a meridian; the nearest one, the
+ * latitude extreme of a great-circle arc, is #dggs_arc_lat_extreme
+ */
+static double
+geodstbox_nearest_lat(double phi, double c, double lo, double hi)
+{
+  double a = sin(phi), b = c * cos(phi);
+  double peak = fmin(fmax(atan2(a, b), lo), hi);
+  double best = peak, bestval = a * sin(peak) + b * cos(peak);
+  const double ends[2] = { lo, hi };
+  for (int i = 0; i < 2; i++)
+  {
+    double val = a * sin(ends[i]) + b * cos(ends[i]);
+    if (val > bestval)
+    {
+      bestval = val; best = ends[i];
+    }
+  }
+  return best;
+}
+
+/**
+ * @brief Return the distance between the extents of two disjoint geodetic
+ * boxes, on the spheroid or on the sphere
+ * @details A geodetic box is the region of its longitudes and latitudes,
+ * never the polygon of its corners, whose great-circle edges leave that region
+ * (Geodetic Operations, sections 4 and 5), as #tpointseq_linear_at_stbox_geodetic
+ * and #dggs_cell_meets_box read it; this mirrors the closed form of the planar
+ * branch of #stbox_spatial_dist on that region. The nearest points of two such
+ * regions are found on the sphere, as PostGIS finds those of two geographies
+ * before measuring them on the spheroid, and measured as PostGIS measures two
+ * geography points. When the longitudes of the boxes meet, the nearest points
+ * share a longitude and lie on the facing parallels. Otherwise they lie on the
+ * facing meridians, the longitudes the least angle apart around the globe: the
+ * cosine of the distance between two points of latitudes x1 and x2 grows with
+ * the cosine of that angle, and over the two intervals of latitudes it peaks
+ * on their border, an interior critical point being a saddle, so each end of
+ * one interval is paired with its nearest latitude in the other
+ * (#geodstbox_nearest_lat)
+ * @param[in] box1,box2 Geodetic boxes
+ * @param[in] spheroid True when measuring on the spheroid, false on the
+ * sphere
+ */
+static double
+geodstbox_bounds_dist(const STBox *box1, const STBox *box2, bool spheroid)
+{
+  double rad = M_PI / 180.0;
+  double lon1, lon2, lat1, lat2;
+  /* The angle around the globe from the east bound of a box to the west bound
+   * of the other, in each direction */
+  double e1 = box2->xmin - box1->xmax, e2 = box1->xmin - box2->xmax;
+  if (e1 < 0.0)
+    e1 += 360.0;
+  if (e2 < 0.0)
+    e2 += 360.0;
+  bool lonmeet = (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax) ||
+    e1 == 0.0 || e2 == 0.0;
+  if (lonmeet)
+  {
+    /* A longitude both boxes hold, and the facing parallels */
+    lon1 = lon2 = (e1 == 0.0) ? box2->xmin : (e2 == 0.0) ? box1->xmin :
+      fmax(box1->xmin, box2->xmin);
+    if (box1->ymax < box2->ymin)
+    {
+      lat1 = box1->ymax; lat2 = box2->ymin;
+    }
+    else
+    {
+      lat1 = box1->ymin; lat2 = box2->ymax;
+    }
+  }
+  else
+  {
+    double gap;
+    if (e1 <= e2)
+    {
+      lon1 = box1->xmax; lon2 = box2->xmin; gap = e1;
+    }
+    else
+    {
+      lon1 = box1->xmin; lon2 = box2->xmax; gap = e2;
+    }
+    double c = cos(gap * rad);
+    double lo1 = box1->ymin * rad, hi1 = box1->ymax * rad;
+    double lo2 = box2->ymin * rad, hi2 = box2->ymax * rad;
+    /* Each end of an interval with its nearest latitude in the other */
+    const double cand[4][2] = {
+      { lo1, geodstbox_nearest_lat(lo1, c, lo2, hi2) },
+      { hi1, geodstbox_nearest_lat(hi1, c, lo2, hi2) },
+      { geodstbox_nearest_lat(lo2, c, lo1, hi1), lo2 },
+      { geodstbox_nearest_lat(hi2, c, lo1, hi1), hi2 } };
+    int best = 0;
+    double bestval = -2.0;
+    for (int i = 0; i < 4; i++)
+    {
+      double val = sin(cand[i][0]) * sin(cand[i][1]) +
+        c * cos(cand[i][0]) * cos(cand[i][1]);
+      if (val > bestval)
+      {
+        bestval = val; best = i;
+      }
+    }
+    lat1 = cand[best][0] / rad; lat2 = cand[best][1] / rad;
+  }
+  GSERIALIZED *p1 = geopoint_make(lon1, lat1, 0.0, false, true, box1->srid);
+  GSERIALIZED *p2 = geopoint_make(lon2, lat2, 0.0, false, true, box1->srid);
+  int16 flags = box1->flags;
+  MEOS_FLAGS_SET_Z(flags, false);
+  double result = DatumGetFloat8(datum_geo_distance(PointerGetDatum(p1),
+    PointerGetDatum(p2), flags, spheroid));
+  pfree(p1); pfree(p2);
+  return result;
+}
+
+/**
  * @brief Return the spatial-only minimum distance between two spatiotemporal
  * boxes, ignoring the time dimension entirely
  * @param[in] box1,box2 Spatiotemporal boxes
@@ -4999,18 +5121,8 @@ stbox_spatial_dist(const STBox *box1, const STBox *box2, bool spheroid)
   }
 
   /* Spatial extents disjoint, geodetic input → distance on the spheroid or
-   * on the sphere. Drop the time component of each box before serialising
-   * to geometry. */
-  STBox b1 = *box1, b2 = *box2;
-  MEOS_FLAGS_SET_T(b1.flags, false);
-  MEOS_FLAGS_SET_T(b2.flags, false);
-  Datum g1 = PointerGetDatum(stbox_geo(&b1));
-  Datum g2 = PointerGetDatum(stbox_geo(&b2));
-  double result = DatumGetFloat8(datum_geo_distance(g1, g2, box1->flags,
-    spheroid));
-  pfree(DatumGetPointer(g1));
-  pfree(DatumGetPointer(g2));
-  return result;
+   * on the sphere between the regions the boxes bound */
+  return geodstbox_bounds_dist(box1, box2, spheroid);
 }
 
 /**

@@ -286,11 +286,13 @@ bitmatrix_print(const BitMatrix *bm)
  * @param[in] size Tile size
  * @param[in] border_inc True when the box contains its upper border
  */
-static int
+static double
 tile_dim_count(double lower, double upper, double binmin, double binmax,
   double size, bool border_inc)
 {
-  int result = (int) rint((binmax - binmin) / size) + 1;
+  /* Counted in a double, which #tile_count_mult refuses past the largest
+   * integer before it is read as one */
+  double result = rint((binmax - binmin) / size) + 1;
   if (! border_inc && upper > lower && upper == binmax)
     result--;
   return result;
@@ -341,14 +343,22 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     state->ysize = ysize;
     state->box.xmin = float_get_bin(box->xmin, xsize, sorigin.x);
     state->box.xmax = float_get_bin(box->xmax, xsize, sorigin.x);
-    state->max_coords[0] = tile_dim_count(box->xmin, box->xmax,
-      state->box.xmin, state->box.xmax, xsize, border_inc);
-    state->ntiles *= state->max_coords[0];
+    if (! tile_count_mult(&state->ntiles, tile_dim_count(box->xmin,
+          box->xmax, state->box.xmin, state->box.xmax, xsize, border_inc),
+          &state->max_coords[0]))
+    {
+      pfree(state);
+      return NULL;
+    }
     state->box.ymin = float_get_bin(box->ymin, ysize, sorigin.y);
     state->box.ymax = float_get_bin(box->ymax, ysize, sorigin.y);
-    state->max_coords[1] = tile_dim_count(box->ymin, box->ymax,
-      state->box.ymin, state->box.ymax, ysize, border_inc);
-    state->ntiles *= state->max_coords[1];
+    if (! tile_count_mult(&state->ntiles, tile_dim_count(box->ymin,
+          box->ymax, state->box.ymin, state->box.ymax, ysize, border_inc),
+          &state->max_coords[1]))
+    {
+      pfree(state);
+      return NULL;
+    }
     state->box.srid = box->srid;
     state->box.flags = box->flags;
     state->x = state->box.xmin;
@@ -361,9 +371,13 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
       state->zsize = zsize;
       state->box.zmin = float_get_bin(box->zmin, zsize, sorigin.z);
       state->box.zmax = float_get_bin(box->zmax, zsize, sorigin.z);
-      state->max_coords[dim] = tile_dim_count(box->zmin, box->zmax,
-        state->box.zmin, state->box.zmax, zsize, border_inc);
-      state->ntiles *= state->max_coords[dim];
+      if (! tile_count_mult(&state->ntiles, tile_dim_count(box->zmin,
+            box->zmax, state->box.zmin, state->box.zmax, zsize, border_inc),
+            &state->max_coords[dim]))
+      {
+        pfree(state);
+        return NULL;
+      }
       state->z = state->box.zmin;
       dim++;
     }
@@ -403,13 +417,16 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
         DatumGetTimestampTz(box->period.lower), state->tunits, torigin));
       state->box.period.upper = TimestampTzGetDatum(timestamptz_bin_start(
         DatumGetTimestampTz(box->period.upper), state->tunits, torigin));
-      state->max_coords[dim] = tile_dim_count(
-        (double) DatumGetTimestampTz(box->period.lower),
-        (double) DatumGetTimestampTz(box->period.upper),
-        (double) DatumGetTimestampTz(state->box.period.lower),
-        (double) DatumGetTimestampTz(state->box.period.upper),
-        (double) state->tunits, border_inc);
-      state->ntiles *= state->max_coords[dim];
+      if (! tile_count_mult(&state->ntiles, tile_dim_count(
+            (double) DatumGetTimestampTz(box->period.lower),
+            (double) DatumGetTimestampTz(box->period.upper),
+            (double) DatumGetTimestampTz(state->box.period.lower),
+            (double) DatumGetTimestampTz(state->box.period.upper),
+            (double) state->tunits, border_inc), &state->max_coords[dim]))
+      {
+        pfree(state);
+        return NULL;
+      }
       state->t = DatumGetTimestampTz(state->box.period.lower);
     }
     else
@@ -862,6 +879,8 @@ stbox_space_time_tile_init(const STBox *bounds, double xsize, double ysize,
   grid_origin_point(sorigin, &pt);
   STboxGridState *result = stbox_tile_state_make(NULL, bounds, xsize, ysize,
     zsize, duration, pt, torigin, border_inc);
+  if (! result)
+    return NULL;
   *ntiles = result->ntiles;
   return result;
 }
@@ -1820,6 +1839,8 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   /* Create function state */
   STboxGridState *state = stbox_tile_state_make(temp, &bounds, xsize, ysize,
     zsize, duration, pt, torigin, border_inc);
+  if (! state)
+    return NULL;
   /* If a bit matrix is used to speed up the process
    * Notice that bitmatrix is set to 0 above if there is not space dimension */
   if (bitmatrix)

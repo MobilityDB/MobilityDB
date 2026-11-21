@@ -29,20 +29,20 @@ SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry_inst
 SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry_inst;
 SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry_inst;
 
-SELECT DISTINCT tempSubtype(tgeometryInst(inst)) FROM tbl_tgeometry3D_inst;
-SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tgeometry3D_inst;
-SELECT DISTINCT tempSubtype(tgeometrySeq(inst)) FROM tbl_tgeometry3D_inst;
-SELECT DISTINCT tempSubtype(tgeometrySeqSet(inst)) FROM tbl_tgeometry3D_inst;
+SELECT DISTINCT tempSubtype(tgeometryInst(temp)) FROM tbl_tgeometry3d_inst;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry3d_inst;
+SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry3d_inst;
+SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry3d_inst;
 
 SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography_inst;
 SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography_inst;
 SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography_inst;
 SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography_inst;
 
-SELECT DISTINCT tempSubtype(tgeographyInst(inst)) FROM tbl_tgeography3D_inst;
-SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tgeography3D_inst;
-SELECT DISTINCT tempSubtype(tgeographySeq(inst)) FROM tbl_tgeography3D_inst;
-SELECT DISTINCT tempSubtype(tgeographySeqSet(inst)) FROM tbl_tgeography3D_inst;
+SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography3d_inst;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography3d_inst;
+SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography3d_inst;
+SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography3d_inst;
 
 ------------------------------------------------------------------------------/
 
@@ -51,20 +51,20 @@ SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry_disc
 SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry_discseq WHERE numInstants(temp) = 1;
 SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry_discseq;
 
-SELECT DISTINCT tempSubtype(tgeometryInst(ti)) FROM tbl_tgeometry3D_discseq WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tgeometry3D_discseq;
-SELECT DISTINCT tempSubtype(tgeometrySeq(ti)) FROM tbl_tgeometry3D_discseq WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tgeometrySeqSet(ti)) FROM tbl_tgeometry3D_discseq;
+SELECT DISTINCT tempSubtype(tgeometryInst(temp)) FROM tbl_tgeometry3d_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry3d_discseq;
+SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry3d_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry3d_discseq;
 
 SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography_discseq WHERE numInstants(temp) = 1;
 SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography_discseq;
 SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography_discseq WHERE numInstants(temp) = 1;
 SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography_discseq;
 
-SELECT DISTINCT tempSubtype(tgeographyInst(ti)) FROM tbl_tgeography3D_discseq WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tgeography3D_discseq;
-SELECT DISTINCT tempSubtype(tgeographySeq(ti)) FROM tbl_tgeography3D_discseq WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tgeographySeqSet(ti)) FROM tbl_tgeography3D_discseq;
+SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography3d_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography3d_discseq;
+SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography3d_discseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography3d_discseq;
 
 ------------------------------------------------------------------------------/
 
@@ -73,20 +73,20 @@ SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry_cont
 SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry_contseq;
 SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry_contseq;
 
-SELECT DISTINCT tempSubtype(tgeometryInst(seq)) FROM tbl_tgeometry3D_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tgeometry3D_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tgeometrySeq(seq)) FROM tbl_tgeometry3D_seq;
-SELECT DISTINCT tempSubtype(tgeometrySeqSet(seq)) FROM tbl_tgeometry3D_seq;
+SELECT DISTINCT tempSubtype(tgeometryInst(temp)) FROM tbl_tgeometry3d_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry3d_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry3d_contseq;
+SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry3d_contseq;
 
 SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography_contseq WHERE numInstants(temp) = 1;
 SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography_contseq WHERE numInstants(temp) = 1;
 SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography_contseq;
 SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography_contseq;
 
-SELECT DISTINCT tempSubtype(tgeographyInst(seq)) FROM tbl_tgeography3D_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tgeography3D_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tgeographySeq(seq)) FROM tbl_tgeography3D_seq;
-SELECT DISTINCT tempSubtype(tgeographySeqSet(seq)) FROM tbl_tgeography3D_seq;
+SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography3d_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography3d_contseq WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography3d_contseq;
+SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography3d_contseq;
 
 ------------------------------------------------------------------------------/
 
@@ -95,20 +95,20 @@ SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry_seqs
 SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry_seqset WHERE numSequences(temp) = 1;
 SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry_seqset;
 
-SELECT DISTINCT tempSubtype(tgeometryInst(ss)) FROM tbl_tgeometry3D_seqset WHERE numInstants(ss) = 1;
-SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tgeometry3D_seqset WHERE duration(ss) = '00:00:00';
-SELECT DISTINCT tempSubtype(tgeometrySeq(ss)) FROM tbl_tgeometry3D_seqset WHERE numSequences(ss) = 1;
-SELECT DISTINCT tempSubtype(tgeometrySeqSet(ss)) FROM tbl_tgeometry3D_seqset;
+SELECT DISTINCT tempSubtype(tgeometryInst(temp)) FROM tbl_tgeometry3d_seqset WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeometry3d_seqset WHERE duration(temp) = '00:00:00';
+SELECT DISTINCT tempSubtype(tgeometrySeq(temp)) FROM tbl_tgeometry3d_seqset WHERE numSequences(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeometrySeqSet(temp)) FROM tbl_tgeometry3d_seqset;
 
 SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography_seqset WHERE numInstants(temp) = 1;
 SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography_seqset WHERE duration(temp) = '00:00:00';
 SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography_seqset WHERE numSequences(temp) = 1;
 SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography_seqset;
 
-SELECT DISTINCT tempSubtype(tgeographyInst(ss)) FROM tbl_tgeography3D_seqset WHERE numInstants(ss) = 1;
-SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tgeography3D_seqset WHERE duration(ss) = '00:00:00';
-SELECT DISTINCT tempSubtype(tgeographySeq(ss)) FROM tbl_tgeography3D_seqset WHERE numSequences(ss) = 1;
-SELECT DISTINCT tempSubtype(tgeographySeqSet(ss)) FROM tbl_tgeography3D_seqset;
+SELECT DISTINCT tempSubtype(tgeographyInst(temp)) FROM tbl_tgeography3d_seqset WHERE numInstants(temp) = 1;
+SELECT DISTINCT tempSubtype(setInterp(temp, 'discrete')) FROM tbl_tgeography3d_seqset WHERE duration(temp) = '00:00:00';
+SELECT DISTINCT tempSubtype(tgeographySeq(temp)) FROM tbl_tgeography3d_seqset WHERE numSequences(temp) = 1;
+SELECT DISTINCT tempSubtype(tgeographySeqSet(temp)) FROM tbl_tgeography3d_seqset;
 
 ------------------------------------------------------------------------------
 
@@ -121,165 +121,165 @@ SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min'))
 
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeometry ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeography ORDER BY 1;
-SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeometry3D ORDER BY 1;
-SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeography3D ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeometry3d ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeography3d ORDER BY 1;
 
 -- The size of geometries increased a few bytes in PostGIS 3
 SELECT COUNT(*) FROM tbl_tgeometry WHERE memSize(temp) > 0;
 SELECT COUNT(*) FROM tbl_tgeography WHERE memSize(temp) > 0;
-SELECT COUNT(*) FROM tbl_tgeometry3D WHERE memSize(temp) > 0;
-SELECT COUNT(*) FROM tbl_tgeography3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeometry3d WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeography3d WHERE memSize(temp) > 0;
 
 SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeometry;
 SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeography;
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeometry3D;
-SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeography3D;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeometry3d;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeography3d;
 
 /* There is no ST_MemSize neither MAX for geography. */
 SELECT MAX(ST_MemSize(getValue(temp))) FROM tbl_tgeometry_inst;
 SELECT MAX(ST_MemSize(getValue(temp)::geometry)) FROM tbl_tgeography_inst;
-SELECT MAX(ST_MemSize(getValue(inst))) FROM tbl_tgeometry3D_inst;
-SELECT MAX(ST_MemSize(getValue(inst)::geometry)) FROM tbl_tgeography3D_inst;
+SELECT MAX(ST_MemSize(getValue(temp))) FROM tbl_tgeometry3d_inst;
+SELECT MAX(ST_MemSize(getValue(temp)::geometry)) FROM tbl_tgeography3d_inst;
 
 SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeometry;
 SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeography;
-SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeography3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeometry3d;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeography3d;
 
 SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeometry;
 SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeography;
-SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeography3D;
+SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeometry3d;
+SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeography3d;
 
 SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_tgeometry;
 SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeography;
-SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeography3D;
+SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_tgeometry3d;
+SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeography3d;
 
 SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_tgeometry;
 SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeography;
-SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_tgeometry3D;
-SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeography3D;
+SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_tgeometry3d;
+SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeography3d;
 
 SELECT MAX(getTimestamp(temp)) FROM tbl_tgeometry_inst;
 SELECT MAX(getTimestamp(temp)) FROM tbl_tgeography_inst;
-SELECT MAX(getTimestamp(inst)) FROM tbl_tgeometry3D_inst;
-SELECT MAX(getTimestamp(inst)) FROM tbl_tgeography3D_inst;
+SELECT MAX(getTimestamp(temp)) FROM tbl_tgeometry3d_inst;
+SELECT MAX(getTimestamp(temp)) FROM tbl_tgeography3d_inst;
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tgeometry;
 SELECT MAX(duration(getTime(temp))) FROM tbl_tgeography;
-SELECT MAX(duration(getTime(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(duration(getTime(temp))) FROM tbl_tgeography3D;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeometry3d;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeography3d;
 
 SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeometry;
 SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeography;
-SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeography3D;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeometry3d;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeography3d;
 
 SELECT MAX(duration(temp)) FROM tbl_tgeometry;
 SELECT MAX(duration(temp)) FROM tbl_tgeography;
-SELECT MAX(duration(temp)) FROM tbl_tgeometry3D;
-SELECT MAX(duration(temp)) FROM tbl_tgeography3D;
+SELECT MAX(duration(temp)) FROM tbl_tgeometry3d;
+SELECT MAX(duration(temp)) FROM tbl_tgeography3d;
 
 SELECT MAX(numSequences(temp)) FROM tbl_tgeometry_contseq;
 SELECT MAX(numSequences(temp)) FROM tbl_tgeography_contseq;
-SELECT MAX(numSequences(seq)) FROM tbl_tgeometry3D_seq;
-SELECT MAX(numSequences(seq)) FROM tbl_tgeography3D_seq;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeometry3d_contseq;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeography3d_contseq;
 
 SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeometry_contseq;
 SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeography_contseq;
-SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeometry3D_seq;
-SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeography3D_seq;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeometry3d_contseq;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeography3d_contseq;
 
 SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeometry_contseq;
 SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeography_contseq;
-SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeometry3D_seq;
-SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeography3D_seq;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeometry3d_contseq;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeography3d_contseq;
 
 SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeometry_contseq;
 SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeography_contseq;
-SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeometry3D_seq;
-SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeography3D_seq;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeometry3d_contseq;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeography3d_contseq;
 
 SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeometry_contseq;
 SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeography_contseq;
-SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tgeometry3D_seq;
-SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tgeography3D_seq;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeometry3d_contseq;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeography3d_contseq;
 
 SELECT MAX(numSequences(temp)) FROM tbl_tgeometry_seqset;
 SELECT MAX(numSequences(temp)) FROM tbl_tgeography_seqset;
-SELECT MAX(numSequences(ss)) FROM tbl_tgeometry3D_seqset;
-SELECT MAX(numSequences(ss)) FROM tbl_tgeography3D_seqset;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeometry3d_seqset;
+SELECT MAX(numSequences(temp)) FROM tbl_tgeography3d_seqset;
 
 SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeometry_seqset;
 SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeography_seqset;
-SELECT MAX(duration(startSequence(ss))) FROM tbl_tgeometry3D_seqset;
-SELECT MAX(duration(startSequence(ss))) FROM tbl_tgeography3D_seqset;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeometry3d_seqset;
+SELECT MAX(duration(startSequence(temp))) FROM tbl_tgeography3d_seqset;
 
 SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeometry_seqset;
 SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeography_seqset;
-SELECT MAX(duration(endSequence(ss))) FROM tbl_tgeometry3D_seqset;
-SELECT MAX(duration(endSequence(ss))) FROM tbl_tgeography3D_seqset;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeometry3d_seqset;
+SELECT MAX(duration(endSequence(temp))) FROM tbl_tgeography3d_seqset;
 
 SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeometry_seqset;
 SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeography_seqset;
-SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tgeometry3D_seqset;
-SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tgeography3D_seqset;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeometry3d_seqset;
+SELECT MAX(duration(sequenceN(temp, numSequences(temp)))) FROM tbl_tgeography3d_seqset;
 
 SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeometry_seqset;
 SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeography_seqset;
-SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tgeometry3D_seqset;
-SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tgeography3D_seqset;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeometry3d_seqset;
+SELECT MAX(array_length(sequences(temp),1)) FROM tbl_tgeography3d_seqset;
 
 SELECT MAX(numInstants(temp)) FROM tbl_tgeometry;
 SELECT MAX(numInstants(temp)) FROM tbl_tgeography;
-SELECT MAX(numInstants(temp)) FROM tbl_tgeometry3D;
-SELECT MAX(numInstants(temp)) FROM tbl_tgeography3D;
+SELECT MAX(numInstants(temp)) FROM tbl_tgeometry3d;
+SELECT MAX(numInstants(temp)) FROM tbl_tgeography3d;
 
 SELECT COUNT(startInstant(temp)) FROM tbl_tgeometry;
 SELECT COUNT(startInstant(temp)) FROM tbl_tgeography;
-SELECT COUNT(startInstant(temp)) FROM tbl_tgeometry3D;
-SELECT COUNT(startInstant(temp)) FROM tbl_tgeography3D;
+SELECT COUNT(startInstant(temp)) FROM tbl_tgeometry3d;
+SELECT COUNT(startInstant(temp)) FROM tbl_tgeography3d;
 
 SELECT COUNT(endInstant(temp)) FROM tbl_tgeometry;
 SELECT COUNT(endInstant(temp)) FROM tbl_tgeography;
-SELECT COUNT(endInstant(temp)) FROM tbl_tgeometry3D;
-SELECT COUNT(endInstant(temp)) FROM tbl_tgeography3D;
+SELECT COUNT(endInstant(temp)) FROM tbl_tgeometry3d;
+SELECT COUNT(endInstant(temp)) FROM tbl_tgeography3d;
 
 SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeometry;
 SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeography;
-SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeometry3D;
-SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeography3D;
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeometry3d;
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tgeography3d;
 
 SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeometry;
 SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeography;
-SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeometry3D;
-SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeography3D;
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeometry3d;
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tgeography3d;
 
 SELECT MAX(numTimestamps(temp)) FROM tbl_tgeometry;
 SELECT MAX(numTimestamps(temp)) FROM tbl_tgeography;
-SELECT MAX(numTimestamps(temp)) FROM tbl_tgeometry3D;
-SELECT MAX(numTimestamps(temp)) FROM tbl_tgeography3D;
+SELECT MAX(numTimestamps(temp)) FROM tbl_tgeometry3d;
+SELECT MAX(numTimestamps(temp)) FROM tbl_tgeography3d;
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tgeometry;
 SELECT MAX(startTimestamp(temp)) FROM tbl_tgeography;
-SELECT MAX(startTimestamp(temp)) FROM tbl_tgeometry3D;
-SELECT MAX(startTimestamp(temp)) FROM tbl_tgeography3D;
+SELECT MAX(startTimestamp(temp)) FROM tbl_tgeometry3d;
+SELECT MAX(startTimestamp(temp)) FROM tbl_tgeography3d;
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tgeometry;
 SELECT MAX(endTimestamp(temp)) FROM tbl_tgeography;
-SELECT MAX(endTimestamp(temp)) FROM tbl_tgeometry3D;
-SELECT MAX(endTimestamp(temp)) FROM tbl_tgeography3D;
+SELECT MAX(endTimestamp(temp)) FROM tbl_tgeometry3d;
+SELECT MAX(endTimestamp(temp)) FROM tbl_tgeography3d;
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeometry;
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeography;
-SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeography3D;
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeometry3d;
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeography3d;
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeometry;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeography;
-SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeometry3D;
-SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeography3D;
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeometry3d;
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeography3d;
 
 -------------------------------------------------------------------------------
 -- Shift and scaleTime functions
@@ -287,18 +287,18 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeography3D;
 
 SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeometry, tbl_interval;
 SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeography, tbl_interval;
-SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeometry3D, tbl_interval;
-SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeography3D, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeometry3d, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeography3d, tbl_interval;
 
 SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeometry, tbl_interval;
 SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeography, tbl_interval;
-SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeometry3D, tbl_interval;
-SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeography3D, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeometry3d, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeography3d, tbl_interval;
 
 SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeometry, tbl_interval;
 SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeography, tbl_interval;
-SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeometry3D, tbl_interval;
-SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeography3D, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeometry3d, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeography3d, tbl_interval;
 
 -------------------------------------------------------------------------------
 -- Granularity modification with tprecision and tsample
@@ -321,13 +321,13 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeography3D, tbl_interval;
 
 SELECT COUNT(*) FROM tbl_tgeometry WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tgeography WHERE temp ?= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeometry3D WHERE temp ?= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeography3D WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeometry3d WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeography3d WHERE temp ?= startValue(temp);
 
 SELECT COUNT(*) FROM tbl_tgeometry WHERE temp %= startValue(temp);
 SELECT COUNT(*) FROM tbl_tgeography WHERE temp %= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeometry3D WHERE temp %= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeography3D WHERE temp %= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeometry3d WHERE temp %= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeography3d WHERE temp %= startValue(temp);
 
 ------------------------------------------------------------------------------
 -- Restriction functions
@@ -335,8 +335,8 @@ SELECT COUNT(*) FROM tbl_tgeography3D WHERE temp %= startValue(temp);
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
 SELECT COUNT(*) FROM tbl_tgeography, tbl_geography WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_geometry3d WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_geography3d WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
 
 SELECT COUNT(*) FROM tbl_tgeometry, (
   SELECT set(array_agg(g)) AS s FROM tbl_geometry WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp
@@ -344,37 +344,37 @@ WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
 SELECT COUNT(*) FROM tbl_tgeography, (
   SELECT set(array_agg(g)) AS s FROM tbl_geography WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry)) tmp
 WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
-SELECT COUNT(*) FROM tbl_tgeometry3D, (
-  SELECT set(array_agg(g)) AS s FROM tbl_geometry3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp
+SELECT COUNT(*) FROM tbl_tgeometry3d, (
+  SELECT set(array_agg(g)) AS s FROM tbl_geometry3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp
 WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
-SELECT COUNT(*) FROM tbl_tgeography3D, (
-  SELECT set(array_agg(g)) AS s FROM tbl_geography3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry)) tmp
+SELECT COUNT(*) FROM tbl_tgeography3d, (
+  SELECT set(array_agg(g)) AS s FROM tbl_geography3d WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry)) tmp
 WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeography, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 SELECT COUNT(*) FROM tbl_tgeography, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 SELECT COUNT(*) FROM tbl_tgeography, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 SELECT COUNT(*) FROM tbl_tgeography, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 SELECT COUNT(*) FROM tbl_tgeography, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeometry3d, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeography3d, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
 -------------------------------------------------------------------------------
 -- Modification functions
@@ -414,30 +414,30 @@ WHERE t1.temp > t2.temp;
 SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2
 WHERE t1.temp >= t2.temp;
 
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
 WHERE t1.temp = t2.temp;
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
 WHERE t1.temp <> t2.temp;
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
 WHERE t1.temp < t2.temp;
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
 WHERE t1.temp <= t2.temp;
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
 WHERE t1.temp > t2.temp;
-SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+SELECT COUNT(*) FROM tbl_tgeometry3d t1, tbl_tgeometry3d t2
 WHERE t1.temp >= t2.temp;
 
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2
 WHERE t1.temp = t2.temp;
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2
 WHERE t1.temp <> t2.temp;
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2
 WHERE t1.temp < t2.temp;
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2
 WHERE t1.temp <= t2.temp;
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2
 WHERE t1.temp > t2.temp;
-SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+SELECT COUNT(*) FROM tbl_tgeography3d t1, tbl_tgeography3d t2
 WHERE t1.temp >= t2.temp;
 
 -------------------------------------------------------------------------------

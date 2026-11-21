@@ -2262,6 +2262,8 @@ pose_set_srid_intl(Pose *pose, int32_t srid)
 /**
  * @ingroup meos_pose_base_srid
  * @brief Return a pose with the coordinates set to an SRID
+ * @details The invalid SRID is refused and any other SRID is clamped as
+ * #geo_set_srid clamps it
  * @param[in] pose Pose
  * @param[in] srid SRID
  * @csqlfn #Pose_set_srid()
@@ -2274,7 +2276,7 @@ pose_set_srid(const Pose *pose, int32_t srid)
   if (! ensure_srid_valid(srid))
     return NULL;
   Pose *result = pose_copy(pose);
-  pose_set_srid_intl(result, srid);
+  pose_set_srid_intl(result, clamp_srid(srid));
   return result;
 }
 

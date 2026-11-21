@@ -687,6 +687,26 @@ two_square(double a, double *x, double *y)
 }
 
 /**
+ * @brief Split the product of two doubles into its rounded value and the
+ * error of that rounding, which together are the product exactly
+ * @details The product of #two_product computed with no call, as #two_square
+ * computes a square: Dekker's product on the halves of 26 bits that splitting
+ * by 2^27 + 1 gives, each of their products exact. A build without a fused
+ * multiply-add instruction calls a library function for `fma`
+ * @note Exact where the product neither overflows nor underflows and both
+ * values are at most 2^995 in magnitude
+ */
+static inline void
+two_product_split(double a, double b, double *x, double *y)
+{
+  double ta = 134217729.0 * a, tb = 134217729.0 * b;
+  double ah = ta - (ta - a), bh = tb - (tb - b);
+  double al = a - ah, bl = b - bh;
+  *x = a * b;
+  *y = ((ah * bh - *x) + ah * bl + al * bh) + al * bl;
+}
+
+/**
  * @brief Add a double to an expansion, a sum of doubles that do not overlap,
  * held in increasing order of magnitude, and return its new length
  * @details The sum is exact, and a zero component is dropped, so the last
@@ -726,6 +746,21 @@ two_sum(double a, double b, double *x, double *y)
 }
 
 /**
+ * @brief Split the sum of two doubles, the first at least the second in
+ * magnitude, into its rounded value and the error of that rounding, which
+ * together are the sum exactly
+ * @details Dekker's sum in three operations, where #two_sum takes six and
+ * needs no order, as #dx_filter reads the rounding error of a pair: exact
+ * when |a| >= |b| or a is 0
+ */
+static inline void
+fast_two_sum(double a, double b, double *x, double *y)
+{
+  *x = a + b;
+  *y = b - (*x - a);
+}
+
+/**
  * @brief Set the three coordinates of `q - p`, exact as two doubles
  */
 static pg_attribute_always_inline void
@@ -759,9 +794,56 @@ ddb_is_double(DDBound a)
 }
 
 /**
+ * @brief Return the product of two pairs of doubles, the value of #ddb_mul
+ * without its bound, which is left 0: the error is the caller's to state
+ */
+static pg_attribute_always_inline DDBound
+dd_mul(DDBound a, DDBound b)
+{
+  DDBound r;
+  double p, pe;
+  two_product(a.hi, b.hi, &p, &pe);
+  pe += a.hi * b.lo + a.lo * b.hi;
+  /* |pe| is at most about 2^-52 |p|, and 0 where p is: p leads */
+  fast_two_sum(p, pe, &r.hi, &r.lo);
+  r.e = 0.0;
+  return r;
+}
+
+/**
+ * @brief Return the sum of two pairs of doubles, the value of #ddb_add
+ * without its bound, which is left 0: the error is the caller's to state
+ */
+static pg_attribute_always_inline DDBound
+dd_add(DDBound a, DDBound b)
+{
+  DDBound r;
+  double s, se;
+  two_sum(a.hi, b.hi, &s, &se);
+  se += a.lo + b.lo;
+  two_sum(s, se, &r.hi, &r.lo);
+  r.e = 0.0;
+  return r;
+}
+
+/**
+ * @brief Return the difference of two pairs of doubles, the value of
+ * #ddb_sub without its bound (#dd_add)
+ */
+static pg_attribute_always_inline DDBound
+dd_sub(DDBound a, DDBound b)
+{
+  b.hi = - b.hi;
+  b.lo = - b.lo;
+  return dd_add(a, b);
+}
+
+/**
  * @brief Return the product of two bounded values, with its bound
  * @details A product with an exact zero is an exact zero, and the product of
- * two doubles held exactly is exact as two doubles (#two_product)
+ * two doubles held exactly is exact as two doubles (#two_product); otherwise
+ * the value is #dd_mul's and the rounding of its last sum lies within
+ * DDB_EPS of the product held
  */
 static pg_attribute_always_inline DDBound
 ddb_mul(DDBound a, DDBound b)
@@ -779,18 +861,16 @@ ddb_mul(DDBound a, DDBound b)
     r.e = (fabs(r.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
     return r;
   }
-  double p, pe;
-  two_product(a.hi, b.hi, &p, &pe);
-  pe += a.hi * b.lo + a.lo * b.hi;
-  two_sum(p, pe, &r.hi, &r.lo);
+  r = dd_mul(a, b);
   double ma = fabs(a.hi) + fabs(a.lo), mb = fabs(b.hi) + fabs(b.lo);
   r.e = ma * b.e + mb * a.e + a.e * b.e + fabs(a.lo * b.lo) +
-    DDB_EPS * fabs(p) + DDB_TINY;
+    DDB_EPS * fabs(r.hi) * DDB_UP + DDB_TINY;
   return r;
 }
 
 /**
  * @brief Return the sum of two bounded values, with its bound
+ * @details The value is #dd_add's
  */
 static pg_attribute_always_inline DDBound
 ddb_add(DDBound a, DDBound b)
@@ -801,18 +881,14 @@ ddb_add(DDBound a, DDBound b)
     return a;
   if (ddb_is_zero(a))
     return b;
-  double s, se;
-  two_sum(a.hi, b.hi, &s, &se);
   DDBound r;
   if (ddb_is_double(a) && ddb_is_double(b))
   {
-    r.hi = s;
-    r.lo = se;
+    two_sum(a.hi, b.hi, &r.hi, &r.lo);
     r.e = 0.0;
     return r;
   }
-  se += a.lo + b.lo;
-  two_sum(s, se, &r.hi, &r.lo);
+  r = dd_add(a, b);
   r.e = a.e + b.e + DDB_EPS * (fabs(a.hi) + fabs(b.hi)) + DDB_TINY;
   return r;
 }
@@ -889,6 +965,8 @@ polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
   return polynomial_sign_pairs(sums, terms, nterms);
 }
 
+extern int polynomial_sign_exact_pairs(const ExactSum *sums,
+  const PolyTerm *terms, int nterms);
 extern int polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
   int nterms);
 
@@ -896,7 +974,9 @@ extern int polynomial_sign_dyadic(const ExactSum *sums, const PolyTerm *terms,
  * @brief Return the sign of a polynomial in exact sums, computed exactly
  * @details The polynomial is first evaluated in doubles together with a bound
  * on the error of every operation, then in pairs of doubles against its own
- * bound (#polynomial_sign_filter); where neither tells, the sign is read on
+ * bound (#polynomial_sign_filter). Where neither tells, which a zero never
+ * does, a polynomial whose terms are exact in pairs of doubles is summed
+ * exactly (#polynomial_sign_exact_pairs); elsewhere the sign is read on
  * the expression ladder from its expansions on (#polynomial_sign_dyadic), in
  * expansions and in #DyadicWide where those leave their exact range, so it is
  * exact for any finite sums
@@ -909,6 +989,9 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   int nterms)
 {
   int sign = polynomial_sign_filter(sums, terms, nterms);
+  if (sign != 2)
+    return sign;
+  sign = polynomial_sign_exact_pairs(sums, terms, nterms);
   if (sign != 2)
     return sign;
   return polynomial_sign_dyadic(sums, terms, nterms);
@@ -958,71 +1041,109 @@ nearest_bits_beyond_sign(int s, uint64 bits)
   return s > 0 || (s == 0 && (bits & 1) != 0);
 }
 
+/* The side of a monotone search over keys (#monotone_search): 1 where the
+ * answer lies above the key, 0 where it is the key or lies below it, 2 where
+ * the side cannot tell */
+typedef int (*MonotoneSide)(uint64 key, void *arg);
+
 /**
- * @brief Find the bit pattern of the double nearest a nonnegative value that
- * @p side places against midpoints, a tie going to the even double, returning
- * false where a side it asks cannot tell or its budget runs out
- * @details The answer is the smallest bit pattern whose upper midpoint the
- * value does not pass, infinity standing above the largest double, whose
- * upper midpoint is `2^1024 - 2^970`. A gallop from the candidate
- * @p bits brackets it, its first two steps of one double, so that a
- * candidate a neighbour or two from the answer asks no more sides than a
- * walk, the steps then doubling, and halving the bracket finds it; a candidate whose own side cannot tell is read from its lower
- * neighbour, which places the value below it or decides nothing. An exact
+ * @brief Find the smallest key above @p lo and at most @p hi that @p side
+ * does not place below the answer, by halving the bracket, returning false
+ * where a side it asks cannot tell or the budget runs out
+ * @details The halving of #monotone_search, read alone by a search that has
+ * its bracket and no candidate. The key @p lo lies below the answer and
+ * @p hi does not; neither is asked
+ * @param[in] lo,hi Bracket, @p lo below @p hi
+ * @param[in] side,arg The side and its argument
+ * @param[in] budget Largest number of sides asked, 0 for no limit
+ * @param[in,out] asked Number of sides asked so far
+ * @param[out] result The answer where the search answers
+ */
+static pg_attribute_always_inline bool
+monotone_halve(uint64 lo, uint64 hi, MonotoneSide side, void *arg,
+  int budget, int *asked, uint64 *result)
+{
+  while (hi - lo > 1)
+  {
+    uint64 mid = lo + (hi - lo) / 2;
+    if (budget > 0 && (*asked)++ >= budget)
+      return false;
+    int beyond = side(mid, arg);
+    if (beyond == 2)
+      return false;
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  *result = hi;
+  return true;
+}
+
+/**
+ * @brief Find the smallest key that @p side does not place below the
+ * answer, returning false where a side it asks cannot tell or its budget
+ * runs out
+ * @details The one search of the engine for an answer that a monotone side
+ * places among keys: the bit patterns of the doubles (#nearest_double_search)
+ * and the microseconds of a period. A gallop from the candidate @p key
+ * brackets the answer, its first two steps of one key, so that a candidate a
+ * neighbour or two from the answer asks no more sides than a walk, the steps
+ * then doubling, and halving the bracket finds it (#monotone_halve); a
+ * candidate whose own side
+ * cannot tell is read from its lower neighbour, which places the answer
+ * below it or decides nothing. The key @p max_key is known not to lie below
+ * the answer and is never asked; the key 0 is asked as every other. An exact
  * side never answers 2 and a budget of 0 sets no limit, so the search always
  * answers; a side of a filter on doubles answers 2 where it cannot tell, and
  * its budget bounds the sides it is asked, so that the exact search behind it
  * answers what the filter cannot
- * @param[in] bits Bit pattern of the candidate, at most infinity's
+ * @param[in] key Candidate, at most @p max_key
+ * @param[in] max_key Largest key, not below the answer
  * @param[in] side,arg The side and its argument
  * @param[in] budget Largest number of sides asked, 0 for no limit
- * @param[out] result The bit pattern of the answer where the search answers
+ * @param[out] result The answer where the search answers
  */
-static inline bool
-nearest_double_search(uint64 bits, NearestBitsSide side,
-  void *arg, int budget, uint64 *result)
+static pg_attribute_always_inline bool
+monotone_search(uint64 key, uint64 max_key, MonotoneSide side, void *arg,
+  int budget, uint64 *result)
 {
   int asked = 0;
-#define NEAREST_ASK(b, res) \
+#define MONOTONE_ASK(k, res) \
   do { \
     if (budget > 0 && asked++ >= budget) \
       return false; \
-    int s_ = side((b), arg); \
-    if (s_ == 2) \
-      (res) = 2; \
-    else \
-      (res) = nearest_bits_beyond_sign(s_, (b)) ? 1 : 0; \
+    (res) = side((k), arg); \
   } while (0)
-  const uint64 max_bits = NEAREST_INF_BITS;
   uint64 lo, hi, step = 1;
   int beyond, moves = 0;
-  if (bits > max_bits)
-    bits = max_bits;
-  if (bits == max_bits)
+  if (key > max_key)
+    key = max_key;
+  if (key == max_key)
     beyond = 0;
   else
-    NEAREST_ASK(bits, beyond);
+    MONOTONE_ASK(key, beyond);
   if (beyond == 2)
   {
-    /* The candidate cannot tell: below its lower midpoint the answer is at
-     * most its lower neighbour, otherwise nothing is decided */
-    if (bits == 0)
+    /* The candidate cannot tell: below its lower neighbour the answer is at
+     * most that neighbour, otherwise nothing is decided */
+    if (key == 0)
       return false;
-    NEAREST_ASK(bits - 1, beyond);
+    MONOTONE_ASK(key - 1, beyond);
     if (beyond != 0)
       return false;
-    bits -= 1;
+    key -= 1;
   }
   if (beyond == 1)
   {
-    /* The answer is above: lo is beyond, hi is not */
-    lo = bits;
+    /* The answer is above: lo is below it, hi is not */
+    lo = key;
     while (true)
     {
-      hi = (lo < max_bits - step) ? lo + step : max_bits;
-      if (hi == max_bits)
+      hi = (lo < max_key - step) ? lo + step : max_key;
+      if (hi == max_key)
         break;
-      NEAREST_ASK(hi, beyond);
+      MONOTONE_ASK(hi, beyond);
       if (beyond == 2)
         return false;
       if (! beyond)
@@ -1034,8 +1155,9 @@ nearest_double_search(uint64 bits, NearestBitsSide side,
   }
   else
   {
-    /* The answer is at or below: hi is not beyond, lo is beyond or below 0 */
-    hi = bits;
+    /* The answer is the key or below it: hi is not below it, lo is below it
+     * or below 0 */
+    hi = key;
     while (true)
     {
       if (hi == 0)
@@ -1044,7 +1166,7 @@ nearest_double_search(uint64 bits, NearestBitsSide side,
         return true;
       }
       lo = (hi > step) ? hi - step : 0;
-      NEAREST_ASK(lo, beyond);
+      MONOTONE_ASK(lo, beyond);
       if (beyond == 2)
         return false;
       if (beyond)
@@ -1059,20 +1181,57 @@ nearest_double_search(uint64 bits, NearestBitsSide side,
         step *= 2;
     }
   }
-  while (hi - lo > 1)
-  {
-    uint64 mid = lo + (hi - lo) / 2;
-    NEAREST_ASK(mid, beyond);
-    if (beyond == 2)
-      return false;
-    if (beyond)
-      lo = mid;
-    else
-      hi = mid;
-  }
-#undef NEAREST_ASK
-  *result = hi;
-  return true;
+#undef MONOTONE_ASK
+  return monotone_halve(lo, hi, side, arg, budget, &asked, result);
+}
+
+/* The side of a search for the nearest double and its argument, read by
+ * #nearest_bits_beyond */
+typedef struct
+{
+  NearestBitsSide side;   /**< Sign of the value against a midpoint */
+  void *arg;              /**< Argument of the side */
+} NearestBeyond;
+
+/**
+ * @brief Return 1 where the value lies beyond the upper midpoint of the
+ * double of bit pattern @p bits, a tie going to the even double, 0 where it
+ * does not and 2 where the side cannot tell: the side #nearest_double_search
+ * gives #monotone_search
+ * @note @p arg is not const, as #MonotoneSide declares it for the sides that
+ * write what they read through it
+ */
+static pg_attribute_always_inline int
+/* cppcheck-suppress constParameterCallback */
+nearest_bits_beyond(uint64 bits, void *arg)
+{
+  const NearestBeyond *n = (const NearestBeyond *) arg;
+  int s = n->side(bits, n->arg);
+  if (s == 2)
+    return 2;
+  return nearest_bits_beyond_sign(s, bits) ? 1 : 0;
+}
+
+/**
+ * @brief Find the bit pattern of the double nearest a nonnegative value that
+ * @p side places against midpoints, a tie going to the even double, returning
+ * false where a side it asks cannot tell or its budget runs out
+ * @details The answer is the smallest bit pattern whose upper midpoint the
+ * value does not pass, infinity standing above the largest double, whose
+ * upper midpoint is `2^1024 - 2^970`, found by #monotone_search over the bit
+ * patterns
+ * @param[in] bits Bit pattern of the candidate, at most infinity's
+ * @param[in] side,arg The side and its argument
+ * @param[in] budget Largest number of sides asked, 0 for no limit
+ * @param[out] result The bit pattern of the answer where the search answers
+ */
+static inline bool
+nearest_double_search(uint64 bits, NearestBitsSide side,
+  void *arg, int budget, uint64 *result)
+{
+  NearestBeyond n = {side, arg};
+  return monotone_search(bits, NEAREST_INF_BITS, &nearest_bits_beyond, &n,
+    budget, result);
 }
 
 /* A value 0 of an arena with room for @p n limbs */

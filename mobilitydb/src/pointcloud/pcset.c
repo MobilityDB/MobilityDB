@@ -53,6 +53,7 @@
 #include <pgtypes.h>  /* text_to_cstring — NOT utils/builtins.h, whose
                        * fmgrprotos.h json_object collides with json-c */
 #include <meos_pointcloud.h>
+#include "temporal/set.h"  /* PG_GETARG_SET_P, PG_RETURN_SET_P */
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
 #include "pointcloud/meos_schema_hook.h"
@@ -991,3 +992,64 @@ Pointcloud_schema_ndims(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Transformation into the schema of another pcid
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpoint_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_transform);
+/**
+ * @ingroup mobilitydb_pointcloud_base_srid
+ * @brief Return a pcpoint transformed into the schema of another pcid, which
+ * states the target SRID
+ * @sqlfn transform()
+ * @altsqlfn pcpointTransform()
+ */
+Datum
+Pcpoint_transform(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(1);
+  Pcpoint *result = pcpoint_transform(pt, pcid);
+  PG_FREE_IF_COPY(pt, 0);
+  PG_RETURN_PCPOINT_P(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_transform);
+/**
+ * @ingroup mobilitydb_pointcloud_base_srid
+ * @brief Return a pcpatch transformed into the schema of another pcid, which
+ * states the target SRID
+ * @sqlfn transform()
+ * @altsqlfn pcpatchTransform()
+ */
+Datum
+Pcpatch_transform(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(1);
+  Pcpatch *result = pg_pcpatch_transform(pa, pcid);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_PCPATCH_P(result);
+}
+
+PGDLLEXPORT Datum Pointcloudset_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pointcloudset_transform);
+/**
+ * @ingroup mobilitydb_pointcloud_base_srid
+ * @brief Return a set of pcpoints or pcpatches transformed into the schema of
+ * another pcid, which states the target SRID
+ * @sqlfn transform()
+ * @altsqlfn pcpointTransform(), pcpatchTransform()
+ */
+Datum
+Pointcloudset_transform(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  uint32_t pcid = (uint32_t) PG_GETARG_INT32(1);
+  Set *result = pointcloudset_transform(s, pcid);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
