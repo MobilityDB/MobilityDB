@@ -942,7 +942,8 @@ with all 1 196 914 outline and 199 220 center coordinates of the census. Against
 directly, by callgrind on the 6846 cells of resolutions 0 to 2, the outline and the center of a
 cell cost 15.5 thousand instructions against 9.3 thousand, 1.66 times, whether libmeos is linked or loaded at run time, the pairs under one bound
 deciding every point. The vendored library is MobilityDB #3873, merged as `c725de45ea`; the
-vertices are MobilityDB #3875, a draft until the owner accepts that cost.
+vertices are MobilityDB #3875, merged as `b9d568596b`, which the owner accepted at that cost; the
+installation of H3 in CI reads the loader cache whole (MobilityDB #3911, merged as `ae4eec487c`).
 Left to the cell walks: the two `atan(sinh)` sites of `raster_quadbin.c`, which their raster walk
 rewrites.
 
