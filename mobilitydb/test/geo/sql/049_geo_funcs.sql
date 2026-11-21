@@ -203,6 +203,20 @@ SELECT contains(buffer(geometry 'Curvepolygon(Circularstring(5.813848 2.813777,
   12.184346 5.166935,5.813848 2.813777),Circularstring(9.168692 2.718545,
   8.696632 5.985608,9.168692 2.718545))', 2.1456446498870543),
   ST_Point(8.599378402370817, 4.328579428763156)) AS in_hole;
+-- A ring whose arcs turn both ways turns as it does at its point furthest
+-- right: the square of side 4 whose bottom bulges out by 0.5 and whose top
+-- dips in by 0.5, the top an arc of radius 4.25 about (2 7.75), holds within
+-- 0.5 the points 0.3 above the dip and 0.4 below the bottom, and not 0.6
+-- below it
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, 3.8)) AS above_dip;
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -0.9)) AS below_bulge;
+SELECT contains(buffer(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,
+  2 -0.5,4 0),(4 0,4 4),Circularstring(4 4,2 3.5,0 4),(0 4,0 0)))', 0.5),
+  ST_Point(2, -1.1)) AS past_bulge;
 -- An arc is offset by an arc about its own centre: a point at 1.4 from the
 -- centre of the half circle of radius 1 lies in its buffer by 0.5
 SELECT contains(buffer(geometry 'Circularstring(-1 0,0 1,1 0)', 0.5),

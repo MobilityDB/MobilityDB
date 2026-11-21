@@ -11206,6 +11206,161 @@ buffer_capped_curve_offsets(const BufferWalkElem *w, uint32_t n,
   return true;
 }
 
+/* The circle of an input arc of the walk of a curve as the tower holds it:
+ * the offset of the arc by a distance of 0 (#tower_circle_of) */
+static void
+buffer_arc_circle_edge(const BufferWalkElem *w, Edge *e)
+{
+  memset(e, 0, sizeof(Edge));
+  e->etype = EDGE_POLYARC;
+  e->centred = true;
+  e->offset = true;
+  e->side = 1;
+  e->radius = 0.0;
+  e->sx = w->p[0][0]; e->sy = w->p[0][1];
+  e->mx = w->p[1][0]; e->my = w->p[1][1];
+  e->ex = w->p[2][0]; e->ey = w->p[2][1];
+  e->diameter = w->half != 0;
+  return;
+}
+
+/**
+ * @brief Return the sense a simple ring of segments and arcs turns in, read
+ * at its point furthest along x, the one furthest along y among those, 1
+ * counterclockwise and -1 clockwise, 0 where it is not told
+ * @details A simple closed curve turns at that point as its interior lies:
+ * to its left where it runs counterclockwise. The point is a vertex of the
+ * ring or the point E = (cx + R, cy) of the circle of an arc holding E
+ * within it. Vertices are compared in their doubles, a vertex and E by the
+ * side of the vertical line through E the vertex lies on and the
+ * horizontal one through the centre (#meet_point_circle_side), two such
+ * points by #tower_circles_right_cmp, every comparison exact. Whether E lies
+ * within its arc is whether it lies on the side of the chord the middle
+ * point does, read on the circle in doubles and its bound
+ * (#exact_arc_bound), and not told within that bound. At E the ring turns
+ * as its arc; at a vertex, as the walk turns there (#walk_turn_sign), a
+ * straight turn or a tie not told
+ */
+static int
+buffer_curve_ring_right_sense(const BufferWalkElem *w, uint32_t n)
+{
+  Edge *circ = palloc(sizeof(Edge) * n);
+  int best = -1;            /* Element whose start vertex or E is best */
+  bool barc = false;        /* The best is the E of an arc */
+  bool tied = false;
+  int result = 0;
+  for (uint32_t k = 0; k < n; k++)
+  {
+    /* The start vertex of element k */
+    const double *v = w[k].p[0];
+    int c;
+    if (best < 0)
+      c = 1;
+    else if (! barc)
+    {
+      const double *b = w[best].p[0];
+      c = (v[0] != b[0]) ? (v[0] > b[0] ? 1 : -1) :
+        (v[1] != b[1]) ? (v[1] > b[1] ? 1 : -1) : 0;
+    }
+    else
+    {
+      MeetPoint m = {MEET_VERTEX, NULL, NULL, 0, v[0], v[1], NULL};
+      c = meet_point_circle_side(&m, &circ[best], true, 1);
+      if (c == 0)
+        c = meet_point_circle_side(&m, &circ[best], false, 0);
+      if (c == 2)
+        goto done;
+    }
+    if (c > 0)
+    {
+      best = (int) k; barc = false; tied = false;
+    }
+    else if (c == 0)
+      tied = true;
+    if (! w[k].arc)
+      continue;
+    /* The point E of the circle of arc k, where the arc holds it */
+    buffer_arc_circle_edge(&w[k], &circ[k]);
+    ExactArc ea = {{w[k].p[0][0], w[k].p[0][1]}, {w[k].p[1][0], w[k].p[1][1]},
+      {w[k].p[2][0], w[k].p[2][1]}, w[k].half != 0, 0.0, 0.0, 0.0, 0.0};
+    double box[4];
+    exact_arc_bound(&ea, box);
+    if (ea.err < 0.0)
+      goto done;
+    /* The centre in doubles, the origin the exact tests measure from */
+    circ[k].cx = ea.cx;
+    circ[k].cy = ea.cy;
+    double ex = ea.cx + ea.r, ey = ea.cy;
+    const double *a = w[k].p[0], *b = w[k].p[2];
+    int within;
+    if (w[k].half)
+      /* A half circle on its diameter from a to b, counterclockwise for 1,
+       * holds the points to the right of a -> b */
+      within = - w[k].half;
+    else
+      within = cross_product_sign(a[0], a[1], b[0], b[1], a[0], a[1],
+        w[k].p[1][0], w[k].p[1][1]);
+    double dx = b[0] - a[0], dy = b[1] - a[1];
+    double crs = dx * (ey - a[1]) - dy * (ex - a[0]);
+    double bound = 2.0 * ea.err * (fabs(dx) + fabs(dy)) +
+      8.0 * DBL_EPSILON * (fabs(dx) + fabs(dy)) *
+      (fabs(ex - a[0]) + fabs(ey - a[1]) + ea.r);
+    if (fabs(crs) <= bound)
+      goto done;
+    if ((crs > 0.0 ? 1 : -1) != within)
+      continue;
+    if (best < 0)
+      c = 1;
+    else if (barc)
+    {
+      c = tower_circles_right_cmp(&circ[k], &circ[best]);
+      if (c == 0)
+        goto done;
+    }
+    else
+    {
+      const double *bv = w[best].p[0];
+      MeetPoint m = {MEET_VERTEX, NULL, NULL, 0, bv[0], bv[1], NULL};
+      int s = meet_point_circle_side(&m, &circ[k], true, 1);
+      if (s == 0)
+        s = meet_point_circle_side(&m, &circ[k], false, 0);
+      c = (s == 2) ? 2 : - s;
+    }
+    if (c == 2)
+      goto done;
+    if (c > 0)
+    {
+      best = (int) k; barc = true; tied = false;
+    }
+    else if (c == 0)
+      tied = true;
+  }
+  if (best < 0 || tied)
+    goto done;
+  if (barc)
+  {
+    /* An arc turns counterclockwise where it runs so */
+    const BufferWalkElem *e = &w[best];
+    result = e->half ? e->half :
+      cross_product_sign(e->p[0][0], e->p[0][1], e->p[1][0], e->p[1][1],
+        e->p[0][0], e->p[0][1], e->p[2][0], e->p[2][1]);
+  }
+  else
+  {
+    uint32_t in = ((uint32_t) best + n - 1) % n, out = (uint32_t) best;
+    const double *pin[3] = {w[in].p[0], w[in].p[1], w[in].p[2]};
+    const double *pout[3] = {w[out].p[0], w[out].p[1], w[out].p[2]};
+    int kin = w[in].arc ? (w[in].half ? 2 * w[in].half : 1) : 0;
+    int kout = w[out].arc ? (w[out].half ? 2 * w[out].half : 1) : 0;
+    int dot;
+    int turn = walk_turn_sign(pin, kin, pout, kout, &dot);
+    result = (turn == 1 || turn == -1) ? turn : 0;
+  }
+done:
+  pfree(circ);
+  return result;
+}
+
 /**
  * @brief Return the sense a ring of segments and arcs turns in, decided
  * exactly, 1 counterclockwise and -1 clockwise, or 0 where it is not told
@@ -11218,7 +11373,8 @@ buffer_capped_curve_offsets(const BufferWalkElem *w, uint32_t n,
  * (#cross_product_sign): where the sum and every arc agree, or the sum is 0
  * and the arcs agree, the area has that sign; elsewhere the segments, whose
  * measures are no rationals of the coordinates, could outweigh the sum, and
- * the sense is not told
+ * the sense is the one the ring turns in at its point furthest right
+ * (#buffer_curve_ring_right_sense)
  */
 static int
 buffer_curve_ring_sense(const BufferWalkElem *w, uint32_t n)
@@ -11250,11 +11406,12 @@ buffer_curve_ring_sense(const BufferWalkElem *w, uint32_t n)
   ptarray_append_point(pa, &p, LW_TRUE);
   int sp = ring_area_sign(pa);
   ptarray_free(pa);
-  if (arcs == 2)
-    return 0;
-  if (sp == 0)
+  if (arcs != 2 && sp == 0)
     return arcs;
-  return (arcs == 0 || arcs == sp) ? sp : 0;
+  if (arcs != 2 && (arcs == 0 || arcs == sp))
+    return sp;
+  /* The sum and the arcs disagree: the sense at the point furthest right */
+  return buffer_curve_ring_right_sense(w, n);
 }
 
 /**
