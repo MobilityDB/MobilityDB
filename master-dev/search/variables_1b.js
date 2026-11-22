@@ -12,5 +12,5 @@ var searchData=
   ['zmin_9',['zmin',['../structSTBox_a3002c8690dec774bd9cba38d1650e8a0.html#a3002c8690dec774bd9cba38d1650e8a0',1,'STBox::zmin()'],['../structTPCBox_ac1549827d071d30e635af6505b734e89.html#ac1549827d071d30e635af6505b734e89',1,'TPCBox::zmin()'],['../structBOX3D_a74633fbecab8f93264b244fb6e605491.html#a74633fbecab8f93264b244fb6e605491',1,'BOX3D::zmin()'],['../structGBOX_a8f5a5c650b356663802fe72363e79be1.html#a8f5a5c650b356663802fe72363e79be1',1,'GBOX::zmin()']]],
   ['zoff_10',['zoff',['../structAFFINE_a560acdd204fbb960db373ac3b2e07c31.html#a560acdd204fbb960db373ac3b2e07c31',1,'AFFINE']]],
   ['zoom_11',['zoom',['../structWalkRow_a28ab74d89d16e243c09efd0cec9931aa.html#a28ab74d89d16e243c09efd0cec9931aa',1,'WalkRow']]],
-  ['zsize_12',['zsize',['../structSTboxGridState_af382e31ad51839c9d2df8c7e0e6333f3.html#af382e31ad51839c9d2df8c7e0e6333f3',1,'STboxGridState']]]
+  ['zsize_12',['zsize',['../structSTboxGridState_af382e31ad51839c9d2df8c7e0e6333f3.html#af382e31ad51839c9d2df8c7e0e6333f3',1,'STboxGridState::zsize()'],['../structMestStboxOptions_a22f1af9a9c21da27d30c71a4cac62eca.html#a22f1af9a9c21da27d30c71a4cac62eca',1,'MestStboxOptions::zsize()']]]
 ];

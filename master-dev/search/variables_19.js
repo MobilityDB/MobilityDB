@@ -20,7 +20,7 @@ var searchData=
   ['xq_17',['xq',['../structArrNode_ace772abc425f479a975f952223ca525e.html#ace772abc425f479a975f952223ca525e',1,'ArrNode']]],
   ['xr_18',['xr',['../structDiscWalk_a33abeec7b270f6bd721f56fd992e0cd1.html#a33abeec7b270f6bd721f56fd992e0cd1',1,'DiscWalk']]],
   ['xsign_19',['xsign',['../structArrNode_a0b34557477e5ba244fcece6465a66919.html#a0b34557477e5ba244fcece6465a66919',1,'ArrNode']]],
-  ['xsize_20',['xsize',['../structSTboxGridState_a21aee874b4ed55e1cdebc704edf26f5f.html#a21aee874b4ed55e1cdebc704edf26f5f',1,'STboxGridState::xsize()'],['../structRasterValueGdalCtx_a11b215ea220f86869292b8631d86d4a2.html#a11b215ea220f86869292b8631d86d4a2',1,'RasterValueGdalCtx::xsize()']]],
+  ['xsize_20',['xsize',['../structSTboxGridState_a21aee874b4ed55e1cdebc704edf26f5f.html#a21aee874b4ed55e1cdebc704edf26f5f',1,'STboxGridState::xsize()'],['../structRasterValueGdalCtx_a11b215ea220f86869292b8631d86d4a2.html#a11b215ea220f86869292b8631d86d4a2',1,'RasterValueGdalCtx::xsize()'],['../structMestStboxOptions_ac0a1aa60a45036ffe27ec0618bab372f.html#ac0a1aa60a45036ffe27ec0618bab372f',1,'MestStboxOptions::xsize()']]],
   ['xtab_21',['xtab',['../structArr_ad3345d4b2b43c01673a1f30794f63146.html#ad3345d4b2b43c01673a1f30794f63146',1,'Arr']]],
   ['xy_22',['xy',['../structDistPart_a2108f089608573d0d766d7fefa8bfb14.html#a2108f089608573d0d766d7fefa8bfb14',1,'DistPart']]]
 ];

@@ -80,10 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2CMakeLists_8txt_a47e3c012e18702754938f17a025993de.html#a47e3c012e18702754938f17a025993de">endif</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2CMakeLists_8txt_a840a90b1318f64399aacbd070a84a153.html#a840a90b1318f64399aacbd070a84a153">message</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2CMakeLists_8txt_ae715e9f25d9cf34e2311962fa4665816.html#ae715e9f25d9cf34e2311962fa4665816">target_link_libraries</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2CMakeLists_8txt_ae21cc36bf0d65014c717a481a3f8a468.html#ae21cc36bf0d65014c717a481a3f8a468">undefined</a></td></tr>
         </table>
       </div>
    </td>
@@ -99,7 +96,33 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
-
+<b>Initial value:</b><div class="fragment"><div class="line">{PROJECT_VERSION_MINOR}<span class="stringliteral">&quot;)</span></div>
+<div class="line"><span class="stringliteral">set(MOBILITYDB_LIB_NAME &quot;</span><a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{CMAKE_PROJECT_NAME}-<a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{MOBILITYDB_LIB_VERSION}<span class="stringliteral">&quot;)</span></div>
+<div class="line"><span class="stringliteral">set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})</span></div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral">string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)</span></div>
+<div class="line"><span class="stringliteral">set(MOBILITYDB_EXTENSION_FILE &quot;</span><a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{MOBILITYDB_LOWERCASE_NAME}--<a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{PROJECT_VERSION}.sql<span class="stringliteral">&quot;)</span></div>
+<div class="line"><span class="stringliteral">set(MOBILITYDB_DATAGEN_EXTENSION_FILE &quot;</span><a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{MOBILITYDB_LOWERCASE_NAME}_datagen--<a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{PROJECT_VERSION}.sql<span class="stringliteral">&quot;)</span></div>
+<div class="line"><span class="stringliteral">set(MOBILITYDB_MEST_EXTENSION_FILE &quot;</span><a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{MOBILITYDB_LOWERCASE_NAME}_mest--<a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{PROJECT_VERSION}.sql<span class="stringliteral">&quot;)</span></div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral">if(CMAKE_BUILD_TYPE MATCHES Debug)</span></div>
+<div class="line"><span class="stringliteral">  message(STATUS &quot;</span>CMAKE_BUILD_TYPE = <a class="code hl_variable" href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a>{CMAKE_BUILD_TYPE}<span class="stringliteral">&quot;)</span></div>
+<div class="line"><span class="stringliteral">  add_definitions(-DDEBUG_BUILD=1)</span></div>
+<div class="line"><span class="stringliteral">else()</span></div>
+<div class="line"><span class="stringliteral">  add_definitions(-DDEBUG_BUILD=0)</span></div>
+<div class="line"><span class="stringliteral">endif()</span></div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral">option(MEST</span></div>
+<div class="line"><span class="stringliteral">  &quot;</span><a class="code hl_struct" href="structSet.html">Set</a> MEST (<span class="keywordflow">default</span>=OFF) <a class="code hl_variable" href="trgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a.html#a935fe4a8913cc7c10dae744f8f0f357a">to</a> build the extension mobilitydb_mest</div>
+<div class="ttc" id="amobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84_html_a58859d93c30e635814dc980ed86e3f84"><div class="ttname"><a href="mobilitydb_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a></div><div class="ttdeci">$</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:37</div></div>
+<div class="ttc" id="astructSet_html"><div class="ttname"><a href="structSet.html">Set</a></div><div class="ttdoc">Structure to represent sets of values.</div><div class="ttdef"><b>Definition:</b> meos.h:151</div></div>
+<div class="ttc" id="atrgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a_html_a935fe4a8913cc7c10dae744f8f0f357a"><div class="ttname"><a href="trgeo__distance_8txt_a935fe4a8913cc7c10dae744f8f0f357a.html#a935fe4a8913cc7c10dae744f8f0f357a">to</a></div><div class="ttdeci">meos src rgeo trgeo_distance txt Temporal Distance for Rigid a temporal point or another temporal rigid geometry The algorithm follows the paper of Sakr and Zimanyi[1] It follows the pair of closest and it gets the distance from this pair This file adds three things to the the extrema of the distance and the times of contact *The solver finds all the roots of a with a proof for each part of the interval The paper uses a numerical method and assumes that the method finds all the roots *The two bodies can overlap Then the distance is zero The paper does not handle this case The walk over the closest features and the complexity results of the paper do not change Motion A rigid geometry is a reference polygon and a temporal pose In a segment of the temporal the time t goes from to</div><div class="ttdef"><b>Definition:</b> trgeo_distance.txt:33</div></div>
+</div><!-- fragment -->
 </div>
 </div>
     </td>

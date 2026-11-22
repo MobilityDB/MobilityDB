@@ -14,5 +14,5 @@ var searchData=
   ['zoff_11',['zoff',['../structAFFINE_a560acdd204fbb960db373ac3b2e07c31.html#a560acdd204fbb960db373ac3b2e07c31',1,'AFFINE']]],
   ['zone_5fthread_5ftest_2ec_12',['zone_thread_test.c',['../zone__thread__test_8c.html',1,'']]],
   ['zoom_13',['zoom',['../structWalkRow_a28ab74d89d16e243c09efd0cec9931aa.html#a28ab74d89d16e243c09efd0cec9931aa',1,'WalkRow']]],
-  ['zsize_14',['zsize',['../structSTboxGridState_af382e31ad51839c9d2df8c7e0e6333f3.html#af382e31ad51839c9d2df8c7e0e6333f3',1,'STboxGridState']]]
+  ['zsize_14',['zsize',['../structSTboxGridState_af382e31ad51839c9d2df8c7e0e6333f3.html#af382e31ad51839c9d2df8c7e0e6333f3',1,'STboxGridState::zsize()'],['../structMestStboxOptions_a22f1af9a9c21da27d30c71a4cac62eca.html#a22f1af9a9c21da27d30c71a4cac62eca',1,'MestStboxOptions::zsize()']]]
 ];
