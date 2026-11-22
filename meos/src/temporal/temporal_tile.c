@@ -1083,28 +1083,22 @@ tstzspanset_bins(const SpanSet *ss, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_analytics_tile
- * @brief Return the time bins of a temporal value
+ * @ingroup meos_internal_temporal_analytics_tile
+ * @brief Return the time bins of a temporal value, its arguments valid
+ * @details The internal twin of #temporal_time_bins, which an index calls
  * @param[in] temp Input span to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
  * @param[out] count Number of elements in the output array
- * @csqlfn #Temporal_time_bins()
  */
 Span *
-temporal_time_bins(const Temporal *temp, const Interval *duration,
+temporal_time_bins_intl(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
-  /* The out parameter is defined even when a later check fails */
-  VALIDATE_NOT_NULL(count, NULL);
-  *count = 0;
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_positive_duration(duration))
-    return NULL;
-
+  assert(temp); assert(duration); assert(count);
+  assert(ensure_positive_duration(duration));
   /* Set bounding box */
   Span bounds;
   temporal_set_tstzspan(temp, &bounds);
@@ -1128,6 +1122,31 @@ temporal_time_bins(const Temporal *temp, const Interval *duration,
   pfree(bins);
   *count = count1;
   return result;
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the time bins of a temporal value
+ * @param[in] temp Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Temporal_time_bins()
+ */
+Span *
+temporal_time_bins(const Temporal *temp, const Interval *duration,
+  TimestampTz torigin, bool border_inc, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return temporal_time_bins_intl(temp, duration, torigin, border_inc, count);
 }
 
 /**

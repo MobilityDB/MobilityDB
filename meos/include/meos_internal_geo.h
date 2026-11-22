@@ -369,6 +369,12 @@ extern double tpointseqset_length(const TSequenceSet *ss, bool spheroid);
 extern STBox *tgeoseqset_stboxes(const TSequenceSet *ss, int *count);
 extern STBox *tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int max_count, int *count);
 extern STBox *tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elem_count, int *count);
+extern STBox *tgeo_stboxes_intl(const Temporal *temp, int *count);
+extern STBox *tgeo_split_n_stboxes_intl(const Temporal *temp, int box_count, int *count);
+extern STBox *tgeo_split_each_n_stboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern STBox *tgeo_merge_n_stboxes_intl(const Temporal *temp, int box_count, int *count);
+extern STBox *tgeo_merge_each_n_stboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern STBox *tgeo_merge_query_stboxes_intl(const Temporal *temp, const STBox *query, int *count);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /*****************************************************************************/

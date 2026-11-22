@@ -1237,6 +1237,18 @@ extern TBox *tnumberseq_split_n_tboxes(const TSequence *seq, int box_count, int 
 extern TBox *tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count);
 extern TBox *tnumberseq_split_each_n_tboxes(const TSequence *seq, int elem_count, int *count);
 extern TBox *tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elem_count, int *count);
+extern Span *temporal_spans_intl(const Temporal *temp, int *count);
+extern Span *temporal_split_n_spans_intl(const Temporal *temp, int span_count, int *count);
+extern Span *temporal_split_each_n_spans_intl(const Temporal *temp, int elem_count, int *count);
+extern Span *temporal_merge_n_spans_intl(const Temporal *temp, int span_count, int *count);
+extern Span *temporal_merge_each_n_spans_intl(const Temporal *temp, int elem_count, int *count);
+extern Span *temporal_merge_query_spans_intl(const Temporal *temp, const Span *query, int *count);
+extern TBox *tnumber_tboxes_intl(const Temporal *temp, int *count);
+extern TBox *tnumber_split_n_tboxes_intl(const Temporal *temp, int box_count, int *count);
+extern TBox *tnumber_split_each_n_tboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern TBox *tnumber_merge_n_tboxes_intl(const Temporal *temp, int box_count, int *count);
+extern TBox *tnumber_merge_each_n_tboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern TBox *tnumber_merge_query_tboxes_intl(const Temporal *temp, const TBox *query, int *count);
 
 /*****************************************************************************/
 
@@ -1541,6 +1553,7 @@ extern void **skiplist_keys_values(SkipList *list, void **values);
 
 extern Span *span_bins(const Span *s, Datum vsize, Datum vorigin, bool border_inc, int *count);
 extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc, int *count);
+extern Span *temporal_time_bins_intl(const Temporal *temp, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
 extern Span *tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin, bool border_inc, int *count);
 extern TBox *tnumber_value_time_boxes(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, bool border_inc, int *count);
 extern Temporal **tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin, bool border_inc, Datum **bins, int *count);

@@ -21,6 +21,11 @@
 #                           begins with, as the in-memory R-tree splits it;
 #   MQSIZE                  the size of a box for a query box the query merge
 #                           hands #bbox_merge_query;
+#   mestfile, mestsplits    the MobilityDB file holding the multi-entry extract
+#                           methods of the row (templates/boxmest.c.tmpl) and the
+#                           splits it extracts its keys by, those its box type
+#                           takes (equi, seg, merge, adapt); a row without
+#                           `mestfile` has none;
 #   calls                   for each primitive the template calls (QVALID, the
 #                           test of the value and the query box of the query
 #                           merge, among them), the C
@@ -47,6 +52,8 @@ boxsplit:
     GROUP: meos_geo_bbox_split
     IGROUP: meos_internal_geo_bbox
     CSTEM: Tgeo
+    mestfile: mobilitydb/src/geo/tgeo_mest.c
+    mestsplits: [equi, seg, merge, adapt]
     NCOUNT: box_count
     CTXDECL: ''
     CTXPASS: ''
@@ -77,6 +84,8 @@ boxsplit:
     GROUP: meos_temporal_bbox_split
     IGROUP: meos_internal_temporal_bbox
     CSTEM: Tnumber
+    mestfile: mobilitydb/src/temporal/temporal_mest.c
+    mestsplits: [equi, seg]
     NCOUNT: box_count
     CTXDECL: ''
     CTXPASS: ''
@@ -107,6 +116,8 @@ boxsplit:
     GROUP: meos_temporal_bbox_split
     IGROUP: meos_internal_temporal_bbox
     CSTEM: Temporal
+    mestfile: mobilitydb/src/temporal/temporal_mest.c
+    mestsplits: [equi, seg]
     NCOUNT: span_count
     CTXDECL: ''
     CTXPASS: ''
@@ -137,6 +148,8 @@ boxsplit:
     GROUP: meos_rgeo_bbox_split
     IGROUP: meos_internal_geo_bbox
     CSTEM: Trgeometry
+    mestfile: mobilitydb/src/rgeo/trgeo_mest.c
+    mestsplits: [equi, seg, merge, adapt]
     NCOUNT: box_count
     CTXDECL: ', const GSERIALIZED *geom'
     CTXPASS: ', geom'
@@ -169,6 +182,8 @@ boxsplit:
     GROUP: meos_pointcloud_bbox_split
     IGROUP: meos_internal_pointcloud_bbox
     CSTEM: Tpointcloud
+    mestfile: mobilitydb/src/pointcloud/tpc_mest.c
+    mestsplits: [equi, seg, merge, adapt]
     NCOUNT: box_count
     CTXDECL: ''
     CTXPASS: ''

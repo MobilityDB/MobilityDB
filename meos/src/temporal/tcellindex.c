@@ -3986,7 +3986,8 @@ dggs_geo_vertex(const DggsGeodeticOps *ops, const DggsOutline *o, int k,
 }
 
 /** @brief Number of entries of #dggs_vec_cache, a power of 2 */
-#define DGGS_VEC_CACHE 512
+#define DGGS_VEC_CACHE_BITS 9
+#define DGGS_VEC_CACHE (1 << DGGS_VEC_CACHE_BITS)
 
 /** @brief The geodetic positions read last, per thread, by the bits of
  * their degrees */
@@ -4011,9 +4012,11 @@ dggs_lonlat_vector(double lon, double lat, double *v)
   uint64 a, b;
   memcpy(&a, &lon, sizeof(uint64));
   memcpy(&b, &lat, sizeof(uint64));
+  /* The two doubles take 128 bits, more than one word holds, so an entry
+   * keeps both and the hash only places it */
   uint64 h = (a ^ (b * UINT64CONST(0x9E3779B97F4A7C15))) *
     UINT64CONST(0xBF58476D1CE4E5B9);
-  int i = (int) (h >> 55) & (DGGS_VEC_CACHE - 1);
+  int i = MEOS_CACHE_SLOT(h, DGGS_VEC_CACHE_BITS);
   if (! dggs_vec_cache[i].used || dggs_vec_cache[i].lon != a ||
       dggs_vec_cache[i].lat != b)
   {

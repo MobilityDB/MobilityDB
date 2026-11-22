@@ -12483,6 +12483,90 @@ tower_arc_holds_xy(DyadicCtx *ctx, const TowerArc *arc, DyadicX ux, DyadicX uy)
   return tower_arc_holds(ctx, &t, 0, arc, &ux, &uy);
 }
 
+/* The arc and the disc of #tower_arc_within_disc */
+typedef struct
+{
+  const ExactArc *arc;
+  const POINT2D *support;
+  int nsupport;
+  double radius;
+} TowerArcDiscArg;
+
+static int
+tower_arc_within_disc_pred(DyadicCtx *ctx, const void *varg)
+{
+  const TowerArcDiscArg *o = varg;
+  double ox = o->support[0].x, oy = o->support[0].y;
+  /* The centre c / cw of the disc, the circle on its support as the circle
+   * of an arc on those points: a point, a diameter, or three points that
+   * turn */
+  DyadicX cx, cy, cw, cr2;
+  if (o->nsupport == 1)
+  {
+    cx = cy = dx_val(ctx, 0.0);
+    cw = dx_val(ctx, 1.0);
+  }
+  else
+  {
+    const POINT2D *q = o->support;
+    const double a[2] = {q[0].x, q[0].y}, b[2] = {q[1].x, q[1].y};
+    const double c[2] = {q[o->nsupport - 1].x, q[o->nsupport - 1].y};
+    tower_arc_circle(ctx, a, b, c, o->nsupport == 2, ox, oy, &cx, &cy, &cw,
+      &cr2);
+  }
+  TowerArc arc;
+  tower_arc_read(ctx, o->arc, ox, oy, &arc);
+  if (dx_sign(ctx, arc.w) <= 0 || dx_sign(ctx, cw) <= 0)
+    return 2;
+  /* The direction d from C to the point of its circle furthest from c,
+   * C - c times w cw, both positive */
+  DyadicX dx = dx_sub(ctx, dx_mul(ctx, cw, arc.cx), dx_mul(ctx, arc.w, cx));
+  DyadicX dy = dx_sub(ctx, dx_mul(ctx, cw, arc.cy), dx_mul(ctx, arc.w, cy));
+  int within = 1;
+  /* About c, or with that point outside the arc, the arc is furthest from c
+   * at an end */
+  if ((dx_sign(ctx, dx) != 0 || dx_sign(ctx, dy) != 0) &&
+      tower_arc_holds_xy(ctx, &arc, dx, dy))
+  {
+    /* Else |C - c| + R <= r, times w cw: sqrt(A) + sqrt(B) <= T, with
+     * A = |d|^2, B = cw^2 r2 and T = r w cw not negative, which is
+     * X = T^2 - A - B not negative and X^2 - 4 A B not negative */
+    DyadicX A = dx_add(ctx, dx_mul(ctx, dx, dx), dx_mul(ctx, dy, dy));
+    DyadicX B = dx_mul(ctx, dx_mul(ctx, cw, cw), arc.r2);
+    DyadicX T = dx_mul(ctx, dx_val(ctx, o->radius), dx_mul(ctx, arc.w, cw));
+    DyadicX X = dx_sub(ctx, dx_mul(ctx, T, T), dx_add(ctx, A, B));
+    within = (dx_sign(ctx, X) >= 0 && dx_sign(ctx, dx_sub(ctx,
+      dx_mul(ctx, X, X), dx_scale(ctx, dx_mul(ctx, A, B), 4.0))) >= 0);
+  }
+  return dyadic_ctx_unsafe(ctx) ? 2 : within;
+}
+
+/**
+ * @brief Return whether an arc lies within the disc of a distance about the
+ * centre of a circle given by its support, decided exactly
+ * @details An arc of centre C and radius R lies within the disc of radius r
+ * about c where its ends do and its point furthest from c does: the point
+ * C + R (C - c) / |C - c| where the arc holds it (#tower_arc_holds_xy), then
+ * within where |C - c| + R <= r, and else an end. The ends are not read, the
+ * caller knowing them within the disc
+ * @param[in] arc Arc, a half circle turning counterclockwise from its start
+ * @param[in] support The points fixing the circle: one point, the two ends of
+ * a diameter, or three points that turn (#mec_radius_cmp_support)
+ * @param[in] nsupport Number of those points
+ * @param[in] radius Radius of the disc, not negative
+ * @return 1 where the arc lies within the disc, 0 where it does not, 2 where
+ * it is not told
+ */
+int
+tower_arc_within_disc(const ExactArc *arc, const POINT2D *support,
+  int nsupport, double radius)
+{
+  assert(arc); assert(support); assert(nsupport >= 1 && nsupport <= 3);
+  assert(radius >= 0.0);
+  TowerArcDiscArg arg = {arc, support, nsupport, radius};
+  return dyadic_pred_run(tower_arc_within_disc_pred, &arg);
+}
+
 /* Whether x, the difference of the two sides of a distance of a witness, and
  * its opposite, the two taking @p dist away, are both not positive */
 static bool

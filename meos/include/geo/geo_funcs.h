@@ -551,6 +551,8 @@ extern void area_sum_ring(AreaSum *acc, const double *c, uint32_t npoints,
 extern bool area_sum_nearest(const AreaSum *acc, double *result);
 extern bool geom_area_exact(const LWGEOM *geom, double *result);
 extern int mec_radius_cmp(POINT2D *pts, int count, double radius);
+extern int mec_radius_cmp_support(POINT2D *pts, int count, double radius,
+  POINT2D *support, int *nsupport);
 
 /* How a meeting of two edges arises, the data that place it exactly */
 typedef enum
@@ -623,6 +625,8 @@ extern int tower_circles_cmp(const Edge *p, const Edge *q, bool radius);
 extern int walk_turn_sign(const double *const in[3], int inarc,
   const double *const out[3], int outarc, int *dot);
 extern int tower_circles_right_cmp(const Edge *p, const Edge *q);
+extern int tower_arc_within_disc(const ExactArc *arc, const POINT2D *support,
+  int nsupport, double radius);
 extern int meets_x_cmp(const MeetPoint *a, const MeetPoint *b);
 extern bool tangent_point_box(const TangentPoint *tp, double x, double y,
   double box[4]);

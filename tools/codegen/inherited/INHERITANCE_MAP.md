@@ -317,6 +317,30 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   through the row's `QVALID` call and hands the boxes to `bbox_merge_query`
   with the size of a box for that query, the row's `MQSIZE`; a point cloud
   box merges through those of the spatiotemporal box it begins with.
+  Each public splitter and merge has its internal twin `<bare>_intl`, defined
+  directly above it, which an index calls: it asserts what the public one
+  tests.
+  The multi-entry operator classes of the extension `mobilitydb_mest` (the
+  access methods `mgist` and `mspgist` of the extension mest) are generated
+  for every partner of a box type stating `mestsplits` in `boxtypes.yaml` and
+  every subtype stating its own: one class per tree (R-tree, quad-tree, k-d
+  tree) and per split, written into `mobilitydb/mest/<family>/`, the file
+  cloning the GiST or SP-GiST file of the type (`render_mestopclass`,
+  `render_mestfile`, `templates/mestfile.sql.tmpl`, the functions every class
+  takes in `templates/mestcommon.sql.tmpl`). A class keys a value by the boxes
+  of its pieces, and holds the members of the GiST or SP-GiST class of its
+  type that a value answers when every key answers it (`MEST_STRATEGIES`: the
+  position operators, contained by, the nearest approach distance, the ever
+  and always overlaps). The extraction methods of the splits come from
+  `templates/boxmest.c.tmpl` into the `GENERATED-BOXMEST-BEGIN/END` regions of
+  the `mestfile` a row of `boxsplit.yaml` names, and the consistent methods,
+  twins of those of the type rechecking every leaf, from
+  `templates/mestconsistent.c.tmpl` into the `GENERATED-MESTCONSISTENT`
+  region of the multi-entry file of the family defining each original.
+  `templates/mestindextest.sql.tmpl` writes the multi-entry test of each index
+  test, `mobilitydb/test/mest/sql/<nnn>_<temp>_mest[3d]_tbl.sql`, one column
+  per tree and split; an index test states per dimension the tile its
+  fixtures take (`mesttiles`).
   The index operator classes of a box type are the regions between its
   `GENERATED-BOXOPCLASS-BEGIN/END` markers, one per class of its `opclasses:`
   stanza in `boxtypes.yaml` (`templates/boxopclass.sql.tmpl`): every strategy of
@@ -367,6 +391,10 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | boxgist (C) | `boxgist.c.tmpl` | **GENERATED** (the GiST support functions of `tbox`, `stbox` and `tpcbox`, one set per box type) |
 | boxspgist (C) | `boxspgist.c.tmpl` | **GENERATED** (the SP-GiST support functions of `tbox` and `stbox`, one set per box type; `tpcbox` is indexed by those of `stbox`) |
 | boxsplit (C) | `boxsplit.c.tmpl` | **GENERATED** (the box splitters of `temporal`, `tnumber`, `tgeo`, `trgeometry` and `tpointcloud` and their merge twins, one set per row) |
+| boxmest (C) | `boxmest.c.tmpl` | **GENERATED** (the multi-entry extraction methods of each split of a box splitter row, in its `mestfile`) |
+| mestconsistent (C) | `mestconsistent.c.tmpl` | **GENERATED** (the consistent twins of the multi-entry classes, rechecking every leaf, in the multi-entry file of each family) |
+| mest classes | `mestfile.sql.tmpl` + `mestcommon.sql.tmpl` | **GENERATED** (the multi-entry classes of the extension `mobilitydb_mest`, one per tree and split) |
+| mest tests | `mestindextest.sql.tmpl` | **GENERATED** (one multi-entry test per index test and dimension, a column per tree and split) |
 | gist / spgist | `gist/spgist.sql.tmpl` | **GENERATED** (index infra) — the two templates write the family's operator classes through the `{TEMPOPCLASS_RTREE}`, `{TEMPOPCLASS_QUADTREE}` and `{TEMPOPCLASS_KDTREE}` tokens, which `render_tempopclass` fills from `boxstrategies.yaml` with every strategy whose axis the family's `boxmembers:` lists, the Z-axis strategies 32-35 included when it lists `z`, and with its `distwith:` types on the nearest approach distance. `gist.sql.tmpl` also declares the family's own consistent support function, `{TEMP}_gist_consistent`, and, under the flag `knn` that `render` reads from the axes of the class (a `dist` axis in `boxmembers:`), its distance support function `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share; it carries `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the two templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |

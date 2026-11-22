@@ -69,6 +69,7 @@
 #include <pg_int.h>
 #include <utils/float.h>
 #include <utils/datetime.h>
+#include "common/hashfn.h"
 #include <stringbuffer.h>
 #include "geo/geo_funcs.h"
 #include "raster/raquet.h"
@@ -500,10 +501,13 @@ static char *raster_srs_text(int32_t srid);
 
 /**
  * @brief Return the GDAL driver of a format that writes a copy of a raster
- * into memory
+ * into memory or into a file
  * @details A format is written as PostGIS writes it, through the driver's
- * copy of a dataset into a virtual file, so a driver that copies no dataset
- * or writes to no virtual file cannot write a raster here
+ * copy of a dataset, into a virtual file where the driver writes to one, and
+ * otherwise into a file where the format is one, which GDAL states by its
+ * extension, the two places #raster_as_gdal writes. A driver that copies no
+ * dataset, or one that writes neither, as a database or a web service, cannot
+ * write a raster here
  * @param[in] format Short name of the GDAL driver, as `GTiff` or `PNG`
  * @errval NULL
  */
@@ -519,14 +523,52 @@ raster_gdal_writer(const char *format)
     return NULL;
   }
   if (! GDALGetMetadataItem(drv, GDAL_DCAP_CREATECOPY, NULL) ||
-      ! GDALGetMetadataItem(drv, GDAL_DCAP_VIRTUALIO, NULL))
+      (! GDALGetMetadataItem(drv, GDAL_DCAP_VIRTUALIO, NULL) &&
+       ! GDALGetMetadataItem(drv, GDAL_DMD_EXTENSION, NULL) &&
+       ! GDALGetMetadataItem(drv, GDAL_DMD_EXTENSIONS, NULL)))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The GDAL driver of the format %s cannot write a raster into memory",
-      format);
+      "The GDAL driver of the format %s cannot write a raster into memory "
+      "or into a file", format);
+    return NULL;
+  }
+  /* A VRT copies no pixel: it states where the pixels of its source are, and
+   * the source of #raster_as_gdal is a dataset in memory that is gone when the
+   * call returns, so the file would name nothing a reader can open */
+  if (strcmp(GDALGetDriverShortName(drv), "VRT") == 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The format VRT states where the pixels of a raster are and writes none "
+      "of them, so it cannot write a raster");
     return NULL;
   }
   return drv;
+}
+
+/**
+ * @brief Remove the files a GDAL driver wrote for one call in a directory: the
+ * file named @p base and each companion the driver wrote beside it, named
+ * @p base followed by a dot, as a header or a world file
+ * @details The tree holds no such routine; the files are listed and removed
+ * through GDAL's file layer, the layer #raquet_read reads a file through.
+ * GDALDeleteDataset is not enough, as it removes only the files a driver lists
+ * for a dataset it can open, and a copy that fails leaves one it cannot
+ * @param[in] dir Directory of the files
+ * @param[in] base Name of the file, unique to the call
+ */
+static void
+raster_gdal_unlink_files(const char *dir, const char *base)
+{
+  size_t len = strlen(base);
+  char **names = VSIReadDir(dir);
+  for (int i = 0; names && names[i]; i++)
+  {
+    if (strncmp(names[i], base, len) == 0 &&
+        (names[i][len] == '\0' || names[i][len] == '.'))
+      VSIUnlink(CPLFormFilename(dir, names[i], NULL));
+  }
+  CSLDestroy(names);
+  return;
 }
 
 /**
@@ -534,10 +576,12 @@ raster_gdal_writer(const char *format)
  * @brief Return a raster written in a format of GDAL
  * @details The raster is written as PostGIS's `ST_AsGDALRaster` writes it.
  * Each call writes into a virtual file of its own, so that calls in several
- * threads never write into one another's file
+ * threads never write into one another's file. A format whose library cannot
+ * write into memory, as netCDF, is written to a file of the call's own in
+ * GDAL's scratch directory, deleted before the call returns
  * @param[in] rast Raster
- * @param[in] format Short name of the GDAL driver, as `GTiff`, `PNG` or
- * `JPEG`
+ * @param[in] format Short name of the GDAL driver, as `GTiff`, `PNG`, `JPEG`
+ * or `netCDF`
  * @param[in] options Creation options of the driver, one `KEY=VALUE` an
  * element, a NULL element stating none, as GDAL takes them @nullable
  * @param[in] count Number of elements of the options
@@ -605,34 +649,107 @@ raster_as_gdal(const Raster *rast, const char *format, text **options,
   char path[64];
   snprintf(path, sizeof(path), "/vsimem/meos_raster_%p", (void *) &unique);
   CPLErrorReset();
-  GDALDatasetH dst = GDALCreateCopy(drv, path, src, FALSE, opts, NULL, NULL);
+  /* A driver writes into memory only where it states virtual input and
+   * output; one stating a file extension alone, as netCDF's in some builds of
+   * GDAL, is written to a file at once */
+  bool virtualio = GDALGetMetadataItem(drv, GDAL_DCAP_VIRTUALIO, NULL) != NULL;
+  GDALDatasetH dst = virtualio ?
+    GDALCreateCopy(drv, path, src, FALSE, opts, NULL, NULL) : NULL;
+  if (dst)
+  {
+    /* The copy is closed before its source, as closing a copy may read the
+     * source it was made from */
+    CSLDestroy(opts);
+    GDALClose(dst);
+    GDALClose(src);
+    if (destroy_src_drv)
+      GDALDestroyDriver(src_drv);
+    vsi_l_offset len = 0;
+    GByte *buf = VSIGetMemFileBuffer(path, &len, TRUE);
+    if (! buf)
+    {
+      VSIUnlink(path);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "GDAL wrote no bytes of the raster in the format %s", format);
+      return NULL;
+    }
+    uint8_t *result = palloc((size_t) len);
+    memcpy(result, buf, (size_t) len);
+    CPLFree(buf);
+    *size_out = (size_t) len;
+    return result;
+  }
+  VSIUnlink(path);
+
+  /* A driver whose library writes through the operating system alone, as
+   * netCDF's does though its driver states virtual input and output, cannot
+   * write into memory: the raster is then written to a file of the call's own
+   * that GDAL names in its scratch directory, read back through GDAL's file
+   * layer as #raquet_read reads a file, and deleted with every file the
+   * driver wrote beside it */
+  char *errmem = pstrdup(CPLGetLastErrorMsg());
+  /* The directory is the one GDAL's configuration or the environment names,
+   * read in the order CPLGenerateTempFilename reads them, and otherwise /tmp,
+   * never the current directory, which in a database server is its data
+   * directory */
+  const char *dir = CPLGetConfigOption("CPL_TMPDIR", NULL);
+  if (! dir)
+    dir = CPLGetConfigOption("TMPDIR", NULL);
+  if (! dir)
+    dir = CPLGetConfigOption("TEMP", NULL);
+  if (! dir)
+    dir = "/tmp";
+  char *base = pstrdup(CPLGetFilename(CPLGenerateTempFilename("meos_raster")));
+  char *file = pstrdup(CPLFormFilename(dir, base, NULL));
+  CPLErrorReset();
+  dst = GDALCreateCopy(drv, file, src, FALSE, opts, NULL, NULL);
   CSLDestroy(opts);
+  /* The copy is closed before its source, as in the write into memory */
+  if (dst)
+    GDALClose(dst);
   GDALClose(src);
   if (destroy_src_drv)
     GDALDestroyDriver(src_drv);
   if (! dst)
   {
-    VSIUnlink(path);
+    /* A copy that fails can leave a part of the file and of its companions */
+    raster_gdal_unlink_files(dir, base);
+    /* The reason stated is the one of the write into memory where there was
+     * one, and otherwise the one of the write into the file */
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "GDAL cannot write the raster in the format %s: %s", format,
-      CPLGetLastErrorMsg());
+      errmem[0] ? errmem : CPLGetLastErrorMsg());
+    pfree(errmem); pfree(file); pfree(base);
     return NULL;
   }
-  GDALClose(dst);
-
-  vsi_l_offset len = 0;
-  GByte *buf = VSIGetMemFileBuffer(path, &len, TRUE);
-  if (! buf)
+  pfree(errmem);
+  uint8_t *result = NULL;
+  size_t len = 0;
+  VSILFILE *fp = VSIFOpenL(file, "rb");
+  if (fp && VSIFSeekL(fp, 0, SEEK_END) == 0)
   {
-    VSIUnlink(path);
+    len = (size_t) VSIFTellL(fp);
+    if (len > 0 && VSIFSeekL(fp, 0, SEEK_SET) == 0)
+    {
+      result = palloc(len);
+      if (VSIFReadL(result, 1, len, fp) != len)
+      {
+        pfree(result);
+        result = NULL;
+      }
+    }
+  }
+  if (fp)
+    VSIFCloseL(fp);
+  raster_gdal_unlink_files(dir, base);
+  pfree(file); pfree(base);
+  if (! result)
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "GDAL wrote no bytes of the raster in the format %s", format);
     return NULL;
   }
-  uint8_t *result = palloc((size_t) len);
-  memcpy(result, buf, (size_t) len);
-  CPLFree(buf);
-  *size_out = (size_t) len;
+  *size_out = len;
   return result;
 }
 
@@ -793,6 +910,82 @@ raster_mem_size(const Raster *rast)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, INT_MAX);
   return (int) VARSIZE(rast);
+}
+
+/*****************************************************************************
+ * Comparison functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two rasters are equal
+ * @details Two rasters are equal when their serialized forms are the same
+ * bytes, the serialization writing every byte of a raster, its padding
+ * included, from the raster alone. The operator `=` of PostGIS states this
+ * equality over the hashes of those bytes; it is stated here exactly. A raster
+ * has no order: PostGIS states none, so where #raquet_eq reads #raquet_cmp,
+ * this reads the bytes
+ * @param[in] rast1,rast2 Rasters
+ * @errval false
+ * @see #raquet_eq
+ */
+bool
+raster_eq(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, false); VALIDATE_NOT_NULL(rast2, false);
+  size_t size = VARSIZE(rast1);
+  return size == VARSIZE(rast2) && memcmp(rast1, rast2, size) == 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two rasters are different
+ * @param[in] rast1,rast2 Rasters
+ * @errval false
+ * @see #raquet_ne
+ */
+bool
+raster_ne(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, false); VALIDATE_NOT_NULL(rast2, false);
+  return ! raster_eq(rast1, rast2);
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return the 32-bit hash of a raster
+ * @details The hash is that of the bytes of the serialized raster after its
+ * length, the hash `raster_hash` of PostGIS answers for the same raster
+ * @param[in] rast Raster
+ * @errval UINT32_MAX
+ * @see #raquet_hash
+ */
+uint32
+raster_hash(const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, UINT32_MAX);
+  return hash_any((const unsigned char *) VARDATA(rast),
+    (int) (VARSIZE(rast) - VARHDRSZ));
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return the 64-bit hash of a raster using a seed
+ * @param[in] rast Raster
+ * @param[in] seed Seed
+ * @errval UINT64_MAX
+ * @see #raquet_hash_extended
+ */
+uint64
+raster_hash_extended(const Raster *rast, uint64 seed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, UINT64_MAX);
+  return hash_any_extended((const unsigned char *) VARDATA(rast),
+    (int) (VARSIZE(rast) - VARHDRSZ), seed);
 }
 
 /**

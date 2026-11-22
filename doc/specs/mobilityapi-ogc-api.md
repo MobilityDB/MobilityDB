@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.3.0 |
+| Version | v1.4.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`f7de535`](https://github.com/MobilityDB/MobilityAPI/tree/f7de535): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`65cbbff`](https://github.com/MobilityDB/MobilityAPI/tree/65cbbff): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -54,7 +54,7 @@ is also listed under `http://` (section 3.1).
 | OGC API – Moving Features – Part 4: Stream Extension (draft) | cquery | `http://www.opengis.net/spec/ogcapi-movingfeatures-4/1.0/conf/cquery` |
 | OGC API – Common – Part 1: Core (OGC 19-072) | core, landing-page | `http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/<class>` |
 | OGC API – Common – Part 2: Geospatial Data (OGC 20-024) | collections | `https://` and `http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections` |
-| OGC API – Coverages – Part 1: Core (OGC 19-087, 1.0.0rc4 draft) | core, subsetting-spatial, subsetting-temporal, field-selection, geotiff, coveragejson | `https://` and `http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/<class>` |
+| OGC API – Coverages – Part 1: Core (OGC 19-087, 1.0.0rc4 draft) | core, subsetting-spatial, subsetting-temporal, field-selection, geotiff, coveragejson, netcdf | `https://` and `http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/<class>` |
 | OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
 
 The service serves 55 operations. The API definition at `GET /api` marks each
@@ -183,11 +183,13 @@ one period are the tiles of one raster.
 | a `datetime` meeting several periods | 400, naming them: GeoTIFF has no time axis and a CoverageJSON coverage is written from one raster |
 | `bbox`, `subset` | the coverage clipped, its bounds stated by `Content-Bbox` |
 | `properties` | the bands named |
-| `Accept` | `image/tiff; application=geotiff` (also when no preference is stated), or CoverageJSON as `application/vnd.cov+json` or `application/prs.coverage+json`, in the spelling named; 406 when none is admitted |
+| `Accept` | `image/tiff; application=geotiff` (also when no preference is stated), or CoverageJSON as `application/vnd.cov+json` or `application/prs.coverage+json`, in the spelling named, or netCDF as `application/x-netcdf`; 406 when none is admitted |
 
-The tiles are joined by `rasterUnion` and written by `asTIFF` or
-`asCoverageJSON`. A request needing a function MobilityDB does not state over
-the collection's raster type is refused naming the function.
+The tiles are joined by `rasterUnion` and written by `asTIFF`,
+`asCoverageJSON` or `asGDALRaster(c, 'netCDF')`. A request needing a function
+MobilityDB does not state over the collection's raster type is refused naming
+the function, and a netCDF coverage from a database whose GDAL has no netCDF
+driver is refused with MobilityDB's error naming the format.
 
 ## 8. Environmental Data Retrieval
 
@@ -289,7 +291,8 @@ at its major number when an answer stated here changes.
   `TO_TRAJ` and the rest of its Table 7), and its Kafka and WebSocket channels.
 - A newer Part 4 draft, describing a Continuous Query resource with `id`,
   `pubtime`, `target`, `filter` and `queryResult`.
-- The LAS, LAZ, NetCDF and other encodings of the Coverages draft.
+- The LAS and LAZ encodings of the Coverages draft, which encode point clouds,
+  not the coverage of a raster collection.
 
 ## 13. References
 
