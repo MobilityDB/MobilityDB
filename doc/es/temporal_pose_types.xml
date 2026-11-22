@@ -306,7 +306,7 @@ SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
 				<listitem xml:id="pose_geography">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convierte una pose, planar o geodésica, en un punto geográfico</para>
-					<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+					<para>Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {pose,posechain}::geogpoint
 </programlisting>
@@ -980,7 +980,7 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
 
 	<sect1 xml:id="tpose_conversions">
 		<title>Conversión de tipos</title>
-		<para>Un valor de pose temporal se puede convertir hacia y desde un punto temporal, que es un punto geométrico temporal o un punto geográfico temporal cualquiera que sea el tipo de la pose, véase <xref linkend="geo_geog_convert"/>. Esto se puede hacer utilizando un <varname>CAST</varname> explícito o utilizando la notación <varname>::</varname>. Convertir una pose temporal al tipo de punto temporal del otro marco de referencia genera un error. Se devuelve un valor nulo si alguno de los valores de punto geométrico que lo componen no se puede convertir en un valor <varname>pose</varname>.</para>
+		<para>Un valor de pose temporal se puede convertir hacia y desde un punto temporal, que es un punto geométrico temporal o un punto geográfico temporal cualquiera que sea el tipo de la pose, véase <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>. Esto se puede hacer utilizando un <varname>CAST</varname> explícito o utilizando la notación <varname>::</varname>. Convertir una pose temporal al tipo de punto temporal del otro marco de referencia genera un error. Se devuelve un valor nulo si alguno de los valores de punto geométrico que lo componen no se puede convertir en un valor <varname>pose</varname>.</para>
 		<itemizedlist>
 			<listitem xml:id="tpose_tgeompoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
@@ -1871,7 +1871,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 tposechain {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tposechain → boolean
 </programlisting>
-				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; el cuadro delimitador de una pose es su posición, de modo que dos poses temporales se superponen en un instante en que sus posiciones son iguales, cualesquiera sean sus orientaciones. Una cadena de poses temporal está en un cuadro cuando alguna de sus articulaciones lo está, tal como la restringe <xref linkend="tposechain_atStbox"/>.</para>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establecen <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> y <varname>%&amp;&amp;</varname></link> para las geometrías temporales; el cuadro delimitador de una pose es su posición, de modo que dos poses temporales se superponen en un instante en que sus posiciones son iguales, cualesquiera sean sus orientaciones. Una cadena de poses temporal está en un cuadro cuando alguna de sus articulaciones lo está, tal como la restringe <link linkend="tposechain_atStbox"><varname>atStbox</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose '[Pose(Point(0 0), 0)@2001-01-01 00:00,
   Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
