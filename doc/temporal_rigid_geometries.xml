@@ -197,7 +197,7 @@ tgeompoint(trgeometry) → tgeompoint
 tgeogpoint(trgeometry) → tgeogpoint
 tgeography(trgeometry) → tgeography
 </programlisting>
-				<para>The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
+				<para>The conversions follow the rule of <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
@@ -1142,7 +1142,7 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01
 trgeometry {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} trgeometry → boolean
 </programlisting>
-				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a rigid geometry lies in a box when it intersects it, as the restriction of a temporal rigid geometry to a box reads it.</para>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> and <varname>%&amp;&amp;</varname></link> state it for the temporal geometries; a rigid geometry lies in a box when it intersects it, as the restriction of a temporal rigid geometry to a box reads it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
   Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;

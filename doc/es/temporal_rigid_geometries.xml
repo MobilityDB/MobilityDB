@@ -197,7 +197,7 @@ tgeompoint(trgeometry) → tgeompoint
 tgeogpoint(trgeometry) → tgeogpoint
 tgeography(trgeometry) → tgeography
 </programlisting>
-				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+				<para>Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
@@ -1143,7 +1143,7 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01
 trgeometry {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} trgeometry → boolean
 </programlisting>
-				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; una geometría rígida está en un cuadro cuando lo interseca, tal como lo lee la restricción de una geometría rígida temporal a un cuadro.</para>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establecen <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> y <varname>%&amp;&amp;</varname></link> para las geometrías temporales; una geometría rígida está en un cuadro cuando lo interseca, tal como lo lee la restricción de una geometría rígida temporal a un cuadro.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));[Pose(Point(0 0), 0)@2001-01-01 00:00,
   Pose(Point(10 10), 0)@2001-01-01 10:00]' ?&amp;&amp;
