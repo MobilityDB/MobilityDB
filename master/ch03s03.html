@@ -29,7 +29,7 @@ box3d(stbox) → box3d
 geometry(stbox) → geometry
 geography(stbox) → geography
 tstzspan(stbox) → tstzspan
-</pre><p>The conversions follow the rule of <a class="xref" href="ch02s03.html#geo_geog_convert">???</a>.</p><pre class="programlisting">
+</pre><p>The conversions follow the rule of <a class="link" href="ch02s03.html#geo_geog_convert"><code class="varname">geomset::geogset</code></a>.</p><pre class="programlisting">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::box2d;
 -- BOX(1 2,3 4)
 SELECT ST_AsEWKT(stbox 'SRID=4326;
@@ -46,7 +46,7 @@ SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])':: g
    ((1 5 1,1 5 5,5 5 5,5 5 1,1 5 1))) */
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
 -- [2001-01-01, 2001-01-03]
-</pre></li><li class="listitem"><a name="stbox_convert_from"></a><a class="indexterm" name="id3704"></a><a class="indexterm" name="id3707"></a><p>Convert another type to an <code class="varname">stbox</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="stbox_convert_from"></a><a class="indexterm" name="id3705"></a><a class="indexterm" name="id3708"></a><p>Convert another type to an <code class="varname">stbox</code></p><pre class="programlisting">
 {box2d,box3d,geo,times,tgeo}::stbox
 stbox({box2d,box3d,geo,times,tgeo}) → stbox
 </pre><pre class="programlisting">
