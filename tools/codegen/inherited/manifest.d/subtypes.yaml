@@ -7,6 +7,9 @@ subtypes:
   - temp:  tquadbin
     # the axes of the tquadbin index classes and of the (stbox, tquadbin) members
     boxmembers: [topo, x, y, t]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of the stbox box type
+    mestsplits: [equi, seg, merge, linear, adapt]
     base:  quadbin
     brief: "temporal QUADBIN cells"
     overlaps: box
@@ -47,6 +50,9 @@ subtypes:
   - temp:  th3index
     # the axes of the th3index index classes and of the (stbox, th3index) members
     boxmembers: [topo, x, y, t]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of the stbox box type
+    mestsplits: [equi, seg, merge, linear, adapt]
     base:  h3index
     # The h3 family directory is `h3`, not the base type name `h3index`.
     fam:   h3
@@ -89,6 +95,9 @@ subtypes:
   - temp:  ts2cell
     # the axes of the ts2cell index classes and of the (stbox, ts2cell) members
     boxmembers: [topo, x, y, t]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of the stbox box type
+    mestsplits: [equi, seg, merge, linear, adapt]
     base:  s2cell
     brief: "temporal S2 cells"
     overlaps: box
@@ -122,6 +131,9 @@ subtypes:
   - temp:  tcbuffer
     # the axes of the tcbuffer index classes and of the (stbox, tcbuffer) members
     boxmembers: [topo, x, y, t, dist]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of the stbox box type
+    mestsplits: [equi, seg, merge, linear, adapt]
     distwith: [geometry]
     base:  cbuffer
     brief: "temporal circular buffers"
@@ -155,6 +167,9 @@ subtypes:
   - temp:  tnpoint
     # the axes of the tnpoint index classes and of the (stbox, tnpoint) members
     boxmembers: [topo, x, y, t, dist]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of the stbox box type
+    mestsplits: [equi, seg, merge, linear, adapt]
     distwith: [geometry]
     base:  npoint
     brief: "temporal network points"
@@ -219,6 +234,9 @@ subtypes:
   - temp:  tpose
     # the axes of the tpose index classes and of the (stbox, tpose) members
     boxmembers: [topo, x, y, z, t, dist]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of the stbox box type
+    mestsplits: [equi, seg, merge, linear, adapt]
     distwith: [geometry]
     base:  pose
     brief: "temporal poses"
@@ -256,6 +274,9 @@ subtypes:
   - temp:  tposechain
     # the axes of the tposechain index classes and of the (stbox, tposechain) members
     boxmembers: [topo, x, y, z, t, dist]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of the stbox box type
+    mestsplits: [equi, seg, merge, linear, adapt]
     distwith: [geometry]
     base:  posechain
     brief: "temporal pose chains"
@@ -293,6 +314,10 @@ subtypes:
   - temp:  trgeometry
     # the axes of the trgeometry index classes and of the (stbox, trgeometry) members
     boxmembers: [topo, x, y, z, t, dist]
+    # the splits of its multi-entry classes (mobilitydb_mest), by the
+    # extraction methods of Trgeometry
+    mestsplits: [equi, seg, merge, adapt]
+    meststem: Trgeometry
     distwith: [geometry]
     # The base-value comparison is against a `geometry` (the resolved geometry at an
     # instant); the C wrapper stem is `geo`, not `geometry`, so basesym overrides it.

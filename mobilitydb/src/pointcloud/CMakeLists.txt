@@ -62,6 +62,9 @@ set(POINTCLOUD_PG_SRCS
   # Bounding-box operators (&&, @>, <@, ~=, -|-) on tpcpoint / tpcpatch
   # paired with tpcbox or with each other.
   tpc_boxops.c
+  # Multi-entry extraction methods keying tpcpoint / tpcpatch by the
+  # point cloud boxes of their pieces.
+  tpc_mest.c
   # Extent (and other future) aggregate transition / combine functions
   # over tpcpoint / tpcpatch / tpcbox.
   tpc_aggfuncs.c

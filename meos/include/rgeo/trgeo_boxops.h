@@ -65,5 +65,11 @@ extern STBox *trgeoseq_split_n_stboxes(const TSequence *seq, int box_count, int 
 extern STBox *trgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count, const GSERIALIZED *geom);
 extern STBox *trgeoseq_split_each_n_stboxes(const TSequence *seq, int elem_count, int *count, const GSERIALIZED *geom);
 extern STBox *trgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elem_count, int *count, const GSERIALIZED *geom);
+extern STBox *trgeometry_stboxes_intl(const Temporal *temp, int *count);
+extern STBox *trgeometry_split_n_stboxes_intl(const Temporal *temp, int box_count, int *count);
+extern STBox *trgeometry_split_each_n_stboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern STBox *trgeometry_merge_n_stboxes_intl(const Temporal *temp, int box_count, int *count);
+extern STBox *trgeometry_merge_each_n_stboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern STBox *trgeometry_merge_query_stboxes_intl(const Temporal *temp, const STBox *query, int *count);
 
 #endif /* __TRGEO_BOXOPS_H__ */

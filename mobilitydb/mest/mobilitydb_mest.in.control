@@ -1,0 +1,6 @@
+# mobilitydb_mest extension
+comment = 'MobilityDB multi-entry operator classes for the mest access methods'
+default_version = '${MOBILITYDB_VERSION}'
+module_pathname = '${MOBILITYDB_MODULE_PATHNAME}'
+relocatable = true
+requires = 'mobilitydb, mest'

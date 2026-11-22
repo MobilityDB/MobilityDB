@@ -1,0 +1,42 @@
+-------------------------------------------------------------------------------
+{HEADER}
+-------------------------------------------------------------------------------
+
+CREATE FUNCTION pg_temp.test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+
+{TABLES}
+DROP TABLE IF EXISTS test_{TEMP}_mest;
+CREATE TEMP TABLE test_{TEMP}_mest(op text, no_idx text,
+{COLUMNS});
+
+{ROWS}
+
+{BLOCKS}
+
+-------------------------------------------------------------------------------
+
+{COUNTS}
+SELECT COUNT(*) FROM test_{TEMP}_mest;
+SELECT op, no_idx FROM test_{TEMP}_mest ORDER BY op;
+SELECT * FROM test_{TEMP}_mest
+WHERE {DIFFER}
+ORDER BY op;
+
+DROP TABLE test_{TEMP}_mest;
+{DROPS}
+
+DROP FUNCTION pg_temp.test_probes_index(text);
+
+-------------------------------------------------------------------------------

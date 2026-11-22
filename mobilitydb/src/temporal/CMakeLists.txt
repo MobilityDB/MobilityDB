@@ -53,6 +53,7 @@ add_library(pg_temporal OBJECT
   temporal_boxops.c
   temporal_compops.c
   temporal_index.c
+  temporal_mest.c
   temporal_posops.c
   temporal_selfuncs.c
   temporal_supportfn.c

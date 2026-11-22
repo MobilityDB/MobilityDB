@@ -1276,6 +1276,33 @@ tspatial_space_time_boxes(const Temporal *temp, double xsize, double ysize,
 }
 
 /**
+ * @ingroup meos_internal_geo_tile
+ * @brief Return the spatiotemporal boxes of a temporal geo split with
+ * respect to a space grid and, when a duration is given, a time grid
+ * @details The internal twin of #tgeo_space_time_boxes and #tgeo_space_boxes,
+ * which test their arguments; a multi-entry index calls it with the sizes the
+ * options of its class state
+ * @param[in] temp Temporal geo
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Size of the time dimension, NULL for a space grid alone
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[out] count Number of elements in the output array
+ */
+STBox *
+tgeo_space_time_boxes_intl(const Temporal *temp, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin,
+  TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
+{
+  assert(temp); assert(count); assert(tgeo_type_all(temp->temptype));
+  assert(xsize > 0);
+  return tspatial_space_time_boxes(temp, xsize, ysize, zsize, duration,
+    sorigin, torigin, bitmatrix, border_inc, &tgeo_restrict_stbox, count);
+}
+
+/**
  * @ingroup meos_geo_bbox_split
  * @brief Return the spatiotemporal boxes of a temporal point split with
  * respect to a space and a time grid
@@ -1309,8 +1336,8 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
     return NULL;
-  return tspatial_space_time_boxes(temp, xsize, ysize, zsize, duration,
-    sorigin, torigin, bitmatrix, border_inc, &tgeo_restrict_stbox, count);
+  return tgeo_space_time_boxes_intl(temp, xsize, ysize, zsize, duration,
+    sorigin, torigin, bitmatrix, border_inc, count);
 }
 
 /**
@@ -1343,8 +1370,8 @@ tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
   VALIDATE_TGEO(temp, NULL);
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
     return NULL;
-  return tspatial_space_time_boxes(temp, xsize, ysize, zsize, NULL, sorigin,
-    0, bitmatrix, border_inc, &tgeo_restrict_stbox, count);
+  return tgeo_space_time_boxes_intl(temp, xsize, ysize, zsize, NULL, sorigin,
+    0, bitmatrix, border_inc, count);
 }
 
 /**

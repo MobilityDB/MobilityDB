@@ -1,0 +1,37 @@
+
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry GiST consistent method of the classes keyed by the boxes
+ * of the pieces of a value, as #{SYM} answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator: a predicate of the box of a piece is not that of the value
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+  Datum result = {SYM}(fcinfo);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  *recheck = true;
+  return result;
+}
+/* SPGIST */
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry SP-GiST leaf consistent method of the classes keyed by
+ * the boxes of the pieces of a value, as #{SYM} answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator, and its distance by the distance of the value: the distance to a
+ * piece bounds that of the value from below
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+  Datum result = {SYM}(fcinfo);
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  out->recheck = true;
+  if (out->distances)
+    out->recheckDistances = true;
+  return result;
+}

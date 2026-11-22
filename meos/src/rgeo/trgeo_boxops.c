@@ -421,6 +421,32 @@ trgeoseqset_stboxes(const TSequenceSet *ss, int *count, const GSERIALIZED *geom)
 }
 
 /**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal rigid geometry, its arguments valid
+ * @details The internal twin of #trgeometry_stboxes, which an index calls
+ * @param[in] temp Temporal rigid geometry
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+trgeometry_stboxes_intl(const Temporal *temp, int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  const GSERIALIZED *geom = trgeometry_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return trgeoinst_stboxes((TInstant *) temp, geom);
+    case TSEQUENCE:
+      return trgeoseq_stboxes((TSequence *) temp, count, geom);
+    default: /* TSEQUENCESET */
+      return trgeoseqset_stboxes((TSequenceSet *) temp, count, geom);
+  }
+}
+
+/**
  * @ingroup meos_rgeo_bbox_split
  * @brief Return an array of spatiotemporal boxes from the instants or segments
  * of a temporal rigid geometry
@@ -439,19 +465,7 @@ trgeometry_stboxes(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-
-  const GSERIALIZED *geom = trgeometry_geom_p(temp);
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return trgeoinst_stboxes((TInstant *) temp, geom);
-    case TSEQUENCE:
-      return trgeoseq_stboxes((TSequence *) temp, count, geom);
-    default: /* TSEQUENCESET */
-      return trgeoseqset_stboxes((TSequenceSet *) temp, count, geom);
-  }
+  return trgeometry_stboxes_intl(temp, count);
 }
 
 /*****************************************************************************/
@@ -663,6 +677,37 @@ trgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count,
 }
 
 /**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of N spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal rigid geometry, its arguments
+ * valid
+ * @details The internal twin of #trgeometry_split_n_stboxes, which an index calls
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+STBox *
+trgeometry_split_n_stboxes_intl(const Temporal *temp, int box_count, int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(box_count > 0);
+  const GSERIALIZED *geom = trgeometry_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return trgeoinst_stboxes((TInstant *) temp, geom);
+    case TSEQUENCE:
+      return trgeoseq_split_n_stboxes((TSequence *) temp, box_count, count,
+        geom);
+    default: /* TSEQUENCESET */
+      return trgeoseqset_split_n_stboxes((TSequenceSet *) temp, box_count,
+        count, geom);
+  }
+}
+
+/**
  * @ingroup meos_rgeo_bbox_split
  * @brief Return an array of N spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal rigid geometry
@@ -684,21 +729,7 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
-
-  const GSERIALIZED *geom = trgeometry_geom_p(temp);
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return trgeoinst_stboxes((TInstant *) temp, geom);
-    case TSEQUENCE:
-      return trgeoseq_split_n_stboxes((TSequence *) temp, box_count, count,
-        geom);
-    default: /* TSEQUENCESET */
-      return trgeoseqset_split_n_stboxes((TSequenceSet *) temp, box_count,
-        count, geom);
-  }
+  return trgeometry_split_n_stboxes_intl(temp, box_count, count);
 }
 
 /*****************************************************************************
@@ -836,6 +867,40 @@ trgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elem_count,
 }
 
 /**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal rigid geometry, its arguments
+ * valid
+ * @details The internal twin of #trgeometry_split_each_n_stboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+trgeometry_split_each_n_stboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(elem_count > 0);
+  const GSERIALIZED *geom = trgeometry_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return trgeoinst_stboxes((TInstant *) temp, geom);
+    case TSEQUENCE:
+      return trgeoseq_split_each_n_stboxes((TSequence *) temp, elem_count,
+        count, geom);
+    default: /* TSEQUENCESET */
+      return trgeoseqset_split_each_n_stboxes((TSequenceSet *) temp,
+        elem_count, count, geom);
+  }
+}
+
+/**
  * @ingroup meos_rgeo_bbox_split
  * @brief Return an array of spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal rigid geometry
@@ -859,26 +924,37 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elem_count,
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  const GSERIALIZED *geom = trgeometry_geom_p(temp);
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return trgeoinst_stboxes((TInstant *) temp, geom);
-    case TSEQUENCE:
-      return trgeoseq_split_each_n_stboxes((TSequence *) temp, elem_count,
-        count, geom);
-    default: /* TSEQUENCESET */
-      return trgeoseqset_split_each_n_stboxes((TSequenceSet *) temp,
-        elem_count, count, geom);
-  }
+  return trgeometry_split_each_n_stboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_n_stboxes and merge_each_n_stboxes functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of N spatiotemporal boxes obtained by merging the
+ * boxes of
+ * the consecutive instants or segments of a temporal rigid geometry, each time
+ * the
+ * consecutive pair whose union adds the least size to theirs, its arguments
+ * valid
+ * @details The internal twin of #trgeometry_merge_n_stboxes, which an index calls
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+trgeometry_merge_n_stboxes_intl(const Temporal *temp, int box_count, int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(box_count > 0);
+  STBox *result = trgeometry_stboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_STBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
 
 /**
  * @ingroup meos_rgeo_bbox_split
@@ -904,11 +980,34 @@ trgeometry_merge_n_stboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
+  return trgeometry_merge_n_stboxes_intl(temp, box_count, count);
+}
 
-  STBox *result = trgeometry_stboxes(temp, count);
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging the boxes
+ * of the
+ * consecutive instants or segments of a temporal rigid geometry, each time the
+ * consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them, its arguments valid
+ * @details The internal twin of #trgeometry_merge_each_n_stboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+trgeometry_merge_each_n_stboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(elem_count > 0);
+  STBox *result = trgeometry_stboxes_intl(temp, count);
   if (result)
-    *count = bbox_merge_n(T_STBOX, result, *count, box_count, &stbox_adjust,
-      &stbox_size);
+    *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
   return result;
 }
 
@@ -940,17 +1039,38 @@ trgeometry_merge_each_n_stboxes(const Temporal *temp, int elem_count,
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  STBox *result = trgeometry_stboxes(temp, count);
-  if (result)
-    *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
-      &stbox_adjust, &stbox_size);
-  return result;
+  return trgeometry_merge_each_n_stboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_query_stboxes function
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal rigid geometry into those a query of the extents of a query box
+ * is expected to read least, its arguments valid
+ * @details The internal twin of #trgeometry_merge_query_stboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+trgeometry_merge_query_stboxes_intl(const Temporal *temp, const STBox *query,
+  int *count)
+{
+  assert(temp); assert(query); assert(count);
+  assert(tspatial_type(temp->temptype));
+  assert(ensure_valid_tspatial_stbox(temp, query));
+  STBox *result = trgeometry_stboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_STBOX, result, *count, query, &stbox_adjust,
+      &stbox_query_size);
+  return result;
+}
 
 /**
  * @ingroup meos_rgeo_bbox_split
@@ -978,12 +1098,7 @@ trgeometry_merge_query_stboxes(const Temporal *temp, const STBox *query,
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
   if (! ensure_valid_tspatial_stbox(temp, query))
     return NULL;
-
-  STBox *result = trgeometry_stboxes(temp, count);
-  if (result)
-    *count = bbox_merge_query(T_STBOX, result, *count, query, &stbox_adjust,
-      &stbox_query_size);
-  return result;
+  return trgeometry_merge_query_stboxes_intl(temp, query, count);
 }
 /* GENERATED-BOXSPLIT-END trgeometry */
 
