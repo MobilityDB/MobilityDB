@@ -69,6 +69,7 @@
 #include <pg_int.h>
 #include <utils/float.h>
 #include <utils/datetime.h>
+#include "common/hashfn.h"
 #include <stringbuffer.h>
 #include "geo/geo_funcs.h"
 #include "raster/raquet.h"
@@ -909,6 +910,82 @@ raster_mem_size(const Raster *rast)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, INT_MAX);
   return (int) VARSIZE(rast);
+}
+
+/*****************************************************************************
+ * Comparison functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two rasters are equal
+ * @details Two rasters are equal when their serialized forms are the same
+ * bytes, the serialization writing every byte of a raster, its padding
+ * included, from the raster alone. The operator `=` of PostGIS states this
+ * equality over the hashes of those bytes; it is stated here exactly. A raster
+ * has no order: PostGIS states none, so where #raquet_eq reads #raquet_cmp,
+ * this reads the bytes
+ * @param[in] rast1,rast2 Rasters
+ * @errval false
+ * @see #raquet_eq
+ */
+bool
+raster_eq(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, false); VALIDATE_NOT_NULL(rast2, false);
+  size_t size = VARSIZE(rast1);
+  return size == VARSIZE(rast2) && memcmp(rast1, rast2, size) == 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two rasters are different
+ * @param[in] rast1,rast2 Rasters
+ * @errval false
+ * @see #raquet_ne
+ */
+bool
+raster_ne(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, false); VALIDATE_NOT_NULL(rast2, false);
+  return ! raster_eq(rast1, rast2);
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return the 32-bit hash of a raster
+ * @details The hash is that of the bytes of the serialized raster after its
+ * length, the hash `raster_hash` of PostGIS answers for the same raster
+ * @param[in] rast Raster
+ * @errval UINT32_MAX
+ * @see #raquet_hash
+ */
+uint32
+raster_hash(const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, UINT32_MAX);
+  return hash_any((const unsigned char *) VARDATA(rast),
+    (int) (VARSIZE(rast) - VARHDRSZ));
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return the 64-bit hash of a raster using a seed
+ * @param[in] rast Raster
+ * @param[in] seed Seed
+ * @errval UINT64_MAX
+ * @see #raquet_hash_extended
+ */
+uint64
+raster_hash_extended(const Raster *rast, uint64 seed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, UINT64_MAX);
+  return hash_any_extended((const unsigned char *) VARDATA(rast),
+    (int) (VARSIZE(rast) - VARHDRSZ), seed);
 }
 
 /**
