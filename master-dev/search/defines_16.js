@@ -66,6 +66,9 @@ var searchData=
   ['validate_5ftstzspan_63',['VALIDATE_TSTZSPAN',['../meos__internal_8h_a6cef3bfc3388594d5db56775103e4b26.html#a6cef3bfc3388594d5db56775103e4b26',1,'meos_internal.h']]],
   ['validate_5ftstzspanset_64',['VALIDATE_TSTZSPANSET',['../meos__internal_8h_a3a85a395cb9edbd1ffbd328b6e7fd426.html#a3a85a395cb9edbd1ffbd328b6e7fd426',1,'meos_internal.h']]],
   ['validate_5fttext_65',['VALIDATE_TTEXT',['../meos__internal_8h_a34e319f2025cb0c3847638d86c81035c.html#a34e319f2025cb0c3847638d86c81035c',1,'meos_internal.h']]],
-  ['value_5fsel_66',['VALUE_SEL',['../meos_2include_2temporal_2temporal_8h_ad82f37d01d837765d57cdfa512f347b0.html#ad82f37d01d837765d57cdfa512f347b0',1,'temporal.h']]],
-  ['vrt_5fpath_67',['VRT_PATH',['../rasterread__test_8c_a1651cb2649d3ca562d0f28d4f54c4fe4.html#a1651cb2649d3ca562d0f28d4f54c4fe4',1,'rasterread_test.c']]]
+  ['validatepolygonflags_66',['validatePolygonFlags',['../h3lib__names_8h_aefbb9e50e39555fd6cb3531dcc044de0.html#aefbb9e50e39555fd6cb3531dcc044de0',1,'h3lib_names.h']]],
+  ['value_5fsel_67',['VALUE_SEL',['../meos_2include_2temporal_2temporal_8h_ad82f37d01d837765d57cdfa512f347b0.html#ad82f37d01d837765d57cdfa512f347b0',1,'temporal.h']]],
+  ['vec3tocell_68',['vec3ToCell',['../h3lib__names_8h_a507aea9941b05f2acf92569f92f853e8.html#a507aea9941b05f2acf92569f92f853e8',1,'h3lib_names.h']]],
+  ['vertexnumfordirection_69',['vertexNumForDirection',['../h3lib__names_8h_a55f77f8a8e5229b4f6fdee15e63b8a7f.html#a55f77f8a8e5229b4f6fdee15e63b8a7f',1,'h3lib_names.h']]],
+  ['vrt_5fpath_70',['VRT_PATH',['../rasterread__test_8c_a1651cb2649d3ca562d0f28d4f54c4fe4.html#a1651cb2649d3ca562d0f28d4f54c4fe4',1,'rasterread_test.c']]]
 ];
