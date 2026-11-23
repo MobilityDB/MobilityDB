@@ -27,7 +27,7 @@ plan of MobilityDB #3788 (`doc/contributing/io/`).
 |---|---|
 | [Implementation plan](IMPLEMENTATION-PLAN.md) | One part per binding: what is measured, the tasks that generate the rest, and the acceptance of the whole |
 | [The MEOS functions every binding binds](BINDINGS.md) | The one rule by which every binding chooses the MEOS functions it binds and the declarations it calls them through, where each binding stands against it, and its pull requests |
-| [Lines of code](LINES-OF-CODE.md) | The lines of code of MobilityDB, MEOS and every binding, counted by `tools/count_loc.sh`, refreshed by each pull request of this plan |
+| [Lines of code](https://github.com/MobilityDB/.github/blob/main/profile/lines-of-code.md) | The lines of code of MobilityDB, MEOS and every binding, on the organization's page, written by `tools/count_loc.sh` of `MobilityDB/.github`, which each pull request of this plan runs again |
 
 ## How much of each binding is generated
 

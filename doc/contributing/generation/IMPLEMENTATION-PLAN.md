@@ -348,7 +348,7 @@ from each repository's last CI run on its default branch, the catalog of Mobilit
 |---|---|---|
 | X1 | Every binding regenerates from MobilityDB master on a schedule and opens a pull request on drift, as MobilityDuck, MobilityNebula and PyMEOS-CFFI do; JMEOS, MobilitySpark, MobilityFlink, MobilityKafka, PyMEOS, MobilityAPI-Python, GoMEOS, MobilityAPI, MEOS.NET, MEOS.js and meos-rs do not | open |
 | X2 | A drift check fails rather than reports, so a committed snapshot cannot fall behind MEOS until the build breaks, as MEOS.NET's and MEOS.js's did on 2026-11-20 | open |
-| X3 | `tools/count_loc.sh` runs with each pull request of this plan, and `LINES-OF-CODE.md` states its result | open |
+| X3 | `tools/count_loc.sh` of `MobilityDB/.github` runs with each pull request of this plan, and the organization's page `profile/lines-of-code.md`, the one copy of the counts, states its result | MobilityDB/.github #20 holds the script and the page counted on 2026-11-23 |
 
 ## Finishing the campaign
 
@@ -362,7 +362,7 @@ to D9.17 of Part I. The rows fall into three tiers of very different size, taken
 - X1: the daily refresh that opens a pull request on drift, as MobilityDuck, MobilityNebula and
   PyMEOS-CFFI run it, copied to the other bindings.
 - X2: drift checks that fail instead of reporting.
-- X3: `tools/count_loc.sh` with each pull request of this plan.
+- X3: `tools/count_loc.sh` of `MobilityDB/.github` with each pull request of this plan.
 - SP1, CF4, GO4, JM4 and NET3: documentation and dead code.
 
 **Tier 2, the remaining functions: two to three weeks, a catalog statement and then a generator
