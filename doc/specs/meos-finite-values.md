@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v1.3.0 |
+| Version | v1.3.1 |
 | Scope | The numbers, timestamps and dates a MEOS or MobilityDB value holds, the answer to an operation whose result exceeds them, and the class of the error it raises |
 | Reference | `meos/include/temporal/temporal.h` (`ensure_finite`, `ensure_finite_result`, `ensure_finite_timestamptz`, `ensure_finite_date`), `meos/src/geo/geo_funcs.c` (`ensure_finite_geo`), `meos/src/temporal/meos_error.c` (`meos_errcode_sqlstate`) |
 
@@ -112,7 +112,10 @@ SELECT tfloat '1@infinity';
 A raster pixel holding a NaN or an infinity carries no value, as a pixel
 equal to the nodata value of its band does. The temporal value read from a
 raster along a trajectory therefore has no instant where the trajectory
-crosses such a pixel.
+crosses such a pixel, and the statistics of a band (`summaryStats` and
+`summaryStatsAgg`) are those of its other pixels: a band holding NaN, 2, 4,
+8, 16 and -0 counts five pixels summing to 30, and a band whose every pixel
+is NaN has no statistics.
 ## 4. Results
 
 ### 4.1 The rule
