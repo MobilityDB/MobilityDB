@@ -255,8 +255,10 @@ if(H3)
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:h3>")
   # The core library of H3 vendored under h3lib/, built as core-math/ is: an
   # object library whose symbols stay out of the dynamic table of MEOS, which
-  # also loads libh3, its public names prefixed by H3_PREFIX and its h3api.h
-  # configured with the release H3_REQUIRED_VERSION names. h3_vertex.c reads
+  # also loads libh3, its public names prefixed by H3_PREFIX and its internal
+  # ones by meos/src/h3/h3lib_names.h, included before every source, so that
+  # a static libmeos links beside a static libh3, and its h3api.h configured
+  # with the release H3_REQUIRED_VERSION names. h3_vertex.c reads
   # its integer addressing for the vertices of decision D8 of the cell walks
   set(H3LIB_DIR "${CMAKE_SOURCE_DIR}/h3lib")
   string(REPLACE "." ";" _h3_parts "${H3_REQUIRED_VERSION}")
@@ -274,7 +276,13 @@ if(H3)
     "${CMAKE_SOURCE_DIR}/meos/src/h3/h3_vertex.c")
   target_include_directories(h3core BEFORE PRIVATE
     "${CMAKE_BINARY_DIR}/h3lib" "${H3LIB_DIR}/include" "${H3LIB_DIR}/lib")
-  target_compile_definitions(h3core PRIVATE H3_PREFIX=meos_h3_)
+  target_compile_definitions(h3core PRIVATE H3_PREFIX=meos_)
+  set(H3LIB_NAMES "${CMAKE_SOURCE_DIR}/meos/src/h3/h3lib_names.h")
+  if(MSVC)
+    target_compile_options(h3core PRIVATE "/FI${H3LIB_NAMES}")
+  else()
+    target_compile_options(h3core PRIVATE -include "${H3LIB_NAMES}")
+  endif()
   if(NOT MSVC)
     # The vendored sources compare signed and unsigned integers
     set_source_files_properties(${_h3lib_srcs} PROPERTIES

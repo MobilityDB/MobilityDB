@@ -87,3 +87,13 @@ target_include_directories(h3_vertex_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(h3_vertex_unit ${MEOS_LIB_NAME} ${H3_LIBRARY} postgis
   pgtypes m)
 add_test(NAME h3_vertex_unit COMMAND h3_vertex_unit)
+
+# Every global symbol of the vendored core library of H3 carries the prefix
+# meos_ (or h3_, the functions of h3_vertex.c), so that a static libmeos links
+# beside a static libh3; nm reads the objects of h3core
+if(NOT MSVC AND CMAKE_NM)
+  add_test(NAME h3lib_names_unit COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM}
+    "-DOBJECTS=$<JOIN:$<TARGET_OBJECTS:h3core>,|>"
+    -DLEADING_UNDERSCORE=${APPLE}
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/h3lib_names_check.cmake)
+endif()
