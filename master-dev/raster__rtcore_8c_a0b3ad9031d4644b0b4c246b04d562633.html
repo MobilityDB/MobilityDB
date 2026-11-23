@@ -354,7 +354,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Read every pixel of a band as rt_band_get_summary_stats reads all of them, each value divided by 2^scale. </p>
-<p >The same pixels in the same order, the same one-pass sum, mean and sum of squared deviations, and the same cases of an empty band and of a band whose every pixel is nodata, so that the statistics are those the raster core takes, divided by a power of two, which is exact. The running count, mean and sum of squared deviations of the rasters read before are carried on where <code>cK</code> is not NULL, as the raster core carries its coverage ones </p><dl class="params"><dt>Parameters</dt><dd>
+<p >A pixel holding a NaN or an infinity carries no value and is left out, as a nodata pixel is (doc/specs/meos-finite-values.md). The other pixels are read in the same order, with the same one-pass sum, mean and sum of squared deviations, and the same cases of an empty band and of a band whose every pixel is nodata, so that the statistics are those the raster core takes, divided by a power of two, which is exact. The running count, mean and sum of squared deviations of the rasters read before are carried on where <code>cK</code> is not NULL, as the raster core carries its coverage ones </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Band </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">exclude_nodata</td><td>True to leave the nodata pixels out </td></tr>
