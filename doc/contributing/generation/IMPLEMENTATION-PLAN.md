@@ -335,7 +335,8 @@ from each repository's last CI run on its default branch, the catalog of Mobilit
 | NET1 | MEOS.NET refreshed from MobilityDB master, `main` green | done: MEOS.NET #75 merged (`a2dadc3`), regenerated from the catalog of MobilityDB `4fd2d9e6f4`; `main` green |
 | NET2 | The 11 raster methods, the 10 unreadable results and the 4 values without text I/O; the catalog states the nullability of each parameter | open |
 | NET3 | The lifecycle generated; `README.md`, `tools/README.md` and `tools/refresh.conf` state the generator as it is; the empty `MEOS.NET.NpgSql` project leaves | open |
-| JS1 | MEOS.js refreshed from MobilityDB master, `main` green | MEOS.js #67, branch `refresh/meos-master-4fd2d9e` of the fork: `tsc` accepts the generated surface; the WebAssembly build stops on 13 functions `bindings.c` calls that the headers of its MEOS build do not declare (`nsegment_sortkey`, the point cloud `*_transform`, `tpcpoint_get_x`, `bandstats_in`, ...) |
+| JS1 | MEOS.js refreshed from MobilityDB master, `main` green | done: MEOS.js #67 merged (`a172c5f`), regenerated from the catalog of MobilityDB `4fd2d9e6f4`: 4208 functions generated, 8 by hand, 2 object-layer methods deferred |
+| JS4 | The WebAssembly build of a pull request compiles against the MobilityDB it clones, never a layer of the GitHub Actions cache. On #67 the build read headers older than its clone: 18 functions added to MobilityDB after 2026-11-19 undeclared, while the same Dockerfile without cache builds; deleting the cached layer the build imported after the clone and its indexes made it pass | open |
 | JS2 | The package exports the generated temporal classes: the 4706 hand lines of `core/types/` leave | open |
 | JS3 | The 144 object-layer deferrals, 10 raster arguments and 2 name collisions; why the object layer shrinks by about 2000 lines on the catalog of master | open |
 | RS1 | Both 1.4 FFI designs complete, green and comparable on the same surface (#6 resolved against `main`, the bindgen design carried to the same point), for the owner and the maintainer to choose | open |
@@ -356,8 +357,8 @@ to D9.17 of Part I. The rows fall into three tiers of very different size, taken
 
 **Tier 1, plumbing: about a week, about fifteen small pull requests, no design risk.**
 
-- CF1 and NET1 are done.
-- JS1 (MEOS.js #67) and D9.17 (the H3 names of libmeos) are open.
+- CF1, NET1 and JS1 are done; D9.17 has its MobilityDB fix, #3929, and closes with #575.
+- JS4: the WebAssembly build of MEOS.js never reads a cached MobilityDB.
 - X1: the daily refresh that opens a pull request on drift, as MobilityDuck, MobilityNebula and
   PyMEOS-CFFI run it, copied to the other bindings.
 - X2: drift checks that fail instead of reporting.
