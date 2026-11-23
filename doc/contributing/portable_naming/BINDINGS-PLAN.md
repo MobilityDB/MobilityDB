@@ -80,8 +80,9 @@ parameters (175), the arity mismatches (62), table functions for the composition
 its 31 system test files hold about 80 queries. `tools/codegen/coverage-ledger.txt` (819 generated,
 1569 gap, 863 residue, 258 deferred) classifies by `build_descriptor.py`, the per-operator
 generator `codegen_nebula.py` used, while the plugin's kernels, from `codegen_nebula_sql.py`, call
-2664 of the 3509 public functions: the ledger and the two scripts that feed it are to retire or to
-rebase on `codegen_nebula_sql.py`'s report.
+2664 of the 3509 public functions: the ledger, which keeps a new MEOS function from being dropped
+unseen, is to classify by `codegen_nebula_sql.py`, every public function generated or left out by
+the reason it states, and the two former scripts leave with it.
 
 ## The pull requests
 
