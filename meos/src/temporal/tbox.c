@@ -1315,72 +1315,163 @@ tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
 
 /**
  * @ingroup meos_box_transf
- * @brief Return a temporal box with the value span shifted and/or scaled by
- * the values
+ * @brief Return a temporal integer box with the value span shifted by a value
  * @param[in] box Temporal box
- * @param[in] shift Value to shift the value span
- * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
+ * @param[in] shift Value for shifting the value span
+ * @csqlfn #Tbox_shift_value()
  */
 TBox *
-tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift,
-  bool haswidth)
+tintbox_shift_value(const TBox *box, int shift)
 {
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_span_isof_type(&box->span, T_INTSPAN))
     return NULL;
-
-  return tbox_shift_scale_value(box, Int32GetDatum(shift),
-    Int32GetDatum(width), hasshift, haswidth);
+  return tbox_shift_scale_value(box, Int32GetDatum(shift), 0, true, false);
 }
 
 /**
  * @ingroup meos_box_transf
- * @brief Return a temporal box with the value span shifted and/or scaled by
- * two values
+ * @brief Return a temporal integer box with the value span scaled to a width
+ * @param[in] box Temporal box
+ * @param[in] width Width of the result
+ * @csqlfn #Tbox_scale_value()
+ */
+TBox *
+tintbox_scale_value(const TBox *box, int width)
+{
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_span_isof_type(&box->span, T_INTSPAN))
+    return NULL;
+  return tbox_shift_scale_value(box, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal integer box with the value span shifted by a value
+ * and scaled to a width
  * @param[in] box Temporal box
  * @param[in] shift Value for shifting the value span
  * @param[in] width Width of the result
- * @param[in] hasshift,haswidth True when the corresponding argument is given
- * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
+ * @csqlfn #Tbox_shift_scale_value()
  */
 TBox *
-tbigintbox_shift_scale(const TBox *box, int64 shift, int64 width,
-  bool hasshift, bool haswidth)
+tintbox_shift_scale_value(const TBox *box, int shift, int width)
+{
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_span_isof_type(&box->span, T_INTSPAN))
+    return NULL;
+  return tbox_shift_scale_value(box, Int32GetDatum(shift),
+    Int32GetDatum(width), true, true);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal big integer box with the value span shifted by a
+ * value
+ * @param[in] box Temporal box
+ * @param[in] shift Value for shifting the value span
+ * @csqlfn #Tbox_shift_value()
+ */
+TBox *
+tbigintbox_shift_value(const TBox *box, int64 shift)
 {
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
     return NULL;
-
-  return tbox_shift_scale_value(box, Int64GetDatum(shift),
-    Int64GetDatum(width), hasshift, haswidth);
+  return tbox_shift_scale_value(box, Int64GetDatum(shift), 0, true, false);
 }
 
 /**
  * @ingroup meos_box_transf
- * @brief Return a temporal box with the value span shifted and/or scaled by
- * the values
+ * @brief Return a temporal big integer box with the value span scaled to a
+ * width
  * @param[in] box Temporal box
- * @param[in] shift Value to shift the value span
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
+ * @csqlfn #Tbox_scale_value()
  */
 TBox *
-tfloatbox_shift_scale(const TBox *box, double shift, double width,
-  bool hasshift, bool haswidth)
+tbigintbox_scale_value(const TBox *box, int64 width)
+{
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
+    return NULL;
+  return tbox_shift_scale_value(box, 0, Int64GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal big integer box with the value span shifted by a
+ * value and scaled to a width
+ * @param[in] box Temporal box
+ * @param[in] shift Value for shifting the value span
+ * @param[in] width Width of the result
+ * @csqlfn #Tbox_shift_scale_value()
+ */
+TBox *
+tbigintbox_shift_scale_value(const TBox *box, int64 shift, int64 width)
+{
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
+    return NULL;
+  return tbox_shift_scale_value(box, Int64GetDatum(shift),
+    Int64GetDatum(width), true, true);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal float box with the value span shifted by a value
+ * @param[in] box Temporal box
+ * @param[in] shift Value for shifting the value span
+ * @csqlfn #Tbox_shift_value()
+ */
+TBox *
+tfloatbox_shift_value(const TBox *box, double shift)
+{
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_finite(shift))
+    return NULL;
+  if (! ensure_span_isof_type(&box->span, T_FLOATSPAN))
+    return NULL;
+  return tbox_shift_scale_value(box, Float8GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal float box with the value span scaled to a width
+ * @param[in] box Temporal box
+ * @param[in] width Width of the result
+ * @csqlfn #Tbox_scale_value()
+ */
+TBox *
+tfloatbox_scale_value(const TBox *box, double width)
+{
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_finite(width))
+    return NULL;
+  if (! ensure_span_isof_type(&box->span, T_FLOATSPAN))
+    return NULL;
+  return tbox_shift_scale_value(box, 0, Float8GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal float box with the value span shifted by a value
+ * and scaled to a width
+ * @param[in] box Temporal box
+ * @param[in] shift Value for shifting the value span
+ * @param[in] width Width of the result
+ * @csqlfn #Tbox_shift_scale_value()
+ */
+TBox *
+tfloatbox_shift_scale_value(const TBox *box, double shift, double width)
 {
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   if (! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
-
   return tbox_shift_scale_value(box, Float8GetDatum(shift),
-    Float8GetDatum(width), hasshift, haswidth);
+    Float8GetDatum(width), true, true);
 }
 
 /**

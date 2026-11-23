@@ -139,14 +139,14 @@ int main(void)
 
   /* Shift of spans */
   Span *ispan = intspan_make(1, INT_MAX - 1000, true, false);
-  Span *s = intspan_shift_scale(ispan, 2000, 0, true, false);
+  Span *s = intspan_shift(ispan, 2000);
   check("intspan [1, INT_MAX - 1000) shifted by 2000", NUM); free(s);
-  s = intspan_shift_scale(ispan, 10, 0, true, false);
+  s = intspan_shift(ispan, 10);
   check("intspan [1, INT_MAX - 1000) shifted by 10", 0); free(s);
   Span *dspan = datespan_make(0, 10, true, false);
-  s = datespan_shift_scale(dspan, INT_MAX - 5, 0, true, false);
+  s = datespan_shift(dspan, INT_MAX - 5);
   check("datespan shifted by INT_MAX - 5 days", DT); free(s);
-  s = datespan_shift_scale(dspan, 10, 0, true, false);
+  s = datespan_shift(dspan, 10);
   check("datespan shifted by 10 days", 0); free(s);
   Span *tspan = tstzspan_in("[2001-01-01, 2001-01-02]");
   Interval *ilong = interval_in("300000 years", -1);
