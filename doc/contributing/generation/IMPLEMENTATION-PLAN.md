@@ -10,9 +10,11 @@
 
 [Back to the index](00-INDEX.md) · [The MEOS functions every binding binds](BINDINGS.md)
 
-A binding reaches its end state when it holds no registration, cast, type or per-function code
-written by hand: every public function of the MEOS catalog is generated or left out by a reason its
-generator states. Each part below is one binding. A row this plan does not hold (the rows named A,
+A binding reaches its end state when it holds no per-function, per-type or per-cast code written
+by hand: every public function of the MEOS catalog is generated or left out by a reason its
+generator states. Code that serves every function alike (the lifecycle, the runtime calling a
+generated function, an engine's executors and index modules) stays written by hand and is listed;
+[Finishing the campaign](#finishing-the-campaign) orders the work. Each part below is one binding. A row this plan does not hold (the rows named A,
 G, J, O and R beyond those of Part I, the decisions of a note) is a row of the portable naming
 notes of MobilityDB #2861 (`doc/contributing/portable_naming/`).
 
@@ -273,7 +275,7 @@ from each repository's last CI run on its default branch, the catalog of Mobilit
 
 | Task | Change | State |
 |---|---|---|
-| CF1 | The refresh pull requests of PyMEOS-CFFI run their checks (#70 waits for approval) | open |
+| CF1 | The refresh pull requests of PyMEOS-CFFI run their checks (#70 waited for approval) | done: PyMEOS-CFFI #71 merged (`0cca5a9`): with `MEOS_AUTOBUMP_TOKEN` empty, the refresh warns and dispatches `pr_build.yml` and `ruff.yml` on the pull request's branch, which need no approval; #70 merged (`c7a0ec9`), `master` at MEOS `4fd2d9e6f4` |
 | CF2 | `json_object` and the point cloud types bound as opaque handles: 39 functions | open |
 | CF3 | `enums.py` and `errors.py` generated from the catalog's enums and error codes; the template functions and the modifiers each read against a catalog statement | open |
 | CF4 | `build_header.py` loses `get_installed_headers` (B6 of [the bindings](BINDINGS.md)), and the dead `MACRO_ALIASED_FUNCTIONS` and `GEOSContextHandle_t` filters | open |
@@ -330,10 +332,10 @@ from each repository's last CI run on its default branch, the catalog of Mobilit
 
 | Task | Change | State |
 |---|---|---|
-| NET1 | MEOS.NET refreshed from MobilityDB master, `main` green | open |
+| NET1 | MEOS.NET refreshed from MobilityDB master, `main` green | done: MEOS.NET #75 merged (`a2dadc3`), regenerated from the catalog of MobilityDB `4fd2d9e6f4`; `main` green |
 | NET2 | The 11 raster methods, the 10 unreadable results and the 4 values without text I/O; the catalog states the nullability of each parameter | open |
 | NET3 | The lifecycle generated; `README.md`, `tools/README.md` and `tools/refresh.conf` state the generator as it is; the empty `MEOS.NET.NpgSql` project leaves | open |
-| JS1 | MEOS.js refreshed from MobilityDB master, `main` green | open |
+| JS1 | MEOS.js refreshed from MobilityDB master, `main` green | MEOS.js #67, branch `refresh/meos-master-4fd2d9e` of the fork: `tsc` accepts the generated surface; the WebAssembly build stops on 13 functions `bindings.c` calls that the headers of its MEOS build do not declare (`nsegment_sortkey`, the point cloud `*_transform`, `tpcpoint_get_x`, `bandstats_in`, ...) |
 | JS2 | The package exports the generated temporal classes: the 4706 hand lines of `core/types/` leave | open |
 | JS3 | The 144 object-layer deferrals, 10 raster arguments and 2 name collisions; why the object layer shrinks by about 2000 lines on the catalog of master | open |
 | RS1 | Both 1.4 FFI designs complete, green and comparable on the same surface (#6 resolved against `main`, the bindgen design carried to the same point), for the owner and the maintainer to choose | open |
@@ -347,11 +349,65 @@ from each repository's last CI run on its default branch, the catalog of Mobilit
 | X2 | A drift check fails rather than reports, so a committed snapshot cannot fall behind MEOS until the build breaks, as MEOS.NET's and MEOS.js's did on 2026-11-20 | open |
 | X3 | `tools/count_loc.sh` runs with each pull request of this plan, and `LINES-OF-CODE.md` states its result | open |
 
+## Finishing the campaign
+
+Assessed 2026-11-23 over the open rows of this plan: about 40 tasks of Parts II to VII, and D9.14
+to D9.17 of Part I. The rows fall into three tiers of very different size, taken in this order.
+
+**Tier 1, plumbing: about a week, about fifteen small pull requests, no design risk.**
+
+- CF1 and NET1 are done.
+- JS1 (MEOS.js #67) and D9.17 (the H3 names of libmeos) are open.
+- X1: the daily refresh that opens a pull request on drift, as MobilityDuck, MobilityNebula and
+  PyMEOS-CFFI run it, copied to the other bindings.
+- X2: drift checks that fail instead of reporting.
+- X3: `tools/count_loc.sh` with each pull request of this plan.
+- SP1, CF4, GO4, JM4 and NET3: documentation and dead code.
+
+**Tier 2, the remaining functions: two to three weeks, a catalog statement and then a generator
+shape.**
+
+- D9.15: the 137 casts of MobilityDuck, once the catalog states each cast MobilityDB declares with
+  `CREATE CAST`.
+- D9.14: the 55 type registrations of MobilityDuck outside `src/generated`, in the same way.
+- JM2 and CF3: exceptions, enums and errors from the catalog's `errorCode` enum and its structs,
+  which the catalog already holds; generator work only.
+- N2, N3 and SF1: the shape for out parameters, and about 300 signatures whose SQL arity differs
+  from their C arity, each read against the catalog, the fixes falling into a few patterns.
+- N1: an interval and a date type in NebulaStream, the one task of the tier inside an engine.
+
+**Tier 3, the object layers: months, and nearly all the effort left.**
+
+- PY1: PyMEOS, 139 classes, 31749 lines.
+- JM1: JMEOS, 65 files, 24760 lines.
+- RS2: meos-rs, 11078 lines.
+- GO1 and GO2: GoMEOS, 7597 lines.
+- JS2: MEOS.js, 4706 lines.
+
+MEOS.NET already generates its whole object layer from the catalog's object model, with 60 lines
+written by hand, so each of these ports `tools/objectgen.py` to another language rather than
+designing anew. The cost is in each binding's published names and its tests, family by family;
+PyMEOS is the largest and has the widest use.
+
+**Order.** Tiers 1 and 2 close the function surface of every binding and make a drift fail, in about
+a month. The object layers follow one binding at a time, the smallest first: MEOS.js, GoMEOS,
+JMEOS, PyMEOS, so the method matures before the binding most users call.
+
+**What is not work of this plan.**
+
+- Generic code written by hand is the end state, not a gap: the 9 generic files of MobilityNebula,
+  the lifecycle of MEOS.NET, and most of the 20254 lines of MobilityDuck (D9.16), its executors
+  and its R-tree and SP-tree index modules. D9.16 closes by listing what is generic and moving
+  the rest to the generator.
+- RS1, the choice between the two FFI designs of meos-rs, is the owner's and the maintainer's
+  decision; RS2 follows it.
+
 ## Acceptance of the whole
 
 - Part I: the second read of MobilityDuck's `duckdb_functions()`, without the generated
   registrations, holds no MobilityDuck row, and no (name, parameters) is registered twice; no type
-  registration and no cast stays outside `src/generated`.
+  registration and no cast stays outside `src/generated`; the C++ left outside it is generic,
+  each file listed with what it serves.
 - Part II: `codegen_nebula_sql.py` leaves out only the signatures outside a stream engine, and the
   coverage ledger classifies every public function by it.
 - Parts III to VI: no object-layer class, enum or error class of a binding is written by hand, and

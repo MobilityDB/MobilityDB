@@ -15,7 +15,7 @@ of the default branch of each `github.com/MobilityDB/<repo>` (submodules not fet
 excluded); each pull request of the generation plan runs it again. *Code* is cloc's code
 column. *Code w/o data* leaves out the CSV and JSON rows, which are mostly test fixtures, sample
 data or generated catalogs. MobilityNebula counts the lines its default branch adds or modifies
-over its NebulaStream base, `nebulastream/nebulastream` at `6c63b6a` 2026-11-06).
+over its NebulaStream base, `nebulastream/nebulastream` at `6c63b6a` (2026-11-06).
 
 ## Summary
 
@@ -324,7 +324,7 @@ SUM:                            60            637           2073           4169
 -------------------------------------------------------------------------------
 ```
 
-### MobilityNebula (`cloc --diff` over NebulaStream `6c63b6a` 2026-11-06); counted: added + modified)
+### MobilityNebula (`cloc --diff` over NebulaStream `6c63b6a` (2026-11-06); counted: added + modified)
 
 ```
 --------------------------------------------------------------------------------

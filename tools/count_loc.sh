@@ -92,7 +92,7 @@ for g in "${REPO_GROUPS[@]}"; do
       cpp=$(awk '/^SUM:/{exit} /^[A-Za-z]/{lang=$0} /^ *(added|modified) / && lang == "C++"{c+=$5} END{print c}' "$WORK/$r.diff.cloc")
       main="C++ ($cpp)"
       repo="$r (without NebulaStream)"
-      NESBASE=$(git -C "$WORK/$r" log -1 --abbrev=7 --format='%h` %cs' "$base")
+      NESBASE=$(git -C "$WORK/$r" log -1 --abbrev=7 --format='%h` (%cs)' "$base")
     else
       cloc --quiet --exclude-dir=.git "$WORK/$r" > "$WORK/$r.cloc"
       cloc --quiet --exclude-dir=.git --exclude-lang=CSV,JSON "$WORK/$r" > "$WORK/$r.nodata.cloc"
@@ -125,7 +125,7 @@ echo "of the default branch of each \`github.com/MobilityDB/<repo>\` (submodules
 echo "excluded); each pull request of the generation plan runs it again. *Code* is cloc's code"
 echo "column. *Code w/o data* leaves out the CSV and JSON rows, which are mostly test fixtures, sample"
 echo "data or generated catalogs. MobilityNebula counts the lines its default branch adds or modifies"
-echo "over its NebulaStream base, \`nebulastream/nebulastream\` at \`$NESBASE)."
+echo "over its NebulaStream base, \`nebulastream/nebulastream\` at \`$NESBASE."
 echo
 echo "## Summary"
 echo
@@ -151,7 +151,7 @@ for g in "${REPO_GROUPS[@]}"; do
   for r in ${g#*|}; do
     echo
     if [ "$r" = MobilityNebula ]; then
-      echo "### $r (\`cloc --diff\` over NebulaStream \`$NESBASE); counted: added + modified)"
+      echo "### $r (\`cloc --diff\` over NebulaStream \`$NESBASE; counted: added + modified)"
       echo; echo '```'; sed -n '/^-----/,$p' "$WORK/$r.diff.cloc"; echo '```'
     else
       echo "### $r"
