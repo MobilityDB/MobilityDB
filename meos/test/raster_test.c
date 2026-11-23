@@ -1330,6 +1330,75 @@ int main(void)
   free(fin_read); free(fin_from_bytes); free(fin_comb); free(fin_bytes);
   free(fin_sb); free(fin_a); free(fin_b); free(fin_base); free(fin_base_grid);
 
+  /* A pixel holding a NaN or an infinity carries no value
+   * (doc/specs/meos-finite-values.md), so the statistics of a band are those
+   * of its other pixels: NaN, 2, 4, 8, 16 and -0.0 count five pixels summing to
+   * 30, whether or not nodata is excluded, and 2, +Infinity, 4, -Infinity, 8,
+   * 16 and NaN count four pixels summing to 30. A band whose every pixel is NaN, or whose nodata value is NaN
+   * and every pixel nodata, has no statistics and raises no error. The
+   * aggregate answers what the single call answers, and across a raster
+   * holding a NaN and one holding 1 it counts 6 pixels summing to 31 */
+  const double nf_pixels[3][7] = {{NAN, 2, 4, 8, 16, -0.0, 0},
+    {2, INFINITY, 4, -INFINITY, 8, 16, NAN}, {NAN, NAN, NAN, 0, 0, 0, 0}};
+  const int nf_npix[3] = {6, 7, 3};
+  for (int i = 0; i < 3; i++)
+  {
+    for (int excl = 0; excl < 2; excl++)
+    {
+      Raster *nf = raster_make(nf_npix[i], 1, 0, 1, 1, -1, 0, 0, 4326, "64BF",
+        0.0, false, (const uint8_t *) nf_pixels[i],
+        nf_npix[i] * sizeof(double));
+      assert(nf != NULL);
+      meos_errno_reset();
+      BandStats *nf_st = raster_summary_stats(nf, 1, excl);
+      RasterStatsState *nf_state = raster_summary_stats_transfn(NULL, nf, 1,
+        excl);
+      BandStats *nf_agg = nf_state ? raster_summary_stats_finalfn(nf_state) :
+        NULL;
+      assert(meos_errno() == 0);
+      if (i == 2)
+        assert(nf_st == NULL && nf_agg == NULL);
+      else
+      {
+        printf("raster_summary_stats(non-finite case %d, %d): count %d, "
+          "sum %g, mean %g, min %g, max %g\n", i, excl, (int) nf_st->count,
+          nf_st->sum, nf_st->mean, nf_st->min, nf_st->max);
+        assert(nf_st->count == (i == 0 ? 5 : 4) && nf_st->sum == 30.0 &&
+          nf_st->mean == (i == 0 ? 6.0 : 7.5) && nf_st->max == 16.0 &&
+          nf_st->min == (i == 0 ? -0.0 : 2.0));
+        assert(nf_agg != NULL && nf_agg->count == nf_st->count &&
+          nf_agg->sum == nf_st->sum && nf_agg->mean == nf_st->mean &&
+          nf_agg->stddev == nf_st->stddev && nf_agg->min == nf_st->min &&
+          nf_agg->max == nf_st->max);
+      }
+      free(nf_st); free(nf_agg); free(nf);
+    }
+  }
+  const double nf_nodata[2] = {NAN, NAN};
+  Raster *nf_nd = raster_make(2, 1, 0, 1, 1, -1, 0, 0, 4326, "64BF", NAN,
+    true, (const uint8_t *) nf_nodata, sizeof(nf_nodata));
+  assert(nf_nd != NULL);
+  meos_errno_reset();
+  BandStats *nf_nd_st = raster_summary_stats(nf_nd, 1, false);
+  assert(nf_nd_st == NULL && meos_errno() == 0);
+  free(nf_nd);
+  const double nf_one[1] = {1.0};
+  Raster *nf_a = raster_make(6, 1, 0, 1, 1, -1, 0, 0, 4326, "64BF", 0.0,
+    false, (const uint8_t *) nf_pixels[0], 6 * sizeof(double));
+  Raster *nf_b = raster_make(1, 1, 0, 1, 1, -1, 0, 0, 4326, "64BF", 0.0,
+    false, (const uint8_t *) nf_one, sizeof(nf_one));
+  assert(nf_a != NULL && nf_b != NULL);
+  meos_errno_reset();
+  RasterStatsState *nf_run = raster_summary_stats_transfn(NULL, nf_a, 1, true);
+  nf_run = raster_summary_stats_transfn(nf_run, nf_b, 1, true);
+  BandStats *nf_run_st = raster_summary_stats_finalfn(nf_run);
+  assert(meos_errno() == 0 && nf_run_st != NULL);
+  printf("summary statistics of a raster holding a NaN and one holding 1: "
+    "count %d, sum %g\n", (int) nf_run_st->count, nf_run_st->sum);
+  assert(nf_run_st->count == 6 && nf_run_st->sum == 31.0 &&
+    nf_run_st->min == -0.0 && nf_run_st->max == 16.0);
+  free(nf_run_st); free(nf_a); free(nf_b);
+
   /* Reclassifying maps the values of a band onto the classes an expression
    * names. The band holds 10, 30, 40, 50, 60, 70, 80 and 90 outside its
    * nodata pixel.

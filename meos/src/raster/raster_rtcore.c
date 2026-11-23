@@ -3003,7 +3003,9 @@ bandstats_scale(double maxabs)
 /**
  * @brief Read every pixel of a band as rt_band_get_summary_stats reads all of
  * them, each value divided by 2^scale
- * @details The same pixels in the same order, the same one-pass sum, mean and
+ * @details A pixel holding a NaN or an infinity carries no value and is left
+ * out, as a nodata pixel is (doc/specs/meos-finite-values.md). The other
+ * pixels are read in the same order, with the same one-pass sum, mean and
  * sum of squared deviations, and the same cases of an empty band and of a band
  * whose every pixel is nodata, so that the statistics are those the raster
  * core takes, divided by a power of two, which is exact. The running count,
@@ -3035,7 +3037,8 @@ band_stats_scaled(rt_band band, bool exclude_nodata, int scale, uint64_t *cK,
     exclude_nodata = false;
   if (rt_band_get_isnodata_flag(band))
   {
-    if (! exclude_nodata)
+    /* A nodata value that is a NaN or an infinity carries no value */
+    if (! exclude_nodata && isfinite(nodata))
     {
       *count = (uint32_t) width * height;
       *min = *max = nodata;
@@ -3051,8 +3054,10 @@ band_stats_scaled(rt_band band, bool exclude_nodata, int scale, uint64_t *cK,
     {
       double value;
       int isnodata = 0;
+      /* A pixel holding a NaN or an infinity carries no value, as a nodata
+       * pixel does */
       if (rt_band_get_pixel(band, x, y, &value, &isnodata) != ES_NONE ||
-          (exclude_nodata && isnodata))
+          (exclude_nodata && isnodata) || ! isfinite(value))
         continue;
       double v = ldexp(value, -scale);
       k++;
@@ -3199,16 +3204,36 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
   result->stddev = stats->stddev;
   result->min = stats->min;
   result->max = stats->max;
-  /* Finite pixels whose sum or squared deviations leave the doubles are read
-   * again divided by a power of two, and the statistics multiplied back: a
-   * finite answer is answered, and a sum beyond DBL_MAX is an overflow */
+  /* The raster core reads a pixel holding a NaN or an infinity as a value, so
+   * its statistics are not finite where a band holds one; such a pixel carries
+   * no value, and the band is read again without it. Finite pixels whose sum
+   * or squared deviations leave the doubles are read divided by a power of
+   * two, and the statistics multiplied back: a finite answer is answered, and
+   * a sum beyond DBL_MAX is an overflow */
   if (! isfinite(stats->sum) || ! isfinite(stats->stddev))
   {
-    int scale = bandstats_scale(fmax(fabs(stats->min), fabs(stats->max)));
     uint32_t count;
     double sum, q, min, max;
-    band_stats_scaled(rtband, exclude_nodata, scale, NULL, NULL, NULL, &count,
+    band_stats_scaled(rtband, exclude_nodata, 0, NULL, NULL, NULL, &count,
       &sum, &q, &min, &max);
+    /* A band none of whose pixels carries a value has no statistics */
+    if (count < 1)
+    {
+      pfree(result);
+      raster_destroy(raster);
+      rtdealloc(stats);
+      return NULL;
+    }
+    int scale = 0;
+    if (! isfinite(sum) || ! isfinite(q))
+    {
+      scale = bandstats_scale(fmax(fabs(min), fabs(max)));
+      band_stats_scaled(rtband, exclude_nodata, scale, NULL, NULL, NULL,
+        &count, &sum, &q, &min, &max);
+    }
+    result->count = count;
+    result->min = min;
+    result->max = max;
     result->sum = ldexp(sum, scale);
     result->mean = ldexp(sum / count, scale);
     result->stddev = ldexp(sqrt(q / count), scale);
@@ -6473,38 +6498,51 @@ raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
     return NULL;
   }
   double sum = stats->sum;
-  /* Finite pixels whose sum or squared deviations would leave the doubles are
-   * read divided by a power of two, the state brought to it first */
+  uint32_t bcount = stats->count;
+  double bmin = stats->min, bmax = stats->max;
+  /* The raster core reads a pixel holding a NaN or an infinity as a value, so
+   * its statistics are not finite where a band holds one; such a pixel carries
+   * no value, and the band is read again without it. Finite pixels whose sum
+   * or squared deviations would leave the doubles are read divided by a power
+   * of two, the state brought to it first */
   if (stats->count > 0 && (state->scale > 0 || ! isfinite(sum) ||
       ! isfinite(mean) || ! isfinite(q) || ! isfinite(state->sum + sum)))
   {
-    double maxabs = fmax(fabs(stats->min), fabs(stats->max));
-    if (state->count > 0)
-      maxabs = fmax(maxabs, fmax(fabs(state->min), fabs(state->max)));
-    rasterstatsstate_rescale(state, bandstats_scale(maxabs));
+    double bsum, bq;
+    band_stats_scaled(rtband, state->exclude_nodata, 0, NULL, NULL, NULL,
+      &bcount, &bsum, &bq, &bmin, &bmax);
     count = state->count;
     mean = state->mean;
     q = state->q;
-    uint32_t n;
-    double bq, bmin, bmax;
-    band_stats_scaled(rtband, state->exclude_nodata, state->scale, &count,
-      &mean, &q, &n, &sum, &bq, &bmin, &bmax);
+    sum = 0.0;
+    if (bcount > 0)
+    {
+      double maxabs = fmax(fabs(bmin), fabs(bmax));
+      if (state->count > 0)
+        maxabs = fmax(maxabs, fmax(fabs(state->min), fabs(state->max)));
+      rasterstatsstate_rescale(state, bandstats_scale(maxabs));
+      count = state->count;
+      mean = state->mean;
+      q = state->q;
+      band_stats_scaled(rtband, state->exclude_nodata, state->scale, &count,
+        &mean, &q, &bcount, &sum, &bq, &bmin, &bmax);
+    }
   }
   raster_destroy(raster);
   /* The values of a band with no pixel to count leave the state as it is */
-  if (stats->count > 0)
+  if (bcount > 0)
   {
     if (state->count < 1)
     {
-      state->min = stats->min;
-      state->max = stats->max;
+      state->min = bmin;
+      state->max = bmax;
     }
     else
     {
-      if (stats->min < state->min)
-        state->min = stats->min;
-      if (stats->max > state->max)
-        state->max = stats->max;
+      if (bmin < state->min)
+        state->min = bmin;
+      if (bmax > state->max)
+        state->max = bmax;
     }
     state->sum += sum;
     state->count = (uint64) count;
