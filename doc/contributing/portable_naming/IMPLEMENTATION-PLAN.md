@@ -340,10 +340,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   oracle merc (3000 of 3000) and speed (relate at parity), Windows waived. MERGED as MobilityDB
   #3804 (`954b29392e`).
 - **One MEOS function per SQL function of a shift or scale** (X4.1 of the generation plan of
-  MobilityDB #3928): branch `meos/numbers-shift-scale-split` splits each of the 15 public shift and
-  scale functions of the number and date sets, spans, span sets and boxes, taking the flags hasshift
-  and haswidth, into three, as the owner approved the 45 names on 2026-11-23 ("go"): it rewrites `cce310aca2` and rewrites `20e3db85d2`, the
-  typed span functions that commit moved into `span.c` and the calls of the MEOS test programs.
+  MobilityDB #3928) splits each of the 15 public shift and scale functions of the number and date
+  sets, spans, span sets and boxes, taking the flags hasshift and haswidth, into three, as the owner
+  approved the 45 names on 2026-11-23 ("go"), the typed span functions moved into `span.c` and the
+  calls of the MEOS test programs with them: branch `meos/numbers-shift-scale-split` rewrites `cce310aca2` and rewrites `20e3db85d2`.
 - **A span has the operators and the nearest approach distance of its temporal box** (G68–G71,
   Part I of the generation plan of MobilityDB #3928): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
