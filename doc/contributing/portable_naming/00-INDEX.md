@@ -154,7 +154,8 @@ the tag, the call or the public MEOS function each one needs: [The SQL functions
 
 The one rule by which every binding chooses the MEOS functions it binds and the declarations it calls
 them through, where each binding stands against it, and the pull requests that bring each one to it:
-[The MEOS functions every binding binds](BINDINGS-PLAN.md).
+[The MEOS functions every binding binds](../generation/BINDINGS.md), in the generation plan of
+MobilityDB #3928.
 
 What the generated Flink and Spark surfaces carry of the 168 set-returning functions, and the gaps
 behind it by repository: [Set-returning functions](10-SET-RETURNING.md).
