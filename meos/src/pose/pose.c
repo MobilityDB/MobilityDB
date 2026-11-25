@@ -654,6 +654,33 @@ ensure_unit_norm(double W, double X, double Y, double Z)
   return true;
 }
 
+/**
+ * @brief Write in place the one of the two quaternions q and -q, which state
+ * the same rotation, that a pose stores
+ * @details The first nonzero component of (W, X, Y, Z) is made positive, so
+ * that a rotation by half a turn, whose W is zero, is stored in one form as
+ * every other rotation is, as #pose_make_2d stores the planar half turn -pi
+ * as pi, and two poses holding the same rotation are equal. A zero component
+ * is written as 0.0, never -0.0, so that the stored bytes, which #pose_hash
+ * reads, are also those of one form
+ */
+static void
+pose_quaternion_canon(double *W, double *X, double *Y, double *Z)
+{
+  double *q[4] = { W, X, Y, Z };
+  double first = 0.0;
+  for (int i = 0; i < 4 && first == 0.0; i++)
+    first = *q[i];
+  for (int i = 0; i < 4; i++)
+  {
+    if (first < 0.0)
+      *q[i] = - *q[i];
+    /* Adding 0.0 writes -0.0 as 0.0 and leaves every other number as it is */
+    *q[i] += 0.0;
+  }
+  return;
+}
+
 /*****************************************************************************
  * Orientation encodings
  *
@@ -1242,13 +1269,7 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   }
 
   /* Ensure a unique representation for the quaternion (q ↔ -q). */
-  if (W < 0.0)
-  {
-    W = -W;
-    X = -X;
-    Y = -Y;
-    Z = -Z;
-  }
+  pose_quaternion_canon(&W, &X, &Y, &Z);
 
   size_t memsize = DOUBLE_PAD(sizeof(Pose)) + 7 * sizeof(double);
   Pose *result = palloc0(memsize);
@@ -2565,13 +2586,10 @@ pose_orientation_transf_pj(const Pose *pose, Pose *result, const LWPROJ *pj)
     { u[1], v[1], u[2] * v[0] - u[0] * v[2] },
     { u[2], v[2], u[0] * v[1] - u[1] * v[0] } };
   pose_matrix_to_quaternion(Rn, &W, &X, &Y, &Z);
-  /* Renormalize and keep the representative with W >= 0 */
+  /* Renormalize and keep the representative a pose stores */
   double n = sqrt(W * W + X * X + Y * Y + Z * Z);
   W /= n; X /= n; Y /= n; Z /= n;
-  if (W < 0.0)
-  {
-    W = -W; X = -X; Y = -Y; Z = -Z;
-  }
+  pose_quaternion_canon(&W, &X, &Y, &Z);
   result->data[3] = W;
   result->data[4] = X;
   result->data[5] = Y;

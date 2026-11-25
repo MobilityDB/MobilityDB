@@ -276,7 +276,8 @@ SELECT asEWKT(pose(0::float, 0::float, 0::float, 'NaN'::float, 0::float, 0::floa
 
 -- Quaternion double-cover canonicalization audit: q and -q represent the
 -- same orientation, so every construction path must canonicalize to a
--- single representative (chosen as W >= 0). Without this invariant the
+-- single representative (the one whose first nonzero component is
+-- positive, so W > 0 unless W is zero). Without this invariant the
 -- byte-level B-tree opclass and hash opclass would treat q and -q as
 -- distinct values and break distinct-set / GROUP BY semantics on poseset.
 -- Exercises the four entry points (WKT parser, constructor, WKB recv,
@@ -295,6 +296,19 @@ SELECT asHexWKB(pose 'SRID=3812;Pose(Point(1 2),1)')
      = asHexEWKB(pose 'SRID=3812;Pose(Point(1 2),1)') AS hexwkb_eq_hexewkb;
 SELECT hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')
      = hash(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)') AS hash_canonical;
+-- A turn by half a revolution has W = 0 in both q and -q, so the sign of W
+-- cannot choose between them: the first nonzero component of the axis does,
+-- and the two forms are one pose with one hash and one place in the order.
+SELECT pose 'Pose(Point(0 0 0), 0, 1, 0, 0)' = pose 'Pose(Point(0 0 0), 0, -1, 0, 0)' AS half_turn_canonical;
+SELECT pose 'Pose(Point(0 0 0), 0, 0, -0.6, 0.8)' = pose 'Pose(Point(0 0 0), 0, 0, 0.6, -0.8)' AS half_turn_axis_canonical;
+SELECT hash(pose 'Pose(Point(0 0 0), 0, 0, 0, 1)')
+     = hash(pose 'Pose(Point(0 0 0), 0, 0, 0, -1)') AS half_turn_hash_canonical;
+SELECT cmp(pose 'Pose(Point(0 0 0), 0, 1, 0, 0)', pose 'Pose(Point(0 0 0), 0, -1, 0, 0)') AS half_turn_cmp;
+SELECT asText(pose 'Pose(Point(0 0 0), 0, 0, -0.6, 0.8)');
+-- Turning q into -q writes a zero component as 0, never as -0, so the stored
+-- bytes that the hash reads are those of the one form too.
+SELECT hash(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)')
+     = hash(pose 'Pose(Point(0 0 0), -1, 0, 0, 0)') AS identity_hash_canonical;
 
 -- A pose read back from its binary form is the pose that was written, so the
 -- binary form is lossless and COPY BINARY carries a table unchanged. The
