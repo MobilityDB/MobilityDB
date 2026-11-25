@@ -87,3 +87,13 @@ written by hand in a binding.
 |---|---|---|
 | RC11 | The evaluation of the article: materialized occurrences, templates with the source calendar resolved at query time, and templates with origins in both indexing forms, on the STIB-MIVB feeds, a large feed with long service periods, and synthetic feeds; the workloads Q1 to Q8; every answer of the recurring form checked against the materialized one | open |
 | RC12 | The article completed with the measurements of RC11 against the cost analysis it states | open |
+
+**THE DATA AND THE MACHINE (the owner, 2026-11-26).** The large feed is the Swiss national GTFS
+feed of opentransportdata.swiss: one integrated timetable, services spanning the whole timetable
+year and therefore both daylight-saving changes, and every mode. The timetable year that starts
+in December 2026 is downloaded once and pinned by its version and date; the article reports the
+notices of the MobilityData GTFS validator on it and on the STIB-MIVB feed. The benchmark runs on
+the machine that holds the book databases, whose disk holds the materialized representation of a
+whole year and on which no other work runs during a measurement, so that absolute times are valid;
+the code and its receipts are earned on the development machine, and the harness reaches the
+benchmark machine through the `MobilityDB/claude-kits` repository.
