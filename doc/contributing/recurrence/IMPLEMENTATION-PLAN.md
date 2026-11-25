@@ -12,8 +12,15 @@
 
 Part 0 drafts the article in full and defines in it the implementation that fulfills its
 objective; Parts I to IV build that implementation, each task one pull request; Part V measures it
-and completes the article. The function names below are provisional: each is fixed by the naming
-rules of the portable naming notes (MobilityDB #2861) when its pull request opens.
+and completes the article.
+
+**THE NAMES.** Each function takes its three names as its sibling `temporal_shift_time` does: the
+MEOS function, its MobilityDB wrapper with the leading capital (`@csqlfn #Temporal_shift_time()`),
+and one bare SQL name in camel case overloaded over every temporal type (`shiftTime`). Hence
+`temporal_occurrence`, `Temporal_occurrence`, `occurrence`; `temporal_occurrence_origins`,
+`Temporal_occurrence_origins`, `occurrenceOrigins`; `temporal_occurrences`,
+`Temporal_occurrences`, `occurrences`; and, on the date set as `dateset_shift` is,
+`dateset_origins`, `Dateset_origins`, `origins`.
 
 ## The timeline
 
@@ -23,7 +30,7 @@ by the work and its receipts, never by review.
 
 | Milestone | Tasks | Target |
 |---|---|---|
-| M1, the bibliography checked and the names of the functions ruled | RC2, the names of RC3 to RC7 | 2026-11-28 |
+| M1, the bibliography checked against the publishers' records | RC2 | 2026-11-28 |
 | M2, MEOS: origins, one occurrence, the selected origins, the occurrences | RC3, RC4, RC5 | 2026-12-01 |
 | M3, MobilityDB: the SQL functions, the table function with its planner support, the test against materialized occurrences | RC6, RC7, RC8 | 2026-12-03 |
 | M4, the GTFS adapter and the table function in MobilityDuck and MobilitySpark | RC9, RC10 | 2026-12-05 |
@@ -31,7 +38,7 @@ by the work and its receipts, never by review.
 | M6, the benchmark run: every workload, the window sweep, ten runs each, the answers checked | RC11 | 2026-12-10 |
 | M7, the article complete: results against the cost analysis, figures, both authors' review | RC12 | 2026-12-14 |
 
-M3 and M5 overlap: the harness is written against the provisional SQL functions while RC6 to RC8
+M3 and M5 overlap: the harness is written against the SQL functions named above while RC6 to RC8
 earn their receipts. A milestone that slips moves every later one by the same amount; the slip and
 its cause are recorded in the row of the task.
 
