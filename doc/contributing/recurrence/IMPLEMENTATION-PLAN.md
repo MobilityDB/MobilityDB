@@ -1,0 +1,62 @@
+<!--
+  MobilityDB — Recurring temporal values: implementation plan
+  Copyright(c) MobilityDB Contributors
+
+  This documentation is licensed under a Creative Commons Attribution-Share
+  Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+-->
+
+# Recurring temporal values: the implementation plan
+
+[Back to the index](00-INDEX.md)
+
+Part 0 drafts the article in full and defines in it the implementation that fulfills its
+objective; Parts I to IV build that implementation, each task one pull request; Part V measures it
+and completes the article. The function names below are provisional: each is fixed by the naming
+rules of the portable naming notes (MobilityDB #2861) when its pull request opens.
+
+## Part 0 — the article and its blueprint
+
+| Task | Change | State |
+|---|---|---|
+| RC0 | The article drafted in full, from the thesis of S. Swirydowicz (its survey of periodicity in databases and of periodic pattern mining, its GTFS setting, its grouping of trips) and the design sketch it led to: model, time-zone semantics, algebra, query processing, cost analysis, implementation in MEOS and MobilityDB, GTFS case study, evaluation design. The article states that it derives from the thesis and reports none of the thesis's intermediate measurements | drafted: *Recurring Spatiotemporal Data as a Table Function: A Template-and-Origins Model for MobilityDB*, 13 pages |
+| RC1 | The blueprint: the sections of the article that define the implementation (model, algebra, query processing, implementation), summarized in [the index](00-INDEX.md#the-blueprint); every later task cites the element it builds | drafted |
+| RC2 | The bibliography checked against the publishers' records; the owner's review of the draft | open |
+
+## Part I — MEOS
+
+| Task | Change | State |
+|---|---|---|
+| RC3 | `dateset_origins(const Set *dates, const char *zone)`: the origins of a set of service dates, local noon minus 12 hours in the zone, the one function that reads a time zone. Tests on both daylight-saving changes of a year and on a zone without them | open |
+| RC4 | `temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin)` and `temporal_occurrence_origins(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window)`: one occurrence, and the origins whose occurrences meet a window by two binary searches, with the inclusivity of the window and of the support carried over. Tests on occurrences that start before the window and end in it | open |
+| RC5 | `temporal_occurrences(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window, int *count)`: the occurrences at those origins, built in order | open |
+
+Each function goes into the MEOS catalog and is generated into every binding; none needs code
+written by hand in a binding.
+
+## Part II — MobilityDB
+
+| Task | Change | State |
+|---|---|---|
+| RC6 | `origins(dateset, text)`, `occurrence(T, timestamptz, timestamptz)` and `occurrenceOrigins(T, timestamptz, tstzset, tstzspan)` for every temporal type, from the catalog | open |
+| RC7 | `occurrences(T, timestamptz, tstzset, tstzspan) RETURNS SETOF (origin timestamptz, occurrence T)`, value per call, with a planner support function returning the number of selected origins | open |
+| RC8 | The regression test that compares `occurrences` with fully materialized occurrences row for row, on dates on both sides of a daylight-saving change, stop times beyond 24:00, occurrences crossing the window bounds, and service dates added and removed | open |
+
+## Part III — the GTFS adapter
+
+| Task | Change | State |
+|---|---|---|
+| RC9 | The GTFS chapter of the MobilityDB workshop loading trips as templates with origins: service dates from `calendar.txt` and `calendar_dates.txt`, templates at the origin of a reference date, trips grouped by path and relative timing, origins from `origins(dates, agency_timezone)` | open |
+
+## Part IV — the hosts beyond PostgreSQL
+
+| Task | Change | State |
+|---|---|---|
+| RC10 | `occurrences` as a table function in the bindings whose host has them (MobilityDuck, MobilitySpark), from the generated functions | open |
+
+## Part V — the evaluation and the article
+
+| Task | Change | State |
+|---|---|---|
+| RC11 | The evaluation of the article: materialized occurrences, templates with the source calendar resolved at query time, and templates with origins in both indexing forms, on the STIB-MIVB feeds, a large feed with long service periods, and synthetic feeds; the workloads Q1 to Q8; every answer of the recurring form checked against the materialized one | open |
+| RC12 | The article completed with the measurements of RC11 against the cost analysis it states | open |
