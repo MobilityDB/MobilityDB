@@ -15,6 +15,26 @@ objective; Parts I to IV build that implementation, each task one pull request; 
 and completes the article. The function names below are provisional: each is fixed by the naming
 rules of the portable naming notes (MobilityDB #2861) when its pull request opens.
 
+## The timeline
+
+**THE HORIZON (the owner, 2026-11-26).** The article is finished, measurements included, by
+2026-12-14. Each pull request is merged as soon as its receipts are earned, so the timeline is set
+by the work and its receipts, never by review.
+
+| Milestone | Tasks | Target |
+|---|---|---|
+| M1, the bibliography checked and the names of the functions ruled | RC2, the names of RC3 to RC7 | 2026-11-28 |
+| M2, MEOS: origins, one occurrence, the selected origins, the occurrences | RC3, RC4, RC5 | 2026-12-01 |
+| M3, MobilityDB: the SQL functions, the table function with its planner support, the test against materialized occurrences | RC6, RC7, RC8 | 2026-12-03 |
+| M4, the GTFS adapter and the table function in MobilityDuck and MobilitySpark | RC9, RC10 | 2026-12-05 |
+| M5, the benchmark harness: loaders of the three representations, the workloads Q1 to Q8, the row-for-row check, the synthetic feed generator | RC11 | 2026-12-07 |
+| M6, the benchmark run: every workload, the window sweep, ten runs each, the answers checked | RC11 | 2026-12-10 |
+| M7, the article complete: results against the cost analysis, figures, both authors' review | RC12 | 2026-12-14 |
+
+M3 and M5 overlap: the harness is written against the provisional SQL functions while RC6 to RC8
+earn their receipts. A milestone that slips moves every later one by the same amount; the slip and
+its cause are recorded in the row of the task.
+
 ## Part 0 — the article and its blueprint
 
 | Task | Change | State |
