@@ -1,4 +1,3 @@
-
 extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1({TWIN});
 /**
@@ -18,6 +17,11 @@ Datum
       (StrategyNumber) PG_GETARG_UINT16(2)))
     PG_RETURN_BOOL(false);
 /* TIER-END */
+/* PIECES-BEGIN */
+  /* A piece of a value of the same span as the query lies within it */
+  if ((StrategyNumber) PG_GETARG_UINT16(2) == RTSameStrategyNumber)
+    fcinfo->args[2].value = UInt16GetDatum(RTContainedByStrategyNumber);
+/* PIECES-END */
   Datum result = {SYM}(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;
@@ -36,18 +40,49 @@ PG_FUNCTION_INFO_V1({TWIN});
 Datum
 {TWIN}(PG_FUNCTION_ARGS)
 {
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 /* TIER-BEGIN */
   /* The key answers by its tier (#mest_key_answers) */
-  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   int16 flags = ((const {KEYTYPE} *) DatumGetPointer(in->leafDatum))->flags;
   for (int i = 0; i < in->nkeys; i++)
     if (! mest_key_answers(flags, in->scankeys[i].sk_strategy))
       PG_RETURN_BOOL(false);
-/* TIER-END */
   Datum result = {SYM}(fcinfo);
+/* TIER-END */
+/* PIECES-BEGIN */
+  /* A piece of a value of the same span as the query lies within it */
+  ScanKey keys = in->scankeys;
+  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  Datum result = {SYM}(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+/* PIECES-END */
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   out->recheck = true;
   if (out->distances)
     out->recheckDistances = true;
   return result;
+}
+/* SPGIST-INNER */
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
+ * the spans of the pieces of a value, as
+ * #{SYM} answers it
+ * @details A piece of a value of the same span as the query lies within it,
+ * so the nodes are chosen for the same span as for contained by
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  ScanKey keys = in->scankeys;
+  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  {SYM}(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+  PG_RETURN_VOID();
 }

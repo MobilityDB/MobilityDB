@@ -55,6 +55,10 @@ CREATE OPERATOR CLASS th3index_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -127,6 +131,10 @@ CREATE OPERATOR CLASS th3index_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -199,6 +207,10 @@ CREATE OPERATOR CLASS th3index_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -271,6 +283,10 @@ CREATE OPERATOR CLASS th3index_mquadtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -343,6 +359,10 @@ CREATE OPERATOR CLASS th3index_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -415,6 +435,10 @@ CREATE OPERATOR CLASS th3index_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -487,6 +511,10 @@ CREATE OPERATOR CLASS th3index_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -559,6 +587,10 @@ CREATE OPERATOR CLASS th3index_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -631,6 +663,10 @@ CREATE OPERATOR CLASS th3index_mkdtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -703,6 +739,10 @@ CREATE OPERATOR CLASS th3index_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),

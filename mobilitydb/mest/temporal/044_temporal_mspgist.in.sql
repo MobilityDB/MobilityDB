@@ -37,13 +37,26 @@
 
 /******************************************************************************/
 
+CREATE FUNCTION span_mquadtree_inner_consistent(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Span_mquadtree_inner_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION span_mspgist_leaf_consistent(internal, internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_mspgist_leaf_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION span_mkdtree_inner_consistent(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Span_mkdtree_inner_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tbool_mquadtree_equisplit_ops
   DEFAULT FOR TYPE tbool USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -67,7 +80,7 @@ CREATE OPERATOR CLASS tbool_mquadtree_equisplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -75,6 +88,9 @@ CREATE OPERATOR CLASS tbool_mquadtree_equisplit_ops
 
 CREATE OPERATOR CLASS tbool_mquadtree_segsplit_ops
   FOR TYPE tbool USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -98,7 +114,7 @@ CREATE OPERATOR CLASS tbool_mquadtree_segsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -106,6 +122,9 @@ CREATE OPERATOR CLASS tbool_mquadtree_segsplit_ops
 
 CREATE OPERATOR CLASS tbool_mquadtree_binsplit_ops
   FOR TYPE tbool USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -129,7 +148,7 @@ CREATE OPERATOR CLASS tbool_mquadtree_binsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),
@@ -137,6 +156,9 @@ CREATE OPERATOR CLASS tbool_mquadtree_binsplit_ops
 
 CREATE OPERATOR CLASS tbool_mkdtree_equisplit_ops
   FOR TYPE tbool USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -160,7 +182,7 @@ CREATE OPERATOR CLASS tbool_mkdtree_equisplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -168,6 +190,9 @@ CREATE OPERATOR CLASS tbool_mkdtree_equisplit_ops
 
 CREATE OPERATOR CLASS tbool_mkdtree_segsplit_ops
   FOR TYPE tbool USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -191,7 +216,7 @@ CREATE OPERATOR CLASS tbool_mkdtree_segsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -199,6 +224,9 @@ CREATE OPERATOR CLASS tbool_mkdtree_segsplit_ops
 
 CREATE OPERATOR CLASS tbool_mkdtree_binsplit_ops
   FOR TYPE tbool USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -222,7 +250,7 @@ CREATE OPERATOR CLASS tbool_mkdtree_binsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),
@@ -230,6 +258,9 @@ CREATE OPERATOR CLASS tbool_mkdtree_binsplit_ops
 
 CREATE OPERATOR CLASS ttext_mquadtree_equisplit_ops
   DEFAULT FOR TYPE ttext USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -253,7 +284,7 @@ CREATE OPERATOR CLASS ttext_mquadtree_equisplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -261,6 +292,9 @@ CREATE OPERATOR CLASS ttext_mquadtree_equisplit_ops
 
 CREATE OPERATOR CLASS ttext_mquadtree_segsplit_ops
   FOR TYPE ttext USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -284,7 +318,7 @@ CREATE OPERATOR CLASS ttext_mquadtree_segsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -292,6 +326,9 @@ CREATE OPERATOR CLASS ttext_mquadtree_segsplit_ops
 
 CREATE OPERATOR CLASS ttext_mquadtree_binsplit_ops
   FOR TYPE ttext USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -315,7 +352,7 @@ CREATE OPERATOR CLASS ttext_mquadtree_binsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),
@@ -323,6 +360,9 @@ CREATE OPERATOR CLASS ttext_mquadtree_binsplit_ops
 
 CREATE OPERATOR CLASS ttext_mkdtree_equisplit_ops
   FOR TYPE ttext USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -346,7 +386,7 @@ CREATE OPERATOR CLASS ttext_mkdtree_equisplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -354,6 +394,9 @@ CREATE OPERATOR CLASS ttext_mkdtree_equisplit_ops
 
 CREATE OPERATOR CLASS ttext_mkdtree_segsplit_ops
   FOR TYPE ttext USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -377,7 +420,7 @@ CREATE OPERATOR CLASS ttext_mkdtree_segsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -385,6 +428,9 @@ CREATE OPERATOR CLASS ttext_mkdtree_segsplit_ops
 
 CREATE OPERATOR CLASS ttext_mkdtree_binsplit_ops
   FOR TYPE ttext USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -408,7 +454,7 @@ CREATE OPERATOR CLASS ttext_mkdtree_binsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),
@@ -442,6 +488,11 @@ CREATE OPERATOR CLASS tint_mquadtree_equisplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -514,6 +565,11 @@ CREATE OPERATOR CLASS tint_mquadtree_segsplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -586,6 +642,11 @@ CREATE OPERATOR CLASS tint_mquadtree_tilesplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -658,6 +719,11 @@ CREATE OPERATOR CLASS tint_mkdtree_equisplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -730,6 +796,11 @@ CREATE OPERATOR CLASS tint_mkdtree_segsplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -802,6 +873,11 @@ CREATE OPERATOR CLASS tint_mkdtree_tilesplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -874,6 +950,11 @@ CREATE OPERATOR CLASS tbigint_mquadtree_equisplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -946,6 +1027,11 @@ CREATE OPERATOR CLASS tbigint_mquadtree_segsplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -1018,6 +1104,11 @@ CREATE OPERATOR CLASS tbigint_mquadtree_tilesplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -1090,6 +1181,11 @@ CREATE OPERATOR CLASS tbigint_mkdtree_equisplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -1162,6 +1258,11 @@ CREATE OPERATOR CLASS tbigint_mkdtree_segsplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -1234,6 +1335,11 @@ CREATE OPERATOR CLASS tbigint_mkdtree_tilesplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -1306,6 +1412,11 @@ CREATE OPERATOR CLASS tfloat_mquadtree_equisplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),
@@ -1378,6 +1489,11 @@ CREATE OPERATOR CLASS tfloat_mquadtree_segsplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),
@@ -1450,6 +1566,11 @@ CREATE OPERATOR CLASS tfloat_mquadtree_tilesplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),
@@ -1522,6 +1643,11 @@ CREATE OPERATOR CLASS tfloat_mkdtree_equisplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),
@@ -1594,6 +1720,11 @@ CREATE OPERATOR CLASS tfloat_mkdtree_segsplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),
@@ -1666,6 +1797,11 @@ CREATE OPERATOR CLASS tfloat_mkdtree_tilesplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),

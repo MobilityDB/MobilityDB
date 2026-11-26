@@ -330,12 +330,14 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   takes in `templates/mestcommon.sql.tmpl`). A class keys a value by the boxes
   of its pieces, and holds the members of the GiST or SP-GiST class of its
   type that a value answers when every key answers it (`MEST_STRATEGIES`: the
-  position operators, contained by, the nearest approach distance, the ever
-  and always overlaps). A class whose box carries flags (`MEST_WHOLE_BOXES`:
-  a tbox, an stbox, a tpcbox) also keys the box of the whole value, flagged
-  as a structure of its own (`mest_keys_whole`), and holds the members that
-  key answers (`MEST_WHOLE_STRATEGIES`: overlaps, contains, adjacent); a
-  span carries no flags and keys the pieces alone. The extraction methods of
+  position operators, contained by, the same box, the nearest approach
+  distance, the ever and always overlaps). A class whose box carries flags
+  (`MEST_WHOLE_BOXES`: a tbox, an stbox, a tpcbox) also keys the box of the
+  whole value, flagged as a structure of its own (`mest_keys_whole`), and
+  holds the members that key answers (`MEST_WHOLE_STRATEGIES`: overlaps,
+  contains, adjacent, and the same box, which it answers exactly); a span
+  carries no flags and keys the pieces alone, which answer the same box as
+  contained by. The extraction methods of
   the splits come from `templates/boxmest.c.tmpl` into the
   `GENERATED-BOXMEST-BEGIN/END` regions of the `mestfile` a row of
   `boxsplit.yaml` names, the `{KEYS}` slot naming `mest_keys` or
@@ -344,7 +346,10 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   the `GENERATED-MESTCONSISTENT` region of the multi-entry file of the family
   defining each original; the twin of a box carrying flags keeps the
   template's `TIER` block, where a key answers only the strategies of its own
-  tier (`mest_key_answers`).
+  tier (`mest_key_answers`), and the twin of a span its `PIECES` block, which
+  reads the same span as contained by (`mest_pieces_scankeys`), as the inner
+  consistent twins of the SP-GiST classes of a span do
+  (`mest_inner_consistent`).
   `templates/mestindextest.sql.tmpl` writes the multi-entry test of each index
   test, `mobilitydb/test/mest/sql/<nnn>_<temp>_mest[3d]_tbl.sql`, one column
   per tree and split; an index test states per dimension the tile its

@@ -171,10 +171,11 @@ mest_keys_whole(const Temporal *temp, void *boxes, size_t size, int32 *count)
  * @brief Return true if a key of a multi-entry index may answer a strategy
  * @details The key of the box of a whole value (#mest_keys_whole) answers the
  * operators reading the interior or a face of the box of the value, which no
- * piece witnesses: the overlaps, the contains and the adjacency. The keys of
- * the pieces answer every other operator, each holding on the box of a value
- * iff on the box of one of its pieces or of every one. A key over the keys of
- * several structures stands for both and answers any
+ * piece witnesses: the overlaps, the contains and the adjacency, and the same
+ * box, which it answers exactly. The keys of the pieces answer every other
+ * operator, each holding on the box of a value iff on the box of one of its
+ * pieces or of every one. A key over the keys of several structures stands for
+ * both and answers any
  * @param[in] flags Flags of the key
  * @param[in] strategy Strategy number of the operator
  */
@@ -184,9 +185,41 @@ mest_key_answers(int16 flags, StrategyNumber strategy)
   if (MEOS_FLAGS_GET_PARTS(flags))
     return true;
   bool whole = (strategy == RTOverlapStrategyNumber ||
+    strategy == RTSameStrategyNumber ||
     strategy == RTContainsStrategyNumber ||
     strategy == RTAdjacentStrategyNumber);
   return MEOS_FLAGS_GET_WHOLE(flags) == whole;
+}
+
+/**
+ * @brief Return the scan keys a key of a piece of a value answers in place of
+ * the scan keys of a multi-entry index whose keys are spans
+ * @details A span carries no flags, so a class whose keys are spans keys the
+ * pieces of a value alone. The span of a value is the same as a query only
+ * when the span of every piece lies within the query, so a key of a piece
+ * answers the same span as contained by. The result is the array of the scan
+ * keys itself when no key is of the same span, else a copy allocated with
+ * palloc
+ * @param[in] keys Scan keys
+ * @param[in] nkeys Number of scan keys
+ */
+ScanKey
+mest_pieces_scankeys(ScanKey keys, int nkeys)
+{
+  if (nkeys <= 0)
+    return keys;
+  int i;
+  for (i = 0; i < nkeys; i++)
+    if (keys[i].sk_strategy == RTSameStrategyNumber)
+      break;
+  if (i == nkeys)
+    return keys;
+  ScanKey result = palloc(sizeof(ScanKeyData) * nkeys);
+  memcpy(result, keys, sizeof(ScanKeyData) * nkeys);
+  for (i = 0; i < nkeys; i++)
+    if (result[i].sk_strategy == RTSameStrategyNumber)
+      result[i].sk_strategy = RTContainedByStrategyNumber;
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Mest_count_options);
@@ -473,10 +506,57 @@ PG_FUNCTION_INFO_V1(Span_mgist_consistent);
 Datum
 Span_mgist_consistent(PG_FUNCTION_ARGS)
 {
+  /* A piece of a value of the same span as the query lies within it */
+  if ((StrategyNumber) PG_GETARG_UINT16(2) == RTSameStrategyNumber)
+    fcinfo->args[2].value = UInt16GetDatum(RTContainedByStrategyNumber);
   Datum result = Span_gist_consistent(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;
   return result;
+}
+
+extern PGDLLEXPORT Datum Span_kdtree_inner_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mkdtree_inner_consistent);
+/**
+ * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
+ * the spans of the pieces of a value, as
+ * #Span_kdtree_inner_consistent answers it
+ * @details A piece of a value of the same span as the query lies within it,
+ * so the nodes are chosen for the same span as for contained by
+ */
+Datum
+Span_mkdtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  ScanKey keys = in->scankeys;
+  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  Span_kdtree_inner_consistent(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+  PG_RETURN_VOID();
+}
+
+extern PGDLLEXPORT Datum Span_quadtree_inner_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mquadtree_inner_consistent);
+/**
+ * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
+ * the spans of the pieces of a value, as
+ * #Span_quadtree_inner_consistent answers it
+ * @details A piece of a value of the same span as the query lies within it,
+ * so the nodes are chosen for the same span as for contained by
+ */
+Datum
+Span_mquadtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  ScanKey keys = in->scankeys;
+  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  Span_quadtree_inner_consistent(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+  PG_RETURN_VOID();
 }
 
 extern PGDLLEXPORT Datum Span_spgist_leaf_consistent(PG_FUNCTION_ARGS);
@@ -491,7 +571,14 @@ PG_FUNCTION_INFO_V1(Span_mspgist_leaf_consistent);
 Datum
 Span_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  /* A piece of a value of the same span as the query lies within it */
+  ScanKey keys = in->scankeys;
+  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
   Datum result = Span_spgist_leaf_consistent(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   out->recheck = true;
   if (out->distances)
@@ -511,8 +598,8 @@ PG_FUNCTION_INFO_V1(Tbox_mspgist_leaf_consistent);
 Datum
 Tbox_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
-  /* The key answers by its tier (#mest_key_answers) */
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  /* The key answers by its tier (#mest_key_answers) */
   int16 flags = ((const TBox *) DatumGetPointer(in->leafDatum))->flags;
   for (int i = 0; i < in->nkeys; i++)
     if (! mest_key_answers(flags, in->scankeys[i].sk_strategy))

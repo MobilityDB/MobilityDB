@@ -55,6 +55,10 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -127,6 +131,10 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -199,6 +207,10 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -271,6 +283,10 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -343,6 +359,10 @@ CREATE OPERATOR CLASS tquadbin_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -415,6 +435,10 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -487,6 +511,10 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -559,6 +587,10 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -631,6 +663,10 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),
@@ -703,6 +739,10 @@ CREATE OPERATOR CLASS tquadbin_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
   -- contains
   OPERATOR  7    @> (tquadbin, tstzspan),
   OPERATOR  7    @> (tquadbin, stbox),

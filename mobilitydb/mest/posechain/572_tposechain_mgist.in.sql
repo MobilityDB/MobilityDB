@@ -61,6 +61,10 @@ CREATE OPERATOR CLASS tposechain_mrtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tposechain, stbox),
   OPERATOR  5    >> (tposechain, tposechain),
+  -- same
+  OPERATOR  6    ~= (tposechain, tstzspan),
+  OPERATOR  6    ~= (tposechain, stbox),
+  OPERATOR  6    ~= (tposechain, tposechain),
   -- contains
   OPERATOR  7    @> (tposechain, tstzspan),
   OPERATOR  7    @> (tposechain, stbox),
@@ -151,6 +155,10 @@ CREATE OPERATOR CLASS tposechain_mrtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tposechain, stbox),
   OPERATOR  5    >> (tposechain, tposechain),
+  -- same
+  OPERATOR  6    ~= (tposechain, tstzspan),
+  OPERATOR  6    ~= (tposechain, stbox),
+  OPERATOR  6    ~= (tposechain, tposechain),
   -- contains
   OPERATOR  7    @> (tposechain, tstzspan),
   OPERATOR  7    @> (tposechain, stbox),
@@ -241,6 +249,10 @@ CREATE OPERATOR CLASS tposechain_mrtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tposechain, stbox),
   OPERATOR  5    >> (tposechain, tposechain),
+  -- same
+  OPERATOR  6    ~= (tposechain, tstzspan),
+  OPERATOR  6    ~= (tposechain, stbox),
+  OPERATOR  6    ~= (tposechain, tposechain),
   -- contains
   OPERATOR  7    @> (tposechain, tstzspan),
   OPERATOR  7    @> (tposechain, stbox),
@@ -331,6 +343,10 @@ CREATE OPERATOR CLASS tposechain_mrtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tposechain, stbox),
   OPERATOR  5    >> (tposechain, tposechain),
+  -- same
+  OPERATOR  6    ~= (tposechain, tstzspan),
+  OPERATOR  6    ~= (tposechain, stbox),
+  OPERATOR  6    ~= (tposechain, tposechain),
   -- contains
   OPERATOR  7    @> (tposechain, tstzspan),
   OPERATOR  7    @> (tposechain, stbox),
@@ -421,6 +437,10 @@ CREATE OPERATOR CLASS tposechain_mrtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tposechain, stbox),
   OPERATOR  5    >> (tposechain, tposechain),
+  -- same
+  OPERATOR  6    ~= (tposechain, tstzspan),
+  OPERATOR  6    ~= (tposechain, stbox),
+  OPERATOR  6    ~= (tposechain, tposechain),
   -- contains
   OPERATOR  7    @> (tposechain, tstzspan),
   OPERATOR  7    @> (tposechain, stbox),
