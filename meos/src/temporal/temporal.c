@@ -42,6 +42,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
+#include <common/int.h>
 #include <utils/float.h>
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -52,6 +53,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/doxygen_meos.h"
 #include "temporal/lifting.h"
+#include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/tbox.h"
 #include <pgtypes.h>
@@ -2326,6 +2328,170 @@ temporal_shift_time(const Temporal *temp, const Interval *shift)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(shift, NULL);
   return temporal_shift_scale_time_intl(temp, shift, NULL);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the occurrence of a temporal value at an origin
+ * @details A temporal value describing a recurring phenomenon from a
+ * reference origin, its template, occurs again at every other origin, such as
+ * the origin of another service day given by #dateset_origins. The occurrence
+ * at an origin is the template shifted by the elapsed duration from the
+ * reference origin to that origin, so that every instant keeps its distance
+ * from the origin.
+ * @param[in] temp Temporal value, the template
+ * @param[in] ref Reference origin of the template
+ * @param[in] origin Origin of the occurrence
+ * @errval NULL
+ * @note Built as #temporal_shift_time, with an interval of microseconds
+ * @csqlfn #Temporal_occurrence()
+ */
+Temporal *
+temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_finite_timestamptz(ref) || ! ensure_finite_timestamptz(origin))
+    return NULL;
+  Interval shift = {0};
+  if (pg_sub_s64_overflow(origin, ref, &shift.time))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return NULL;
+  }
+  return temporal_shift_scale_time_intl(temp, &shift, NULL);
+}
+
+/**
+ * @brief Return the position of the first value of a timestamptz set after a
+ * timestamptz, or the number of values when there is none
+ * @param[in] s Set
+ * @param[in] t Timestamptz
+ * @param[in] inc True when a value equal to the timestamptz is after it
+ * @note Built on the binary search of #set_find_value
+ */
+static int
+tstzset_first_after(const Set *s, TimestampTz t, bool inc)
+{
+  int loc;
+  if (set_find_value(s, TimestampTzGetDatum(t), &loc))
+    return inc ? loc : loc + 1;
+  /* The location is the last value the search read */
+  return (DatumGetTimestampTz(SET_VAL_N(s, loc)) < t) ? loc + 1 : loc;
+}
+
+/**
+ * @brief Subtract two timestamps, saturating at the extreme values
+ */
+static TimestampTz
+tstz_minus_saturate(TimestampTz t, int64 d)
+{
+  TimestampTz result;
+  if (pg_sub_s64_overflow(t, d, &result))
+    return (d > 0) ? PG_INT64_MIN : PG_INT64_MAX;
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the origins at which the occurrence of a temporal value meets
+ * a period
+ * @details The occurrence at an origin is the template shifted by the
+ * elapsed duration from the reference origin to that origin, as in
+ * #temporal_occurrence. Its period, the period of the template so shifted,
+ * overlaps the period given exactly when the origin lies between the start of
+ * the period minus the end of the template, and the end of the period minus
+ * the start of the template, both measured from the reference origin, a bound
+ * included when the two bounds it is computed from are. Two binary searches
+ * in the origins find them.
+ * @param[in] temp Temporal value, the template
+ * @param[in] ref Reference origin of the template
+ * @param[in] origins Origins, a timestamptz set
+ * @param[in] s Period, a timestamptz span
+ * @return The origins, or @p NULL when no occurrence meets the period
+ * @errval NULL
+ * @csqlfn #Temporal_occurrence_origins()
+ */
+Set *
+temporal_occurrence_origins(const Temporal *temp, TimestampTz ref,
+  const Set *origins, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSET(origins, NULL);
+  VALIDATE_TSTZSPAN(s, NULL);
+  if (! ensure_finite_timestamptz(ref))
+    return NULL;
+
+  Span p;
+  temporal_set_tstzspan(temp, &p);
+  /* Offsets of the start and the end of the template from its origin */
+  int64 umin, umax;
+  if (pg_sub_s64_overflow(DatumGetTimestampTz(p.lower), ref, &umin) ||
+      pg_sub_s64_overflow(DatumGetTimestampTz(p.upper), ref, &umax))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return NULL;
+  }
+  TimestampTz lower = tstz_minus_saturate(DatumGetTimestampTz(s->lower), umax);
+  TimestampTz upper = tstz_minus_saturate(DatumGetTimestampTz(s->upper), umin);
+  bool lower_inc = p.upper_inc && s->lower_inc;
+  bool upper_inc = p.lower_inc && s->upper_inc;
+
+  int first = tstzset_first_after(origins, lower, lower_inc);
+  int last = tstzset_first_after(origins, upper, ! upper_inc) - 1;
+  if (first > last)
+    return NULL;
+  int count = last - first + 1;
+  Datum *values = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    values[i] = SET_VAL_N(origins, first + i);
+  return set_make_free(values, count, T_TIMESTAMPTZ, ORDER_NO);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the occurrences of a temporal value that meet a period, with
+ * their origins
+ * @details The occurrences are those at the origins that
+ * #temporal_occurrence_origins finds, each built by #temporal_occurrence, in
+ * the order of the origins; no other occurrence is built.
+ * @param[in] temp Temporal value, the template
+ * @param[in] ref Reference origin of the template
+ * @param[in] origins Origins, a timestamptz set
+ * @param[in] s Period, a timestamptz span
+ * @param[out] occ_origins Array of the origins of the occurrences
+ * @param[out] count Number of values in the output arrays
+ * @return The occurrences, or @p NULL with a count of zero when no
+ * occurrence meets the period
+ * @errval NULL
+ * @note The out parameters are set as #temporal_time_split sets them
+ * @csqlfn #Temporal_occurrences()
+ */
+Temporal **
+temporal_occurrences(const Temporal *temp, TimestampTz ref,
+  const Set *origins, const Span *s, TimestampTz **occ_origins, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(occ_origins, NULL);
+  Set *found = temporal_occurrence_origins(temp, ref, origins, s);
+  if (! found)
+    return NULL;
+  Temporal **result = palloc(sizeof(Temporal *) * found->count);
+  TimestampTz *orig = palloc(sizeof(TimestampTz) * found->count);
+  for (int i = 0; i < found->count; i++)
+  {
+    orig[i] = DatumGetTimestampTz(SET_VAL_N(found, i));
+    result[i] = temporal_occurrence(temp, ref, orig[i]);
+  }
+  *count = found->count;
+  *occ_origins = orig;
+  pfree(found);
+  return result;
 }
 
 /**

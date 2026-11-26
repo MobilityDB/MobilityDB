@@ -1334,6 +1334,38 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
    POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
 </programlisting>
 			</listitem>
+			<listitem xml:id="ttype_occurrences">
+				<indexterm significance="normal"><primary><varname>origins</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>occurrence</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>occurrenceOrigins</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>occurrences</varname></primary></indexterm>
+				<para>Devuelve las ocurrencias de un valor temporal recurrente &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+origins(dateset,zone text) → tstzset
+occurrence(ttype,ref timestamptz,origin timestamptz) → ttype
+occurrenceOrigins(ttype,ref timestamptz,origins tstzset,period tstzspan) → tstzset
+occurrences(ttype,ref timestamptz,origins tstzset,period tstzspan) →
+  {(timestamptz,ttype)}
+</programlisting>
+				<para>Un fenómeno recurrente, como un viaje de un horario que se realiza en muchos días, es un valor temporal que describe una realización a partir de un origen de referencia, su plantilla, junto con el conjunto de orígenes en los que se realiza de nuevo. La función <varname>origins</varname> devuelve los orígenes de un conjunto de días de servicio en una zona horaria: el origen de un día es su mediodía local menos doce horas, como la General Transit Feed Specification mide los horarios de un día de servicio, que es la medianoche local salvo en los días de un cambio de horario de verano. La función <varname>occurrence</varname> devuelve la plantilla desplazada por la duración transcurrida desde el origen de referencia hasta un origen, de modo que cada instante conserva su distancia al origen. La función <varname>occurrenceOrigins</varname> devuelve los orígenes cuya ocurrencia tiene un período que se superpone al período dado, encontrados por búsqueda binaria, o NULL cuando no hay ninguno, y la función de tabla <varname>occurrences</varname> devuelve esas ocurrencias con sus orígenes, sin construir ninguna otra ocurrencia.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SET timezone TO 'UTC';
+SELECT origins(dateset '{2026-03-28, 2026-03-29, 2026-03-30}', 'Europe/Zurich');
+-- {"2026-03-27 23:00:00+00", "2026-03-28 22:00:00+00", "2026-03-29 22:00:00+00"}
+SELECT occurrence(tint '[1@2026-01-14 23:30:00, 2@2026-01-15 00:30:00]',
+  '2026-01-14 23:00:00', '2026-03-28 22:00:00');
+-- [1@2026-03-28 22:30:00+00, 2@2026-03-28 23:30:00+00]
+SELECT occurrenceOrigins(tint '[1@2026-01-14 23:30:00, 2@2026-01-15 00:30:00]',
+  '2026-01-14 23:00:00', tstzset '{2026-01-14 23:00:00, 2026-01-15 23:00:00,
+  2026-01-16 23:00:00}', tstzspan '[2026-01-15 23:00:00, 2026-01-15 23:30:00]');
+-- {"2026-01-15 23:00:00+00"}
+SELECT * FROM occurrences(tint '[1@2026-01-14 23:30:00, 2@2026-01-15 00:30:00]',
+  '2026-01-14 23:00:00', tstzset '{2026-01-14 23:00:00, 2026-01-15 23:00:00,
+  2026-01-16 23:00:00}', tstzspan '[2026-01-15 00:00:00, 2026-01-16 00:00:00]');
+/* 2026-01-14 23:00:00+00 | [1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]
+   2026-01-15 23:00:00+00 | [1@2026-01-15 23:30:00+00, 2@2026-01-16 00:30:00+00] */
+</programlisting>
+			</listitem>
 			<listitem xml:id="ttype_unnest">
 				<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
 				<para>Transforma un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base &SRF;</para>

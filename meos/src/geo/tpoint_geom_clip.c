@@ -2996,6 +2996,8 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
   /* The bounds of the periods of the exact engine of one segment */
   int64 *exact_lo = palloc(sizeof(int64) * (nedges + 1));
   int64 *exact_hi = palloc(sizeof(int64) * (nedges + 1));
+  MotionEdges me;
+  motion_edges_init(&me, (const Edge *const *) edges, nedges);
   /* Loop for each segment */
   for (int i = 1; i < seq->count; i++)
   {
@@ -3003,13 +3005,16 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
     const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(inst2));
     bool upper_inc = (i < seq->count - 1) ? false : seq->period.upper_inc;
 
-    /* Filter the edges by an R-tree, expanding the query box by dist */
+    /* Filter the edges by an R-tree, querying the box of the reach of the
+     * exact engine, which holds the box of the segment grown by dist */
+    const double c0[2] = {a->x, a->y}, c1[2] = {b->x, b->y};
     if (use_index)
     {
+      double box[4];
+      motion_edges_reach_box(c0, c1, 0.0, 0.0, dist, box);
       STBox query;
-      stbox_set(true, false, false, srid, Min(a->x, b->x) - dist,
-        Max(a->x, b->x) + dist, Min(a->y, b->y) - dist,
-        Max(a->y, b->y) + dist, 0, 0, NULL, &query);
+      stbox_set(true, false, false, srid, box[0], box[1], box[2], box[3], 0,
+        0, NULL, &query);
       int cand_nedges = rtree_search_intl(rtree, INDEX_OVERLAPS, &query,
         rrs);
       for (int j = 0; j < cand_nedges; j++)
@@ -3020,10 +3025,10 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
 
     /* The exact engine dates the periods in whole microseconds; a geometry
      * it does not answer, an arc, takes the roots below */
-    const double c0[2] = {a->x, a->y}, c1[2] = {b->x, b->y};
     int64 D = inst2->t - inst1->t;
-    int np = motion_edges_dwithin_periods(c0, c1, 0.0, 0.0,
-      (const Edge *const *) edges, nedges, dist, D, exact_lo, exact_hi);
+    int np = motion_edges_dwithin_periods(c0, c1, 0.0, 0.0, &me,
+      use_index ? (const Edge *const *) sel_edges : NULL, sel_nedges, dist, D,
+      exact_lo, exact_hi);
     if (np >= 0)
     {
       for (int j = 0; j < np; j++)

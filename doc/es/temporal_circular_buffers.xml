@@ -167,7 +167,7 @@ SELECT asText(cbuffer(ST_Point(1,1), 0.3));
 {geometry,cbuffer}::{cbuffer,geometry}
 cbuffer::geography
 </programlisting>
-				<para>Como geografía, que no tiene curvas, el círculo se lee como un polígono de 32 segmentos por cuadrante, y no es un círculo sobre la superficie de la Tierra. Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+				<para>Como geografía, que no tiene curvas, el círculo se lee como un polígono de 32 segmentos por cuadrante, y no es un círculo sobre la superficie de la Tierra. Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(cbuffer(ST_Point(1,1), 1)::geometry);
 -- CURVEPOLYGON(CIRCULARSTRING(0 1,2 1,0 1))
@@ -663,7 +663,7 @@ SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbuffer::{tgeompoint,tgeogpoint}
 </programlisting>
-				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+				<para>Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
   Cbuffer(Point(1 1), 0.3)@2001-01-02)')::tgeompoint);
@@ -1376,7 +1376,7 @@ tcbuffer {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
 tcbuffer {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
 </programlisting>
-				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; un búfer circular está en un cuadro cuando lo interseca, tal como lo lee la restricción de un búfer circular temporal a un cuadro. Dos valores se superponen donde los cuadros de sus búferes circulares se superponen en un instante que comparten, es decir, donde la mayor de las distancias de sus centros según x e y es como máximo la suma de sus radios; los cuadros se comparan también entre los instantes de los valores, donde dos búferes en movimiento pueden superponerse solo por un momento, y dos valores que no comparten ningún instante responden NULL.</para>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establecen <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> y <varname>%&amp;&amp;</varname></link> para las geometrías temporales; un búfer circular está en un cuadro cuando lo interseca, tal como lo lee la restricción de un búfer circular temporal a un cuadro. Dos valores se superponen donde los cuadros de sus búferes circulares se superponen en un instante que comparten, es decir, donde la mayor de las distancias de sus centros según x e y es como máximo la suma de sus radios; los cuadros se comparan también entre los instantes de los valores, donde dos búferes en movimiento pueden superponerse solo por un momento, y dos valores que no comparten ningún instante responden NULL.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
   Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&amp;&amp;

@@ -590,7 +590,7 @@ SELECT (tbigint '42@2001-01-01')::tquadbin;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {th3index,tquadbin,ts2cell}::{tgeogpoint,tgeompoint}
 </programlisting>
-				<para>The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
+				<para>The conversions follow the rule of <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 				<para>The cast of a QUADBIN cell answers a point of the Web-Mercator plane the grid is defined on, while the cast of an S2 cell answers a geodetic one; each grid declares the single cast its own definition calls for. H3 declares both, so it is the one grid where the caller chooses between the geodetic and the SRID-4326 planar representation.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeogpoint, 6);
@@ -1650,7 +1650,7 @@ stbox {?&amp;&amp;, %&amp;&amp;} th3index → boolean
 ts2cell {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} ts2cell → boolean
 </programlisting>
-				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a cell lies in a box when its tile, its H3 cell or its S2 cell, with the boundary points it owns, shares a point with the box, as <xref linkend="tcell_atStbox"/> restricts it.</para>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> and <varname>%&amp;&amp;</varname></link> state it for the temporal geometries; a cell lies in a box when its tile, its H3 cell or its S2 cell, with the boundary points it owns, shares a point with the box, as <link linkend="tcell_atStbox"><varname>atStbox</varname></link> restricts it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&amp;&amp;
   stbox 'SRID=4326;STBOX X((10,10),(20,20))';

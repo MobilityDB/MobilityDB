@@ -1319,6 +1319,8 @@ typedef struct
   const Edge **eptrs;   /**< The edges of @p g as the within engine reads
                              them (#tcbufferseg_within_exact_ctx), built on
                              first use, or NULL */
+  const Edge **cand;    /**< Room for the candidate edges of a segment */
+  MotionEdges me;       /**< The description of @p eptrs */
 } TcbufferGeoCtx;
 
 /**
@@ -1389,6 +1391,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs, bool boundary)
   ctx->g = g;
   ctx->hasbox = (gserialized_get_gbox_p(gs, &ctx->box) == LW_SUCCESS);
   ctx->eptrs = NULL;
+  ctx->cand = NULL;
   /* Scratch buffer for the R-tree candidate ids, created with the R-tree and
    * freed with it in #tcbuffer_geo_ctx_free (see dist_pip_results). */
   dist_pip_results = index_result_create();
@@ -1412,7 +1415,10 @@ tcbuffer_geo_ctx_free(void *ctx)
   }
   dist_geom_free(&c->g);
   if (c->eptrs)
+  {
     pfree(c->eptrs);
+    pfree(c->cand);
+  }
   pfree(c);
 }
 
@@ -1685,14 +1691,27 @@ tcbufferseg_within_exact_ctx(const Cbuffer *cb1, const Cbuffer *cb2,
   if (! ctx->eptrs)
   {
     ctx->eptrs = palloc(sizeof(Edge *) * Max(ctx->g.n, 1));
+    ctx->cand = palloc(sizeof(Edge *) * Max(ctx->g.n, 1));
     for (int i = 0; i < ctx->g.n; i++)
       ctx->eptrs[i] = &ctx->g.segs[i];
+    motion_edges_init(&ctx->me, (const Edge *const *) ctx->eptrs, ctx->g.n);
   }
   const POINT2D *p1 = cbuffer_point2d_p(cb1);
   const POINT2D *p2 = cbuffer_point2d_p(cb2);
   const double c0[2] = {p1->x, p1->y}, c1[2] = {p2->x, p2->y};
+  /* The R-tree holds the boxes of the edges and meets the box of the reach
+   * wherever the engine's own test does, so it gives every candidate */
+  double box[4];
+  motion_edges_reach_box(c0, c1, cb1->radius, cb2->radius, dist, box);
+  STBox query;
+  stbox_set(true, false, false, 0, box[0], box[1], box[2], box[3], 0, 0,
+    NULL, &query);
+  int ncand = rtree_search_intl(ctx->g.rtree, INDEX_OVERLAPS, &query,
+    dist_pip_results);
+  for (int j = 0; j < ncand; j++)
+    ctx->cand[j] = &ctx->g.segs[INDEX_RESULT_ID_N(dist_pip_results, j)];
   return motion_edges_dwithin_periods(c0, c1, cb1->radius, cb2->radius,
-    ctx->eptrs, ctx->g.n, dist, D, lo, hi);
+    &ctx->me, (const Edge *const *) ctx->cand, ncand, dist, D, lo, hi);
 }
 
 /**

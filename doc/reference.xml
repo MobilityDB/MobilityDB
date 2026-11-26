@@ -765,6 +765,9 @@
 					<para><link linkend="ttype_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Shift and/or scale the time span of a temporal value by one or two intervals</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="ttype_occurrences"><varname>origins</varname>, <varname>occurrence</varname>, <varname>occurrenceOrigins</varname>, <varname>occurrences</varname></link>: Return the occurrences of a recurring temporal value &SRF;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="ttype_unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value &SRF;</para>
 				</listitem>
 			</itemizedlist>

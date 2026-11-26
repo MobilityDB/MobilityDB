@@ -310,6 +310,23 @@ CREATE FUNCTION shiftScaleTime(ts2cell, interval, interval)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION occurrence(ts2cell, ref timestamptz, origin timestamptz)
+  RETURNS ts2cell
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION occurrenceOrigins(ts2cell, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence_origins'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION occurrences(ts2cell, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS TABLE(origin timestamptz, occurrence ts2cell)
+  AS 'MODULE_PATHNAME', 'Temporal_occurrences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(ts2cell, duration interval,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS ts2cell

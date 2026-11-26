@@ -522,6 +522,23 @@ CREATE FUNCTION shiftScaleTime(tpcpoint, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION occurrence(tpcpoint, ref timestamptz, origin timestamptz)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION occurrenceOrigins(tpcpoint, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence_origins'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION occurrences(tpcpoint, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS TABLE(origin timestamptz, occurrence tpcpoint)
+  AS 'MODULE_PATHNAME', 'Temporal_occurrences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tsample(tpcpoint, duration interval,
   torigin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
   RETURNS tpcpoint

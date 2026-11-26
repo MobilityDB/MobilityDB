@@ -625,6 +625,37 @@ CREATE FUNCTION shiftScaleTime(tgeography, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION occurrence(tgeometry, ref timestamptz, origin timestamptz)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION occurrence(tgeography, ref timestamptz, origin timestamptz)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION occurrenceOrigins(tgeometry, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence_origins'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION occurrenceOrigins(tgeography, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Temporal_occurrence_origins'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION occurrences(tgeometry, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS TABLE(origin timestamptz, occurrence tgeometry)
+  AS 'MODULE_PATHNAME', 'Temporal_occurrences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION occurrences(tgeography, ref timestamptz, origins tstzset,
+  period tstzspan)
+  RETURNS TABLE(origin timestamptz, occurrence tgeography)
+  AS 'MODULE_PATHNAME', 'Temporal_occurrences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Unnest Function
  *****************************************************************************/

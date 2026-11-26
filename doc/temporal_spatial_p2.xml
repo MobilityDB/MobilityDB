@@ -236,7 +236,7 @@ SELECT tgeompoint 'SRID=3857;Point(0 0)@2001-01-01' |=|
 				<para>Values in two spatial reference systems always raise an error, since their units are not comparable.</para>
 			</listitem>
 		</itemizedlist>
-		<para>Since the rule raises no error, a value that lacks its Z by mistake answers in 2D with no warning. The functions <xref linkend="tgeo_force"/> state the dimensions to read. A column declared with a Z dimension, such as <varname>tgeompoint(Sequence, PointZ)</varname>, accepts no value with no Z, so that a table cannot hold one.</para>
+		<para>Since the rule raises no error, a value that lacks its Z by mistake answers in 2D with no warning. The functions <link linkend="tgeo_force"><varname>force2D</varname> and <varname>force3D</varname></link> state the dimensions to read. A column declared with a Z dimension, such as <varname>tgeompoint(Sequence, PointZ)</varname>, accepts no value with no Z, so that a table cannot hold one.</para>
 	</sect1>
 
 	<sect1 xml:id="tgeo_empty_geometries">
