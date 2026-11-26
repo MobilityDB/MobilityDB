@@ -473,6 +473,8 @@ parse_sane_timezone(struct pg_tm *tm, text *zone)
     int val;
     pg_tz *tzp;
     int type = pg_DecodeTimezoneName(tzname, &val, &tzp);
+    if (type < 0)
+      return INT_MAX;
     if (type == TZNAME_FIXED_OFFSET)
     {
       /* fixed-offset abbreviation */
@@ -625,6 +627,8 @@ timestamptz_make_at_timezone(int32 year, int32 month, int32 day, int32 hour,
   }
 
   int tz = parse_sane_timezone(&tt, (text *) zone);
+  if (tz == INT_MAX)
+    return DT_NOEND;
   TimestampTz result = dt2local(timestamp, -tz);
   if (!IS_VALID_TIMESTAMP(result))
   {
@@ -3251,6 +3255,9 @@ add_timestamptz_interval_at_zone(TimestampTz ts, const Interval *interv,
   const text *zone)
 {
   pg_tz *attimezone = lookup_timezone((text *) zone);
+  /* A null time zone would be read as the session time zone */
+  if (! attimezone)
+    return DT_NOEND;
   TimestampTz result = timestamptz_pl_interval_internal(ts, (Interval *) interv,
     attimezone);
   return result;
@@ -3267,6 +3274,9 @@ minus_timestamptz_interval_at_zone(TimestampTz ts, const Interval *interv,
   const text *zone)
 {
   pg_tz *attimezone = lookup_timezone((text *) zone);
+  /* A null time zone would be read as the session time zone */
+  if (! attimezone)
+    return DT_NOEND;
   TimestampTz result = timestamptz_mi_interval_internal(ts, (Interval *) interv,
     attimezone);
   return result;
@@ -4571,6 +4581,8 @@ pg_timestamptz_trunc_zone(TimestampTz ts, const text *units,
    * Look up the requested timezone.
    */
   pg_tz *tzp = lookup_timezone((text *) zone);
+  if (! tzp)
+    return DT_NOEND;
   TimestampTz result = timestamptz_trunc_internal(ts, (text *) units, tzp);
   return result;
 }
@@ -5819,6 +5831,8 @@ pg_timestamp_zone(Timestamp ts, const text *zone)
   int val, tz;
   pg_tz *tzp;
   int type = pg_DecodeTimezoneName(tzname, &val, &tzp);
+  if (type < 0)
+    return DT_NOEND;
   if (type == TZNAME_FIXED_OFFSET)
   {
     /* fixed-offset abbreviation */
@@ -6065,6 +6079,8 @@ pg_timestamptz_zone(TimestampTz tstz, const text *zone)
   pg_tz *tzp;
   int tz;
   int type = pg_DecodeTimezoneName(tzname, &val, &tzp);
+  if (type < 0)
+    return DT_NOEND;
   if (type == TZNAME_FIXED_OFFSET)
   {
     /* fixed-offset abbreviation */
