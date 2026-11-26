@@ -1661,10 +1661,11 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
   assert(span_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= span_count) ? ss->totalcount : span_count;
-  Span *result = palloc(sizeof(Span) * nboxes);
   if (ss->totalcount <= span_count)
     return tsequenceset_spans(ss, count);
+
+  /* At most span_count boxes, the segments being more */
+  Span *result = palloc(sizeof(Span) * span_count);
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */
@@ -2441,10 +2442,11 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
   assert(box_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
-  TBox *result = palloc(sizeof(TBox) * nboxes);
   if (ss->totalcount <= box_count)
     return tnumberseqset_tboxes(ss, count);
+
+  /* At most box_count boxes, the segments being more */
+  TBox *result = palloc(sizeof(TBox) * box_count);
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */
