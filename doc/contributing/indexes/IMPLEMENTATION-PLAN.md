@@ -65,7 +65,7 @@ generator carries it to every family, the whole-box key marked rather than mixed
 
 | Task | Change | State |
 |---|---|---|
-| IX7 | The box count of `splitNStboxes(v, 2)` over a value of three instants, which answers one box | open, a bug first |
+| IX7 | The box count of `splitNStboxes(v, 2)` over a value of three instants, which answers one box | done, no bug: the value of `166_trgeo_boxops` (`[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02, Pose(Point(10 0),0)@2001-01-03]`) moves on a line at a constant speed without turning, so it normalizes to one segment, and `stboxes` answers one box for it as well; a value that turns answers one box per segment (`splitEachNStboxes` of the five-instant zigzag of `060_tgeo_topops`, 4 boxes) |
 | IX8 | The whole-box key: prototyped on `tgeompoint` and measured on the 2000 trips against the single-entry class and the pieces-only class (rows fetched, pages read, size, build time), then generated for every temporal box | open |
 | IX9 | `~=` in the multi-entry classes of every temporal type, by the rule | open |
 | IX10 | The multi-entry classes of the sets and span sets, porting `spanset_mest.c`, one key per component | open |
@@ -76,7 +76,7 @@ generator carries it to every family, the whole-box key marked rather than mixed
 
 | Task | Change | State |
 |---|---|---|
-| IX13 | P2: `temporal_supportfn.c` accepts the `mgist` and `mspgist` classes, so that a function call is served as its operator is | open |
+| IX13 | P2: `temporal_supportfn.c` accepts the `mgist` and `mspgist` classes, so that a function call is served as its operator is | open: MobilityDB #3934 first, the ever and always equality of a temporal number and a number served by every GiST and SP-GiST index (10 of 10 plans probing the index, 0 of 10 without it); then branch `feat/mest-planner-rewrite` on it, the ever and always comparisons and relationships rewritten into `?&&` under `mgist` and `mspgist`, the portable position and containment predicates into their own operators (`075_mest_supportfn_tbl`: 18 of 21 predicates probing the index under each method, 0 of 42 plans without it, every count as the scan) |
 | IX14 | The multi-entry tests as an output of the index-test generator, one column per tree and split, replacing the hand-cloned ones; each class proved against the scan for every operator, with an unsound operator as its negative control | open |
 | IX15 | P4: `contrib/mobilitydb` of mest retired | open |
 | IX16 | The section on the indexes of `doc/specs/meos-value-boxes.md`: every type is indexed as its box, and which operators each index answers | open, closes the plan |
