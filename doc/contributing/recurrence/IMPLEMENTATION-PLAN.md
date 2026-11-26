@@ -48,7 +48,7 @@ its cause are recorded in the row of the task.
 |---|---|---|
 | RC0 | The article drafted in full, from the thesis of S. Swirydowicz (its survey of periodicity in databases and of periodic pattern mining, its GTFS setting, its grouping of trips) and the design sketch it led to: model, time-zone semantics, algebra, query processing, cost analysis, implementation in MEOS and MobilityDB, GTFS case study, evaluation design. The article states that it derives from the thesis and reports none of the thesis's intermediate measurements | drafted: *Recurring Spatiotemporal Data as a Table Function: A Template-and-Origins Model for MobilityDB*, 13 pages |
 | RC1 | The blueprint: the sections of the article that define the implementation (model, algebra, query processing, implementation), summarized in [the index](00-INDEX.md#the-blueprint); every later task cites the element it builds | drafted |
-| RC2 | The bibliography checked against the publishers' records; the owner's review of the draft | done except one entry: 25 of 26 entries confirmed against Crossref and the publishers, 17 with a DOI; the publisher of Niézette and Stévenne (CIKM 1992) is in no catalogue |
+| RC2 | The bibliography checked against the publishers' records; the owner's review of the draft | done: 26 of 26 entries confirmed against Crossref and the publishers, 17 with a DOI; Niézette and Stévenne (CIKM 1992, pages 161–168) is in the proceedings the International Society for Mini and Microcomputers publishes (ISBN 1-880843-03-X), not in the Springer volume of selected papers (LNCS 752) |
 
 ## Part I — MEOS
 
@@ -80,7 +80,7 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC10 | `occurrences` as a table function in the bindings whose host has them (MobilityDuck, MobilitySpark), from the generated functions | MobilityDuck done: #580 merged (the generator reads a set or span argument of a split shape, so `occurrences` is generated, 20 registrations, test 19 assertions as MobilityDB answers). MobilitySpark ready: #104 (`GeneratedSqlSurfaceTest` 25/25, the four functions generated from the catalog; CI green on `1d8c46f8c4`, on main past #105); in main: MobilitySpark #105 (`dbad519513`: the statistics of a band of nodata read through the `summarystats*` accessors), MobilityDB #3944 (`5717559b0e`: the statistics of a band with no value count no pixel, as PostgreSQL answers) and JMEOS #248 (the jar builds against master) |
+| RC10 | `occurrences` as a table function in the bindings whose host has them (MobilityDuck, MobilitySpark), from the generated functions | MobilityDuck done: #580 merged (the generator reads a set or span argument of a split shape, so `occurrences` is generated, 20 registrations, test 19 assertions as MobilityDB answers). MobilitySpark done: #104 merged as `d9d8e5d734` (`GeneratedSqlSurfaceTest` 25/25, the four functions generated from the catalog); in main: MobilitySpark #105 (`dbad519513`: the statistics of a band of nodata read through the `summarystats*` accessors), MobilityDB #3944 (`5717559b0e`: the statistics of a band with no value count no pixel, as PostgreSQL answers) and JMEOS #248 (the jar builds against master) |
 
 ## Part V — the evaluation and the article
 
