@@ -45,12 +45,20 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -67,6 +75,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -105,12 +117,20 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -127,6 +147,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -165,12 +189,20 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -187,6 +219,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -225,12 +261,20 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -247,6 +291,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -285,12 +333,20 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -307,6 +363,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -345,12 +405,20 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -367,6 +435,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -405,12 +477,20 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -427,6 +507,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -465,12 +549,20 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -487,6 +579,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -525,12 +621,20 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -547,6 +651,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),
@@ -585,12 +693,20 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (ts2cell, stbox),
   OPERATOR  2    &< (ts2cell, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (ts2cell, tstzspan),
+  OPERATOR  3    && (ts2cell, stbox),
+  OPERATOR  3    && (ts2cell, ts2cell),
   -- overlaps or right
   OPERATOR  4    &> (ts2cell, stbox),
   OPERATOR  4    &> (ts2cell, ts2cell),
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- contains
+  OPERATOR  7    @> (ts2cell, tstzspan),
+  OPERATOR  7    @> (ts2cell, stbox),
+  OPERATOR  7    @> (ts2cell, ts2cell),
   -- contained by
   OPERATOR  8    <@ (ts2cell, tstzspan),
   OPERATOR  8    <@ (ts2cell, stbox),
@@ -607,6 +723,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (ts2cell, stbox),
   OPERATOR  12    |&> (ts2cell, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (ts2cell, tstzspan),
+  OPERATOR  17    -|- (ts2cell, stbox),
+  OPERATOR  17    -|- (ts2cell, ts2cell),
   -- overlaps or before
   OPERATOR  28    &<# (ts2cell, tstzspan),
   OPERATOR  28    &<# (ts2cell, stbox),

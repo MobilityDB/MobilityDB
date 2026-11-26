@@ -1554,6 +1554,11 @@ MEST_AM = {"gist": "mgist", "spgist": "mspgist"}
 # between two pieces meets and no key does, and stay with the scan.
 MEST_STRATEGIES = {1, 2, 4, 5, 8, 9, 10, 11, 12, 25, 28, 29, 30, 31, 32, 33,
                    34, 35, 36, 37}
+# The box operators reading the interior or a face of the box of a value, which
+# no piece witnesses: a class whose box carries flags answers them from the key
+# of the box of the whole value (#mest_keys_whole, #mest_key_answers)
+MEST_WHOLE_STRATEGIES = {3, 7, 17}
+MEST_WHOLE_BOXES = ("tbox", "stbox", "tpcbox")
 MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
                 "merge": "mest_count_options", "adapt": "mest_count_options",
                 "tile": "mest_tile_options", "bin": "mest_bin_options"}
@@ -1582,7 +1587,7 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
     sfn = tc.get("spgistfn", "stbox")
     am = TEMPOPCLASS_KINDS[kind]
     base = _tempopclass_text(temp, kind)
-    members = _mest_members(base)
+    members = _mest_members(base, box in MEST_WHOLE_BOXES)
     options = ((oc.get("mestoptions") or {}).get(split) or MEST_OPTIONS[split]) \
         + "(internal)"
     extract = (f"{(stem or oc['meststem']).lower()}_mest_{split}split"
@@ -1641,9 +1646,12 @@ def _tempopclass_text(temp: str, kind: str) -> str:
     return render_family_tempopclass(kind, sub)
 
 
-def _mest_members(base: str) -> list:
+def _mest_members(base: str, whole: bool = False) -> list:
     """The members of the class `base` a multi-entry class holds, the
-    strategies of #MEST_STRATEGIES, each under the comment it has there"""
+    strategies of #MEST_STRATEGIES, each under the comment it has there, and
+    those of #MEST_WHOLE_STRATEGIES where the class keys the box of the whole
+    value beside the boxes of its pieces (`whole`)"""
+    held = MEST_STRATEGIES | (MEST_WHOLE_STRATEGIES if whole else set())
     body = base.split("\n  -- functions\n")[0].split("\n")
     out, comment = [], None
     for line in body:
@@ -1651,7 +1659,7 @@ def _mest_members(base: str) -> list:
             comment = line
             continue
         m = re.match(r"  OPERATOR +(\d+) ", line)
-        if m and int(m.group(1)) in MEST_STRATEGIES:
+        if m and int(m.group(1)) in held:
             if comment:
                 out.append(comment)
                 comment = None
@@ -1702,6 +1710,17 @@ def render_mestconsistent(symbols: list) -> str:
     out = []
     for sym in symbols:
         chunk = spgist if "_spgist_leaf_consistent" in sym else gist
+        # A key carrying flags (an stbox, which a tpcbox begins with, or a tbox)
+        # answers by its tier, the TIER block of the template; a span carries
+        # no flags and keys the pieces alone, so its twin drops the block
+        keytype = ("STBox" if sym.startswith(("Stbox_", "Tpcbox_")) else
+                   "TBox" if sym.startswith(("Tnumber_", "Tbox_")) else None)
+        if keytype:
+            chunk = re.sub(r"/\* TIER-(BEGIN|END) \*/\n", "", chunk)
+            chunk = chunk.replace("{KEYTYPE}", keytype)
+        else:
+            chunk = re.sub(r"/\* TIER-BEGIN \*/\n.*?/\* TIER-END \*/\n", "", chunk,
+                           flags=re.S)
         out.append(chunk.replace("{SYM}", sym)
                    .replace("{TWIN}", mest_twin_symbol(sym)).strip("\n") + "\n")
     return "\n" + "\n".join(out) + "\n"
@@ -6634,6 +6653,13 @@ def render_boxmest(row: dict) -> str:
         name = re.match(r"\{CSTEM\}_mest_(\w+)split\)", chunk).group(1)
         chunks[name] = "\nPG_FUNCTION_INFO_V1(" + chunk.rstrip("\n") + "\n"
     out = "".join(chunks[s] for s in row["mestsplits"])
+    # A box carrying flags (a tbox, an stbox, a tpcbox) gains the key of the box
+    # of the whole value, marked as a structure of its own (#mest_keys_whole),
+    # which the box operators read; a span carries no flags and keys the pieces
+    # alone
+    keys = ("mest_keys(boxes, sizeof(Span), *nkeys)" if row["CTYPE"] == "Span"
+            else "mest_keys_whole(temp, boxes, sizeof({CTYPE}), nkeys)")
+    out = out.replace("{KEYS}", keys)
     for key in ("CSTEM", "PFX", "BOXES", "CTYPE", "NOUN", "NOUNBOXES"):
         out = out.replace("{" + key + "}", row[key])
     return out + "\n"

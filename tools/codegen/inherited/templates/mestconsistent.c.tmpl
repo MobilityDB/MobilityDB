@@ -10,6 +10,14 @@ PG_FUNCTION_INFO_V1({TWIN});
 Datum
 {TWIN}(PG_FUNCTION_ARGS)
 {
+/* TIER-BEGIN */
+  /* The key answers by its tier (#mest_key_answers) */
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (! mest_key_answers(((const {KEYTYPE} *)
+      DatumGetPointer(entry->key))->flags,
+      (StrategyNumber) PG_GETARG_UINT16(2)))
+    PG_RETURN_BOOL(false);
+/* TIER-END */
   Datum result = {SYM}(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;
@@ -28,6 +36,14 @@ PG_FUNCTION_INFO_V1({TWIN});
 Datum
 {TWIN}(PG_FUNCTION_ARGS)
 {
+/* TIER-BEGIN */
+  /* The key answers by its tier (#mest_key_answers) */
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  int16 flags = ((const {KEYTYPE} *) DatumGetPointer(in->leafDatum))->flags;
+  for (int i = 0; i < in->nkeys; i++)
+    if (! mest_key_answers(flags, in->scankeys[i].sk_strategy))
+      PG_RETURN_BOOL(false);
+/* TIER-END */
   Datum result = {SYM}(fcinfo);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   out->recheck = true;

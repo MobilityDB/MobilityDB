@@ -276,7 +276,8 @@ bbox_same_structure(MeosType bboxtype, const void *box1, const void *box2)
   {
     const TBox *b1 = (const TBox *) box1, *b2 = (const TBox *) box2;
     if (MEOS_FLAGS_GET_X(b1->flags) != MEOS_FLAGS_GET_X(b2->flags) ||
-        MEOS_FLAGS_GET_T(b1->flags) != MEOS_FLAGS_GET_T(b2->flags))
+        MEOS_FLAGS_GET_T(b1->flags) != MEOS_FLAGS_GET_T(b2->flags) ||
+        MEOS_FLAGS_GET_WHOLE(b1->flags) != MEOS_FLAGS_GET_WHOLE(b2->flags))
       return false;
     return ! MEOS_FLAGS_GET_X(b1->flags) ||
       b1->span.spantype == b2->span.spantype;
@@ -293,7 +294,8 @@ bbox_same_structure(MeosType bboxtype, const void *box1, const void *box2)
     if (MEOS_FLAGS_GET_X(f1) != MEOS_FLAGS_GET_X(f2) ||
         MEOS_FLAGS_GET_Z(f1) != MEOS_FLAGS_GET_Z(f2) ||
         MEOS_FLAGS_GET_T(f1) != MEOS_FLAGS_GET_T(f2) ||
-        MEOS_FLAGS_GET_GEODETIC(f1) != MEOS_FLAGS_GET_GEODETIC(f2))
+        MEOS_FLAGS_GET_GEODETIC(f1) != MEOS_FLAGS_GET_GEODETIC(f2) ||
+        MEOS_FLAGS_GET_WHOLE(f1) != MEOS_FLAGS_GET_WHOLE(f2))
       return false;
     return ! MEOS_FLAGS_GET_X(f1) || b1->srid == b2->srid;
   }

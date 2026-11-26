@@ -39,11 +39,19 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
+#include <access/gist.h>
+#include <access/spgist.h>
+#include <access/stratnum.h>
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 
 extern int mest_count(FunctionCallInfo fcinfo);
 extern Datum *mest_keys(void *boxes, size_t size, int count);
+extern Datum *mest_keys_whole(const Temporal *temp, void *boxes, size_t size,
+  int32 *count);
+extern bool mest_key_answers(int16 flags, StrategyNumber strategy);
 extern void mest_duration_validate(const char *value);
 extern Size mest_duration_fill(const char *value, void *ptr);
 
