@@ -8250,6 +8250,94 @@ ERROR:  The interval must be positive: @ 0
 SELECT scaleTime(tfloat '1@2001-01-01', '-1 day');
 ERROR:  The interval must be positive: @ 1 day ago
 -------------------------------------------------------------------------------
+-- Occurrences
+-------------------------------------------------------------------------------
+-- The origins of the days around the daylight-saving changes of Europe/Zurich
+SELECT origins(dateset '{2026-03-28, 2026-03-29, 2026-03-30}', 'Europe/Zurich');
+                                             origins                                              
+--------------------------------------------------------------------------------------------------
+ {"Fri Mar 27 16:00:00 2026 PDT", "Sat Mar 28 15:00:00 2026 PDT", "Sun Mar 29 15:00:00 2026 PDT"}
+(1 row)
+
+SELECT origins(dateset '{2026-10-24, 2026-10-25, 2026-10-26}', 'Europe/Zurich');
+                                             origins                                              
+--------------------------------------------------------------------------------------------------
+ {"Fri Oct 23 15:00:00 2026 PDT", "Sat Oct 24 16:00:00 2026 PDT", "Sun Oct 25 16:00:00 2026 PDT"}
+(1 row)
+
+SELECT occurrence(tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00', '2026-03-28 22:00:00+00');
+                            occurrence                            
+------------------------------------------------------------------
+ [1@Sat Mar 28 15:30:00 2026 PDT, 2@Sat Mar 28 16:30:00 2026 PDT]
+(1 row)
+
+SELECT occurrence(ttext '{AAA@2026-01-14 23:30:00+00, BBB@2026-01-15 00:30:00+00}',
+  '2026-01-14 23:00:00+00', '2026-01-15 23:00:00+00');
+                                occurrence                                
+--------------------------------------------------------------------------
+ {"AAA"@Thu Jan 15 15:30:00 2026 PST, "BBB"@Thu Jan 15 16:30:00 2026 PST}
+(1 row)
+
+-- A period ending at the first instant of the second occurrence, closed and open
+SELECT occurrenceOrigins(tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-15 23:00:00+00, 2026-01-15 23:30:00+00]');
+        occurrenceorigins         
+----------------------------------
+ {"Thu Jan 15 15:00:00 2026 PST"}
+(1 row)
+
+SELECT occurrenceOrigins(tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-15 23:00:00+00, 2026-01-15 23:30:00+00)');
+ occurrenceorigins 
+-------------------
+ 
+(1 row)
+
+SELECT * FROM occurrences(
+  tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-15 00:00:00+00, 2026-01-16 00:00:00+00]');
+            origin            |                            occurrence                            
+------------------------------+------------------------------------------------------------------
+ Wed Jan 14 15:00:00 2026 PST | [1@Wed Jan 14 15:30:00 2026 PST, 2@Wed Jan 14 16:30:00 2026 PST]
+ Thu Jan 15 15:00:00 2026 PST | [1@Thu Jan 15 15:30:00 2026 PST, 2@Thu Jan 15 16:30:00 2026 PST]
+(2 rows)
+
+-- A trip built for the service day 2026-03-27 occurs on the service day of the
+-- spring change at the same distance from the origin of the day
+SELECT * FROM occurrences(
+  tfloat '[1@2026-03-26 23:30:00+00, 2@2026-03-27 00:30:00+00]',
+  startValue(origins(dateset '{2026-03-27}', 'Europe/Zurich')),
+  origins(dateset '{2026-03-27, 2026-03-29}', 'Europe/Zurich'),
+  tstzspan '[2026-03-01 00:00:00+00, 2026-04-01 00:00:00+00]');
+            origin            |                            occurrence                            
+------------------------------+------------------------------------------------------------------
+ Thu Mar 26 16:00:00 2026 PDT | [1@Thu Mar 26 16:30:00 2026 PDT, 2@Thu Mar 26 17:30:00 2026 PDT]
+ Sat Mar 28 15:00:00 2026 PDT | [1@Sat Mar 28 15:30:00 2026 PDT, 2@Sat Mar 28 16:30:00 2026 PDT]
+(2 rows)
+
+-- No occurrence meets the period
+SELECT COUNT(*) FROM occurrences(
+  tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00', tstzset '{2026-01-14 23:00:00+00}',
+  tstzspan '[2025-01-01 00:00:00+00, 2025-01-02 00:00:00+00]');
+ count 
+-------
+     0
+(1 row)
+
+/* Errors */
+SELECT origins(dateset '{2026-07-15}', 'Not/AZone');
+ERROR:  time zone "Not/AZone" not recognized
+SELECT occurrence(tint '1@2026-01-14 23:30:00+00', '-infinity', '2026-01-15 23:00:00+00');
+ERROR:  The timestamp must be finite
+-------------------------------------------------------------------------------
 -- tsample and tprecision
 -------------------------------------------------------------------------------
 SELECT tsample(tbool '[True@2001-01-01, False@2001-01-02]', interval '12 hours',

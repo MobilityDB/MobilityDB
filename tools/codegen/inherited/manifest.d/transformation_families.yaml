@@ -95,6 +95,12 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
   - gen: {sig: "tprecision({TEMP}, duration interval,\n  torigin timestamptz DEFAULT '2000-01-03')", ret: tfloat, sym: Temporal_tprecision, presence: numeric}
   - ops:
     - tsample
@@ -304,6 +310,12 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
   reference: true
@@ -328,6 +340,12 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
   - ops:
     - tsample
 - family: npoint
@@ -377,6 +395,12 @@ transformation_families:
   - ops:
     - shiftScaleTime
   - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
+  - ops:
     - tsample
 - family: tpcpatch
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
@@ -400,6 +424,12 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
   - ops:
     - tsample
 - family: pose
@@ -434,6 +464,12 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
 - family: posechain
   file: mobilitydb/sql/posechain/552_tposechain.in.sql
   reference: true
@@ -466,6 +502,12 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
 
 - family: h3
   file: mobilitydb/sql/h3/253_th3index.in.sql
@@ -503,6 +545,12 @@ transformation_families:
     - shiftTime
     - scaleTime
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
     - tprecision
     - tsample
 - family: quadbin
@@ -541,6 +589,12 @@ transformation_families:
     - shiftTime
     - scaleTime
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
     - tprecision
     - tsample
 - family: s2cell
@@ -579,6 +633,12 @@ transformation_families:
     - shiftTime
     - scaleTime
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
     - tprecision
     - tsample
 
@@ -615,6 +675,12 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+  - ops:
+    - occurrence
+  - ops:
+    - occurrenceOrigins
+  - ops:
+    - occurrences
     - tprecision
   - lit: '-- CREATE FUNCTION tsample(trgeometry, duration interval,
 

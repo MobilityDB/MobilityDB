@@ -901,6 +901,7 @@ dateset_to_tstzset(const Set *s)
  * @errval NULL
  * @note Built as #dateset_to_tstzset, the local noon of each date read in the
  * time zone by #timestamp_zone
+ * @csqlfn #Dateset_origins()
  */
 Set *
 dateset_origins(const Set *s, const text *zone)

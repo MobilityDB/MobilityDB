@@ -2577,6 +2577,7 @@ span_families:
   - lit: "\n"
   - {sig: "tstzset({vs})", ret: "tstzset", sym: Dateset_to_tstzset, only: [date]}
   - {sig: "dateset(tstzset)", ret: "dateset", sym: Tstzset_to_dateset, only: [date]}
+  - {sig: "origins({vs}, zone text)", ret: "tstzset", sym: Dateset_origins, only: [date]}
   - lit: "\n"
   - {stmt: "CREATE CAST ({vs} AS tstzset) WITH FUNCTION tstzset({vs});", only: [date]}
   - {stmt: "CREATE CAST (tstzset AS {vs}) WITH FUNCTION dateset(tstzset);", only: [date]}
