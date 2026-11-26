@@ -1673,6 +1673,7 @@ extern double float_round(double d, int maxdd);
 extern Temporal **temparr_round(const Temporal **temparr, int count, int maxdd);
 extern Temporal *temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin);
 extern Set *temporal_occurrence_origins(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *s);
+extern Temporal **temporal_occurrences(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *s, TimestampTz **occ_origins, int *count);
 extern Temporal *temporal_round(const Temporal *temp, int maxdd);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
 extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
