@@ -348,6 +348,25 @@ Dateset_to_tstzset(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum Dateset_origins(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Dateset_origins);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Return the origins of the days of a date set in a time zone
+ * @sqlfn origins()
+ * @note Built as #Dateset_to_tstzset
+ */
+Datum
+Dateset_origins(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  text *zone = PG_GETARG_TEXT_P(1);
+  Set *result = dateset_origins(s, zone);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(zone, 1);
+  PG_RETURN_SET_P(result);
+}
+
 PGDLLEXPORT Datum Tstzset_to_dateset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_to_dateset);
 /**

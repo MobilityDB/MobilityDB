@@ -1327,6 +1327,39 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_occurrences">
+				<indexterm significance="normal"><primary><varname>origins</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>occurrence</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>occurrenceOrigins</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>occurrences</varname></primary></indexterm>
+				<para>Return the occurrences of a recurring temporal value &SRF;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+origins(dateset,zone text) → tstzset
+occurrence(ttype,ref timestamptz,origin timestamptz) → ttype
+occurrenceOrigins(ttype,ref timestamptz,origins tstzset,period tstzspan) → tstzset
+occurrences(ttype,ref timestamptz,origins tstzset,period tstzspan) →
+  {(timestamptz,ttype)}
+</programlisting>
+				<para>A recurring phenomenon, such as a trip of a timetable run on many days, is a temporal value describing one run from a reference origin, its template, with the set of origins at which it runs again. The function <varname>origins</varname> returns the origins of a set of service days in a time zone: the origin of a day is its local noon minus twelve hours, as the General Transit Feed Specification measures the times of a service day, which is the local midnight except on the days of a daylight-saving change. The function <varname>occurrence</varname> returns the template shifted by the elapsed duration from the reference origin to an origin, so that every instant keeps its distance from the origin. The function <varname>occurrenceOrigins</varname> returns the origins whose occurrence has a period overlapping the period given, found by binary search, or NULL when there is none, and the table function <varname>occurrences</varname> returns those occurrences with their origins, building no other occurrence.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SET timezone TO 'UTC';
+SELECT origins(dateset '{2026-03-28, 2026-03-29, 2026-03-30}', 'Europe/Zurich');
+-- {"2026-03-27 23:00:00+00", "2026-03-28 22:00:00+00", "2026-03-29 22:00:00+00"}
+SELECT occurrence(tint '[1@2026-01-14 23:30:00, 2@2026-01-15 00:30:00]',
+  '2026-01-14 23:00:00', '2026-03-28 22:00:00');
+-- [1@2026-03-28 22:30:00+00, 2@2026-03-28 23:30:00+00]
+SELECT occurrenceOrigins(tint '[1@2026-01-14 23:30:00, 2@2026-01-15 00:30:00]',
+  '2026-01-14 23:00:00', tstzset '{2026-01-14 23:00:00, 2026-01-15 23:00:00,
+  2026-01-16 23:00:00}', tstzspan '[2026-01-15 23:00:00, 2026-01-15 23:30:00]');
+-- {"2026-01-15 23:00:00+00"}
+SELECT * FROM occurrences(tint '[1@2026-01-14 23:30:00, 2@2026-01-15 00:30:00]',
+  '2026-01-14 23:00:00', tstzset '{2026-01-14 23:00:00, 2026-01-15 23:00:00,
+  2026-01-16 23:00:00}', tstzspan '[2026-01-15 00:00:00, 2026-01-16 00:00:00]');
+/* 2026-01-14 23:00:00+00 | [1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]
+   2026-01-15 23:00:00+00 | [1@2026-01-15 23:30:00+00, 2@2026-01-16 00:30:00+00] */
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_unnest">
 				<indexterm significance="normal"><primary><varname>unnest</varname></primary></indexterm>
 				<para>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value &SRF;</para>

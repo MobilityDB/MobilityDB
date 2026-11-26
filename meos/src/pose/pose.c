@@ -681,6 +681,23 @@ pose_quaternion_canon(double *W, double *X, double *Y, double *Z)
   return;
 }
 
+/**
+ * @brief Write in place every zero value of a pose, its position and its
+ * orientation, as 0.0, never -0.0
+ * @details #pose_eq holds -0.0 and 0.0 equal, as #float8_eq does, while
+ * #pose_hash reads the stored bytes, so a pose is stored in one form, as
+ * #pose_quaternion_canon stores a quaternion
+ */
+static void
+pose_zero_canon(Pose *pose)
+{
+  int count = MEOS_FLAGS_GET_Z(pose->flags) ? 7 : 3;
+  for (int i = 0; i < count; i++)
+    /* Adding 0.0 writes -0.0 as 0.0 and leaves every other number as it is */
+    pose->data[i] += 0.0;
+  return;
+}
+
 /*****************************************************************************
  * Orientation encodings
  *
@@ -1187,6 +1204,7 @@ pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
   result->data[0] = x;
   result->data[1] = y;
   result->data[2] = theta;
+  pose_zero_canon(result);
   return result;
 }
 
@@ -1224,6 +1242,7 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
   result->data[2] = theta;
+  pose_zero_canon(result);
   return result;
 }
 
@@ -1285,6 +1304,7 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   result->data[4] = X;
   result->data[5] = Y;
   result->data[6] = Z;
+  pose_zero_canon(result);
   return result;
 }
 
@@ -2630,6 +2650,7 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
     pfree(result);
     return NULL;
   }
+  pose_zero_canon(result);
   return result;
 }
 
