@@ -80,7 +80,7 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC10 | `occurrences` as a table function in the bindings whose host has them (MobilityDuck, MobilitySpark), from the generated functions | MobilityDuck done: #580 merged (the generator reads a set or span argument of a split shape, so `occurrences` is generated, 20 registrations, test 19 assertions as MobilityDB answers). MobilitySpark in review: #104 (draft; `GeneratedSqlSurfaceTest` 25/25, the four functions generated from the catalog), red only on `AggregatesCatalogTest.aBandOfNodataCountsNothing`, which MobilityDB #3944 fixes in MEOS (the statistics of a band with no value count no pixel, as PostgreSQL answers, where MEOS answered NULL) and a MobilitySpark test reading them through the accessors; after JMEOS #248 (merged: the jar builds against master) |
+| RC10 | `occurrences` as a table function in the bindings whose host has them (MobilityDuck, MobilitySpark), from the generated functions | MobilityDuck done: #580 merged (the generator reads a set or span argument of a split shape, so `occurrences` is generated, 20 registrations, test 19 assertions as MobilityDB answers). MobilitySpark in review: #104 (draft; `GeneratedSqlSurfaceTest` 25/25, the four functions generated from the catalog), red only on `AggregatesCatalogTest.aBandOfNodataCountsNothing`, which MobilityDB #3944 (merged, `5717559b0e`: the statistics of a band with no value count no pixel, as PostgreSQL answers) fixes in MEOS together with MobilitySpark #105 (the test reads the statistics through the `summarystats*` accessors, 334 tests with no failure against #3944); after JMEOS #248 (merged: the jar builds against master) |
 
 ## Part V — the evaluation and the article
 
