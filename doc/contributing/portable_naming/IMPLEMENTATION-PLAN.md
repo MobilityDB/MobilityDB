@@ -93,6 +93,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `perf/within-periods-filters` rewrites `2f8f723099` there, the signature of the engine, its scan of every edge and its two calls;
   branch `perf/within-periods-filters` rewrites `735e372a2e` there, the exact centre of the ray parity, built at the first edge the doubles leave;
   branch `perf/within-periods-filters` rewrites `b2c0122cf4` there, the arena of the ray parity.
+  MERGED as MobilityDB #3941 (`88bb092e9d`).
 - **The conversion of a temporal network point to a temporal geometry point builds each point in
   the stack**, outside the plan, as the owner decided on 2026-11-07 ("approve the rewrite"):
   branch `perf/tnpoint-to-tgeompoint-points` rewrites `842c640e83` there, the
