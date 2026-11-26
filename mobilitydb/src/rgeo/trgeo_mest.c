@@ -74,7 +74,7 @@ Trgeometry_mest_equisplit(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = trgeometry_split_n_stboxes_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Trgeometry_mest_segsplit);
@@ -92,7 +92,7 @@ Trgeometry_mest_segsplit(PG_FUNCTION_ARGS)
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = trgeometry_split_each_n_stboxes_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Trgeometry_mest_mergesplit);
@@ -109,7 +109,7 @@ Trgeometry_mest_mergesplit(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = trgeometry_merge_n_stboxes_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Trgeometry_mest_adaptsplit);
@@ -128,7 +128,7 @@ Trgeometry_mest_adaptsplit(PG_FUNCTION_ARGS)
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = trgeometry_merge_each_n_stboxes_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 /* GENERATED-BOXMEST-END trgeometry */

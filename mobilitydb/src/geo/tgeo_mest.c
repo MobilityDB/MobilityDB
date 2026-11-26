@@ -182,7 +182,7 @@ Tgeo_mest_tilesplit(PG_FUNCTION_ARGS)
     duration, sorigin, torigin, false, true, &count);
   pfree(sorigin);
   *nkeys = count;
-  PG_RETURN_POINTER(count > 0 ? mest_keys(boxes, sizeof(STBox), count) :
+  PG_RETURN_POINTER(count > 0 ? mest_keys_whole(temp, boxes, sizeof(STBox), nkeys) :
     NULL);
 }
 
@@ -214,7 +214,7 @@ Tgeo_mest_linearsplit(PG_FUNCTION_ARGS)
   int count;
   STBox *boxes = tgeo_merge_query_stboxes_intl(temp, query, &count);
   *nkeys = count;
-  PG_RETURN_POINTER(count > 0 ? mest_keys(boxes, sizeof(STBox), count) :
+  PG_RETURN_POINTER(count > 0 ? mest_keys_whole(temp, boxes, sizeof(STBox), nkeys) :
     NULL);
 }
 
@@ -239,7 +239,7 @@ Tgeo_mest_equisplit(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = tgeo_split_n_stboxes_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Tgeo_mest_segsplit);
@@ -257,7 +257,7 @@ Tgeo_mest_segsplit(PG_FUNCTION_ARGS)
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = tgeo_split_each_n_stboxes_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Tgeo_mest_mergesplit);
@@ -274,7 +274,7 @@ Tgeo_mest_mergesplit(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = tgeo_merge_n_stboxes_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Tgeo_mest_adaptsplit);
@@ -293,7 +293,7 @@ Tgeo_mest_adaptsplit(PG_FUNCTION_ARGS)
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   STBox *boxes = tgeo_merge_each_n_stboxes_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(STBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(STBox), nkeys));
 }
 
 /* GENERATED-BOXMEST-END tgeo */
@@ -312,6 +312,12 @@ PG_FUNCTION_INFO_V1(Stbox_mgist_consistent);
 Datum
 Stbox_mgist_consistent(PG_FUNCTION_ARGS)
 {
+  /* The key answers by its tier (#mest_key_answers) */
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (! mest_key_answers(((const STBox *)
+      DatumGetPointer(entry->key))->flags,
+      (StrategyNumber) PG_GETARG_UINT16(2)))
+    PG_RETURN_BOOL(false);
   Datum result = Stbox_gist_consistent(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;
@@ -330,6 +336,12 @@ PG_FUNCTION_INFO_V1(Stbox_mspgist_leaf_consistent);
 Datum
 Stbox_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
+  /* The key answers by its tier (#mest_key_answers) */
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  int16 flags = ((const STBox *) DatumGetPointer(in->leafDatum))->flags;
+  for (int i = 0; i < in->nkeys; i++)
+    if (! mest_key_answers(flags, in->scankeys[i].sk_strategy))
+      PG_RETURN_BOOL(false);
   Datum result = Stbox_spgist_leaf_consistent(fcinfo);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   out->recheck = true;

@@ -45,12 +45,20 @@ CREATE OPERATOR CLASS tpose_mquadtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -67,6 +75,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -121,12 +133,20 @@ CREATE OPERATOR CLASS tpose_mquadtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -143,6 +163,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -197,12 +221,20 @@ CREATE OPERATOR CLASS tpose_mquadtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -219,6 +251,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -273,12 +309,20 @@ CREATE OPERATOR CLASS tpose_mquadtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -295,6 +339,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -349,12 +397,20 @@ CREATE OPERATOR CLASS tpose_mquadtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -371,6 +427,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -425,12 +485,20 @@ CREATE OPERATOR CLASS tpose_mkdtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -447,6 +515,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -501,12 +573,20 @@ CREATE OPERATOR CLASS tpose_mkdtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -523,6 +603,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -577,12 +661,20 @@ CREATE OPERATOR CLASS tpose_mkdtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -599,6 +691,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -653,12 +749,20 @@ CREATE OPERATOR CLASS tpose_mkdtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -675,6 +779,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,
@@ -729,12 +837,20 @@ CREATE OPERATOR CLASS tpose_mkdtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tpose, stbox),
   OPERATOR  2    &< (tpose, tpose),
+  -- overlaps
+  OPERATOR  3    && (tpose, tstzspan),
+  OPERATOR  3    && (tpose, stbox),
+  OPERATOR  3    && (tpose, tpose),
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- contains
+  OPERATOR  7    @> (tpose, tstzspan),
+  OPERATOR  7    @> (tpose, stbox),
+  OPERATOR  7    @> (tpose, tpose),
   -- contained by
   OPERATOR  8    <@ (tpose, tstzspan),
   OPERATOR  8    <@ (tpose, stbox),
@@ -751,6 +867,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tpose, stbox),
   OPERATOR  12    |&> (tpose, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (tpose, tstzspan),
+  OPERATOR  17    -|- (tpose, stbox),
+  OPERATOR  17    -|- (tpose, tpose),
   -- nearest approach distance
   OPERATOR  25    |=| (tpose, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tpose, tpose) FOR ORDER BY pg_catalog.float_ops,

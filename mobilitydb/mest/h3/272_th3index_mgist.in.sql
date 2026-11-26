@@ -51,12 +51,20 @@ CREATE OPERATOR CLASS th3index_mrtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (th3index, stbox),
   OPERATOR  2    &< (th3index, th3index),
+  -- overlaps
+  OPERATOR  3    && (th3index, tstzspan),
+  OPERATOR  3    && (th3index, stbox),
+  OPERATOR  3    && (th3index, th3index),
   -- overlaps or right
   OPERATOR  4    &> (th3index, stbox),
   OPERATOR  4    &> (th3index, th3index),
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- contains
+  OPERATOR  7    @> (th3index, tstzspan),
+  OPERATOR  7    @> (th3index, stbox),
+  OPERATOR  7    @> (th3index, th3index),
   -- contained by
   OPERATOR  8    <@ (th3index, tstzspan),
   OPERATOR  8    <@ (th3index, stbox),
@@ -73,6 +81,10 @@ CREATE OPERATOR CLASS th3index_mrtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (th3index, stbox),
   OPERATOR  12    |&> (th3index, th3index),
+  -- adjacent
+  OPERATOR  17    -|- (th3index, tstzspan),
+  OPERATOR  17    -|- (th3index, stbox),
+  OPERATOR  17    -|- (th3index, th3index),
   -- overlaps or before
   OPERATOR  28    &<# (th3index, tstzspan),
   OPERATOR  28    &<# (th3index, stbox),
@@ -112,12 +124,20 @@ CREATE OPERATOR CLASS th3index_mrtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (th3index, stbox),
   OPERATOR  2    &< (th3index, th3index),
+  -- overlaps
+  OPERATOR  3    && (th3index, tstzspan),
+  OPERATOR  3    && (th3index, stbox),
+  OPERATOR  3    && (th3index, th3index),
   -- overlaps or right
   OPERATOR  4    &> (th3index, stbox),
   OPERATOR  4    &> (th3index, th3index),
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- contains
+  OPERATOR  7    @> (th3index, tstzspan),
+  OPERATOR  7    @> (th3index, stbox),
+  OPERATOR  7    @> (th3index, th3index),
   -- contained by
   OPERATOR  8    <@ (th3index, tstzspan),
   OPERATOR  8    <@ (th3index, stbox),
@@ -134,6 +154,10 @@ CREATE OPERATOR CLASS th3index_mrtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (th3index, stbox),
   OPERATOR  12    |&> (th3index, th3index),
+  -- adjacent
+  OPERATOR  17    -|- (th3index, tstzspan),
+  OPERATOR  17    -|- (th3index, stbox),
+  OPERATOR  17    -|- (th3index, th3index),
   -- overlaps or before
   OPERATOR  28    &<# (th3index, tstzspan),
   OPERATOR  28    &<# (th3index, stbox),
@@ -173,12 +197,20 @@ CREATE OPERATOR CLASS th3index_mrtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (th3index, stbox),
   OPERATOR  2    &< (th3index, th3index),
+  -- overlaps
+  OPERATOR  3    && (th3index, tstzspan),
+  OPERATOR  3    && (th3index, stbox),
+  OPERATOR  3    && (th3index, th3index),
   -- overlaps or right
   OPERATOR  4    &> (th3index, stbox),
   OPERATOR  4    &> (th3index, th3index),
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- contains
+  OPERATOR  7    @> (th3index, tstzspan),
+  OPERATOR  7    @> (th3index, stbox),
+  OPERATOR  7    @> (th3index, th3index),
   -- contained by
   OPERATOR  8    <@ (th3index, tstzspan),
   OPERATOR  8    <@ (th3index, stbox),
@@ -195,6 +227,10 @@ CREATE OPERATOR CLASS th3index_mrtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (th3index, stbox),
   OPERATOR  12    |&> (th3index, th3index),
+  -- adjacent
+  OPERATOR  17    -|- (th3index, tstzspan),
+  OPERATOR  17    -|- (th3index, stbox),
+  OPERATOR  17    -|- (th3index, th3index),
   -- overlaps or before
   OPERATOR  28    &<# (th3index, tstzspan),
   OPERATOR  28    &<# (th3index, stbox),
@@ -234,12 +270,20 @@ CREATE OPERATOR CLASS th3index_mrtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (th3index, stbox),
   OPERATOR  2    &< (th3index, th3index),
+  -- overlaps
+  OPERATOR  3    && (th3index, tstzspan),
+  OPERATOR  3    && (th3index, stbox),
+  OPERATOR  3    && (th3index, th3index),
   -- overlaps or right
   OPERATOR  4    &> (th3index, stbox),
   OPERATOR  4    &> (th3index, th3index),
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- contains
+  OPERATOR  7    @> (th3index, tstzspan),
+  OPERATOR  7    @> (th3index, stbox),
+  OPERATOR  7    @> (th3index, th3index),
   -- contained by
   OPERATOR  8    <@ (th3index, tstzspan),
   OPERATOR  8    <@ (th3index, stbox),
@@ -256,6 +300,10 @@ CREATE OPERATOR CLASS th3index_mrtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (th3index, stbox),
   OPERATOR  12    |&> (th3index, th3index),
+  -- adjacent
+  OPERATOR  17    -|- (th3index, tstzspan),
+  OPERATOR  17    -|- (th3index, stbox),
+  OPERATOR  17    -|- (th3index, th3index),
   -- overlaps or before
   OPERATOR  28    &<# (th3index, tstzspan),
   OPERATOR  28    &<# (th3index, stbox),
@@ -295,12 +343,20 @@ CREATE OPERATOR CLASS th3index_mrtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (th3index, stbox),
   OPERATOR  2    &< (th3index, th3index),
+  -- overlaps
+  OPERATOR  3    && (th3index, tstzspan),
+  OPERATOR  3    && (th3index, stbox),
+  OPERATOR  3    && (th3index, th3index),
   -- overlaps or right
   OPERATOR  4    &> (th3index, stbox),
   OPERATOR  4    &> (th3index, th3index),
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- contains
+  OPERATOR  7    @> (th3index, tstzspan),
+  OPERATOR  7    @> (th3index, stbox),
+  OPERATOR  7    @> (th3index, th3index),
   -- contained by
   OPERATOR  8    <@ (th3index, tstzspan),
   OPERATOR  8    <@ (th3index, stbox),
@@ -317,6 +373,10 @@ CREATE OPERATOR CLASS th3index_mrtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (th3index, stbox),
   OPERATOR  12    |&> (th3index, th3index),
+  -- adjacent
+  OPERATOR  17    -|- (th3index, tstzspan),
+  OPERATOR  17    -|- (th3index, stbox),
+  OPERATOR  17    -|- (th3index, th3index),
   -- overlaps or before
   OPERATOR  28    &<# (th3index, tstzspan),
   OPERATOR  28    &<# (th3index, stbox),

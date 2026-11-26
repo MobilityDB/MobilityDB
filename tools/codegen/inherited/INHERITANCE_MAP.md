@@ -331,12 +331,20 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   of its pieces, and holds the members of the GiST or SP-GiST class of its
   type that a value answers when every key answers it (`MEST_STRATEGIES`: the
   position operators, contained by, the nearest approach distance, the ever
-  and always overlaps). The extraction methods of the splits come from
-  `templates/boxmest.c.tmpl` into the `GENERATED-BOXMEST-BEGIN/END` regions of
-  the `mestfile` a row of `boxsplit.yaml` names, and the consistent methods,
-  twins of those of the type rechecking every leaf, from
-  `templates/mestconsistent.c.tmpl` into the `GENERATED-MESTCONSISTENT`
-  region of the multi-entry file of the family defining each original.
+  and always overlaps). A class whose box carries flags (`MEST_WHOLE_BOXES`:
+  a tbox, an stbox, a tpcbox) also keys the box of the whole value, flagged
+  as a structure of its own (`mest_keys_whole`), and holds the members that
+  key answers (`MEST_WHOLE_STRATEGIES`: overlaps, contains, adjacent); a
+  span carries no flags and keys the pieces alone. The extraction methods of
+  the splits come from `templates/boxmest.c.tmpl` into the
+  `GENERATED-BOXMEST-BEGIN/END` regions of the `mestfile` a row of
+  `boxsplit.yaml` names, the `{KEYS}` slot naming `mest_keys` or
+  `mest_keys_whole` by the box, and the consistent methods, twins of those of
+  the type rechecking every leaf, from `templates/mestconsistent.c.tmpl` into
+  the `GENERATED-MESTCONSISTENT` region of the multi-entry file of the family
+  defining each original; the twin of a box carrying flags keeps the
+  template's `TIER` block, where a key answers only the strategies of its own
+  tier (`mest_key_answers`).
   `templates/mestindextest.sql.tmpl` writes the multi-entry test of each index
   test, `mobilitydb/test/mest/sql/<nnn>_<temp>_mest[3d]_tbl.sql`, one column
   per tree and split; an index test states per dimension the tile its
