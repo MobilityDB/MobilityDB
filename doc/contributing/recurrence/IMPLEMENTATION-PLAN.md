@@ -54,10 +54,10 @@ its cause are recorded in the row of the task.
 
 | Task | Change | State |
 |---|---|---|
-| RC3 | `dateset_origins(const Set *dates, const text *zone)`: the origins of a set of service dates, local noon minus 12 hours in the zone, the one function that reads a time zone. Tests on both daylight-saving changes of a year and on a zone without them | committed: branch `feat/temporal-occurrences`, with RC4 and RC5, as one pull request; `meos/test/dateset_origins_test.c`, 7 cases |
-| RC3a | The seven public functions taking the name of a time zone answer one they do not know by an error: `timestamp_zone`, `timestamptz_make_at_timezone` and `timestamptz_trunc_zone` crashed under an error handler that returns, found by the probe of RC3 | committed: branch `fix/unknown-time-zone`; `meos/test/time_zone_test.c`, 14 cases |
-| RC4 | `temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin)` and `temporal_occurrence_origins(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window)`: one occurrence, and the origins whose occurrences meet a window by two binary searches, with the inclusivity of the window and of the support carried over. Tests on occurrences that start before the window and end in it | committed: branch `feat/temporal-occurrences`; `meos/test/temporal_occurrence_test.c`, 10 cases and 85488 periods against the definition |
-| RC5 | `temporal_occurrences(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window, int *count)`: the occurrences at those origins, built in order | committed: branch `feat/temporal-occurrences`; `meos/test/temporal_occurrences_test.c`, 19800 periods |
+| RC3 | `dateset_origins(const Set *dates, const text *zone)`: the origins of a set of service dates, local noon minus 12 hours in the zone, the one function that reads a time zone. Tests on both daylight-saving changes of a year and on a zone without them | done: MobilityDB #3938 (`b992f82ff0`), with RC4 and RC5; `meos/test/dateset_origins_test.c`, 7 cases |
+| RC3a | The seven public functions taking the name of a time zone answer one they do not know by an error: `timestamp_zone`, `timestamptz_make_at_timezone` and `timestamptz_trunc_zone` crashed under an error handler that returns, found by the probe of RC3 | done: MobilityDB #3935, on master as `337de30270` through #3938; `meos/test/time_zone_test.c`, 14 cases |
+| RC4 | `temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin)` and `temporal_occurrence_origins(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window)`: one occurrence, and the origins whose occurrences meet a window by two binary searches, with the inclusivity of the window and of the support carried over. Tests on occurrences that start before the window and end in it | done: MobilityDB #3938 (`ff73bd8a0a`); `meos/test/temporal_occurrence_test.c`, 10 cases and 85488 periods against the definition |
+| RC5 | `temporal_occurrences(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window, int *count)`: the occurrences at those origins, built in order | done: MobilityDB #3938 (`dbd591309b`); `meos/test/temporal_occurrences_test.c`, 19800 periods |
 
 Each function goes into the MEOS catalog and is generated into every binding; none needs code
 written by hand in a binding.
@@ -66,9 +66,9 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC6 | `origins(dateset, text)`, `occurrence(T, timestamptz, timestamptz)` and `occurrenceOrigins(T, timestamptz, tstzset, tstzspan)` for every temporal type, from the catalog | committed: branch `feat/occurrences-sql`, with RC7 and RC8, stacked on `feat/temporal-occurrences` |
-| RC7 | `occurrences(T, timestamptz, tstzset, tstzspan) RETURNS SETOF (origin timestamptz, occurrence T)`, value per call, with a planner support function returning the number of selected origins | committed without the planner support: branch `feat/occurrences-sql`, `RETURNS TABLE(origin timestamptz, occurrence T)`; the support function and the cost of `occurrence` are open |
-| RC8 | The regression test that compares `occurrences` with fully materialized occurrences row for row, on dates on both sides of a daylight-saving change, stop times beyond 24:00, occurrences crossing the window bounds, and service dates added and removed | committed: branch `feat/occurrences-sql`, in `022_temporal` and `052_tpoint` |
+| RC6 | `origins(dateset, text)`, `occurrence(T, timestamptz, timestamptz)` and `occurrenceOrigins(T, timestamptz, tstzset, tstzspan)` for every temporal type, from the catalog | open as MobilityDB #3939, with RC7 and RC8 |
+| RC7 | `occurrences(T, timestamptz, tstzset, tstzspan) RETURNS SETOF (origin timestamptz, occurrence T)`, value per call, with a planner support function returning the number of selected origins | open as MobilityDB #3939 without the planner support, `RETURNS TABLE(origin timestamptz, occurrence T)`; the support function and the cost of `occurrence` are open |
+| RC8 | The regression test that compares `occurrences` with fully materialized occurrences row for row, on dates on both sides of a daylight-saving change, stop times beyond 24:00, occurrences crossing the window bounds, and service dates added and removed | open as MobilityDB #3939, in `022_temporal` and `052_tpoint` |
 
 ## Part III — the GTFS adapter
 
