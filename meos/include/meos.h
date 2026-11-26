@@ -633,6 +633,7 @@ extern Set *date_to_set(DateADT d);
 extern Span *date_to_span(DateADT d);
 extern SpanSet *date_to_spanset(DateADT d);
 extern int32 date_to_unix_days(DateADT d);
+extern Set *dateset_origins(const Set *s, const text *zone);
 extern Set *dateset_to_tstzset(const Set *s);
 extern Span *datespan_to_tstzspan(const Span *s);
 extern SpanSet *datespanset_to_tstzspanset(const SpanSet *ss);
