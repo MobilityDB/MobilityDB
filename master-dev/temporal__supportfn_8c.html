@@ -91,6 +91,7 @@ $(function() {
 <code>#include &lt;access/htup_details.h&gt;</code><br />
 <code>#include &lt;catalog/pg_opfamily.h&gt;</code><br />
 <code>#include &lt;catalog/pg_am_d.h&gt;</code><br />
+<code>#include &lt;commands/defrem.h&gt;</code><br />
 <code>#include &lt;nodes/supportnodes.h&gt;</code><br />
 <code>#include &lt;nodes/nodeFuncs.h&gt;</code><br />
 <code>#include &lt;nodes/makefuncs.h&gt;</code><br />
@@ -183,6 +184,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a57f3ae8e34303c65778a3ee2f4c8c1d4"><td class="memItemLeft" align="right" valign="top">static FuncExpr *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a57f3ae8e34303c65778a3ee2f4c8c1d4.html#a57f3ae8e34303c65778a3ee2f4c8c1d4">makeExpandExpr</a> (Node *arg, Node *radiusarg, Oid argoid, Oid retoid, Oid callingfunc)</td></tr>
 <tr class="memdesc:a57f3ae8e34303c65778a3ee2f4c8c1d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a call of the expand function of an argument.  <a href="temporal__supportfn_8c_a57f3ae8e34303c65778a3ee2f4c8c1d4.html#a57f3ae8e34303c65778a3ee2f4c8c1d4">More...</a><br /></td></tr>
 <tr class="separator:a57f3ae8e34303c65778a3ee2f4c8c1d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a145a274f1250faec393e62152823ea"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a8a145a274f1250faec393e62152823ea.html#a8a145a274f1250faec393e62152823ea">mest_am_oid</a> (Oid amoid)</td></tr>
+<tr class="memdesc:a8a145a274f1250faec393e62152823ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if an access method is one of the multi-entry access methods of the extension mest.  <a href="temporal__supportfn_8c_a8a145a274f1250faec393e62152823ea.html#a8a145a274f1250faec393e62152823ea">More...</a><br /></td></tr>
+<tr class="separator:a8a145a274f1250faec393e62152823ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3fea779055d0d1c835c18ceff59af1be"><td class="memItemLeft" align="right" valign="top">static Oid&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a3fea779055d0d1c835c18ceff59af1be.html#a3fea779055d0d1c835c18ceff59af1be">opFamilyAmOid</a> (Oid opfamilyoid)</td></tr>
 <tr class="memdesc:a3fea779055d0d1c835c18ceff59af1be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the access method of an operator family.  <a href="temporal__supportfn_8c_a3fea779055d0d1c835c18ceff59af1be.html#a3fea779055d0d1c835c18ceff59af1be">More...</a><br /></td></tr>
 <tr class="separator:a3fea779055d0d1c835c18ceff59af1be"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -214,6 +218,8 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:adcaeb2b4d1593fd7e6b1ec1a51b5f7ae"><td class="memItemLeft" align="right" valign="top">static const uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_adcaeb2b4d1593fd7e6b1ec1a51b5f7ae.html#adcaeb2b4d1593fd7e6b1ec1a51b5f7ae">CommutedIndex</a> []</td></tr>
 <tr class="separator:adcaeb2b4d1593fd7e6b1ec1a51b5f7ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96ceed3a4159da3a4b32ef9dee84f8ee"><td class="memItemLeft" align="right" valign="top">static const int16&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a96ceed3a4159da3a4b32ef9dee84f8ee.html#a96ceed3a4159da3a4b32ef9dee84f8ee">MestStrategies</a> [<a class="el" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eabc4593e059b50ca819138b83ebd09adf">ACOVERS_IDX</a>+1]</td></tr>
+<tr class="separator:a96ceed3a4159da3a4b32ef9dee84f8ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2408752bcc94534556159522188bc123"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structIndexableFunction.html">IndexableFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a2408752bcc94534556159522188bc123.html#a2408752bcc94534556159522188bc123">SpanIndexableFunctions</a> []</td></tr>
 <tr class="separator:a2408752bcc94534556159522188bc123"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10e3bb429e65e7932f656b50df69de66"><td class="memItemLeft" align="right" valign="top">static const int16&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a10e3bb429e65e7932f656b50df69de66.html#a10e3bb429e65e7932f656b50df69de66">SpanStrategies</a> []</td></tr>
