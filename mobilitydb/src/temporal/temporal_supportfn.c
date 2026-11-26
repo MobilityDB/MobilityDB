@@ -39,6 +39,7 @@
 #include <access/htup_details.h>
 #include <catalog/pg_opfamily.h>
 #include <catalog/pg_am_d.h>
+#include <commands/defrem.h>
 #include <nodes/supportnodes.h>
 #include <nodes/nodeFuncs.h>
 #include <nodes/makefuncs.h>
@@ -185,6 +186,36 @@ static const int16 SpanStrategies[] =
 {
   TIME_PORTABLE_STRATEGIES,
   AXIS1_PORTABLE_STRATEGIES,
+};
+
+/* The strategies of the ever/always comparisons and relationships under the
+ * multi-entry classes of the extension mobilitydb_mest, whose keys are the
+ * boxes of the pieces of a value. A predicate that holds where the value meets
+ * the other operand at some instant holds where some piece of the value meets
+ * its box, so it is answered by the ever overlaps `?&&` of a piece key; an
+ * always predicate holds at every instant of a value, which has at least one,
+ * and is answered the same way. A disjoint relationship implies no meeting and
+ * keeps the predicate as a filter. The overlaps of the box of the whole value,
+ * which a piece key cannot answer, is not a member of these classes, so the
+ * operator lookup declines the box strategy these predicates take under the
+ * other classes. The portable predicates keep the strategy of the box: a
+ * position or a containment holds on the box of a value iff it holds on the
+ * box of every piece, and the lookup finds the operator where a class holds
+ * it */
+static const int16 MestStrategies[ACOVERS_IDX + 1] =
+{
+  [EVER_EQ_IDX]                  = RTEverOverlapStrategyNumber,
+  [ALWAYS_EQ_IDX]                = RTEverOverlapStrategyNumber,
+  [ECONTAINS_IDX]                = RTEverOverlapStrategyNumber,
+  [EINTERSECTS_IDX]              = RTEverOverlapStrategyNumber,
+  [ETOUCHES_IDX]                 = RTEverOverlapStrategyNumber,
+  [EDWITHIN_IDX]                 = RTEverOverlapStrategyNumber,
+  [ACONTAINS_IDX]                = RTEverOverlapStrategyNumber,
+  [AINTERSECTS_IDX]              = RTEverOverlapStrategyNumber,
+  [ATOUCHES_IDX]                 = RTEverOverlapStrategyNumber,
+  [ADWITHIN_IDX]                 = RTEverOverlapStrategyNumber,
+  [ECOVERS_IDX]                  = RTEverOverlapStrategyNumber,
+  [ACOVERS_IDX]                  = RTEverOverlapStrategyNumber,
 };
 
 /* The bounding box of an alpha type is a `tstzspan`, so its portable surface is
@@ -440,6 +471,20 @@ opFamilyAmOid(Oid opfamilyoid)
   return opfamilyam;
 }
 
+/**
+ * @brief Return true if an access method is one of the multi-entry access
+ * methods of the extension mest
+ * @details Read by name, beside the method of the family #opFamilyAmOid
+ * returns, since the extension assigns their identifiers when it is created
+ * and no catalog header names them as it names GIST_AM_OID
+ */
+static bool
+mest_am_oid(Oid amoid)
+{
+  return amoid == get_am_oid("mgist", true) ||
+    amoid == get_am_oid("mspgist", true);
+}
+
 /*****************************************************************************/
 
 static FuncExpr *makeBboxExpr(Node *arg, Oid argoid, Oid retoid,
@@ -679,15 +724,12 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       }
 
       /*
-       * Only add an operator condition for GIST and SPGIST indexes.
-       * This means only the following opclasses
-       *   tgeompoint_gist_ops, tgeogpoint_gist_ops,
-       *   tgeompoint_spgist_ops, tgeogpoint_spgist_ops
-       * will get automatic indexing when used with one of the indexable
-       * functions
+       * Only add an operator condition for the GiST and SP-GiST indexes and
+       * for their multi-entry counterparts mgist and mspgist
        */
       Oid opfamilyam = opFamilyAmOid(opfamilyoid);
-      if (opfamilyam != GIST_AM_OID && opfamilyam != SPGIST_AM_OID)
+      bool mest = mest_am_oid(opfamilyam);
+      if (opfamilyam != GIST_AM_OID && opfamilyam != SPGIST_AM_OID && ! mest)
         PG_RETURN_POINTER((Node *) NULL);
 
       /*
@@ -738,6 +780,11 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
           PG_RETURN_POINTER((Node *) NULL);
       }
       int16 strategy = temporal_get_strategy_by_type(lefttype, stratindex);
+      /* A multi-entry class answers an ever/always comparison or relationship
+       * by the ever overlaps of a piece key (#MestStrategies); a portable
+       * predicate keeps the strategy of the box */
+      if (mest && strategy != InvalidStrategy && stratindex <= ACOVERS_IDX)
+        strategy = MestStrategies[stratindex];
       /* If no strategy was found for the left argument simply return */
       if (strategy == InvalidStrategy)
         PG_RETURN_POINTER((Node *) NULL);
