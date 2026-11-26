@@ -336,8 +336,8 @@ PG_FUNCTION_INFO_V1(Stbox_mspgist_leaf_consistent);
 Datum
 Stbox_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
-  /* The key answers by its tier (#mest_key_answers) */
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  /* The key answers by its tier (#mest_key_answers) */
   int16 flags = ((const STBox *) DatumGetPointer(in->leafDatum))->flags;
   for (int i = 0; i < in->nkeys; i++)
     if (! mest_key_answers(flags, in->scankeys[i].sk_strategy))

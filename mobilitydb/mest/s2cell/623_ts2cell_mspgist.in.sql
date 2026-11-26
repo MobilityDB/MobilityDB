@@ -55,6 +55,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -127,6 +131,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -199,6 +207,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -271,6 +283,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -343,6 +359,10 @@ CREATE OPERATOR CLASS ts2cell_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -415,6 +435,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -487,6 +511,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -559,6 +587,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -631,6 +663,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),
@@ -703,6 +739,10 @@ CREATE OPERATOR CLASS ts2cell_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (ts2cell, stbox),
   OPERATOR  5    >> (ts2cell, ts2cell),
+  -- same
+  OPERATOR  6    ~= (ts2cell, tstzspan),
+  OPERATOR  6    ~= (ts2cell, stbox),
+  OPERATOR  6    ~= (ts2cell, ts2cell),
   -- contains
   OPERATOR  7    @> (ts2cell, tstzspan),
   OPERATOR  7    @> (ts2cell, stbox),

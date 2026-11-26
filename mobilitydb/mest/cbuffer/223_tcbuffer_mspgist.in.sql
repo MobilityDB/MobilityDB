@@ -55,6 +55,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -131,6 +135,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -207,6 +215,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -283,6 +295,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -359,6 +375,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -435,6 +455,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -511,6 +535,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -587,6 +615,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -663,6 +695,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -739,6 +775,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),

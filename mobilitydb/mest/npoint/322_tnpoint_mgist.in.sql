@@ -61,6 +61,10 @@ CREATE OPERATOR CLASS tnpoint_mrtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
   -- contains
   OPERATOR  7    @> (tnpoint, tstzspan),
   OPERATOR  7    @> (tnpoint, stbox),
@@ -139,6 +143,10 @@ CREATE OPERATOR CLASS tnpoint_mrtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
   -- contains
   OPERATOR  7    @> (tnpoint, tstzspan),
   OPERATOR  7    @> (tnpoint, stbox),
@@ -217,6 +225,10 @@ CREATE OPERATOR CLASS tnpoint_mrtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
   -- contains
   OPERATOR  7    @> (tnpoint, tstzspan),
   OPERATOR  7    @> (tnpoint, stbox),
@@ -295,6 +307,10 @@ CREATE OPERATOR CLASS tnpoint_mrtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
   -- contains
   OPERATOR  7    @> (tnpoint, tstzspan),
   OPERATOR  7    @> (tnpoint, stbox),
@@ -373,6 +389,10 @@ CREATE OPERATOR CLASS tnpoint_mrtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
   -- contains
   OPERATOR  7    @> (tnpoint, tstzspan),
   OPERATOR  7    @> (tnpoint, stbox),

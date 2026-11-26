@@ -61,6 +61,10 @@ CREATE OPERATOR CLASS tcbuffer_mrtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -139,6 +143,10 @@ CREATE OPERATOR CLASS tcbuffer_mrtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -217,6 +225,10 @@ CREATE OPERATOR CLASS tcbuffer_mrtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -295,6 +307,10 @@ CREATE OPERATOR CLASS tcbuffer_mrtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),
@@ -373,6 +389,10 @@ CREATE OPERATOR CLASS tcbuffer_mrtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
   -- contains
   OPERATOR  7    @> (tcbuffer, tstzspan),
   OPERATOR  7    @> (tcbuffer, stbox),

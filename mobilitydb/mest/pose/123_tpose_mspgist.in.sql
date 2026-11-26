@@ -55,6 +55,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -143,6 +147,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -231,6 +239,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -319,6 +331,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -407,6 +423,10 @@ CREATE OPERATOR CLASS tpose_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -495,6 +515,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -583,6 +607,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -671,6 +699,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -759,6 +791,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),
@@ -847,6 +883,10 @@ CREATE OPERATOR CLASS tpose_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
+  -- same
+  OPERATOR  6    ~= (tpose, tstzspan),
+  OPERATOR  6    ~= (tpose, stbox),
+  OPERATOR  6    ~= (tpose, tpose),
   -- contains
   OPERATOR  7    @> (tpose, tstzspan),
   OPERATOR  7    @> (tpose, stbox),

@@ -55,6 +55,10 @@ CREATE OPERATOR CLASS tpcpoint_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -142,6 +146,10 @@ CREATE OPERATOR CLASS tpcpoint_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -229,6 +237,10 @@ CREATE OPERATOR CLASS tpcpoint_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -316,6 +328,10 @@ CREATE OPERATOR CLASS tpcpoint_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -403,6 +419,10 @@ CREATE OPERATOR CLASS tpcpoint_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -490,6 +510,10 @@ CREATE OPERATOR CLASS tpcpoint_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -577,6 +601,10 @@ CREATE OPERATOR CLASS tpcpoint_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -664,6 +692,10 @@ CREATE OPERATOR CLASS tpcpoint_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpoint, tpcbox),
   OPERATOR  5    >> (tpcpoint, tpcpoint),
+  -- same
+  OPERATOR  6    ~= (tpcpoint, tstzspan),
+  OPERATOR  6    ~= (tpcpoint, tpcbox),
+  OPERATOR  6    ~= (tpcpoint, tpcpoint),
   -- contains
   OPERATOR  7    @> (tpcpoint, tstzspan),
   OPERATOR  7    @> (tpcpoint, tpcbox),
@@ -751,6 +783,10 @@ CREATE OPERATOR CLASS tpcpatch_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),
@@ -838,6 +874,10 @@ CREATE OPERATOR CLASS tpcpatch_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),
@@ -925,6 +965,10 @@ CREATE OPERATOR CLASS tpcpatch_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),
@@ -1012,6 +1056,10 @@ CREATE OPERATOR CLASS tpcpatch_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),
@@ -1099,6 +1147,10 @@ CREATE OPERATOR CLASS tpcpatch_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),
@@ -1186,6 +1238,10 @@ CREATE OPERATOR CLASS tpcpatch_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),
@@ -1273,6 +1329,10 @@ CREATE OPERATOR CLASS tpcpatch_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),
@@ -1360,6 +1420,10 @@ CREATE OPERATOR CLASS tpcpatch_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tpcpatch, tpcbox),
   OPERATOR  5    >> (tpcpatch, tpcpatch),
+  -- same
+  OPERATOR  6    ~= (tpcpatch, tstzspan),
+  OPERATOR  6    ~= (tpcpatch, tpcbox),
+  OPERATOR  6    ~= (tpcpatch, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcpatch, tstzspan),
   OPERATOR  7    @> (tpcpatch, tpcbox),

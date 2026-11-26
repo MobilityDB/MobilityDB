@@ -55,6 +55,10 @@ CREATE OPERATOR CLASS trgeometry_mquadtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),
@@ -143,6 +147,10 @@ CREATE OPERATOR CLASS trgeometry_mquadtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),
@@ -231,6 +239,10 @@ CREATE OPERATOR CLASS trgeometry_mquadtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),
@@ -319,6 +331,10 @@ CREATE OPERATOR CLASS trgeometry_mquadtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),
@@ -407,6 +423,10 @@ CREATE OPERATOR CLASS trgeometry_mkdtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),
@@ -495,6 +515,10 @@ CREATE OPERATOR CLASS trgeometry_mkdtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),
@@ -583,6 +607,10 @@ CREATE OPERATOR CLASS trgeometry_mkdtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),
@@ -671,6 +699,10 @@ CREATE OPERATOR CLASS trgeometry_mkdtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- same
+  OPERATOR  6    ~= (trgeometry, tstzspan),
+  OPERATOR  6    ~= (trgeometry, stbox),
+  OPERATOR  6    ~= (trgeometry, trgeometry),
   -- contains
   OPERATOR  7    @> (trgeometry, tstzspan),
   OPERATOR  7    @> (trgeometry, stbox),

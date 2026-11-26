@@ -60,6 +60,9 @@ CREATE FUNCTION tbool_mgist_consistent(internal, tbool, smallint, oid, internal)
 CREATE OPERATOR CLASS tbool_mrtree_equisplit_ops
   DEFAULT FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -92,6 +95,9 @@ CREATE OPERATOR CLASS tbool_mrtree_equisplit_ops
 CREATE OPERATOR CLASS tbool_mrtree_segsplit_ops
   FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -124,6 +130,9 @@ CREATE OPERATOR CLASS tbool_mrtree_segsplit_ops
 CREATE OPERATOR CLASS tbool_mrtree_binsplit_ops
   FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -161,6 +170,9 @@ CREATE FUNCTION ttext_mgist_consistent(internal, ttext, smallint, oid, internal)
 CREATE OPERATOR CLASS ttext_mrtree_equisplit_ops
   DEFAULT FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -193,6 +205,9 @@ CREATE OPERATOR CLASS ttext_mrtree_equisplit_ops
 CREATE OPERATOR CLASS ttext_mrtree_segsplit_ops
   FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -225,6 +240,9 @@ CREATE OPERATOR CLASS ttext_mrtree_segsplit_ops
 CREATE OPERATOR CLASS ttext_mrtree_binsplit_ops
   FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -298,6 +316,11 @@ CREATE OPERATOR CLASS tint_mrtree_equisplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -372,6 +395,11 @@ CREATE OPERATOR CLASS tint_mrtree_segsplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -446,6 +474,11 @@ CREATE OPERATOR CLASS tint_mrtree_tilesplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
   -- contains
   OPERATOR  7    @> (tint, tstzspan),
   OPERATOR  7    @> (tint, intspan),
@@ -525,6 +558,11 @@ CREATE OPERATOR CLASS tbigint_mrtree_equisplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -599,6 +637,11 @@ CREATE OPERATOR CLASS tbigint_mrtree_segsplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -673,6 +716,11 @@ CREATE OPERATOR CLASS tbigint_mrtree_tilesplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
   OPERATOR  7    @> (tbigint, tstzspan),
   OPERATOR  7    @> (tbigint, bigintspan),
@@ -752,6 +800,11 @@ CREATE OPERATOR CLASS tfloat_mrtree_equisplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),
@@ -826,6 +879,11 @@ CREATE OPERATOR CLASS tfloat_mrtree_segsplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),
@@ -900,6 +958,11 @@ CREATE OPERATOR CLASS tfloat_mrtree_tilesplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, tstzspan),
   OPERATOR  7    @> (tfloat, floatspan),

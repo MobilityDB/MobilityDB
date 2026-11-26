@@ -61,6 +61,10 @@ CREATE OPERATOR CLASS th3index_mrtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -134,6 +138,10 @@ CREATE OPERATOR CLASS th3index_mrtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -207,6 +215,10 @@ CREATE OPERATOR CLASS th3index_mrtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -280,6 +292,10 @@ CREATE OPERATOR CLASS th3index_mrtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),
@@ -353,6 +369,10 @@ CREATE OPERATOR CLASS th3index_mrtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (th3index, stbox),
   OPERATOR  5    >> (th3index, th3index),
+  -- same
+  OPERATOR  6    ~= (th3index, tstzspan),
+  OPERATOR  6    ~= (th3index, stbox),
+  OPERATOR  6    ~= (th3index, th3index),
   -- contains
   OPERATOR  7    @> (th3index, tstzspan),
   OPERATOR  7    @> (th3index, stbox),

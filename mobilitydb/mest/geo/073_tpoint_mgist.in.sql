@@ -91,6 +91,10 @@ CREATE OPERATOR CLASS tgeompoint_mrtree_equisplit_ops
   -- strictly right
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- same
+  OPERATOR  6    ~= (tgeompoint, tstzspan),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
   OPERATOR  7    @> (tgeompoint, tstzspan),
   OPERATOR  7    @> (tgeompoint, stbox),
@@ -181,6 +185,10 @@ CREATE OPERATOR CLASS tgeompoint_mrtree_segsplit_ops
   -- strictly right
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- same
+  OPERATOR  6    ~= (tgeompoint, tstzspan),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
   OPERATOR  7    @> (tgeompoint, tstzspan),
   OPERATOR  7    @> (tgeompoint, stbox),
@@ -271,6 +279,10 @@ CREATE OPERATOR CLASS tgeompoint_mrtree_tilesplit_ops
   -- strictly right
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- same
+  OPERATOR  6    ~= (tgeompoint, tstzspan),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
   OPERATOR  7    @> (tgeompoint, tstzspan),
   OPERATOR  7    @> (tgeompoint, stbox),
@@ -361,6 +373,10 @@ CREATE OPERATOR CLASS tgeompoint_mrtree_mergesplit_ops
   -- strictly right
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- same
+  OPERATOR  6    ~= (tgeompoint, tstzspan),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
   OPERATOR  7    @> (tgeompoint, tstzspan),
   OPERATOR  7    @> (tgeompoint, stbox),
@@ -451,6 +467,10 @@ CREATE OPERATOR CLASS tgeompoint_mrtree_linearsplit_ops
   -- strictly right
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- same
+  OPERATOR  6    ~= (tgeompoint, tstzspan),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
   OPERATOR  7    @> (tgeompoint, tstzspan),
   OPERATOR  7    @> (tgeompoint, stbox),
@@ -541,6 +561,10 @@ CREATE OPERATOR CLASS tgeompoint_mrtree_adaptsplit_ops
   -- strictly right
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- same
+  OPERATOR  6    ~= (tgeompoint, tstzspan),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
   OPERATOR  7    @> (tgeompoint, tstzspan),
   OPERATOR  7    @> (tgeompoint, stbox),
@@ -624,6 +648,10 @@ CREATE OPERATOR CLASS tgeogpoint_mrtree_equisplit_ops
   OPERATOR  3    && (tgeogpoint, tstzspan),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
+  -- same
+  OPERATOR  6    ~= (tgeogpoint, tstzspan),
+  OPERATOR  6    ~= (tgeogpoint, stbox),
+  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
   OPERATOR  7    @> (tgeogpoint, tstzspan),
   OPERATOR  7    @> (tgeogpoint, stbox),
@@ -678,6 +706,10 @@ CREATE OPERATOR CLASS tgeogpoint_mrtree_segsplit_ops
   OPERATOR  3    && (tgeogpoint, tstzspan),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
+  -- same
+  OPERATOR  6    ~= (tgeogpoint, tstzspan),
+  OPERATOR  6    ~= (tgeogpoint, stbox),
+  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
   OPERATOR  7    @> (tgeogpoint, tstzspan),
   OPERATOR  7    @> (tgeogpoint, stbox),
@@ -732,6 +764,10 @@ CREATE OPERATOR CLASS tgeogpoint_mrtree_tilesplit_ops
   OPERATOR  3    && (tgeogpoint, tstzspan),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
+  -- same
+  OPERATOR  6    ~= (tgeogpoint, tstzspan),
+  OPERATOR  6    ~= (tgeogpoint, stbox),
+  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
   OPERATOR  7    @> (tgeogpoint, tstzspan),
   OPERATOR  7    @> (tgeogpoint, stbox),
@@ -786,6 +822,10 @@ CREATE OPERATOR CLASS tgeogpoint_mrtree_mergesplit_ops
   OPERATOR  3    && (tgeogpoint, tstzspan),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
+  -- same
+  OPERATOR  6    ~= (tgeogpoint, tstzspan),
+  OPERATOR  6    ~= (tgeogpoint, stbox),
+  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
   OPERATOR  7    @> (tgeogpoint, tstzspan),
   OPERATOR  7    @> (tgeogpoint, stbox),
@@ -840,6 +880,10 @@ CREATE OPERATOR CLASS tgeogpoint_mrtree_linearsplit_ops
   OPERATOR  3    && (tgeogpoint, tstzspan),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
+  -- same
+  OPERATOR  6    ~= (tgeogpoint, tstzspan),
+  OPERATOR  6    ~= (tgeogpoint, stbox),
+  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
   OPERATOR  7    @> (tgeogpoint, tstzspan),
   OPERATOR  7    @> (tgeogpoint, stbox),
@@ -894,6 +938,10 @@ CREATE OPERATOR CLASS tgeogpoint_mrtree_adaptsplit_ops
   OPERATOR  3    && (tgeogpoint, tstzspan),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
+  -- same
+  OPERATOR  6    ~= (tgeogpoint, tstzspan),
+  OPERATOR  6    ~= (tgeogpoint, stbox),
+  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
   OPERATOR  7    @> (tgeogpoint, tstzspan),
   OPERATOR  7    @> (tgeogpoint, stbox),

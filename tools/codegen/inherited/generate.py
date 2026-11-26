@@ -1549,15 +1549,19 @@ MEST_AM = {"gist": "mgist", "spgist": "mspgist"}
 # the box of the value when it holds on every piece (the position operators
 # of every axis, contained by) is held by some key of every value answering
 # it, as the ever overlaps is, and the always overlaps; the nearest approach
-# distance is bounded below by the distance to the nearest key. Overlaps,
-# same, contains and adjacent read the box of the whole value, which a query
-# between two pieces meets and no key does, and stay with the scan.
-MEST_STRATEGIES = {1, 2, 4, 5, 8, 9, 10, 11, 12, 25, 28, 29, 30, 31, 32, 33,
-                   34, 35, 36, 37}
+# distance is bounded below by the distance to the nearest key. The same box
+# holds on the box of a value only when every piece lies within the query, so
+# a key of a piece answers it as contained by. Overlaps, contains and adjacent
+# read the box of the whole value, which a query between two pieces meets and
+# no key does.
+MEST_STRATEGIES = {1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 25, 28, 29, 30, 31, 32,
+                   33, 34, 35, 36, 37}
 # The box operators reading the interior or a face of the box of a value, which
-# no piece witnesses: a class whose box carries flags answers them from the key
-# of the box of the whole value (#mest_keys_whole, #mest_key_answers)
-MEST_WHOLE_STRATEGIES = {3, 7, 17}
+# no piece witnesses, and the same box, which that key answers exactly: a class
+# whose box carries flags answers them from the key of the box of the whole
+# value (#mest_keys_whole, #mest_key_answers); a class whose key is a span
+# answers the same box from the keys of the pieces, as contained by
+MEST_WHOLE_STRATEGIES = {3, 6, 7, 17}
 MEST_WHOLE_BOXES = ("tbox", "stbox", "tpcbox")
 MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
                 "merge": "mest_count_options", "adapt": "mest_count_options",
@@ -1618,7 +1622,7 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
                  "(internal, internal)",
                  f"  FUNCTION  2 {sfn}_{kind}_choose(internal, internal)",
                  f"  FUNCTION  3 {sfn}_{kind}_picksplit(internal, internal)",
-                 f"  FUNCTION  4 {sfn}_{kind}_inner_consistent(internal, internal)",
+                 f"  FUNCTION  4 {mest_inner_consistent(sfn, kind, box)}",
                  f"  FUNCTION  5 {mest_consistent(sfn + '_spgist_leaf_consistent(internal, internal)')}",
                  "  FUNCTION  6 mest_spgist_compress(internal)",
                  f"  FUNCTION  7 {options}",
@@ -1684,9 +1688,11 @@ def sql_c_symbol(name: str) -> str:
 
 def mest_twin_symbol(symbol: str) -> str:
     """The C symbol of the multi-entry twin of the consistent method `symbol`,
-    as #mest_consistent names its SQL function"""
-    return (symbol.replace("_gist_consistent", "_mgist_consistent", 1)
-            .replace("_spgist_leaf_consistent", "_mspgist_leaf_consistent", 1))
+    as #mest_consistent and #mest_inner_consistent name its SQL function"""
+    return re.sub(r"_(quadtree|kdtree)_inner_consistent", r"_m\1_inner_consistent",
+                  symbol.replace("_gist_consistent", "_mgist_consistent", 1)
+                  .replace("_spgist_leaf_consistent", "_mspgist_leaf_consistent",
+                           1), count=1)
 
 
 def mest_twins_of(text: str) -> list:
@@ -1694,9 +1700,12 @@ def mest_twins_of(text: str) -> list:
     (twin SQL name, its arguments, original SQL name)"""
     out = []
     for twin, args in re.findall(
-            r"FUNCTION +[15] (\w+_m(?:gist|spgist_leaf)_consistent)\(([^)]*)\)", text):
-        orig = (twin.replace("_mgist_consistent", "_gist_consistent", 1)
-                .replace("_mspgist_leaf_consistent", "_spgist_leaf_consistent", 1))
+            r"FUNCTION +[145] (\w+_m(?:gist|spgist_leaf|quadtree_inner|kdtree_inner)"
+            r"_consistent)\(([^)]*)\)", text):
+        orig = re.sub(r"_m(quadtree|kdtree)_inner_consistent", r"_\1_inner_consistent",
+                      twin.replace("_mgist_consistent", "_gist_consistent", 1)
+                      .replace("_mspgist_leaf_consistent", "_spgist_leaf_consistent",
+                               1), count=1)
         if (twin, args, orig) not in out:
             out.append((twin, args, orig))
     return out
@@ -1705,22 +1714,26 @@ def mest_twins_of(text: str) -> list:
 def render_mestconsistent(symbols: list) -> str:
     """The C bodies of the consistent twins of the GiST and SP-GiST methods
     `symbols`, from templates/mestconsistent.c.tmpl, whose first chunk is a
-    GiST twin and whose chunk after `/* SPGIST */` an SP-GiST leaf one"""
-    gist, spgist = read_template("mestconsistent.c.tmpl").split("/* SPGIST */\n")
+    GiST twin, whose chunk after `/* SPGIST */` an SP-GiST leaf one and whose
+    chunk after `/* SPGIST-INNER */` an SP-GiST inner one"""
+    gist, rest = read_template("mestconsistent.c.tmpl").split("/* SPGIST */\n")
+    spgist, inner = rest.split("/* SPGIST-INNER */\n")
     out = []
     for sym in symbols:
-        chunk = spgist if "_spgist_leaf_consistent" in sym else gist
+        chunk = (spgist if "_spgist_leaf_consistent" in sym else
+                 inner if "_inner_consistent" in sym else gist)
         # A key carrying flags (an stbox, which a tpcbox begins with, or a tbox)
         # answers by its tier, the TIER block of the template; a span carries
-        # no flags and keys the pieces alone, so its twin drops the block
+        # no flags and keys the pieces alone, so its twin answers the same span
+        # from the keys of the pieces, as contained by, the PIECES block
         keytype = ("STBox" if sym.startswith(("Stbox_", "Tpcbox_")) else
                    "TBox" if sym.startswith(("Tnumber_", "Tbox_")) else None)
+        keep, drop = ("TIER", "PIECES") if keytype else ("PIECES", "TIER")
+        chunk = re.sub(rf"/\* {keep}-(BEGIN|END) \*/\n", "", chunk)
+        chunk = re.sub(rf"/\* {drop}-BEGIN \*/\n.*?/\* {drop}-END \*/\n", "", chunk,
+                       flags=re.S)
         if keytype:
-            chunk = re.sub(r"/\* TIER-(BEGIN|END) \*/\n", "", chunk)
             chunk = chunk.replace("{KEYTYPE}", keytype)
-        else:
-            chunk = re.sub(r"/\* TIER-BEGIN \*/\n.*?/\* TIER-END \*/\n", "", chunk,
-                           flags=re.S)
         out.append(chunk.replace("{SYM}", sym)
                    .replace("{TWIN}", mest_twin_symbol(sym)).strip("\n") + "\n")
     return "\n" + "\n".join(out) + "\n"
@@ -1753,6 +1766,17 @@ def mest_consistent(signature: str) -> str:
     covering a part of a value (#render_mestconsistent)"""
     return (signature.replace("_gist_consistent(", "_mgist_consistent(", 1)
             .replace("_spgist_leaf_consistent(", "_mspgist_leaf_consistent(", 1))
+
+
+def mest_inner_consistent(sfn: str, kind: str, box: str) -> str:
+    """The SP-GiST inner consistent method of a multi-entry class of the tree
+    `kind` over the box type `box`: that of the SP-GiST class of `sfn`, whose
+    nodes a key carrying flags reaches as a key of the class does, or, for a key
+    of a span, its twin choosing the nodes of the same span as of contained by
+    (#render_mestconsistent)"""
+    sig = f"{sfn}_{kind}_inner_consistent(internal, internal)"
+    return sig if box in MEST_WHOLE_BOXES else sig.replace(
+        f"_{kind}_inner_consistent(", f"_m{kind}_inner_consistent(", 1)
 
 
 def render_mestfile(bt: dict, am: str, partners: list, strategies: list,
@@ -1797,7 +1821,8 @@ def render_mestfile(bt: dict, am: str, partners: list, strategies: list,
             if ("consistent", twin, args) in declared:
                 continue
             declared.add(("consistent", twin, args))
-            out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS boolean\n"
+            rettype = "void" if twin.endswith("_inner_consistent") else "boolean"
+            out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS {rettype}\n"
                        f"  AS 'MODULE_PATHNAME', "
                        f"'{mest_twin_symbol(sql_c_symbol(orig))}'\n"
                        "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")

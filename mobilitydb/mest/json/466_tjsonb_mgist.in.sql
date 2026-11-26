@@ -45,6 +45,9 @@ CREATE FUNCTION tjsonb_mgist_consistent(internal, tjsonb, smallint, oid, interna
 CREATE OPERATOR CLASS tjsonb_mrtree_equisplit_ops
   DEFAULT FOR TYPE tjsonb USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -77,6 +80,9 @@ CREATE OPERATOR CLASS tjsonb_mrtree_equisplit_ops
 CREATE OPERATOR CLASS tjsonb_mrtree_segsplit_ops
   FOR TYPE tjsonb USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -109,6 +115,9 @@ CREATE OPERATOR CLASS tjsonb_mrtree_segsplit_ops
 CREATE OPERATOR CLASS tjsonb_mrtree_binsplit_ops
   FOR TYPE tjsonb USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
