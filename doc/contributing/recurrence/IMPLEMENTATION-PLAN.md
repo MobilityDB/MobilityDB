@@ -80,7 +80,7 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC10 | `occurrences` as a table function in the bindings whose host has them (MobilityDuck, MobilitySpark), from the generated functions | in review: MobilityDuck #580 (green; the generator reads a set or span argument of a split shape, so `occurrences` is generated, 20 registrations, test 19 assertions as MobilityDB answers), MobilitySpark #104 (draft; `GeneratedSqlSurfaceTest` 25/25, the four functions generated from the catalog; draft for an unrelated raster aggregate drift of MobilityDB #3908), after JMEOS #248 (merged: the jar builds against master) |
+| RC10 | `occurrences` as a table function in the bindings whose host has them (MobilityDuck, MobilitySpark), from the generated functions | MobilityDuck done: #580 merged (the generator reads a set or span argument of a split shape, so `occurrences` is generated, 20 registrations, test 19 assertions as MobilityDB answers). MobilitySpark in review: #104 (draft; `GeneratedSqlSurfaceTest` 25/25, the four functions generated from the catalog), red only on `AggregatesCatalogTest.aBandOfNodataCountsNothing`, which MobilityDB #3944 fixes in MEOS (the statistics of a band with no value count no pixel, as PostgreSQL answers, where MEOS answered NULL) and a MobilitySpark test reading them through the accessors; after JMEOS #248 (merged: the jar builds against master) |
 
 ## Part V — the evaluation and the article
 
