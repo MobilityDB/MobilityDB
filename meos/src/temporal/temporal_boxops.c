@@ -984,7 +984,7 @@ tnumber_set_tbox(const Temporal *temp, TBox *box)
  * @param[in] lower_inc, upper_inc True when the corresponding bound is
  * inclusive, false otherwise
  * @param[in] interp Interpolation
- * @param[in] box Box
+ * @param[out] box Box
  */
 static void
 tnumberinstarr_set_tbox(TInstant **instants, int count, bool lower_inc,
@@ -993,6 +993,9 @@ tnumberinstarr_set_tbox(TInstant **instants, int count, bool lower_inc,
   assert(tnumber_type(instants[0]->temptype));
   MeosType basetype = temptype_basetype(instants[0]->temptype);
   MeosType spantype = basetype_spantype(basetype);
+  /* Zero-fill the box, whose flags are set bit by bit below, as
+   * #tnumberinst_set_tbox does */
+  memset(box, 0, sizeof(TBox));
   /* For discrete or step interpolation the bounds are always inclusive */
   bool lower_inc1 = lower_inc;
   bool upper_inc1 = upper_inc;
