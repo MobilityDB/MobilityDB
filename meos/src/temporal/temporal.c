@@ -2450,6 +2450,49 @@ temporal_occurrence_origins(const Temporal *temp, TimestampTz ref,
 
 /**
  * @ingroup meos_temporal_transf
+ * @brief Return the occurrences of a temporal value that meet a period, with
+ * their origins
+ * @details The occurrences are those at the origins that
+ * #temporal_occurrence_origins finds, each built by #temporal_occurrence, in
+ * the order of the origins; no other occurrence is built.
+ * @param[in] temp Temporal value, the template
+ * @param[in] ref Reference origin of the template
+ * @param[in] origins Origins, a timestamptz set
+ * @param[in] s Period, a timestamptz span
+ * @param[out] occ_origins Array of the origins of the occurrences
+ * @param[out] count Number of values in the output arrays
+ * @return The occurrences, or @p NULL with a count of zero when no
+ * occurrence meets the period
+ * @errval NULL
+ * @note The out parameters are set as #temporal_time_split sets them
+ */
+Temporal **
+temporal_occurrences(const Temporal *temp, TimestampTz ref,
+  const Set *origins, const Span *s, TimestampTz **occ_origins, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(occ_origins, NULL);
+  Set *found = temporal_occurrence_origins(temp, ref, origins, s);
+  if (! found)
+    return NULL;
+  Temporal **result = palloc(sizeof(Temporal *) * found->count);
+  TimestampTz *orig = palloc(sizeof(TimestampTz) * found->count);
+  for (int i = 0; i < found->count; i++)
+  {
+    orig[i] = DatumGetTimestampTz(SET_VAL_N(found, i));
+    result[i] = temporal_occurrence(temp, ref, orig[i]);
+  }
+  *count = found->count;
+  *occ_origins = orig;
+  pfree(found);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
  * @brief Return a temporal value scaled by an interval
  * @param[in] temp Temporal value
  * @param[in] duration Duration of the result
