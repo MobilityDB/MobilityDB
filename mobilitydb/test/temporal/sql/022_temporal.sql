@@ -1905,6 +1905,53 @@ SELECT scaleTime(tfloat '1@2001-01-01', '0');
 SELECT scaleTime(tfloat '1@2001-01-01', '-1 day');
 
 -------------------------------------------------------------------------------
+-- Occurrences
+-------------------------------------------------------------------------------
+
+-- The origins of the days around the daylight-saving changes of Europe/Zurich
+SELECT origins(dateset '{2026-03-28, 2026-03-29, 2026-03-30}', 'Europe/Zurich');
+SELECT origins(dateset '{2026-10-24, 2026-10-25, 2026-10-26}', 'Europe/Zurich');
+
+SELECT occurrence(tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00', '2026-03-28 22:00:00+00');
+SELECT occurrence(ttext '{AAA@2026-01-14 23:30:00+00, BBB@2026-01-15 00:30:00+00}',
+  '2026-01-14 23:00:00+00', '2026-01-15 23:00:00+00');
+
+-- A period ending at the first instant of the second occurrence, closed and open
+SELECT occurrenceOrigins(tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-15 23:00:00+00, 2026-01-15 23:30:00+00]');
+SELECT occurrenceOrigins(tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-15 23:00:00+00, 2026-01-15 23:30:00+00)');
+
+SELECT * FROM occurrences(
+  tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-15 00:00:00+00, 2026-01-16 00:00:00+00]');
+
+-- A trip built for the service day 2026-03-27 occurs on the service day of the
+-- spring change at the same distance from the origin of the day
+SELECT * FROM occurrences(
+  tfloat '[1@2026-03-26 23:30:00+00, 2@2026-03-27 00:30:00+00]',
+  startValue(origins(dateset '{2026-03-27}', 'Europe/Zurich')),
+  origins(dateset '{2026-03-27, 2026-03-29}', 'Europe/Zurich'),
+  tstzspan '[2026-03-01 00:00:00+00, 2026-04-01 00:00:00+00]');
+
+-- No occurrence meets the period
+SELECT COUNT(*) FROM occurrences(
+  tint '[1@2026-01-14 23:30:00+00, 2@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00', tstzset '{2026-01-14 23:00:00+00}',
+  tstzspan '[2025-01-01 00:00:00+00, 2025-01-02 00:00:00+00]');
+
+/* Errors */
+SELECT origins(dateset '{2026-07-15}', 'Not/AZone');
+SELECT occurrence(tint '1@2026-01-14 23:30:00+00', '-infinity', '2026-01-15 23:00:00+00');
+
+-------------------------------------------------------------------------------
 -- tsample and tprecision
 -------------------------------------------------------------------------------
 

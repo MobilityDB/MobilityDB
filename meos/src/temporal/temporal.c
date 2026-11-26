@@ -2344,6 +2344,7 @@ temporal_shift_time(const Temporal *temp, const Interval *shift)
  * @param[in] origin Origin of the occurrence
  * @errval NULL
  * @note Built as #temporal_shift_time, with an interval of microseconds
+ * @csqlfn #Temporal_occurrence()
  */
 Temporal *
 temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin)
@@ -2410,6 +2411,7 @@ tstz_minus_saturate(TimestampTz t, int64 d)
  * @param[in] s Period, a timestamptz span
  * @return The origins, or @p NULL when no occurrence meets the period
  * @errval NULL
+ * @csqlfn #Temporal_occurrence_origins()
  */
 Set *
 temporal_occurrence_origins(const Temporal *temp, TimestampTz ref,
@@ -2465,6 +2467,7 @@ temporal_occurrence_origins(const Temporal *temp, TimestampTz ref,
  * occurrence meets the period
  * @errval NULL
  * @note The out parameters are set as #temporal_time_split sets them
+ * @csqlfn #Temporal_occurrences()
  */
 Temporal **
 temporal_occurrences(const Temporal *temp, TimestampTz ref,

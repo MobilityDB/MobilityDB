@@ -960,6 +960,19 @@ SELECT asEWKT(shiftScaleTime(tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 
 SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2001-01-01', '0'));
 SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2001-01-01', '-1 day'));
 
+-- Occurrences of a trip at the origins of three days
+SELECT asEWKT(occurrence(tgeompoint '[Point(0 0)@2026-01-14 23:30:00+00, Point(2 0)@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00', '2026-01-16 23:00:00+00'));
+SELECT occurrenceOrigins(tgeogpoint '[Point(4.35 50.85)@2026-01-14 23:30:00+00, Point(4.40 50.85)@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-16 00:00:00+00, 2026-01-17 00:00:00+00]');
+SELECT origin, asEWKT(occurrence) FROM occurrences(
+  tgeompoint '[Point(0 0)@2026-01-14 23:30:00+00, Point(2 0)@2026-01-15 00:30:00+00]',
+  '2026-01-14 23:00:00+00',
+  tstzset '{2026-01-14 23:00:00+00, 2026-01-15 23:00:00+00, 2026-01-16 23:00:00+00}',
+  tstzspan '[2026-01-15 00:00:00+00, 2026-01-16 00:00:00+00]');
+
 -------------------------------------------------------------------------------
 -- Stops function
 -------------------------------------------------------------------------------

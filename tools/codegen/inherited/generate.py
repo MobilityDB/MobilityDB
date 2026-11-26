@@ -3384,6 +3384,17 @@ _XFORM_SYM = {
     "shiftScaleTime": "Temporal_shift_scale_time",
     "tsample": "Temporal_tsample",
     "tprecision": "Temporal_tprecision",
+    "occurrence": "Temporal_occurrence",
+    "occurrenceOrigins": "Temporal_occurrence_origins",
+    "occurrences": "Temporal_occurrences",
+}
+
+# CORE op -> return type when it is not the temporal type itself ({T} is the
+# temporal type): the origins whose occurrence meets a period are a timestamptz
+# set, and the occurrences are rows of an origin and its occurrence.
+_XFORM_RET = {
+    "occurrenceOrigins": "tstzset",
+    "occurrences": "TABLE(origin timestamptz, occurrence {T})",
 }
 
 
@@ -3424,6 +3435,14 @@ def _xform_op_sig(op: str, fam: dict, temp: str) -> str:
     if op == "tprecision":
         return (f"tprecision({T}, duration interval,\n"
                 f"  torigin timestamptz DEFAULT '2000-01-03')")
+    if op == "occurrence":
+        return f"occurrence({T}, ref timestamptz, origin timestamptz)"
+    if op == "occurrenceOrigins":
+        return (f"occurrenceOrigins({T}, ref timestamptz, origins tstzset,\n"
+                f"  period tstzspan)")
+    if op == "occurrences":
+        return (f"occurrences({T}, ref timestamptz, origins tstzset,\n"
+                f"  period tstzspan)")
     raise SystemExit(f"unknown transformation op {op!r}")
 
 
@@ -3434,7 +3453,8 @@ def _xform_op_fn(op: str, fam: dict, temp: str) -> str:
     strict = op not in ("seq", "seqset")
     pre = "-- The function is not strict\n" if op in ("seq", "seqset") else ""
     sym = fam.get("syms", {}).get(op, _XFORM_SYM[op])
-    return _xform_skeleton(_xform_op_sig(op, fam, temp), temp, sym, strict, pre)
+    ret = _XFORM_RET.get(op, "{T}").replace("{T}", temp)
+    return _xform_skeleton(_xform_op_sig(op, fam, temp), ret, sym, strict, pre)
 
 
 def _xform_ops_block(blk: dict, fam: dict) -> str:
