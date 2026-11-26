@@ -66,9 +66,9 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC6 | `origins(dateset, text)`, `occurrence(T, timestamptz, timestamptz)` and `occurrenceOrigins(T, timestamptz, tstzset, tstzspan)` for every temporal type, from the catalog | open as MobilityDB #3939, with RC7 and RC8 |
-| RC7 | `occurrences(T, timestamptz, tstzset, tstzspan) RETURNS SETOF (origin timestamptz, occurrence T)`, value per call, with a planner support function returning the number of selected origins | open as MobilityDB #3939 without the planner support, `RETURNS TABLE(origin timestamptz, occurrence T)`; the support function and the cost of `occurrence` are open |
-| RC8 | The regression test that compares `occurrences` with fully materialized occurrences row for row, on dates on both sides of a daylight-saving change, stop times beyond 24:00, occurrences crossing the window bounds, and service dates added and removed | open as MobilityDB #3939, in `022_temporal` and `052_tpoint` |
+| RC6 | `origins(dateset, text)`, `occurrence(T, timestamptz, timestamptz)` and `occurrenceOrigins(T, timestamptz, tstzset, tstzspan)` for every temporal type, from the catalog | done: MobilityDB #3939 (`ec36629b81`), with RC7 and RC8 |
+| RC7 | `occurrences(T, timestamptz, tstzset, tstzspan) RETURNS SETOF (origin timestamptz, occurrence T)`, value per call, with a planner support function returning the number of selected origins | done without the planner support: MobilityDB #3939, `RETURNS TABLE(origin timestamptz, occurrence T)`; the support function and the cost of `occurrence` are open |
+| RC8 | The regression test that compares `occurrences` with fully materialized occurrences row for row, on dates on both sides of a daylight-saving change, stop times beyond 24:00, occurrences crossing the window bounds, and service dates added and removed | done: MobilityDB #3939, in `022_temporal` and `052_tpoint` |
 
 ## Part III — the GTFS adapter
 
@@ -86,7 +86,7 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC11 | The evaluation of the article: materialized occurrences, templates with the source calendar resolved at query time, and templates with origins in both indexing forms, on the STIB-MIVB feeds, a large feed with long service periods, and synthetic feeds; the workloads Q1 to Q8; every answer of the recurring form checked against the materialized one | harness built: `recurrence-kit` of `MobilityDB/claude-kits`; on the STIB-MIVB feed every representation answers every query as the materialized one does; the run on the Swiss feed is open |
+| RC11 | The evaluation of the article: materialized occurrences, templates with the source calendar resolved at query time, and templates with origins in both indexing forms, on the STIB-MIVB feeds, a large feed with long service periods, and synthetic feeds; the workloads Q1 to Q8; every answer of the recurring form checked against the materialized one | harness built: `recurrence-kit` of `MobilityDB/claude-kits`; on the STIB-MIVB feed every representation answers every query as the materialized one does; R3g groups the trips sharing their stops and relative times under one template (STIB: 3937 trips, 523 templates; Switzerland: 2618815 trips, 191405 templates, 66835201 runs); the pinned Swiss feed is `gtfs_fp2026_20261121.zip`; the run on the benchmark machine waits for that machine to be free |
 | RC12 | The article completed with the measurements of RC11 against the cost analysis it states | open |
 
 **THE DATA AND THE MACHINE (the owner, 2026-11-26).** The large feed is the Swiss national GTFS
