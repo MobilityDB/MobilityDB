@@ -120,6 +120,24 @@ SELECT COUNT(*) FROM tbl_text, tbl_ttext WHERE temp %>= temp;
 -- RESTRICTION SELECTIVITY
 -- Test index support function
 
+-- Whether the plan of a query probes an index, the ever and always equality of
+-- a temporal number and a number being rewritten into the overlaps of the box
+-- of the value with the box of the number
+CREATE FUNCTION pg_temp.test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  SET LOCAL enable_seqscan = off;
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+
 CREATE INDEX tbl_tbool_big_rtree_idx ON tbl_tbool_big USING gist(temp);
 CREATE INDEX tbl_tint_big_rtree_idx ON tbl_tint_big USING gist(temp);
 CREATE INDEX tbl_tfloat_big_rtree_idx ON tbl_tfloat_big USING gist(temp);
@@ -133,6 +151,13 @@ SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ?= text 'AAA';
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
 SELECT COUNT(*) FROM tbl_ttext_big WHERE temp %= text 'AAA';
+
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_big WHERE eEqual(temp, 1.5)');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_big WHERE aEqual(temp, 1.5)');
 
 DROP INDEX tbl_tbool_big_rtree_idx;
 DROP INDEX tbl_tint_big_rtree_idx;
@@ -155,10 +180,17 @@ SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
 
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1');
+SELECT pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5');
+
 DROP INDEX tbl_tbool_big_quadtree_idx;
 DROP INDEX tbl_tint_big_quadtree_idx;
 DROP INDEX tbl_tfloat_big_quadtree_idx;
 DROP INDEX tbl_ttext_quadtree_idx;
+
+DROP FUNCTION pg_temp.test_probes_index(text);
 
 -------------------------------------------------------------------------------
 -- Ever comparisons
