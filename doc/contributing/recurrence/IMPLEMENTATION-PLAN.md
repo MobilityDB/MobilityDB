@@ -74,7 +74,7 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC9 | The GTFS chapter of the MobilityDB workshop loading trips as templates with origins: service dates from `calendar.txt` and `calendar_dates.txt`, templates at the origin of a reference date, trips grouped by path and relative timing, origins from `origins(dates, agency_timezone)` | open as MobilityDB-workshop #37: the chapter and `data/gtfs_data.zip` build each trip as a template with the origins of its service days and read the trips of a period with `occurrences`, for MobilityDB master; the replay on the bundled feed gives the 9769 trips with the start and end the kit computes |
+| RC9 | The GTFS chapter of the MobilityDB workshop loading trips as templates with origins: service dates from `calendar.txt` and `calendar_dates.txt`, templates at the origin of a reference date, trips grouped by path and relative timing, origins from `origins(dates, agency_timezone)` | done, MobilityDB-workshop #37 (f3ed41e032): the chapter and `data/gtfs_data.zip` build each trip as a template with the origins of its service days and read the trips of a period with `occurrences`, for MobilityDB master; the replay on the bundled feed gives the 9769 trips with the start and end the kit computes |
 
 ## Part IV — the hosts beyond PostgreSQL
 
