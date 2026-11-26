@@ -84,6 +84,10 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
+<code>#include &lt;access/gist.h&gt;</code><br />
+<code>#include &lt;access/spgist.h&gt;</code><br />
+<code>#include &lt;access/stratnum.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 </div>
 <p><a href="temporal__mest_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -98,9 +102,15 @@ Functions</h2></td></tr>
 <tr class="memitem:a066e2d7bfea0a1555dbd57dac07bf575"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__mest_8h_a066e2d7bfea0a1555dbd57dac07bf575.html#a066e2d7bfea0a1555dbd57dac07bf575">mest_duration_validate</a> (const char *<a class="el" href="delete__timestamptz__test_8c_a8556878012feffc9e0beb86cd78f424d.html#a8556878012feffc9e0beb86cd78f424d">value</a>)</td></tr>
 <tr class="memdesc:a066e2d7bfea0a1555dbd57dac07bf575"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raise an error unless the duration of a tile is empty or an interval.  <a href="temporal__mest_8h_a066e2d7bfea0a1555dbd57dac07bf575.html#a066e2d7bfea0a1555dbd57dac07bf575">More...</a><br /></td></tr>
 <tr class="separator:a066e2d7bfea0a1555dbd57dac07bf575"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace59e16febc313f41a52e152e0b4ef35"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__mest_8h_ace59e16febc313f41a52e152e0b4ef35.html#ace59e16febc313f41a52e152e0b4ef35">mest_key_answers</a> (int16 flags, StrategyNumber strategy)</td></tr>
+<tr class="memdesc:ace59e16febc313f41a52e152e0b4ef35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a key of a multi-entry index may answer a strategy.  <a href="temporal__mest_8h_ace59e16febc313f41a52e152e0b4ef35.html#ace59e16febc313f41a52e152e0b4ef35">More...</a><br /></td></tr>
+<tr class="separator:ace59e16febc313f41a52e152e0b4ef35"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab7ad07f6c358cba464fd682b0a6517d"><td class="memItemLeft" align="right" valign="top">Datum *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__mest_8h_aab7ad07f6c358cba464fd682b0a6517d.html#aab7ad07f6c358cba464fd682b0a6517d">mest_keys</a> (void *<a class="el" href="box__sortkey__test_8c_af6b5c4356c6477df09333a47847e55b9.html#af6b5c4356c6477df09333a47847e55b9">boxes</a>, size_t size, int count)</td></tr>
 <tr class="memdesc:aab7ad07f6c358cba464fd682b0a6517d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the keys of a multi-entry index, the boxes of an array as Datums.  <a href="temporal__mest_8h_aab7ad07f6c358cba464fd682b0a6517d.html#aab7ad07f6c358cba464fd682b0a6517d">More...</a><br /></td></tr>
 <tr class="separator:aab7ad07f6c358cba464fd682b0a6517d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba7f81ca2bf2996d4ba4338c0e86ca8f"><td class="memItemLeft" align="right" valign="top">Datum *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__mest_8h_aba7f81ca2bf2996d4ba4338c0e86ca8f.html#aba7f81ca2bf2996d4ba4338c0e86ca8f">mest_keys_whole</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, void *<a class="el" href="box__sortkey__test_8c_af6b5c4356c6477df09333a47847e55b9.html#af6b5c4356c6477df09333a47847e55b9">boxes</a>, size_t size, int32 *count)</td></tr>
+<tr class="memdesc:aba7f81ca2bf2996d4ba4338c0e86ca8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the keys of a multi-entry index over the boxes of the pieces of a temporal value followed by the box of the whole value.  <a href="temporal__mest_8h_aba7f81ca2bf2996d4ba4338c0e86ca8f.html#aba7f81ca2bf2996d4ba4338c0e86ca8f">More...</a><br /></td></tr>
+<tr class="separator:aba7f81ca2bf2996d4ba4338c0e86ca8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Multi-entry support of the temporal types: the keys of a value are the boxes MEOS splits it into. </p>
