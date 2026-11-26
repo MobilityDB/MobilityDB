@@ -309,6 +309,27 @@ SELECT asText(pose 'Pose(Point(0 0 0), 0, 0, -0.6, 0.8)');
 -- bytes that the hash reads are those of the one form too.
 SELECT hash(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)')
      = hash(pose 'Pose(Point(0 0 0), -1, 0, 0, 0)') AS identity_hash_canonical;
+-- A zero of a position, an angle or a quaternion is stored as 0, never as -0,
+-- so that every pose equal to another hashes as it does: every placement of
+-- -0 in a planar and in a spatial pose against the pose of positive zeros.
+WITH cases(s, ref) AS (
+  SELECT format('Pose(Point(%s %s),%s)', x, y, t), 'Pose(Point(0 0),0)'
+  FROM (VALUES ('0'), ('-0')) a(x), (VALUES ('0'), ('-0')) b(y),
+    (VALUES ('0'), ('-0')) c(t)
+  UNION ALL
+  SELECT format('Pose(Point(%s %s %s), %s)', x, y, z, q),
+    format('Pose(Point(0 0 0), %s)', r)
+  FROM (VALUES ('0'), ('-0')) a(x), (VALUES ('0'), ('-0')) b(y),
+    (VALUES ('0'), ('-0')) c(z),
+    (VALUES ('1, 0, 0, 0', '1, 0, 0, 0'), ('1, -0, -0, -0', '1, 0, 0, 0'),
+      ('-1, 0, 0, 0', '1, 0, 0, 0'), ('0, 0, 0, -1', '0, 0, 0, 1'),
+      ('-0, 1, -0, 0', '0, 1, 0, 0')) d(q, r))
+SELECT count(*) AS cases,
+  count(*) FILTER (WHERE s::pose = ref::pose) AS equal,
+  count(*) FILTER (WHERE hash(s::pose) = hash(ref::pose)) AS hashed_equal,
+  count(*) FILTER (WHERE hashExtended(s::pose, 1) = hashExtended(ref::pose, 1))
+    AS hashed_extended_equal
+FROM cases;
 
 -- A pose read back from its binary form is the pose that was written, so the
 -- binary form is lossless and COPY BINARY carries a table unchanged. The
