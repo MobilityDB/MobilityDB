@@ -1334,8 +1334,10 @@ int main(void)
    * (doc/specs/meos-finite-values.md), so the statistics of a band are those
    * of its other pixels: NaN, 2, 4, 8, 16 and -0.0 count five pixels summing to
    * 30, whether or not nodata is excluded, and 2, +Infinity, 4, -Infinity, 8,
-   * 16 and NaN count four pixels summing to 30. A band whose every pixel is NaN, or whose nodata value is NaN
-   * and every pixel nodata, has no statistics and raises no error. The
+   * 16 and NaN count four pixels summing to 30. A band whose every pixel is
+   * NaN, or whose nodata value is NaN and every pixel nodata, counts no pixel,
+   * its other statistics absent, as PostgreSQL answers (0,,,,,), and raises no
+   * error. The
    * aggregate answers what the single call answers, and across a raster
    * holding a NaN and one holding 1 it counts 6 pixels summing to 31 */
   const double nf_pixels[3][7] = {{NAN, 2, 4, 8, 16, -0.0, 0},
@@ -1357,7 +1359,13 @@ int main(void)
         NULL;
       assert(meos_errno() == 0);
       if (i == 2)
-        assert(nf_st == NULL && nf_agg == NULL);
+      {
+        double absent;
+        assert(nf_st != NULL && nf_st->count == 0 &&
+          ! bandstats_sum(nf_st, &absent) && ! bandstats_max(nf_st, &absent));
+        assert(nf_agg != NULL && nf_agg->count == 0 &&
+          ! bandstats_mean(nf_agg, &absent));
+      }
       else
       {
         printf("raster_summary_stats(non-finite case %d, %d): count %d, "
@@ -1380,8 +1388,48 @@ int main(void)
   assert(nf_nd != NULL);
   meos_errno_reset();
   BandStats *nf_nd_st = raster_summary_stats(nf_nd, 1, false);
-  assert(nf_nd_st == NULL && meos_errno() == 0);
-  free(nf_nd);
+  assert(nf_nd_st != NULL && nf_nd_st->count == 0 && meos_errno() == 0);
+  free(nf_nd_st); free(nf_nd);
+
+  /* A band whose every pixel is nodata, read with its nodata counted, counts
+   * its pixels in the aggregate as in the single call, and an aggregate over
+   * it and a band of values answers the single call over one band holding the
+   * pixels of both: 7 7 7 7 and 1 2 3 4 */
+  const uint8_t nd_pix[4] = {7, 7, 7, 7}, val_pix[4] = {1, 2, 3, 4};
+  const uint8_t both_pix[8] = {7, 7, 7, 7, 1, 2, 3, 4};
+  Raster *nd_all = raster_make(4, 1, 0, 1, 1, -1, 0, 0, 4326, "8BUI", 7.0,
+    true, nd_pix, sizeof(nd_pix));
+  Raster *nd_val = raster_make(4, 1, 0, 1, 1, -1, 0, 0, 4326, "8BUI", 7.0,
+    true, val_pix, sizeof(val_pix));
+  Raster *nd_both = raster_make(8, 1, 0, 1, 1, -1, 0, 0, 4326, "8BUI", 7.0,
+    true, both_pix, sizeof(both_pix));
+  assert(nd_all != NULL && nd_val != NULL && nd_both != NULL);
+  meos_errno_reset();
+  BandStats *nd_single = raster_summary_stats(nd_all, 1, false);
+  BandStats *nd_agg = raster_summary_stats_finalfn(
+    raster_summary_stats_transfn(NULL, nd_all, 1, false));
+  RasterStatsState *nd_run = raster_summary_stats_transfn(NULL, nd_all, 1,
+    false);
+  nd_run = raster_summary_stats_transfn(nd_run, nd_val, 1, false);
+  BandStats *nd_run_st = raster_summary_stats_finalfn(nd_run);
+  BandStats *nd_both_st = raster_summary_stats(nd_both, 1, false);
+  assert(meos_errno() == 0);
+  printf("summary statistics of a band of nodata read with its nodata: "
+    "count %d, sum %g; aggregate count %d, sum %g; with 1 2 3 4: count %d, "
+    "sum %g, stddev %.17g\n", (int) nd_single->count, nd_single->sum,
+    (int) nd_agg->count, nd_agg->sum, (int) nd_run_st->count, nd_run_st->sum,
+    nd_run_st->stddev);
+  assert(nd_single->count == 4 && nd_single->sum == 28.0);
+  assert(nd_agg->count == nd_single->count && nd_agg->sum == nd_single->sum &&
+    nd_agg->mean == nd_single->mean && nd_agg->stddev == nd_single->stddev &&
+    nd_agg->min == nd_single->min && nd_agg->max == nd_single->max);
+  assert(nd_run_st->count == nd_both_st->count &&
+    nd_run_st->sum == nd_both_st->sum && nd_run_st->min == nd_both_st->min &&
+    nd_run_st->max == nd_both_st->max &&
+    fabs(nd_run_st->mean - nd_both_st->mean) < 1e-12 &&
+    fabs(nd_run_st->stddev - nd_both_st->stddev) < 1e-12);
+  free(nd_single); free(nd_agg); free(nd_run_st); free(nd_both_st);
+  free(nd_all); free(nd_val); free(nd_both);
   const double nf_one[1] = {1.0};
   Raster *nf_a = raster_make(6, 1, 0, 1, 1, -1, 0, 0, 4326, "64BF", 0.0,
     false, (const uint8_t *) nf_pixels[0], 6 * sizeof(double));
@@ -2373,14 +2421,17 @@ int main(void)
     free(st_copy);
   }
 
-  /* A NULL raster leaves the state as it is, no raster summarizes into NULL,
-   * and neither does a band whose every pixel is nodata */
+  /* A NULL raster leaves the state as it is and no raster summarizes into
+   * NULL, while a band whose every pixel is nodata summarizes into statistics
+   * counting no pixel, as the single call answers it */
   meos_errno_reset();
   assert(raster_summary_stats_transfn(NULL, NULL, 1, true) == NULL);
   assert(raster_summary_stats_finalfn(NULL) == NULL);
   Raster *st_nodata = raster_from_hexwkb(raster_all_nodata);
-  assert(raster_summary_stats_finalfn(
-    raster_summary_stats_transfn(NULL, st_nodata, 1, true)) == NULL);
+  BandStats *st_none = raster_summary_stats_finalfn(
+    raster_summary_stats_transfn(NULL, st_nodata, 1, true));
+  assert(st_none != NULL && st_none->count == 0);
+  free(st_none);
   assert(meos_errno() == 0);
 
   /* A band below 1, a band a raster lacks, the states of two different
