@@ -617,10 +617,11 @@ trgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count,
   assert(box_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
-  STBox *result = palloc(sizeof(STBox) * nboxes);
   if (ss->totalcount <= box_count)
     return trgeoseqset_stboxes(ss, count, geom);
+
+  /* At most box_count boxes, the segments being more */
+  STBox *result = palloc(sizeof(STBox) * box_count);
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */
