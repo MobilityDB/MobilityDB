@@ -74,7 +74,7 @@ Tpointcloud_mest_equisplit(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   TPCBox *boxes = tpointcloud_split_n_tpcboxes_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(TPCBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(TPCBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Tpointcloud_mest_segsplit);
@@ -92,7 +92,7 @@ Tpointcloud_mest_segsplit(PG_FUNCTION_ARGS)
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   TPCBox *boxes = tpointcloud_split_each_n_tpcboxes_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(TPCBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(TPCBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Tpointcloud_mest_mergesplit);
@@ -109,7 +109,7 @@ Tpointcloud_mest_mergesplit(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   TPCBox *boxes = tpointcloud_merge_n_tpcboxes_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(TPCBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(TPCBox), nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Tpointcloud_mest_adaptsplit);
@@ -128,7 +128,7 @@ Tpointcloud_mest_adaptsplit(PG_FUNCTION_ARGS)
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   TPCBox *boxes = tpointcloud_merge_each_n_tpcboxes_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof(TPCBox), *nkeys));
+  PG_RETURN_POINTER(mest_keys_whole(temp, boxes, sizeof(TPCBox), nkeys));
 }
 
 /* GENERATED-BOXMEST-END tpointcloud */
@@ -147,6 +147,12 @@ PG_FUNCTION_INFO_V1(Tpcbox_mgist_consistent);
 Datum
 Tpcbox_mgist_consistent(PG_FUNCTION_ARGS)
 {
+  /* The key answers by its tier (#mest_key_answers) */
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (! mest_key_answers(((const STBox *)
+      DatumGetPointer(entry->key))->flags,
+      (StrategyNumber) PG_GETARG_UINT16(2)))
+    PG_RETURN_BOOL(false);
   Datum result = Tpcbox_gist_consistent(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;

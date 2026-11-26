@@ -71,12 +71,20 @@ CREATE OPERATOR CLASS trgeometry_mrtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (trgeometry, stbox),
   OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps
+  OPERATOR  3    && (trgeometry, tstzspan),
+  OPERATOR  3    && (trgeometry, stbox),
+  OPERATOR  3    && (trgeometry, trgeometry),
   -- overlaps or right
   OPERATOR  4    &> (trgeometry, stbox),
   OPERATOR  4    &> (trgeometry, trgeometry),
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contains
+  OPERATOR  7    @> (trgeometry, tstzspan),
+  OPERATOR  7    @> (trgeometry, stbox),
+  OPERATOR  7    @> (trgeometry, trgeometry),
   -- contained by
   OPERATOR  8    <@ (trgeometry, tstzspan),
   OPERATOR  8    <@ (trgeometry, stbox),
@@ -93,6 +101,10 @@ CREATE OPERATOR CLASS trgeometry_mrtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (trgeometry, stbox),
   OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (trgeometry, tstzspan),
+  OPERATOR  17    -|- (trgeometry, stbox),
+  OPERATOR  17    -|- (trgeometry, trgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -149,12 +161,20 @@ CREATE OPERATOR CLASS trgeometry_mrtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (trgeometry, stbox),
   OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps
+  OPERATOR  3    && (trgeometry, tstzspan),
+  OPERATOR  3    && (trgeometry, stbox),
+  OPERATOR  3    && (trgeometry, trgeometry),
   -- overlaps or right
   OPERATOR  4    &> (trgeometry, stbox),
   OPERATOR  4    &> (trgeometry, trgeometry),
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contains
+  OPERATOR  7    @> (trgeometry, tstzspan),
+  OPERATOR  7    @> (trgeometry, stbox),
+  OPERATOR  7    @> (trgeometry, trgeometry),
   -- contained by
   OPERATOR  8    <@ (trgeometry, tstzspan),
   OPERATOR  8    <@ (trgeometry, stbox),
@@ -171,6 +191,10 @@ CREATE OPERATOR CLASS trgeometry_mrtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (trgeometry, stbox),
   OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (trgeometry, tstzspan),
+  OPERATOR  17    -|- (trgeometry, stbox),
+  OPERATOR  17    -|- (trgeometry, trgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -227,12 +251,20 @@ CREATE OPERATOR CLASS trgeometry_mrtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (trgeometry, stbox),
   OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps
+  OPERATOR  3    && (trgeometry, tstzspan),
+  OPERATOR  3    && (trgeometry, stbox),
+  OPERATOR  3    && (trgeometry, trgeometry),
   -- overlaps or right
   OPERATOR  4    &> (trgeometry, stbox),
   OPERATOR  4    &> (trgeometry, trgeometry),
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contains
+  OPERATOR  7    @> (trgeometry, tstzspan),
+  OPERATOR  7    @> (trgeometry, stbox),
+  OPERATOR  7    @> (trgeometry, trgeometry),
   -- contained by
   OPERATOR  8    <@ (trgeometry, tstzspan),
   OPERATOR  8    <@ (trgeometry, stbox),
@@ -249,6 +281,10 @@ CREATE OPERATOR CLASS trgeometry_mrtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (trgeometry, stbox),
   OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (trgeometry, tstzspan),
+  OPERATOR  17    -|- (trgeometry, stbox),
+  OPERATOR  17    -|- (trgeometry, trgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -305,12 +341,20 @@ CREATE OPERATOR CLASS trgeometry_mrtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (trgeometry, stbox),
   OPERATOR  2    &< (trgeometry, trgeometry),
+  -- overlaps
+  OPERATOR  3    && (trgeometry, tstzspan),
+  OPERATOR  3    && (trgeometry, stbox),
+  OPERATOR  3    && (trgeometry, trgeometry),
   -- overlaps or right
   OPERATOR  4    &> (trgeometry, stbox),
   OPERATOR  4    &> (trgeometry, trgeometry),
   -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
+  -- contains
+  OPERATOR  7    @> (trgeometry, tstzspan),
+  OPERATOR  7    @> (trgeometry, stbox),
+  OPERATOR  7    @> (trgeometry, trgeometry),
   -- contained by
   OPERATOR  8    <@ (trgeometry, tstzspan),
   OPERATOR  8    <@ (trgeometry, stbox),
@@ -327,6 +371,10 @@ CREATE OPERATOR CLASS trgeometry_mrtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (trgeometry, stbox),
   OPERATOR  12    |&> (trgeometry, trgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (trgeometry, tstzspan),
+  OPERATOR  17    -|- (trgeometry, stbox),
+  OPERATOR  17    -|- (trgeometry, trgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (trgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (trgeometry, trgeometry) FOR ORDER BY pg_catalog.float_ops,
