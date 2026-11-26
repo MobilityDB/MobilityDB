@@ -377,7 +377,9 @@ layer holds it for every question. The phases, each a series of pull requests:
    #3575, merged), the ring
    area in doubles of the buffer by `ring_area_sign` and `ring_encloses_no_area` (C3, #3820, merged), the within-times of a moving
    disc in `tcbuffer_region_within_roots` by `point_motion_dwithin_period_exact` (C4, #3588,
-   merged, for a geometry of segments; one carrying an arc follows), and `seg2d_side` by
+   merged, for a geometry of segments; one carrying an arc follows; the engine,
+   `motion_edges_dwithin_periods`, reads the R-tree candidates of each segment through filters
+   in doubles before its exact signs, #3941), and `seg2d_side` by
    `cross_product_sign` (C5, #3593, merged). These change answers, where the tolerance answers
    wrongly, so each comes with a witness CGAL judges. Relate on arcs near an end
    (#3598, merged): whether two boundary edges meet is decided by
