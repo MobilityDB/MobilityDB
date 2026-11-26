@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.4.0 |
+| Version | v1.5.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`65cbbff`](https://github.com/MobilityDB/MobilityAPI/tree/65cbbff): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`4858865`](https://github.com/MobilityDB/MobilityAPI/tree/4858865): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -55,7 +55,7 @@ is also listed under `http://` (section 3.1).
 | OGC API – Common – Part 1: Core (OGC 19-072) | core, landing-page | `http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/<class>` |
 | OGC API – Common – Part 2: Geospatial Data (OGC 20-024) | collections | `https://` and `http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections` |
 | OGC API – Coverages – Part 1: Core (OGC 19-087, 1.0.0rc4 draft) | core, subsetting-spatial, subsetting-temporal, field-selection, geotiff, coveragejson, netcdf | `https://` and `http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/<class>` |
-| OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
+| OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, collections, queries, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
 
 The service serves 55 operations. The API definition at `GET /api` marks each
 with the class it is a requirement of (`x-conformance-class`), 43 of them, or
@@ -240,9 +240,45 @@ writes, as `/req/collections/src-md-success` C requires:
 
 An `observedProperty` carries a `label` and no `id`: `/req/edr/rc-parameters` F
 requires the two, the schema `observedPropertyCollection.yaml` requires the
-`label` alone, and the schema is followed. The class `collections` is not
-declared: it binds every collection of `/collections`, and a collection of
-moving features answers no EDR query.
+`label` alone, and the schema is followed.
+
+Over a collection of moving features the service answers four queries, each by
+`GET`, with the moving features the query's geometry meets, computed by
+MobilityDB:
+
+| query | geometry read | a feature is answered when |
+|---|---|---|
+| `area` | `POLYGON` | its temporal geometry ever intersects the polygon (`eIntersects`) |
+| `cube` | `bbox` in CRS84 and `z` | it ever intersects the rectangle of the bbox; `z` is required and read, and not applied, as the features are tested in two dimensions |
+| `trajectory` | `LINESTRING`, without an M ordinate | it ever intersects the line |
+| `radius` | `POINT`, `within` and `within-units` in `m` or `km` | it ever comes within the distance of the point, on the spheroid (`eDwithin` over the moving point read as a `tgeogpoint`) |
+
+The geometry is read in CRS84 and carried into the collection's system, or read
+as a geography over a collection of geographies (`tgeogpoint`, `tgeography`),
+which MobilityDB does not relate to a planar geometry; the rectangle of a `cube`
+over such a collection is then a polygon whose edges are geodesics. A
+`datetime`, an instant or an interval, restricts each feature to it before the
+test; an open end of an interval is the bound of the collection's time extent on
+that side. The answer is a FeatureCollection of whole features, paged as
+`/items` pages it, in MF-JSON (`application/json`), or, with `f=GeoJSON`, in
+GeoJSON (`application/geo+json`), each feature the path it traverses in WGS 84.
+`radius` is answered over a collection of moving points, `tgeompoint` or
+`tgeogpoint`, the types a distance in metres on the spheroid is defined for;
+`parameter-name` is refused, as the collection states no parameter.
+
+The description of a collection of moving features carries, beside what Moving
+Features states of it, a `type` on every link, one `data` link per query it
+answers, `data_queries`, `output_formats` (`MF-JSON`, `GeoJSON`), `keywords`,
+`distanceunits`, and `parameter_names`, empty: its answers are features, whose
+temporal properties are resources of their own. `/collections` lists it with
+the description `/collections/{collectionId}` writes.
+
+The classes `collections` and `queries` of EDR 1.1 are declared. A collection
+of a type the MEOS catalog states no `eIntersects` over links no query, and so
+does not meet `/req/core/rc-md-query-links` A: `th3index`, `tnpoint`,
+`tpcpatch`, `tpcpoint`, `tpose`, `tquadbin` and `ts2cell`, over each of which
+MobilityDB's SQL declares `eIntersects` while the catalog carries no signature
+of it.
 
 CoverageJSON is written in the spelling the client's `Accept` names:
 `application/prs.coverage+json`, the spelling EDR 1.1 as published writes
@@ -272,7 +308,8 @@ An extension changes no answer a declared class defines.
 MobilityDB functions its handler applies, read from the service's source. The
 suite holds the file to the code, and holds every function to a type the
 operation serves: a Coverages or EDR operation the raster types, a
-collection-level operation both, every other operation the temporal types, each
+collection-level operation and the EDR queries `area`, `cube`, `trajectory` and
+`radius` both, every other operation the temporal types, each
 also the box and span types.
 
 ## 11. Versioning and stability
@@ -283,10 +320,6 @@ at its major number when an answer stated here changes.
 
 ## 12. Out of scope
 
-- The classes `collections` and `queries` of EDR 1.1: the service answers six
-  of the eight optional queries of `queries` and its instances, and
-  `collections` binds every collection of `/collections`, a collection of
-  moving features among them.
 - The operations of Part 4 over a temporal geometry (`LENGTH`, `AREA`,
   `TO_TRAJ` and the rest of its Table 7), and its Kafka and WebSocket channels.
 - A newer Part 4 draft, describing a Continuous Query resource with `id`,
