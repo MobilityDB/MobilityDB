@@ -2958,6 +2958,8 @@ pg_timetz_zone(const TimeTzADT *timetz, const text *zone)
   pg_text_to_cstring_buffer(zone, tzname, sizeof(tzname));
 
   type = pg_DecodeTimezoneName(tzname, &val, &tzp);
+  if (type < 0)
+    return NULL;
 
   if (type == TZNAME_FIXED_OFFSET)
   {

@@ -885,6 +885,58 @@ dateset_to_tstzset(const Set *s)
 
 /**
  * @ingroup meos_setspan_conversion
+ * @brief Return the origins of the days of a date set in a time zone
+ * @details The origin of a day is the instant at which the clock of the time
+ * zone reads noon on that day, minus twelve hours, as the General Transit Feed
+ * Specification measures the times of a service day. It is the local midnight
+ * of every day except those of a change of the offset of the time zone, such
+ * as a daylight-saving change, where it lies twelve hours before the local
+ * noon as on every other day. A temporal value describing a service day from
+ * the origin of one day is therefore moved to another day by the difference
+ * of the two origins.
+ * @param[in] s Set
+ * @param[in] zone Time zone, a full name such as `Europe/Zurich`, an
+ * abbreviation, or an offset, read as PostgreSQL reads the zone of
+ * `AT TIME ZONE`
+ * @errval NULL
+ * @note Built as #dateset_to_tstzset, the local noon of each date read in the
+ * time zone by #timestamp_zone
+ */
+Set *
+dateset_origins(const Set *s, const text *zone)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESET(s, NULL); VALIDATE_NOT_NULL(zone, NULL);
+
+  int last_errno = meos_errno_reset();
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+  {
+    /* The dates of a set are finite */
+    Timestamp noon = date_to_timestamp(DatumGetDateADT(SET_VAL_N(s, i))) +
+      USECS_PER_DAY / 2;
+    /* A day beyond the timestamps, or a time zone that is not known, raises
+     * an error */
+    if (meos_errno())
+      break;
+    TimestampTz origin = pg_timestamp_zone(noon, zone);
+    if (meos_errno() || TIMESTAMP_NOT_FINITE(origin))
+      break;
+    values[i] = TimestampTzGetDatum(origin - USECS_PER_DAY / 2);
+  }
+  if (meos_errno())
+  {
+    pfree(values);
+    return NULL;
+  }
+  meos_errno_restore(last_errno);
+  /* The origins of distinct days are distinct and keep the order of the
+   * days */
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDER_NO);
+}
+
+/**
+ * @ingroup meos_setspan_conversion
  * @brief Convert a timestamptz set into a date set
  * @param[in] s Set
  * @csqlfn #Tstzset_to_dateset()

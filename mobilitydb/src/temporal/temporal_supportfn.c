@@ -752,8 +752,14 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        * The temporal pointcloud types are absent because their box is a
        * `tpcbox` and no scalar conversion to it exists to build the index
        * expression from; they keep the default of no rewrite */
+      /* A base value is its own bounding box beside a value-domain operand
+       * alone: beside a temporal number, a number is converted to the `tbox`
+       * of the class, the operators of a temporal number taking no number */
+      bool rightbox = bbox_type(righttype) || (span_sel_type(righttype) &&
+        (! span_basetype(righttype) || span_sel_type(lefttype) ||
+         bbox_type(lefttype)));
       exproid = rightoid;
-      if (span_sel_type(righttype) || bbox_type(righttype))
+      if (rightbox)
         /* Already a bounding box, and the one the operator is declared
          * against: a time-dimension predicate of a spatial or number family
          * takes a `tstzspan` on its other side, not that family's own box */
@@ -812,7 +818,7 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       {
         Expr *expr;
         FuncExpr *bboxexpr;
-        if (span_sel_type(righttype) || bbox_type(righttype))
+        if (rightbox)
           bboxexpr = (FuncExpr *) rightarg;
         else
           bboxexpr = makeBboxExpr(rightarg, rightoid, exproid, funcoid);
