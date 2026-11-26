@@ -48,15 +48,16 @@ its cause are recorded in the row of the task.
 |---|---|---|
 | RC0 | The article drafted in full, from the thesis of S. Swirydowicz (its survey of periodicity in databases and of periodic pattern mining, its GTFS setting, its grouping of trips) and the design sketch it led to: model, time-zone semantics, algebra, query processing, cost analysis, implementation in MEOS and MobilityDB, GTFS case study, evaluation design. The article states that it derives from the thesis and reports none of the thesis's intermediate measurements | drafted: *Recurring Spatiotemporal Data as a Table Function: A Template-and-Origins Model for MobilityDB*, 13 pages |
 | RC1 | The blueprint: the sections of the article that define the implementation (model, algebra, query processing, implementation), summarized in [the index](00-INDEX.md#the-blueprint); every later task cites the element it builds | drafted |
-| RC2 | The bibliography checked against the publishers' records; the owner's review of the draft | open |
+| RC2 | The bibliography checked against the publishers' records; the owner's review of the draft | done except one entry: 25 of 26 entries confirmed against Crossref and the publishers, 17 with a DOI; the publisher of Niézette and Stévenne (CIKM 1992) is in no catalogue |
 
 ## Part I — MEOS
 
 | Task | Change | State |
 |---|---|---|
-| RC3 | `dateset_origins(const Set *dates, const char *zone)`: the origins of a set of service dates, local noon minus 12 hours in the zone, the one function that reads a time zone. Tests on both daylight-saving changes of a year and on a zone without them | open |
-| RC4 | `temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin)` and `temporal_occurrence_origins(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window)`: one occurrence, and the origins whose occurrences meet a window by two binary searches, with the inclusivity of the window and of the support carried over. Tests on occurrences that start before the window and end in it | open |
-| RC5 | `temporal_occurrences(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window, int *count)`: the occurrences at those origins, built in order | open |
+| RC3 | `dateset_origins(const Set *dates, const text *zone)`: the origins of a set of service dates, local noon minus 12 hours in the zone, the one function that reads a time zone. Tests on both daylight-saving changes of a year and on a zone without them | committed: branch `feat/temporal-occurrences`, with RC4 and RC5, as one pull request; `meos/test/dateset_origins_test.c`, 7 cases |
+| RC3a | The seven public functions taking the name of a time zone answer one they do not know by an error: `timestamp_zone`, `timestamptz_make_at_timezone` and `timestamptz_trunc_zone` crashed under an error handler that returns, found by the probe of RC3 | committed: branch `fix/unknown-time-zone`; `meos/test/time_zone_test.c`, 14 cases |
+| RC4 | `temporal_occurrence(const Temporal *temp, TimestampTz ref, TimestampTz origin)` and `temporal_occurrence_origins(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window)`: one occurrence, and the origins whose occurrences meet a window by two binary searches, with the inclusivity of the window and of the support carried over. Tests on occurrences that start before the window and end in it | committed: branch `feat/temporal-occurrences`; `meos/test/temporal_occurrence_test.c`, 10 cases and 85488 periods against the definition |
+| RC5 | `temporal_occurrences(const Temporal *temp, TimestampTz ref, const Set *origins, const Span *window, int *count)`: the occurrences at those origins, built in order | committed: branch `feat/temporal-occurrences`; `meos/test/temporal_occurrences_test.c`, 19800 periods |
 
 Each function goes into the MEOS catalog and is generated into every binding; none needs code
 written by hand in a binding.
@@ -65,9 +66,9 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC6 | `origins(dateset, text)`, `occurrence(T, timestamptz, timestamptz)` and `occurrenceOrigins(T, timestamptz, tstzset, tstzspan)` for every temporal type, from the catalog | open |
-| RC7 | `occurrences(T, timestamptz, tstzset, tstzspan) RETURNS SETOF (origin timestamptz, occurrence T)`, value per call, with a planner support function returning the number of selected origins | open |
-| RC8 | The regression test that compares `occurrences` with fully materialized occurrences row for row, on dates on both sides of a daylight-saving change, stop times beyond 24:00, occurrences crossing the window bounds, and service dates added and removed | open |
+| RC6 | `origins(dateset, text)`, `occurrence(T, timestamptz, timestamptz)` and `occurrenceOrigins(T, timestamptz, tstzset, tstzspan)` for every temporal type, from the catalog | committed: branch `feat/occurrences-sql`, with RC7 and RC8, stacked on `feat/temporal-occurrences` |
+| RC7 | `occurrences(T, timestamptz, tstzset, tstzspan) RETURNS SETOF (origin timestamptz, occurrence T)`, value per call, with a planner support function returning the number of selected origins | committed without the planner support: branch `feat/occurrences-sql`, `RETURNS TABLE(origin timestamptz, occurrence T)`; the support function and the cost of `occurrence` are open |
+| RC8 | The regression test that compares `occurrences` with fully materialized occurrences row for row, on dates on both sides of a daylight-saving change, stop times beyond 24:00, occurrences crossing the window bounds, and service dates added and removed | committed: branch `feat/occurrences-sql`, in `022_temporal` and `052_tpoint` |
 
 ## Part III — the GTFS adapter
 
@@ -85,7 +86,7 @@ written by hand in a binding.
 
 | Task | Change | State |
 |---|---|---|
-| RC11 | The evaluation of the article: materialized occurrences, templates with the source calendar resolved at query time, and templates with origins in both indexing forms, on the STIB-MIVB feeds, a large feed with long service periods, and synthetic feeds; the workloads Q1 to Q8; every answer of the recurring form checked against the materialized one | open |
+| RC11 | The evaluation of the article: materialized occurrences, templates with the source calendar resolved at query time, and templates with origins in both indexing forms, on the STIB-MIVB feeds, a large feed with long service periods, and synthetic feeds; the workloads Q1 to Q8; every answer of the recurring form checked against the materialized one | harness built: `recurrence-kit` of `MobilityDB/claude-kits`; on the STIB-MIVB feed every representation answers every query as the materialized one does; the run on the Swiss feed is open |
 | RC12 | The article completed with the measurements of RC11 against the cost analysis it states | open |
 
 **THE DATA AND THE MACHINE (the owner, 2026-11-26).** The large feed is the Swiss national GTFS
