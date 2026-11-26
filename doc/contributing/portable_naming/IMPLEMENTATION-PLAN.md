@@ -85,6 +85,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `fix/exact-unary-turning-points` rewrites `6aa9d0c47b` there, the search of the nearest crossing of two float segments;
   branch `fix/exact-unary-turning-points` rewrites `b8be143a79` there, the sign of the gap of two float segments it reads;
   branch `fix/exact-unary-turning-points` rewrites `687f768c8d` there, the side of the float crossings that `linear_crossing_nearest` states for any linear sign.
+- **The exact engine of the periods within a distance of a geometry reads the candidate edges of
+  each segment**, outside the plan, as the owner decided on 2026-11-26 ("approve"):
+  `motion_edges_dwithin_periods` reads the edges through a description built once per geometry
+  (`motion_edges_init`) and the R-tree candidates of each segment (`motion_edges_reach_box`), with
+  filters in doubles before the exact signs:
+  branch `perf/within-periods-filters` rewrites `2f8f723099` there, the signature of the engine, its scan of every edge and its two calls;
+  branch `perf/within-periods-filters` rewrites `735e372a2e` there, the exact centre of the ray parity, built at the first edge the doubles leave;
+  branch `perf/within-periods-filters` rewrites `b2c0122cf4` there, the arena of the ray parity.
 - **The conversion of a temporal network point to a temporal geometry point builds each point in
   the stack**, outside the plan, as the owner decided on 2026-11-07 ("approve the rewrite"):
   branch `perf/tnpoint-to-tgeompoint-points` rewrites `842c640e83` there, the
