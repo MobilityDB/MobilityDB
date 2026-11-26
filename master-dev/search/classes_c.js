@@ -16,5 +16,6 @@ var searchData=
   ['meststboxoptions_13',['MestStboxOptions',['../structMestStboxOptions.html',1,'']]],
   ['mesttileoptions_14',['MestTileOptions',['../structMestTileOptions.html',1,'']]],
   ['mobilitydb_5fconstants_15',['mobilitydb_constants',['../structmobilitydb__constants.html',1,'']]],
-  ['motionstate_16',['MotionState',['../structMotionState.html',1,'']]]
+  ['motionedges_16',['MotionEdges',['../structMotionEdges.html',1,'']]],
+  ['motionstate_17',['MotionState',['../structMotionState.html',1,'']]]
 ];

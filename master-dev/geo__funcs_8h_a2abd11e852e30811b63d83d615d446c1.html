@@ -241,7 +241,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a43d77363c7236a1ce9e84684b5badc86.html#a43d77363c7236a1ce9e84684b5badc86">meos_unary_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a824ed07875f596e97c9eeeaed98eef3e.html#a824ed07875f596e97c9eeeaed98eef3e">mercator_lat_nearest</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa728384d19ca3f96812a9fe2f3bec87d.html#aa728384d19ca3f96812a9fe2f3bec87d">mline_type</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a9c670619c08a041b63bc0cd59e0fb543.html#a9c670619c08a041b63bc0cd59e0fb543">motion_edges_dwithin_periods</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a2abd11e852e30811b63d83d615d446c1.html#a2abd11e852e30811b63d83d615d446c1">motion_edges_dwithin_periods</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af7847da75b6810fffd6a31eea0e36125.html#af7847da75b6810fffd6a31eea0e36125">motion_edges_init</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ae7fe4e10df36bc3dcb72e3597ea39a92.html#ae7fe4e10df36bc3dcb72e3597ea39a92">motion_edges_reach_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_abb0712d27bebbc4969bd2697dff8e7bc.html#abb0712d27bebbc4969bd2697dff8e7bc">offset_x_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a188e17037bdda3cdf0634f9ee28cb8c4.html#a188e17037bdda3cdf0634f9ee28cb8c4">plane_normal_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a21e7ce8565aa186678c5540fcbe99449.html#a21e7ce8565aa186678c5540fcbe99449">plane_normal_offset_sign</a></td></tr>
@@ -351,8 +353,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9c670619c08a041b63bc0cd59e0fb543" name="a9c670619c08a041b63bc0cd59e0fb543"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c670619c08a041b63bc0cd59e0fb543">&#9670;&#160;</a></span>motion_edges_dwithin_periods()</h2>
+<a id="a2abd11e852e30811b63d83d615d446c1" name="a2abd11e852e30811b63d83d615d446c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2abd11e852e30811b63d83d615d446c1">&#9670;&#160;</a></span>motion_edges_dwithin_periods()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -384,14 +386,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structMotionEdges.html">MotionEdges</a> *&#160;</td>
+          <td class="paramname"><em>me</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *const *&#160;</td>
-          <td class="paramname"><em>edges</em>, </td>
+          <td class="paramname"><em>cand</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nedges</em>, </td>
+          <td class="paramname"><em>ncand</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -430,10 +438,11 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">c0,c1</td><td>Centre of the disc at the start and at the end </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">r0,r1</td><td>Radius of the disc at the start and at the end </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges of the geometry (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc" title="Return the edges of a geometry in a dynamic array.">geom_extract_edges</a>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">me</td><td>Edges of the geometry (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_af7847da75b6810fffd6a31eea0e36125.html#af7847da75b6810fffd6a31eea0e36125" title="Describe the edges of a geometry for motion_edges_dwithin_periods.">motion_edges_init</a>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cand,ncand</td><td>Candidate edges of the segment, holding every edge of <code>me</code> whose box meets the box of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_ae7fe4e10df36bc3dcb72e3597ea39a92.html#ae7fe4e10df36bc3dcb72e3597ea39a92" title="Write in box the box holding every edge a period of a disc moving linearly over a segment can come fr...">motion_edges_reach_box</a>, or NULL to read all the edges </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">d</td><td>Distance </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">D</td><td>Duration of the segment in microseconds </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">lo,hi</td><td>Bounds of the periods, room for <code>nedges</code> + 1 each </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">lo,hi</td><td>Bounds of the periods, room for the number of candidates plus one each </td></tr>
   </table>
   </dd>
 </dl>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: motion_edges_dwithin_periods</title>
+<title>MobilityDB: motion_edges_init</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -458,7 +458,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a747c0d17bba35d32a18939573d9a9ad8.html#a747c0d17bba35d32a18939573d9a9ad8">meos_spatialrel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8c7c150ee032d76c797920948aa89b59.html#a8c7c150ee032d76c797920948aa89b59">meos_spatialrel_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa728384d19ca3f96812a9fe2f3bec87d.html#aa728384d19ca3f96812a9fe2f3bec87d">mline_type</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a9c670619c08a041b63bc0cd59e0fb543.html#a9c670619c08a041b63bc0cd59e0fb543">motion_edges_dwithin_periods</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a2abd11e852e30811b63d83d615d446c1.html#a2abd11e852e30811b63d83d615d446c1">motion_edges_dwithin_periods</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af7847da75b6810fffd6a31eea0e36125.html#af7847da75b6810fffd6a31eea0e36125">motion_edges_init</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ae7fe4e10df36bc3dcb72e3597ea39a92.html#ae7fe4e10df36bc3dcb72e3597ea39a92">motion_edges_reach_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a55d863c47fa63a20f1e73c23d1f8dd9d.html#a55d863c47fa63a20f1e73c23d1f8dd9d">MOTION_FILTER_MAXMAG</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad0c09addfadf923a0c66ce04f714cd5f.html#ad0c09addfadf923a0c66ce04f714cd5f">MOTION_FILTER_MINMAG</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a0de4d3963740243ada9dfcf55e9a384f.html#a0de4d3963740243ada9dfcf55e9a384f">MOTION_FILTER_SLACK</a></td></tr>
@@ -555,6 +557,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6660bb520eaef21e7dfdcbadf08a15ee.html#a6660bb520eaef21e7dfdcbadf08a15ee">point_seg_dist2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a3ca7a47d386324a71d1b16395b17455f.html#a3ca7a47d386324a71d1b16395b17455f">point_segm_ray_parity</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a21f3cbcea176a6d597c68b5c85a1a338.html#a21f3cbcea176a6d597c68b5c85a1a338">point_segm_within</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6dcdc0edaa16d87329e501e20392b43c.html#a6dcdc0edaa16d87329e501e20392b43c">point_segm_within_approx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab83e70f5a8d0f60a1836a198e3c89a85.html#ab83e70f5a8d0f60a1836a198e3c89a85">point_segm_within_filter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a6baabcdb15be9f3fa200da4ac035bc97.html#a6baabcdb15be9f3fa200da4ac035bc97">point_segment_beyond</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af7e83fe1a4675791113f02628c49519b.html#af7e83fe1a4675791113f02628c49519b">point_segment_beyond_inputs</a></td></tr>
@@ -932,35 +935,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9c670619c08a041b63bc0cd59e0fb543" name="a9c670619c08a041b63bc0cd59e0fb543"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c670619c08a041b63bc0cd59e0fb543">&#9670;&#160;</a></span>motion_edges_dwithin_periods()</h2>
+<a id="af7847da75b6810fffd6a31eea0e36125" name="af7847da75b6810fffd6a31eea0e36125"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7847da75b6810fffd6a31eea0e36125">&#9670;&#160;</a></span>motion_edges_init()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int motion_edges_dwithin_periods </td>
+          <td class="memname">void motion_edges_init </td>
           <td>(</td>
-          <td class="paramtype">const double *&#160;</td>
-          <td class="paramname"><em>c0</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const double *&#160;</td>
-          <td class="paramname"><em>c1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>r0</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>r1</em>, </td>
+          <td class="paramtype"><a class="el" href="structMotionEdges.html">MotionEdges</a> *&#160;</td>
+          <td class="paramname"><em>me</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -972,31 +957,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nedges</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>d</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int64&#160;</td>
-          <td class="paramname"><em>D</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int64 *&#160;</td>
-          <td class="paramname"><em>lo</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int64 *&#160;</td>
-          <td class="paramname"><em>hi</em>&#160;</td>
+          <td class="paramname"><em>nedges</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1006,20 +967,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the number of periods during which a disc moving linearly over a segment is within a distance of a geometry, decided exactly. </p>
-<p >The single engine of the within periods of a moving disc, a point being a disc of radius 0. Each edge contributes the period of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a32e55b29717780d352ef728aac33446f.html#a32e55b29717780d352ef728aac33446f" title="Return 2, 1 or 0 where a disc moving linearly over a segment of D microseconds is within a distance o...">point_motion_segm_dwithin_period_exact</a>, an edge whose box lies beyond the reach of the swept box contributing none. Periods no whole microsecond separates are merged, which holds the same microseconds. Every other gap, before the first period, between two, after the last, or the whole segment where there is none, is wholly inside or wholly outside the area the region edges bound, the centre crossing no edge where the disc is within of none, and is read at a whole microsecond of it (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a9aa4f0000317248b82400b11917bf04d.html#a9aa4f0000317248b82400b11917bf04d" title="Return true if the centre of a disc moving linearly over a segment of D microseconds lies inside the ...">motion_point_inside_segms</a>), where the centre lies on no edge: inside, the gap is within too. The bounds are microseconds from the start of the segment, dated as <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a4266a7da307af7d60e93b726915e2513.html#a4266a7da307af7d60e93b726915e2513" title="Return 2, 1 or 0 where two discs moving linearly over a segment of D microseconds are within a distan...">point_motion_dwithin_period_exact</a> dates them. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Describe the edges of a geometry for <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a2abd11e852e30811b63d83d615d446c1.html#a2abd11e852e30811b63d83d615d446c1" title="Return the number of periods during which a disc moving linearly over a segment is within a distance ...">motion_edges_dwithin_periods</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">c0,c1</td><td>Centre of the disc at the start and at the end </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">r0,r1</td><td>Radius of the disc at the start and at the end </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges of the geometry (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc" title="Return the edges of a geometry in a dynamic array.">geom_extract_edges</a>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">d</td><td>Distance </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">D</td><td>Duration of the segment in microseconds </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">lo,hi</td><td>Bounds of the periods, room for <code>nedges</code> + 1 each </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">me</td><td>Description </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges of the geometry (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc" title="Return the edges of a geometry in a dynamic array.">geom_extract_edges</a>), which the description points to </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of periods, or -1 where an edge is an arc, which this engine does not answer </dd></dl>
-<dl class="section pre"><dt>Precondition</dt><dd>The radii and the distance are finite and not negative, <code>D &gt; 0</code>, and the region edges bound areas that do not overlap </dd></dl>
 
 </div>
 </div>
