@@ -167,6 +167,8 @@ extern long double pointsegm_locate(Datum start, Datum end, Datum point,
 
 /* Intersection functions */
 
+extern int pointsegm_meet_coord(const double *start1, const double *end1,
+  const double *start2, const double *end2, int n);
 extern bool tgeompointsegm_meet(Datum start1, Datum end1, Datum start2,
   Datum end2);
 extern bool tgeompointsegm_crossing(Datum start1, Datum end1, Datum start2,

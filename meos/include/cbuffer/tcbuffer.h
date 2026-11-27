@@ -59,6 +59,9 @@ extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1,
 extern int tcbuffersegm_intersection_value(Datum start, Datum end,
   Datum value, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
+extern bool tcbuffersegm_meet(Datum start, Datum end, Datum value);
+extern bool tcbuffersegm_crossing(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t);
 extern int tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
