@@ -57,9 +57,54 @@ CREATE FUNCTION spanset_mest_adaptsplit(internal, internal, internal)
   AS 'MODULE_PATHNAME', 'Spanset_mest_adaptsplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION span_mgist_union(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_union'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_penalty(internal, internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_penalty'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_picksplit(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_picksplit'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_same(intspan, intspan, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_same(bigintspan, bigintspan, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_same(floatspan, floatspan, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_same(datespan, datespan, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_same(tstzspan, tstzspan, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_mgist_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION span_mgist_consistent(internal, intspanset, smallint, oid, internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_distance(internal, intspan, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Span_mgist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION span_mgist_consistent(internal, bigintspanset, smallint, oid, internal)
@@ -67,9 +112,19 @@ CREATE FUNCTION span_mgist_consistent(internal, bigintspanset, smallint, oid, in
   AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION span_mgist_distance(internal, bigintspan, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Span_mgist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION span_mgist_consistent(internal, floatspanset, smallint, oid, internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_distance(internal, floatspan, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Span_mgist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION span_mgist_consistent(internal, datespanset, smallint, oid, internal)
@@ -77,9 +132,19 @@ CREATE FUNCTION span_mgist_consistent(internal, datespanset, smallint, oid, inte
   AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION span_mgist_distance(internal, datespan, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Span_mgist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION span_mgist_consistent(internal, tstzspanset, smallint, oid, internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_mgist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span_mgist_distance(internal, tstzspan, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Span_mgist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS intspanset_mrtree_equisplit_ops
@@ -117,14 +182,18 @@ CREATE OPERATOR CLASS intspanset_mrtree_equisplit_ops
   OPERATOR  17    -|- (intspanset, intspanset),
   -- equals
   OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, intspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(intspan, intspan, internal),
-  FUNCTION  8 span_gist_distance(internal, intspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(intspan, intspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, intspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_equisplit(internal, internal, internal);
 
@@ -163,14 +232,18 @@ CREATE OPERATOR CLASS intspanset_mrtree_segsplit_ops
   OPERATOR  17    -|- (intspanset, intspanset),
   -- equals
   OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, intspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(intspan, intspan, internal),
-  FUNCTION  8 span_gist_distance(internal, intspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(intspan, intspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, intspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_segsplit(internal, internal, internal);
 
@@ -209,14 +282,18 @@ CREATE OPERATOR CLASS intspanset_mrtree_mergesplit_ops
   OPERATOR  17    -|- (intspanset, intspanset),
   -- equals
   OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, intspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(intspan, intspan, internal),
-  FUNCTION  8 span_gist_distance(internal, intspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(intspan, intspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, intspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_mergesplit(internal, internal, internal);
 
@@ -255,14 +332,18 @@ CREATE OPERATOR CLASS intspanset_mrtree_adaptsplit_ops
   OPERATOR  17    -|- (intspanset, intspanset),
   -- equals
   OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, intspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(intspan, intspan, internal),
-  FUNCTION  8 span_gist_distance(internal, intspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(intspan, intspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, intspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_adaptsplit(internal, internal, internal);
 
@@ -301,14 +382,18 @@ CREATE OPERATOR CLASS bigintspanset_mrtree_equisplit_ops
   OPERATOR  17    -|- (bigintspanset, bigintspanset),
   -- equals
   OPERATOR  18    = (bigintspanset, bigintspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, bigintspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(bigintspan, bigintspan, internal),
-  FUNCTION  8 span_gist_distance(internal, bigintspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(bigintspan, bigintspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, bigintspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_equisplit(internal, internal, internal);
 
@@ -347,14 +432,18 @@ CREATE OPERATOR CLASS bigintspanset_mrtree_segsplit_ops
   OPERATOR  17    -|- (bigintspanset, bigintspanset),
   -- equals
   OPERATOR  18    = (bigintspanset, bigintspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, bigintspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(bigintspan, bigintspan, internal),
-  FUNCTION  8 span_gist_distance(internal, bigintspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(bigintspan, bigintspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, bigintspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_segsplit(internal, internal, internal);
 
@@ -393,14 +482,18 @@ CREATE OPERATOR CLASS bigintspanset_mrtree_mergesplit_ops
   OPERATOR  17    -|- (bigintspanset, bigintspanset),
   -- equals
   OPERATOR  18    = (bigintspanset, bigintspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, bigintspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(bigintspan, bigintspan, internal),
-  FUNCTION  8 span_gist_distance(internal, bigintspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(bigintspan, bigintspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, bigintspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_mergesplit(internal, internal, internal);
 
@@ -439,14 +532,18 @@ CREATE OPERATOR CLASS bigintspanset_mrtree_adaptsplit_ops
   OPERATOR  17    -|- (bigintspanset, bigintspanset),
   -- equals
   OPERATOR  18    = (bigintspanset, bigintspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, bigintspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(bigintspan, bigintspan, internal),
-  FUNCTION  8 span_gist_distance(internal, bigintspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(bigintspan, bigintspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, bigintspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_adaptsplit(internal, internal, internal);
 
@@ -485,14 +582,18 @@ CREATE OPERATOR CLASS floatspanset_mrtree_equisplit_ops
   OPERATOR  17    -|- (floatspanset, floatspanset),
   -- equals
   OPERATOR  18    = (floatspanset, floatspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, floatspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(floatspan, floatspan, internal),
-  FUNCTION  8 span_gist_distance(internal, floatspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(floatspan, floatspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, floatspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_equisplit(internal, internal, internal);
 
@@ -531,14 +632,18 @@ CREATE OPERATOR CLASS floatspanset_mrtree_segsplit_ops
   OPERATOR  17    -|- (floatspanset, floatspanset),
   -- equals
   OPERATOR  18    = (floatspanset, floatspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, floatspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(floatspan, floatspan, internal),
-  FUNCTION  8 span_gist_distance(internal, floatspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(floatspan, floatspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, floatspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_segsplit(internal, internal, internal);
 
@@ -577,14 +682,18 @@ CREATE OPERATOR CLASS floatspanset_mrtree_mergesplit_ops
   OPERATOR  17    -|- (floatspanset, floatspanset),
   -- equals
   OPERATOR  18    = (floatspanset, floatspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, floatspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(floatspan, floatspan, internal),
-  FUNCTION  8 span_gist_distance(internal, floatspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(floatspan, floatspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, floatspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_mergesplit(internal, internal, internal);
 
@@ -623,14 +732,18 @@ CREATE OPERATOR CLASS floatspanset_mrtree_adaptsplit_ops
   OPERATOR  17    -|- (floatspanset, floatspanset),
   -- equals
   OPERATOR  18    = (floatspanset, floatspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, floatspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(floatspan, floatspan, internal),
-  FUNCTION  8 span_gist_distance(internal, floatspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(floatspan, floatspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, floatspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_adaptsplit(internal, internal, internal);
 
@@ -653,6 +766,10 @@ CREATE OPERATOR CLASS datespanset_mrtree_equisplit_ops
   OPERATOR  17    -|- (datespanset, datespanset),
   -- equals
   OPERATOR  18    = (datespanset, datespanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (datespanset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespanset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (datespanset, date),
   OPERATOR  28    &<# (datespanset, datespan),
@@ -671,12 +788,12 @@ CREATE OPERATOR CLASS datespanset_mrtree_equisplit_ops
   OPERATOR  31    #&> (datespanset, datespanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, datespanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(datespan, datespan, internal),
-  FUNCTION  8 span_gist_distance(internal, datespan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(datespan, datespan, internal),
+  FUNCTION  8 span_mgist_distance(internal, datespan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_equisplit(internal, internal, internal);
 
@@ -699,6 +816,10 @@ CREATE OPERATOR CLASS datespanset_mrtree_segsplit_ops
   OPERATOR  17    -|- (datespanset, datespanset),
   -- equals
   OPERATOR  18    = (datespanset, datespanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (datespanset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespanset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (datespanset, date),
   OPERATOR  28    &<# (datespanset, datespan),
@@ -717,12 +838,12 @@ CREATE OPERATOR CLASS datespanset_mrtree_segsplit_ops
   OPERATOR  31    #&> (datespanset, datespanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, datespanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(datespan, datespan, internal),
-  FUNCTION  8 span_gist_distance(internal, datespan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(datespan, datespan, internal),
+  FUNCTION  8 span_mgist_distance(internal, datespan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_segsplit(internal, internal, internal);
 
@@ -745,6 +866,10 @@ CREATE OPERATOR CLASS datespanset_mrtree_mergesplit_ops
   OPERATOR  17    -|- (datespanset, datespanset),
   -- equals
   OPERATOR  18    = (datespanset, datespanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (datespanset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespanset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (datespanset, date),
   OPERATOR  28    &<# (datespanset, datespan),
@@ -763,12 +888,12 @@ CREATE OPERATOR CLASS datespanset_mrtree_mergesplit_ops
   OPERATOR  31    #&> (datespanset, datespanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, datespanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(datespan, datespan, internal),
-  FUNCTION  8 span_gist_distance(internal, datespan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(datespan, datespan, internal),
+  FUNCTION  8 span_mgist_distance(internal, datespan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_mergesplit(internal, internal, internal);
 
@@ -791,6 +916,10 @@ CREATE OPERATOR CLASS datespanset_mrtree_adaptsplit_ops
   OPERATOR  17    -|- (datespanset, datespanset),
   -- equals
   OPERATOR  18    = (datespanset, datespanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (datespanset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (datespanset, datespanset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (datespanset, date),
   OPERATOR  28    &<# (datespanset, datespan),
@@ -809,12 +938,12 @@ CREATE OPERATOR CLASS datespanset_mrtree_adaptsplit_ops
   OPERATOR  31    #&> (datespanset, datespanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, datespanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(datespan, datespan, internal),
-  FUNCTION  8 span_gist_distance(internal, datespan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(datespan, datespan, internal),
+  FUNCTION  8 span_mgist_distance(internal, datespan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_adaptsplit(internal, internal, internal);
 
@@ -837,6 +966,10 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_equisplit_ops
   OPERATOR  17    -|- (tstzspanset, tstzspanset),
   -- equals
   OPERATOR  18    = (tstzspanset, tstzspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzspanset, timestamptz),
   OPERATOR  28    &<# (tstzspanset, tstzspan),
@@ -855,12 +988,12 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_equisplit_ops
   OPERATOR  31    #&> (tstzspanset, tstzspanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, tstzspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION  8 span_gist_distance(internal, tstzspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(tstzspan, tstzspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, tstzspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_equisplit(internal, internal, internal);
 
@@ -883,6 +1016,10 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_segsplit_ops
   OPERATOR  17    -|- (tstzspanset, tstzspanset),
   -- equals
   OPERATOR  18    = (tstzspanset, tstzspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzspanset, timestamptz),
   OPERATOR  28    &<# (tstzspanset, tstzspan),
@@ -901,12 +1038,12 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_segsplit_ops
   OPERATOR  31    #&> (tstzspanset, tstzspanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, tstzspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION  8 span_gist_distance(internal, tstzspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(tstzspan, tstzspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, tstzspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_segsplit(internal, internal, internal);
 
@@ -929,6 +1066,10 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_mergesplit_ops
   OPERATOR  17    -|- (tstzspanset, tstzspanset),
   -- equals
   OPERATOR  18    = (tstzspanset, tstzspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzspanset, timestamptz),
   OPERATOR  28    &<# (tstzspanset, tstzspan),
@@ -947,12 +1088,12 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_mergesplit_ops
   OPERATOR  31    #&> (tstzspanset, tstzspanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, tstzspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION  8 span_gist_distance(internal, tstzspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(tstzspan, tstzspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, tstzspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_mergesplit(internal, internal, internal);
 
@@ -975,6 +1116,10 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_adaptsplit_ops
   OPERATOR  17    -|- (tstzspanset, tstzspanset),
   -- equals
   OPERATOR  18    = (tstzspanset, tstzspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzspanset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspan) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzspanset, tstzspanset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzspanset, timestamptz),
   OPERATOR  28    &<# (tstzspanset, tstzspan),
@@ -993,11 +1138,11 @@ CREATE OPERATOR CLASS tstzspanset_mrtree_adaptsplit_ops
   OPERATOR  31    #&> (tstzspanset, tstzspanset),
   -- functions
   FUNCTION  1 span_mgist_consistent(internal, tstzspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION  8 span_gist_distance(internal, tstzspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(tstzspan, tstzspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, tstzspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_adaptsplit(internal, internal, internal);

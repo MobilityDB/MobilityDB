@@ -167,7 +167,9 @@ typedef struct
   uint8 basetype;       /**< span basetype */
   bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
   bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
-  char padding[4];      /**< Not used */
+  int16 flags;          /**< Flags, read only on the keys of a multi-entry
+                             index, see #MEOS_FLAG_WHOLE */
+  char padding[2];      /**< Not used */
   Datum lower;          /**< lower bound value */
   Datum upper;          /**< upper bound value */
 } Span;

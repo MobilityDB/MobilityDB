@@ -44,6 +44,8 @@ INSERT INTO test_dateset_mest(op, no_idx) VALUES ('@> date', (SELECT COUNT(*) FR
 INSERT INTO test_dateset_mest(op, no_idx) VALUES ('@> dateset', (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d @> t2.d)::text);
 INSERT INTO test_dateset_mest(op, no_idx) VALUES ('<@ dateset', (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d <@ t2.d)::text);
 INSERT INTO test_dateset_mest(op, no_idx) VALUES ('= dateset', (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text);
+INSERT INTO test_dateset_mest(op, no_idx) VALUES ('<-> date', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text);
+INSERT INTO test_dateset_mest(op, no_idx) VALUES ('<-> dateset', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text);
 INSERT INTO test_dateset_mest(op, no_idx) VALUES ('&<# date', (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text);
 INSERT INTO test_dateset_mest(op, no_idx) VALUES ('&<# dateset', (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d &<# t2.d)::text);
 INSERT INTO test_dateset_mest(op, no_idx) VALUES ('<<# date', (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d <<# t2.d)::text);
@@ -76,6 +78,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -129,6 +137,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -182,6 +196,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -235,6 +255,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -288,6 +314,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -341,6 +373,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -394,6 +432,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -447,6 +491,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -500,6 +550,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -553,6 +609,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -606,6 +668,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
@@ -659,6 +727,12 @@ WHERE op = '<@ dateset';
 UPDATE test_dateset_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_dateset t2 WHERE t1.d = t2.d')
 WHERE op = '= dateset';
+UPDATE test_dateset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_date WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> date';
+UPDATE test_dateset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, ',' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_dateset WHERE d IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.d <-> t2.d)::text, '','' ORDER BY t1.d <-> t2.d) AS d FROM (SELECT t1.d FROM tbl_dateset_idx t1 ORDER BY t1.d <-> t2.d LIMIT 3) t1) s')
+WHERE op = '<-> dateset';
 UPDATE test_dateset_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_dateset_idx t1, tbl_date t2 WHERE t1.d &<# t2.d')
 WHERE op = '&<# date';
