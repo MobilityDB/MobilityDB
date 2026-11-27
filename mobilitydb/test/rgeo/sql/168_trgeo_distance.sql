@@ -366,6 +366,29 @@ FROM (SELECT
   geometry 'LineString(4.498 -2.698,4.619 3.741)' AS geo) t;
 
 -------------------------------------------------------------------------------
+-- A body that does not turn against the same body starting at the same pose
+-- and turning: an edge of one and a vertex of the other start on one line,
+-- where the function of the walk, 5t - 5 sin(t), has a root of multiplicity
+-- three, and f and f' round to zero near it. The distance is zero at the
+-- start, where the bodies coincide, and at the end it is the distance of the
+-- two bodies placed there. The body held still in linear or in step
+-- interpolation answers the same.
+
+SELECT tDistance(trg1, trg2) IS NOT NULL,
+  valueAtTimestamp(tDistance(trg1, trg2), '2001-01-01') = 0,
+  valueAtTimestamp(tDistance(trg1, trg2), '2001-01-02') =
+    ST_Distance(valueAtTimestamp(trg1, '2001-01-02')::geometry,
+      valueAtTimestamp(trg2, '2001-01-02')::geometry)
+FROM (VALUES
+  (trgeometry 'SRID=5676;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]'),
+  (trgeometry 'SRID=5676;Interp=Step;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]')) t1(trg1),
+  (SELECT trgeometry 'SRID=5676;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(5 0),1)@2001-01-02]' AS trg2) t2;
+
+SELECT nearestApproachDistance(
+  trgeometry 'SRID=5676;Interp=Step;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(5 0),1)@2001-01-02]',
+  trgeometry 'SRID=5676;Polygon((0 0,4 0,4 4,2 1,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(5 0),1)@2001-01-02]') = 0;
+
+-------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
 -- A temporal rigid geometry in three dimensions has no distance yet, whatever

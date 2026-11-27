@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v2.0.0 |
+| Version | v2.1.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`bec7d9d`](https://github.com/MobilityDB/MobilityAPI/tree/bec7d9d): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `stream_websocket.go`, `stream_kafka.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`68b2b62`](https://github.com/MobilityDB/MobilityAPI/tree/68b2b62): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`geographic`, `lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `stream_websocket.go`, `stream_kafka.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -288,10 +288,13 @@ it. The box test on the index applies where the type's box is an `stbox`; a
 point cloud's `tpcbox` is tested exactly alone.
 
 The classes `collections` and `queries` of EDR 1.1 are declared. A collection
-of `th3index` or `ts2cell` links no query, and so does not meet
-`/req/core/rc-md-query-links` A: MobilityDB's SQL declares `eIntersects` over
-each, against a geography, while the catalog carries no signature or
-composition of it.
+of `th3index` or `ts2cell` answers `area` and `trajectory`, its region read as
+a geography, the argument of `eIntersects(th3index, geography)` and
+`eIntersects(ts2cell, geography)`: the region a query reads is the static type
+the catalog states for the type's `eIntersects`, a geography where it is the
+only one. `cube` and the `bbox` of `/items` are refused with 400 over such a
+collection: a longitude and latitude box needs `eOverlaps`, which MobilityDB
+states over no cell.
 
 CoverageJSON is written in the spelling the client's `Accept` names:
 `application/prs.coverage+json`, the spelling EDR 1.1 as published writes
@@ -337,14 +340,18 @@ and each aggregate is computed by MEOS on the value restricted to its window:
 | `LENGTH` | a moving point (`tgeompoint`, `tgeogpoint`) | the distance travelled, on the spheroid for a point in longitude and latitude |
 | `LENGTH` | lines or polygons (`tgeometry`, `trgeometry`, `tcbuffer`) | the length the feature covers during the window, the union of its values or the region its motion sweeps, each overlap counted once |
 | `AREA` | lines or polygons | the area the feature covers during the window, each overlap counted once |
+| `VOLUME` | lines or polygons (`tgeometry`, `tgeography`, `trgeometry`, `tcbuffer`) | the space-time volume of the window, the integral of the feature's area over the window's time, in the square units of the collection times seconds |
 | `TO_TRAJ` | a moving point | the path of the window, in GeoJSON (WGS 84) |
 | `INTERSECT` | a moving point, lines or polygons | whether the window ever meets the query's `region`, WKT in CRS84, on the spheroid for a collection of geographies |
 
 `LENGTH` and `AREA` over a collection in longitude and latitude, `tgeography`
 among them, are refused with 400: MEOS unites the values on the plane alone.
-`VOLUME` is refused with 400: MEOS states no function for the space-time volume
-of a moving polygon. Aggregations run on MEOS in the service; the Flink and
-Kafka Streams engines serve no windowed aggregation.
+`VOLUME` is computed with no union, values at two instants never meeting, so a
+collection of geographies is measured on the spheroid; it is refused with 400
+over a moving point, which has no area, over a geometry in longitude and
+latitude, whose area MEOS measures on the plane alone, and over a value with Z.
+Aggregations run on MEOS in the service; the Flink and Kafka Streams engines
+serve no windowed aggregation.
 
 An extension changes no answer a declared class defines.
 
@@ -366,7 +373,6 @@ at its major number when an answer stated here changes.
 
 ## 12. Out of scope
 
-- The `VOLUME` of Table 7 of the Stream proposal.
 - The LAS and LAZ encodings of the Coverages draft, which encode point clouds,
   not the coverage of a raster collection.
 

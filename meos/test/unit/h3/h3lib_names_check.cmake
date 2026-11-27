@@ -29,7 +29,9 @@
 # of H3 vendored under h3lib/ with h3_vertex.c, carries none of the prefixes
 # `meos_` (the vendored names, see meos/src/h3/h3lib_names.h) and `h3_` (the
 # functions of h3_vertex.c), since such a symbol has the name libh3 gives it
-# and a static libmeos linked beside a static libh3 defines it twice.
+# and a static libmeos linked beside a static libh3 defines it twice. Fails
+# too when a symbol carries `meos__`: a name H3 begins with an underscore
+# takes the prefix `meos_h3_` in place of it, so no name carries two.
 #
 # Run as: cmake -DNM=<nm> -DOBJECTS="<o1>|<o2>|..." [-DLEADING_UNDERSCORE=ON]
 #   -P h3lib_names_check.cmake
@@ -42,6 +44,7 @@ string(REPLACE "|" ";" _objects "${OBJECTS}")
 set(_prefixed 0)
 set(_own 0)
 set(_bad "")
+set(_double "")
 foreach(_obj IN LISTS _objects)
   execute_process(COMMAND "${NM}" -g --defined-only "${_obj}"
     OUTPUT_VARIABLE _out RESULT_VARIABLE _rc ERROR_VARIABLE _err)
@@ -58,7 +61,9 @@ foreach(_obj IN LISTS _objects)
     if(LEADING_UNDERSCORE)
       string(REGEX REPLACE "^_" "" _name "${_name}")
     endif()
-    if(_name MATCHES "^meos_")
+    if(_name MATCHES "^meos__")
+      list(APPEND _double "${_name}")
+    elseif(_name MATCHES "^meos_")
       math(EXPR _prefixed "${_prefixed} + 1")
     elseif(_name MATCHES "^h3_")
       math(EXPR _own "${_own} + 1")
@@ -73,6 +78,14 @@ endforeach()
 if(_prefixed EQUAL 0 OR _own EQUAL 0)
   message(FATAL_ERROR "No symbol read from h3core (meos_: ${_prefixed}, "
     "h3_: ${_own}): the check reads nothing")
+endif()
+if(_double)
+  list(REMOVE_DUPLICATES _double)
+  list(LENGTH _double _ndouble)
+  string(REPLACE ";" " " _double "${_double}")
+  message(FATAL_ERROR "${_ndouble} global symbols of h3core carry meos__; "
+    "map a name H3 begins with an underscore to meos_h3_ in "
+    "meos/src/h3/h3lib_names.h: ${_double}")
 endif()
 if(_bad)
   list(REMOVE_DUPLICATES _bad)
