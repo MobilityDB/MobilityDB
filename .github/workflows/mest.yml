@@ -50,8 +50,10 @@ jobs:
             tests: '^074_tgeompoint_mest'
           - shard: tgeogpoint, tgeometry, tgeography
             tests: '^074_tge(ogpoint|ometry|ography)_mest'
-          - shard: families 100 to 299
-            tests: '^[12][0-9][0-9]_[a-z0-9]+_mest'
+          - shard: families 100 to 199
+            tests: '^1[0-9][0-9]_[a-z0-9]+_mest'
+          - shard: families 200 to 299
+            tests: '^2[0-9][0-9]_[a-z0-9]+_mest'
           - shard: families 300 to 699
             tests: '^[3-6][0-9][0-9]_[a-z0-9]+_mest'
 
@@ -124,6 +126,12 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ env.PGVER }}/bin:$PATH
           cd build
           MOBILITYDB_TESTS='${{ matrix.tests }}' ctest -R '^regress$' --output-on-failure
+
+      - name: Show the time of every test
+        # The summary of pg_regress, one line per test with its time, from
+        # which the shards are balanced
+        if: always()
+        run: cat build/mobilitydb/test/regress/regression.out || true
 
       - name: Show the differences
         if: failure()
