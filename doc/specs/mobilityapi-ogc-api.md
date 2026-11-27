@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.5.0 |
+| Version | v1.6.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`4858865`](https://github.com/MobilityDB/MobilityAPI/tree/4858865): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`d41015d`](https://github.com/MobilityDB/MobilityAPI/tree/d41015d): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -273,12 +273,18 @@ answers, `data_queries`, `output_formats` (`MF-JSON`, `GeoJSON`), `keywords`,
 temporal properties are resources of their own. `/collections` lists it with
 the description `/collections/{collectionId}` writes.
 
+The functions over a type are read from the MEOS catalog, its compositions
+among them: `eIntersects(tnpoint, geometry)` is the relationship of the temporal
+point a `tnpoint` casts to, and a collection of `tnpoint`, `tpcpatch`,
+`tpcpoint`, `tpose` or `tquadbin` answers `area`, `cube` and `trajectory` by
+it. The box test on the index applies where the type's box is an `stbox`; a
+point cloud's `tpcbox` is tested exactly alone.
+
 The classes `collections` and `queries` of EDR 1.1 are declared. A collection
-of a type the MEOS catalog states no `eIntersects` over links no query, and so
-does not meet `/req/core/rc-md-query-links` A: `th3index`, `tnpoint`,
-`tpcpatch`, `tpcpoint`, `tpose`, `tquadbin` and `ts2cell`, over each of which
-MobilityDB's SQL declares `eIntersects` while the catalog carries no signature
-of it.
+of `th3index` or `ts2cell` links no query, and so does not meet
+`/req/core/rc-md-query-links` A: MobilityDB's SQL declares `eIntersects` over
+each, against a geography, while the catalog carries no signature or
+composition of it.
 
 CoverageJSON is written in the spelling the client's `Accept` names:
 `application/prs.coverage+json`, the spelling EDR 1.1 as published writes
