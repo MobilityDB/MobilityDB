@@ -878,24 +878,20 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] gs Geometry
  * @param[in] traj Trajectory of a temporal point
  * @param[in] patt Relate pattern of the geometry and the trajectory
- * @param[in] covers True to test that the geometry covers the trajectory
- * instead of a relate pattern
  * @param[in] ever True for one part, false for every part
  */
 static bool
 geo_traj_relate(const GSERIALIZED *gs, const GSERIALIZED *traj,
-  const char *patt,
-  bool covers, bool ever)
+  const char *patt, bool ever)
 {
   if (gserialized_get_type(traj) != COLLECTIONTYPE)
-    return covers ? geom_covers(gs, traj) : geom_relate_pattern(gs, traj, patt);
+    return geom_relate_pattern(gs, traj, patt);
   LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(traj));
   bool result = ! ever;
   for (uint32_t i = 0; i < coll->ngeoms; i++)
   {
     GSERIALIZED *part = geo_serialize(lwcollection_getsubgeom(coll, i));
-    bool res = covers ? geom_covers(gs, part) :
-      geom_relate_pattern(gs, part, patt);
+    bool res = geom_relate_pattern(gs, part, patt);
     pfree(part);
     if (ever == res)
     {
@@ -948,7 +944,7 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
         ea_intersects_tgeo_geo_intl(temp, gs, ever) : 0;
     GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
     bool result = geo_traj_relate(gs, traj,
-      ever ? "T********" : "T**FF*FF*", false, ever);
+      ever ? "T********" : "T**FF*FF*", ever);
     pfree(traj);
     return result ? 1 : 0;
   }
@@ -1129,15 +1125,11 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
       return geo_is_one_point(gs) ?
         ea_intersects_tgeo_geo_intl(temp, gs, ever) : 0;
     /* A geometry covers a point exactly when it intersects it, both placing
-     * the point in the closure of the geometry, so the ever semantics are the
-     * ever intersects, and the always semantics hold when the geometry covers
-     * the trajectory */
+     * the point in the closure of the geometry, so the ever and always
+     * semantics are those of the ever and always intersects */
     if (ever)
       return ea_intersects_tgeo_geo_intl(temp, gs, EVER);
-    GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
-    bool result = geo_traj_relate(gs, traj, NULL, true, ALWAYS);
-    pfree(traj);
-    return result ? 1 : 0;
+    return ea_intersects_tgeo_geo_intl(temp, gs, ALWAYS);
   }
   return ea_spatialrel_tspatial_geo(temp, gs, &datum_geo_covers2d, ever,
     invert);
