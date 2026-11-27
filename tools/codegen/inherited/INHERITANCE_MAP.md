@@ -366,6 +366,14 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   contains as the overlaps and the equals
   as contained by (`mest_pieces_strategy`). `render_valuemesttest` writes their
   tests, `mobilitydb/test/mest/sql/01[23]_<type>_mest_tbl.sql`.
+  `render_mestcontroltest` writes the control of these tests,
+  `mobilitydb/test/mest/sql/000_mest_control_tbl.sql`: for one type of each kind
+  of key (`MEST_CONTROL_TYPES`: tbool, tgeompoint, intspanset), the class of its
+  segment split and a control class, the same class whose consistent method is
+  that of the single-entry class, which reads a key as the whole value; with the
+  template and the comparison of every multi-entry test, the class answers as
+  the scan and the control does not, so the comparison is shown to notice a
+  class answering wrongly.
   `templates/mestindextest.sql.tmpl` writes the multi-entry test of each index
   test, `mobilitydb/test/mest/sql/<nnn>_<temp>_mest[3d]_tbl.sql`, one column
   per tree and split; an index test states per dimension the tile its
