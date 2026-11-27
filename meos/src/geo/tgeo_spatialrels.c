@@ -2491,6 +2491,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @csqlfn #Edwithin_tgeo_geo(), #Edwithin_tpose_geo(),
  * #Edwithin_tquadbin_geo(), #Edwithin_tnpoint_geo(),
  * #Edwithin_tposechain_geo()
+ * #Edwithin_th3index_geo(), #Edwithin_ts2cell_geo()
  * @errval -1
  */
 int
@@ -2535,6 +2536,7 @@ adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @csqlfn #Edwithin_geo_tgeo(), #Edwithin_geo_tpose(),
  * #Edwithin_geo_tquadbin(), #Edwithin_geo_tnpoint(),
  * #Edwithin_geo_tposechain()
+ * #Edwithin_geo_th3index(), #Edwithin_geo_ts2cell()
  * @errval -1
  */
 int
@@ -2931,6 +2933,7 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
  * @csqlfn #Edwithin_tgeo_tgeo(), #Edwithin_tpose_tpose(),
  * #Edwithin_tquadbin_tquadbin(), #Edwithin_tnpoint_tnpoint(),
  * #Edwithin_tposechain_tposechain()
+ * #Edwithin_th3index_th3index(), #Edwithin_ts2cell_ts2cell()
  * @errval -1
  */
 int
