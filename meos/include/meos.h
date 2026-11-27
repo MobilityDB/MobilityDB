@@ -1524,6 +1524,7 @@ extern interpType interptype_from_string(const char *str);
 extern Temporal *temporal_from_hexwkb(const char *hexwkb);
 extern Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size);
 extern char *temporal_out(const Temporal *temp, int maxdd, size_t *size_out);
+extern char **temparr_out(const Temporal **temparr, int count, int maxdd);
 extern Temporal *tfloat_from_mfjson(const char *str);
 extern Temporal *tfloat_in(const char *str);
 extern Temporal *tint_from_mfjson(const char *str);
