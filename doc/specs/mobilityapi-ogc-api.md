@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.8.0 |
+| Version | v1.9.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`53fd81d`](https://github.com/MobilityDB/MobilityAPI/tree/53fd81d): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`aa15717`](https://github.com/MobilityDB/MobilityAPI/tree/aa15717): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `stream_websocket.go`, `stream_kafka.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -57,9 +57,9 @@ is also listed under `http://` (section 3.1).
 | OGC API – Coverages – Part 1: Core (OGC 19-087, 1.0.0rc4 draft) | core, subsetting-spatial, subsetting-temporal, field-selection, geotiff, coveragejson, netcdf | `https://` and `http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/<class>` |
 | OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, collections, queries, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
 
-The service serves 55 operations. The API definition at `GET /api` marks each
+The service serves 57 operations. The API definition at `GET /api` marks each
 with the class it is a requirement of (`x-conformance-class`), 43 of them, or
-as an extension (`x-mobilityapi-extension`), 12 of them (section 9). The suite
+as an extension (`x-mobilityapi-extension`), 14 of them (section 9). The suite
 fails if a route is served and not described, described and not served, or
 marked with a class the conformance declaration does not list.
 
@@ -147,7 +147,8 @@ keyed by its requirement numbers.
 The aggregations of a temporal property are `COUNT`, `SUM`, `AVG`, `MIN`,
 `MAX` over `TReal` and `TInt`; `COUNT`, `COUNT_DISTINCT` over `TText`; `COUNT`,
 `ANY`, `ALL`, `COUNT_TRUE`, `COUNT_FALSE` over `TBoolean`, each computed by
-MEOS. Results are delivered over Server-Sent Events. A query's status is
+MEOS. Results are delivered over Server-Sent Events, and, as MobilityAPI
+extensions, over a WebSocket and to a Kafka topic (section 9). A query's status is
 `running`, `stopped` or `failed`; a query enters `running` when it is
 submitted.
 
@@ -307,6 +308,18 @@ same document. The class `covjson` of EDR 1.1 is declared.
 | `POST /collections/{collectionId}/bulk` | a batch of observations appended |
 | `POST .../tproperties/{tPropertyName}/ingest` | records pushed to a live continuous query |
 | `POST`, `GET`, `DELETE .../tgsequence/queries[/{queryId}]`, `GET .../queries/{queryId}/stream` | continuous queries over a temporal geometry, streamed as Server-Sent Events |
+| `GET .../tproperties/{tPropertyName}/queries/{queryId}/ws`, `GET .../tgsequence/queries/{queryId}/ws` | the results of a continuous query over a WebSocket |
+
+The results of a continuous query, over a temporal property or a temporal
+geometry, are delivered over a WebSocket beside Server-Sent Events: each result
+is one text message, the JSON object an SSE event carries, and the connection
+closes with a normal closure when the query stops; the `cquery` link carries the
+channel as an `alternate` link under `ws://` or `wss://`. A query registered with
+a `topic` publishes its results to that Kafka topic of the brokers
+`MFAPI_KAFKA_BROKERS` names, one record per result keyed by the query's id, its
+value the same JSON object; a topic name Kafka does not accept, and a topic
+without brokers, are refused with 400. `api/streaming-asyncapi.yaml` states the
+three channels.
 
 A continuous query over a temporal geometry given an `aggregation` and a
 `window` answers one aggregate per window of the feature's temporal geometry,
@@ -348,8 +361,7 @@ at its major number when an answer stated here changes.
 
 ## 12. Out of scope
 
-- The Kafka and WebSocket result channels of the Stream proposal, and the
-  `VOLUME` of its Table 7.
+- The `VOLUME` of Table 7 of the Stream proposal.
 - A newer Part 4 draft, describing a Continuous Query resource with `id`,
   `pubtime`, `target`, `filter` and `queryResult`.
 - The LAS and LAZ encodings of the Coverages draft, which encode point clouds,
