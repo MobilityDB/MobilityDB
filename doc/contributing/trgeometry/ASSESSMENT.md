@@ -142,6 +142,7 @@ it on master and the regression test of `mobilitydb/test/rgeo` that holds the fi
 | `tIntersects`, `tDisjoint` of a 3D surface | 208 calls fail with an internal message: "lwgeom_set_geodetic: unsupported geom type: PolyhedralSurface" | TG8, #3543 |
 | `round(x, 1)` of a 3D rotation | "Rotation quaternion must be of unit norm", since each coordinate is rounded alone | TG9, #3520 (`150_trgeo`: the rotation is normalized) |
 | `tDistance` of a 3D value and a 3D `tgeompoint` | "The arguments must be of the same dimensionality", although both have Z | TG10, #3519 (`172_trgeo_distance_tpoint`: "The trgeometry cannot have Z dimension", the refusal of TG19) |
+| `tDistance` and the nine functions reading it, of a body not convex held still against a body not convex turning from the same pose | 20 calls raise the internal "The temporal distance of a temporal rigid geometry failed" | TG40, #3972 (`168_trgeo_distance`) |
 
 ## Related subjects
 
