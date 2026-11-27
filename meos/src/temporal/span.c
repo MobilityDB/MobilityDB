@@ -2169,6 +2169,72 @@ unix_us_to_timestamptz(int64 us)
 
 /**
  * @ingroup meos_base_timestamp
+ * @brief Return the milliseconds from the Unix epoch of a timestamptz
+ * @details A binding whose host counts its timestamps in milliseconds
+ * converts a timestamptz to them through this function and back through
+ * #unix_ms_to_timestamptz. The microseconds below a millisecond are dropped
+ * toward the past, so the instant a microsecond before the Unix epoch has the
+ * count -1. Every timestamptz of the range has a count, including those whose
+ * count of microseconds #timestamptz_to_unix_us cannot state.
+ * @param[in] t Timestamp
+ * @errval INT64_MAX
+ * @see #timestamptz_to_unix_us
+ */
+int64
+timestamptz_to_unix_ms(TimestampTz t)
+{
+  /* Ensure the validity of the arguments: an infinite timestamp is outside
+   * the range of timestamps and has no count */
+  if (! IS_VALID_TIMESTAMP(t))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return INT64_MAX;
+  }
+  /* The milliseconds from the PostgreSQL epoch, rounded toward the past */
+  int64 ms = t / 1000;
+  if (t % 1000 < 0)
+    ms--;
+  /* A timestamp of the range is far enough from the bounds of a 64-bit
+   * integer counted in milliseconds that adding the offset of the epochs
+   * cannot overflow */
+  return ms + DELTA_UNIX_POSTGRES_EPOCH * INT64CONST(1000);
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the timestamptz of a count of milliseconds from the Unix epoch
+ * @details A count whose timestamptz is outside the range of timestamps is
+ * refused, including one whose microseconds exceed a 64-bit integer, so a
+ * binding passes its host's count unchanged and reads the refusal from
+ * #meos_errno
+ * @param[in] ms Milliseconds from the Unix epoch
+ * @errval DT_NOEND
+ * @see #timestamptz_to_unix_ms
+ */
+TimestampTz
+unix_ms_to_timestamptz(int64 ms)
+{
+  int64 pgms;
+  TimestampTz result;
+  /* Ensure the validity of the arguments: the count is moved to the
+   * PostgreSQL epoch before it is scaled, so that a timestamp of the range
+   * whose microseconds from the Unix epoch exceed a 64-bit integer is
+   * reached, and a count whose scaling overflows is outside the range */
+  if (unlikely(pg_sub_s64_overflow(ms,
+        DELTA_UNIX_POSTGRES_EPOCH * INT64CONST(1000), &pgms)) ||
+      unlikely(pg_mul_s64_overflow(pgms, 1000, &result)) ||
+      ! IS_VALID_TIMESTAMP(result))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return DT_NOEND;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_timestamp
  * @brief Return the microseconds from the Unix epoch of a timestamp
  * @details A binding converts a timestamp to the timestamp of its host
  * through this function and back through #unix_us_to_timestamp, as
