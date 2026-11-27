@@ -73,8 +73,6 @@ extern bool cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
   const Cbuffer *cb3, TimestampTz t1, TimestampTz t2, TimestampTz t3);
 extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
   const Cbuffer *end, long double ratio);
-extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
-  const Cbuffer *value);
 
 /* Input/output functions */
 

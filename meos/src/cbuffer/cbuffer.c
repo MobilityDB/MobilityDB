@@ -90,65 +90,6 @@ cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2, const Cbuffer *cb3,
 }
 
 /**
- * @brief Return the location of the closest location on a circular buffer
- * segment to a circular buffer
- * @details The result is a float in [0,1] that represents the location as a
- * fraction of the segment length.
- * @param[in] start,end Circular buffers defining the segment
- * @param[in] value Circular buffer to locate
- */
-long double
-cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
-  const Cbuffer *value)
-{
-  long double result1 = -1.0;
-  long double result2 = -1.0;
-  if (! (float8_eq(start->x, end->x) && float8_eq(start->y, end->y)))
-  {
-    GSERIALIZED *gs1 = cbuffer_point(start);
-    GSERIALIZED *gs2 = cbuffer_point(end);
-    GSERIALIZED *gs = cbuffer_point(value);
-    result1 = pointsegm_locate(PointerGetDatum(gs1), PointerGetDatum(gs2),
-      PointerGetDatum(gs), NULL);
-    pfree(gs1); pfree(gs2); pfree(gs);
-    if (result1 < 0.0)
-      return -1.0;
-  }
-  else
-  {
-    /* If constant segment and the point of the value is different */
-    if (! (float8_eq(start->x, value->x) && float8_eq(start->y, value->y)))
-      return -1.0;
-  }
-  if (start->radius != end->radius)
-  {
-    result2 = floatsegm_locate(start->radius, end->radius, value->radius);
-    if (result2 < 0.0)
-      return -1.0;
-  }
-  else
-  {
-    /* The radius is constant on the segment: a value carrying another
-     * radius is never on it, as npointsegm_locate answers a value on another
-     * road */
-    if (start->radius != value->radius)
-      return -1.0;
-    /* Otherwise return result1 where
-     * - result1 = -1.0 if gs1 == gs2 == gs, or
-     * - result1 in [0,1] if gs1 != gs2 */
-    return result1;
-  }
-  if (result1 >= 0.0 && result2 >= 0.0)
-    return (fabsl(result1 - result2) <= MEOS_EPSILON) ? result1 : -1.0;
-  if (result1 < 0.0 && result2 >= 0)
-    return result2;
-  else if(result1 >= 0 && result2 <= 0)
-    return result1;
-  else /* The three values are equal */
-    return -1.0;
-}
-
-/**
  * @brief Return a circular buffer interpolated from a circular buffer segment
  * with respect to a fraction of its total length
  * @param[in] start,end Circular buffers defining the segment
