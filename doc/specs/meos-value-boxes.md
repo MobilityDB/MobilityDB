@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| Version | v0.3.0 |
+| Version | v0.4.0 |
 | Scope | The boxes MEOS gives a value for an index: one box per piece of the value, a split of its pieces into a number of boxes, and a merge of its piece boxes into a number of boxes or into those a query of the extents of a query box reads least, for the sets, the span sets, the temporal types and the lines of the geometry types; and the box of a temporal rigid geometry |
 | Reference | `tools/codegen/inherited/templates/boxsplit.c.tmpl` (the splits and merges of the temporal types), `meos/src/geo/tgeo_boxops.c` (the temporal points and geometries, the lines of a geometry), `meos/src/rgeo/trgeo_boxops.c` (the box of a temporal rigid geometry), `meos/src/temporal/temporal_boxops.c` (`bbox_merge_n` and `bbox_merge_query`, the merges), `meos/src/temporal/span_index.c`, `meos/src/temporal/tbox_index.c`, `meos/src/geo/stbox_index.c` (the size of a box and its size for a query box), `tools/codegen/inherited/manifest.d/meststrategies.yaml` and `mobilitydb/src/temporal/temporal_mest.c` (the tier of every operator of a multi-entry class) |
 
@@ -262,14 +262,23 @@ pieces the keys of the pieces alone.
 **Rule 10.3 (the sets and span sets).** A set is keyed by the spans of its
 elements and a span set by the spans of its components, as their splits and
 merges group them. Their overlaps, contains, contained by and equals read the
-elements or the components, so a set and a span set need no key of the whole
-value.
+elements or the components, which some key of a piece witnesses. Their
+distance is that of their bounding span, the extent of the value, which a key
+of a piece overstates: `tstzset '{2001-01-01, 2001-01-03}' <-> tstzset
+'{2001-01-02, 2001-01-04}'` is `@ 0`, while every element of the one lies a day
+from every element of the other. A set and a span set are therefore also keyed by
+their extent, marked `MEOS_FLAG_WHOLE`. An ordered scan reads the key of the
+extent alone, which answers every operator as the key of the single-entry
+class does and the distance exactly; a scan that is not ordered reads the keys
+of the pieces alone. The access method tells the consistent method of a class
+whether the scan is ordered (a sixth argument under `mgist`, the number of the
+ORDER BY clauses under `mspgist`).
 
 | Type | Keys | Classes |
 |---|---|---|
 | a temporal value whose box carries flags | the boxes of its pieces and the box of the whole value | every operator of its single-entry class |
 | a temporal value keyed by spans (`tbool`, `ttext`, `tjsonb`) | the spans of its pieces | every operator of its single-entry class but the overlaps, the contains and the adjacency |
-| a set, a span set | the spans of its elements or its components | every operator of its single-entry class but the distance |
+| a set, a span set | the spans of its elements or its components and its extent | every operator of its single-entry class |
 
 ## 11. Versioning and stability
 
@@ -282,6 +291,7 @@ number with corrections of wording.
 | v0.1.1 | Every function of the document, the sets and the span sets included, sets its count to 0 first |
 | v0.2.0 | The merge into the boxes a query of the extents of a query box reads least |
 | v0.3.0 | The indexes keyed by the boxes of a value: the rule by which a multi-entry class serves an operator, the key of the whole value, the sets and span sets |
+| v0.4.0 | The distance of the sets and span sets in their multi-entry classes, from the key of their extent |
 
 ## 12. Out of scope
 

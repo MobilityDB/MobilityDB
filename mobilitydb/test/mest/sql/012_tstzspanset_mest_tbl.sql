@@ -50,6 +50,9 @@ INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('-|- timestamptz', (SELECT
 INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspan t2 WHERE t1.t -|- t2.t)::text);
 INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('-|- tstzspanset', (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t -|- t2.t)::text);
 INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('= tstzspanset', (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text);
+INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('<-> timestamptz', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text);
+INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('<-> tstzspan', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text);
+INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('<-> tstzspanset', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text);
 INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('&<# timestamptz', (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text);
 INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspan t2 WHERE t1.t &<# t2.t)::text);
 INSERT INTO test_tstzspanset_mest(op, no_idx) VALUES ('&<# tstzspanset', (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t &<# t2.t)::text);
@@ -104,6 +107,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -187,6 +199,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -270,6 +291,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -353,6 +383,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -436,6 +475,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -519,6 +567,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -602,6 +659,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -685,6 +751,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -768,6 +843,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -851,6 +935,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -934,6 +1027,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';
@@ -1017,6 +1119,15 @@ WHERE op = '-|- tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_tstzspanset t2 WHERE t1.t = t2.t')
 WHERE op = '= tstzspanset';
+UPDATE test_tstzspanset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> timestamptz';
+UPDATE test_tstzspanset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspan WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspan';
+UPDATE test_tstzspanset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, ',' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_tstzspanset WHERE t IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.t <-> t2.t)::text, '','' ORDER BY t1.t <-> t2.t) AS d FROM (SELECT t1.t FROM tbl_tstzspanset_idx t1 ORDER BY t1.t <-> t2.t LIMIT 3) t1) s')
+WHERE op = '<-> tstzspanset';
 UPDATE test_tstzspanset_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tstzspanset_idx t1, tbl_timestamptz t2 WHERE t1.t &<# t2.t')
 WHERE op = '&<# timestamptz';

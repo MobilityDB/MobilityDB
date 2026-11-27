@@ -2116,6 +2116,55 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
   return trgeometry_geoms_merge(geoms, n_geoms, unary_union);
 }
 
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the space-time volume of a temporal rigid geometry, the
+ * integral of the area of its body over its time
+ * @details A rigid motion keeps the area of the body, so the body in space and
+ * time has, at every instant the value holds, the area of its reference
+ * geometry, and its volume is that area times the time the value holds, in
+ * microseconds as #tnumber_integral() reads it: the volume is in the square
+ * units of the body times microseconds. Bodies at two times never meet in
+ * space and time, so the motion changes nothing of it. A temporal rigid
+ * geometry of instants holds no body over an interval and has no volume; a
+ * body with Z has a body of four dimensions in space and time and is refused
+ * @param[in] temp Temporal rigid geometry
+ * @errval DBL_MAX
+ * @csqlfn #Trgeometry_space_time_volume()
+ */
+double
+trgeometry_space_time_volume(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, DBL_MAX);
+  if (! ensure_has_not_Z(temp->temptype, temp->flags))
+    return DBL_MAX;
+  if (temp->subtype == TINSTANT || MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+    return 0.0;
+  double area = geo_area(trgeometry_geom_p(temp), false);
+  if (area == DBL_MAX)
+    return DBL_MAX;
+  /* The time the value holds, the sum of the durations of its sequences */
+  double duration = 0.0;
+  if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    duration = (double) (TSEQUENCE_INST_N(seq, seq->count - 1)->t -
+      TSEQUENCE_INST_N(seq, 0)->t);
+  }
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    for (int i = 0; i < ss->count; i++)
+    {
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      duration += (double) (TSEQUENCE_INST_N(seq, seq->count - 1)->t -
+        TSEQUENCE_INST_N(seq, 0)->t);
+    }
+  }
+  return area * duration;
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

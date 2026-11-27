@@ -1070,6 +1070,25 @@ SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tgeo_spaceTimeVolume">
+				<indexterm significance="normal"><primary><varname>spaceTimeVolume</varname></primary></indexterm>
+				<para>Return the space-time volume, the integral of the area over the time &geography_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spaceTimeVolume(tgeometry) → float
+spaceTimeVolume(tgeography,spheroid boolean=true) → float
+</programlisting>
+				<para>A temporal geometry or geography holds each of its values up to its next instant, so the volume is the sum of the area of each value times the length of its interval. The time is read in microseconds, as <link linkend="tnumber_integral"><varname>integral</varname></link> reads it, so the result is in the square units of the value, square meters for a geography, times microseconds: dividing it by the microseconds of a unit of time, as the examples do for a day, reads it in that unit. For geographies, the area is computed on the WGS 84 spheroid by default, and on the sphere if the last argument is false. A value of instants holds no value over an interval and has a volume of zero; a value with Z coordinates is refused.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT spaceTimeVolume(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+  Polygon((1 1,3 1,3 3,1 3,1 1))@2001-01-02]') / (24 * 3600 * 1e6);
+-- 4
+SELECT spaceTimeVolume(tgeometry '{[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+  Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02], [Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03,
+  Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-05]}') / (24 * 3600 * 1e6);
+-- 6
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tgeo_centroid">
 				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
 				<para>Return the centroid as a temporal point &geography_support;</para>

@@ -86,6 +86,11 @@ CREATE FUNCTION traversedArea(tcbuffer, boolean DEFAULT FALSE)
   AS 'MODULE_PATHNAME', 'Tcbuffer_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION spaceTimeVolume(tcbuffer)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tcbuffer_space_time_volume'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Centroid
  *****************************************************************************/

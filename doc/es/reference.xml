@@ -1131,6 +1131,9 @@
 					<para><link linkend="tgeo_trajectory"><varname>trajectory</varname>, <varname>traversedArea</varname></link>: Devuelve la trayectoria o el área atravesada &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tgeo_spaceTimeVolume"><varname>spaceTimeVolume</varname></link>: Devuelve el volumen espacio-temporal, la integral del área sobre el tiempo &geography_support;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tgeo_centroid"><varname>centroid</varname></link>: Devuelve el centroide como un punto temporal &geography_support;</para>
 				</listitem>
 				<listitem>
@@ -2466,6 +2469,9 @@
 					<para><link linkend="tcbuffer_traversedArea"><varname>traversedArea</varname></link>: Devuelve el área atravesada por el búfer circular temporal</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcbuffer_spaceTimeVolume"><varname>spaceTimeVolume</varname></link>: Devuelve el volumen espacio-temporal del búfer circular temporal, la integral del área de su disco sobre el tiempo</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcbuffer_centroid"><varname>centroid</varname></link>: Devuelve el punto geométrico temporal dado por los centros de un búfer circular temporal</para>
 				</listitem>
 				<listitem>
@@ -2639,6 +2645,9 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trgeometry_traversedArea_func"><varname>traversedArea</varname></link>: Devuelve el área atravesada por la geometría rígida temporal</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_spaceTimeVolume"><varname>spaceTimeVolume</varname></link>: Devuelve el volumen espacio-temporal de la geometría rígida temporal, la integral del área de su cuerpo sobre el tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

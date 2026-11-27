@@ -335,9 +335,9 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   (`MEST_WHOLE_BOXES`: a tbox, an stbox, a tpcbox) also keys the box of the
   whole value, flagged as a structure of its own (`mest_keys_whole`), and
   holds the members that key answers (`MEST_WHOLE_STRATEGIES`: overlaps,
-  contains, adjacent, and the same box, which it answers exactly); a span
-  carries no flags and keys the pieces alone, which answer the same box as
-  contained by. The extraction methods of
+  contains, adjacent, and the same box, which it answers exactly); a class of
+  a temporal value keyed by spans keys the pieces alone, which answer the same
+  box as contained by. The extraction methods of
   the splits come from `templates/boxmest.c.tmpl` into the
   `GENERATED-BOXMEST-BEGIN/END` regions of the `mestfile` a row of
   `boxsplit.yaml` names, the `{KEYS}` slot naming `mest_keys` or
@@ -360,12 +360,22 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   `mobilitydb/mest/temporal/012_spanset_m*.in.sql` and `013_set_m*.in.sql`,
   which load first and so declare the twins of the span the later files take:
   a class per class and per split (`MEST_VALUE_SPLITS`), keyed by the spans of
-  the elements or the components of a value (`Set_mest_*split`,
-  `Spanset_mest_*split`), holding the members of `MEST_VALUE_STRATEGIES` its
-  class holds, which leave out the distance; the twins of the span answer the
-  contains as the overlaps and the equals
-  as contained by (`mest_pieces_strategy`). `render_valuemesttest` writes their
-  tests, `mobilitydb/test/mest/sql/01[23]_<type>_mest_tbl.sql`.
+  the elements or the components of a value and by its extent, flagged
+  `MEOS_FLAG_WHOLE` (`Set_mest_*split`, `Spanset_mest_*split`,
+  `mest_span_keys_whole`), holding the members of `MEST_VALUE_STRATEGIES` its
+  class holds, the distance included, which the manifest states as answered by
+  the extent (`values: whole`). An ordered scan reads the key of the extent
+  alone and a scan that is not ordered the keys of the pieces alone
+  (`mest_span_key_answers`), whose twins answer the contains as the overlaps
+  and the equals as contained by (`mest_pieces_strategy`); the distance twin
+  (`mest_distance`, the `GIST-DISTANCE` chunk of the template) places a key of
+  the pieces at the maximum distance, and the union, penalty, picksplit and
+  same methods of mgist and the choose and picksplit methods of mspgist are
+  twins of the span methods keeping the keys of the extents and of the pieces
+  in subtrees of their own (`mest_structure`, `Span_mgist_union` and its
+  siblings in `temporal_mest.c`). `render_valuemesttest` writes their tests,
+  `mobilitydb/test/mest/sql/01[23]_<type>_mest_tbl.sql`, the distance rows
+  reading the nearest values with and without a qual.
   `render_tpcmesttest` writes the multi-entry test of the temporal point
   clouds, `mobilitydb/test/mest/sql/439_tpc_mest_tbl.sql`: every class of
   `tpcpoint` and `tpcpatch` (`MEST_TPC_FILES`) answering the members of the

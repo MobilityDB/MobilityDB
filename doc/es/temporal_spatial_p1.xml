@@ -1070,6 +1070,25 @@ SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tgeo_spaceTimeVolume">
+				<indexterm significance="normal"><primary><varname>spaceTimeVolume</varname></primary></indexterm>
+				<para>Devuelve el volumen espacio-temporal, la integral del área sobre el tiempo &geography_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spaceTimeVolume(tgeometry) → float
+spaceTimeVolume(tgeography,spheroid boolean=true) → float
+</programlisting>
+				<para>Una geometría o geografía temporal mantiene cada uno de sus valores hasta su siguiente instante, por lo que el volumen es la suma del área de cada valor por la duración de su intervalo. El tiempo se lee en microsegundos, como lo lee <link linkend="tnumber_integral"><varname>integral</varname></link>, por lo que el resultado está en las unidades cuadradas del valor, metros cuadrados para una geografía, por microsegundos: dividirlo por los microsegundos de una unidad de tiempo, como hacen los ejemplos para un día, lo lee en esa unidad. Para las geografías, el área se calcula por defecto sobre el esferoide WGS 84, y sobre la esfera si el último argumento es falso. Un valor de instantes no mantiene ningún valor durante un intervalo y tiene un volumen cero; un valor con coordenadas Z se rechaza.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT spaceTimeVolume(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+  Polygon((1 1,3 1,3 3,1 3,1 1))@2001-01-02]') / (24 * 3600 * 1e6);
+-- 4
+SELECT spaceTimeVolume(tgeometry '{[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+  Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02], [Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03,
+  Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-05]}') / (24 * 3600 * 1e6);
+-- 6
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tgeo_centroid">
 				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
 				<para>Devuelve el centroide como un punto temporal &geography_support;</para>

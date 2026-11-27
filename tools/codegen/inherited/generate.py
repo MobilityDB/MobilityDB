@@ -927,15 +927,39 @@ def render_valuemesttest(typ: str, base: str) -> str:
     tbl, col = _value_fixture(typ)
     q = "'"
     rows = []
-    for st, op, right in re.findall(
-            rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\)", base, re.M):
+    members = re.findall(rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\)( FOR ORDER BY)?",
+                         base, re.M)
+    left = next((op for st, op, right, _ in members
+                 if st == "1" and right == typ), None)
+    for st, op, right, order in members:
         if int(st) not in MEST_VALUE_STRATEGIES:
             continue
         rtbl, rcol = _value_fixture(right)
         label = f"{op} {right}"
-        query = (f"SELECT COUNT(*) FROM {tbl}_idx t1, {rtbl} t2 "
-                 f"WHERE t1.{col} {op} t2.{rcol}")
-        rows.append((label, query))
+        if not order:
+            rows.append((label, f"SELECT COUNT(*) FROM {tbl}_idx t1, {rtbl} t2 "
+                                f"WHERE t1.{col} {op} t2.{rcol}"))
+            continue
+        # A distance reads the three values nearest to each of five values of
+        # the fixture of its right argument, as the distances they lie at;
+        # where the right argument is the type, also those strictly left of
+        # it, a scan ordered under a qual. A distance of floats is written to
+        # 6 decimals, so the output reads the same under the libm of every
+        # platform
+        dist = f"t1.{col} {op} t2.{rcol}"
+        dtext = (f"round(({dist})::numeric, 6)::text" if typ.startswith("float")
+                 else f"({dist})::text")
+        for qlabel, qual in (("", ""),) + (
+                ((f"{left} ", f"WHERE t1.{col} {left} t2.{rcol} "),)
+                if left and right == typ else ()):
+            rows.append((f"{qlabel}{label}",
+                         f"SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM "
+                         f"(SELECT * FROM {rtbl} WHERE {rcol} IS NOT NULL "
+                         f"ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg("
+                         f"{dtext}, ',' ORDER BY "
+                         f"t1.{col} {op} t2.{rcol}) AS d FROM (SELECT t1.{col} "
+                         f"FROM {tbl}_idx t1 {qual}ORDER BY t1.{col} {op} "
+                         f"t2.{rcol} LIMIT 3) t1) s"))
     cols = [(kind, split) for kind in TEMPOPCLASS_KINDS for split in MEST_VALUE_SPLITS]
     blocks = []
     for kind, split in cols:
@@ -1847,12 +1871,14 @@ MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
 # elements or its components, so some key of a value answering them passes the
 # test of the overlaps (overlaps, contains) or of contained by (contained by,
 # equals) against the span of the query; a position operator and the adjacency
-# read the first or the last of them. The classes hold no distance: the
-# distance to a key is a lower bound, rechecked, which PostgreSQL accepts only
-# from an operator returning a float, and the distance of an integer, a date or
-# a timestamp is none; an ordered scan of mspgist over the keys of a set of
-# floats split into several keys fails with "index returned tuples in wrong
-# order". The classes are those of the GiST and SP-GiST files of
+# read the first or the last of them. The distance of a set or a span set is
+# that of its bounding span, which a key of an element or a component
+# overstates, so a value is also keyed by its bounding span, marked
+# MEOS_FLAG_WHOLE: an ordered scan reads that key alone, which answers every
+# strategy as the single-entry class does and the distance exactly, and a scan
+# that is not ordered reads the keys of the pieces alone
+# (#mest_span_key_answers, #mest_distance). The classes are those of the GiST
+# and SP-GiST files of
 # MEST_VALUE_FILES, each split of #MEST_VALUE_SPLITS taking the extraction
 # method of the set or the span set (Set_mest_*split, Spanset_mest_*split)
 MEST_VALUE_STRATEGIES = {e["num"] for e in MEST_TIERS if "values" in e}
@@ -1890,13 +1916,13 @@ def render_valuemestfile(path: str, declared: set) -> str:
                 else ""
             if am == "gist":
                 fl = [f"  FUNCTION  1 {mest_consistent(funcs[1])}",
-                      f"  FUNCTION  2 {funcs[2]}",
+                      f"  FUNCTION  2 {mest_structure(funcs[2])}",
                       "  FUNCTION  3 mest_gist_compress(internal)",
-                      f"  FUNCTION  5 {funcs[5]}",
-                      f"  FUNCTION  6 {funcs[6]}",
-                      f"  FUNCTION  7 {funcs[7]}"]
+                      f"  FUNCTION  5 {mest_structure(funcs[5])}",
+                      f"  FUNCTION  6 {mest_structure(funcs[6])}",
+                      f"  FUNCTION  7 {mest_structure(funcs[7])}"]
                 if 8 in funcs:
-                    fl.append(f"  FUNCTION  8 {funcs[8]}")
+                    fl.append(f"  FUNCTION  8 {mest_distance(funcs[8])}")
                 fl += [f"  FUNCTION 10 {options}", f"  FUNCTION 13 {extract}"]
                 head = (f"CREATE OPERATOR CLASS {typ}_m{kind}_{split}split_ops\n"
                         f"  {default}FOR TYPE {typ} USING mgist AS\n"
@@ -1905,8 +1931,8 @@ def render_valuemestfile(path: str, declared: set) -> str:
                 inner = funcs[4].replace(f"_{kind}_inner_consistent(",
                                          f"_m{kind}_inner_consistent(", 1)
                 fl = [f"  FUNCTION  1 {funcs[1]}",
-                      f"  FUNCTION  2 {funcs[2]}",
-                      f"  FUNCTION  3 {funcs[3]}",
+                      f"  FUNCTION  2 {mest_structure(funcs[2])}",
+                      f"  FUNCTION  3 {mest_structure(funcs[3])}",
                       f"  FUNCTION  4 {inner}",
                       f"  FUNCTION  5 {mest_consistent(funcs[5])}",
                       "  FUNCTION  6 mest_spgist_compress(internal)",
@@ -1925,11 +1951,25 @@ def render_valuemestfile(path: str, declared: set) -> str:
                    "(internal, internal, internal)\n  RETURNS internal\n"
                    f"  AS 'MODULE_PATHNAME', '{cstem}_mest_{split}split'\n"
                    "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
+    # The methods keeping the keys of the extents and of the pieces apart
+    # (#mest_structure), returning what the method they stand for returns
+    for twin, args in re.findall(rf"FUNCTION +\d+ ({_MEST_STRUCTURE_TWINS})"
+                                 r"\(([^)]*)\)", "\n".join(classes)):
+        if ("structure", twin, args) in declared:
+            continue
+        declared.add(("structure", twin, args))
+        orig = re.sub(r"^span_m", "span_", twin)
+        rettype = re.search(rf"CREATE FUNCTION {orig}\({re.escape(args)}\)\n"
+                            r"  RETURNS (\w+)", _span_index_sql()).group(1)
+        out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS {rettype}\n"
+                   f"  AS 'MODULE_PATHNAME', '{twin[0].upper()}{twin[1:]}'\n"
+                   "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
     for twin, args, orig in mest_twins_of("\n".join(classes)):
         if ("consistent", twin, args) in declared:
             continue
         declared.add(("consistent", twin, args))
-        rettype = "void" if twin.endswith("_inner_consistent") else "boolean"
+        rettype = ("void" if twin.endswith("_inner_consistent") else
+                   "float8" if twin.endswith("_mgist_distance") else "boolean")
         out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS {rettype}\n"
                    f"  AS 'MODULE_PATHNAME', "
                    f"'{mest_twin_symbol(sql_c_symbol(orig))}'\n"
@@ -1945,7 +1985,7 @@ def mest_pieces_map() -> dict:
     for e in MEST_TIERS:
         for kind in ("spans", "values"):
             to = e.get(kind)
-            if to is None or to == "self":
+            if to is None or to in ("self", "whole"):
                 continue
             if out.get(e["num"], to) != to:
                 sys.exit(f"meststrategies: strategy {e['num']} is answered as "
@@ -2117,6 +2157,7 @@ def mest_twin_symbol(symbol: str) -> str:
     as #mest_consistent and #mest_inner_consistent name its SQL function"""
     return re.sub(r"_(quadtree|kdtree)_inner_consistent", r"_m\1_inner_consistent",
                   symbol.replace("_gist_consistent", "_mgist_consistent", 1)
+                  .replace("_gist_distance", "_mgist_distance", 1)
                   .replace("_spgist_leaf_consistent", "_mspgist_leaf_consistent",
                            1), count=1)
 
@@ -2126,10 +2167,11 @@ def mest_twins_of(text: str) -> list:
     (twin SQL name, its arguments, original SQL name)"""
     out = []
     for twin, args in re.findall(
-            r"FUNCTION +[145] (\w+_m(?:gist|spgist_leaf|quadtree_inner|kdtree_inner)"
-            r"_consistent)\(([^)]*)\)", text):
+            r"FUNCTION +[1458] (\w+_m(?:(?:gist|spgist_leaf|quadtree_inner|kdtree_inner)"
+            r"_consistent|gist_distance))\(([^)]*)\)", text):
         orig = re.sub(r"_m(quadtree|kdtree)_inner_consistent", r"_\1_inner_consistent",
                       twin.replace("_mgist_consistent", "_gist_consistent", 1)
+                      .replace("_mgist_distance", "_gist_distance", 1)
                       .replace("_mspgist_leaf_consistent", "_spgist_leaf_consistent",
                                1), count=1)
         if (twin, args, orig) not in out:
@@ -2142,12 +2184,14 @@ def render_mestconsistent(symbols: list) -> str:
     `symbols`, from templates/mestconsistent.c.tmpl, whose first chunk is a
     GiST twin, whose chunk after `/* SPGIST */` an SP-GiST leaf one and whose
     chunk after `/* SPGIST-INNER */` an SP-GiST inner one"""
-    gist, rest = read_template("mestconsistent.c.tmpl").split("/* SPGIST */\n")
+    gist, rest = read_template("mestconsistent.c.tmpl").split("/* GIST-DISTANCE */\n")
+    distance, rest = rest.split("/* SPGIST */\n")
     spgist, inner = rest.split("/* SPGIST-INNER */\n")
     out = []
     for sym in symbols:
         chunk = (spgist if "_spgist_leaf_consistent" in sym else
-                 inner if "_inner_consistent" in sym else gist)
+                 inner if "_inner_consistent" in sym else
+                 distance if "_gist_distance" in sym else gist)
         # A key carrying flags (an stbox, which a tpcbox begins with, or a tbox)
         # answers by its tier, the TIER block of the template; a span carries
         # no flags and keys the pieces alone, so its twin answers the same span
@@ -2192,6 +2236,36 @@ def mest_consistent(signature: str) -> str:
     covering a part of a value (#render_mestconsistent)"""
     return (signature.replace("_gist_consistent(", "_mgist_consistent(", 1)
             .replace("_spgist_leaf_consistent(", "_mspgist_leaf_consistent(", 1))
+
+
+# The span methods a multi-entry class of a set or a span set takes in the
+# twin keeping the keys of the extents of the values and those of their pieces
+# in subtrees of their own (temporal_mest.c, Span_mgist_union and siblings)
+_MEST_STRUCTURE_TWINS = (r"span_m(?:gist_(?:union|penalty|picksplit|same)|"
+                         r"(?:quadtree|kdtree)_(?:choose|picksplit))")
+
+
+def mest_structure(signature: str) -> str:
+    """The span method of a multi-entry class of a set or a span set standing
+    for that of `signature`: its twin keeping the keys of the extents of the
+    values and those of their pieces apart, or the method itself"""
+    return re.sub(r"^span_(gist_(?:union|penalty|picksplit|same)|"
+                  r"(?:quadtree|kdtree)_(?:choose|picksplit))\(", r"span_m\1(",
+                  signature, count=1)
+
+
+def _span_index_sql() -> str:
+    """The SQL files declaring the GiST and SP-GiST methods of the spans"""
+    return "".join((ROOT / f).read_text() for f in
+                   ("mobilitydb/sql/temporal/011_span_gist.in.sql",
+                    "mobilitydb/sql/temporal/011_span_spgist.in.sql"))
+
+
+def mest_distance(signature: str) -> str:
+    """The GiST distance method of a multi-entry class of a set or a span set
+    standing for that of `signature`: its twin, which reads the distance of a
+    value from the key of its extent alone (#render_mestconsistent)"""
+    return signature.replace("_gist_distance(", "_mgist_distance(", 1)
 
 
 def mest_inner_consistent(sfn: str, kind: str, box: str) -> str:

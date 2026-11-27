@@ -62,6 +62,10 @@ INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('-|- bigint', (SELECT CO
 INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('-|- bigintspan', (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspan t2 WHERE t1.b -|- t2.b)::text);
 INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('-|- bigintspanset', (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b -|- t2.b)::text);
 INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('= bigintspanset', (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text);
+INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('<-> bigint', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text);
+INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('<-> bigintspan', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text);
+INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('<-> bigintspanset', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text);
+INSERT INTO test_bigintspanset_mest(op, no_idx) VALUES ('<< <-> bigintspanset', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text);
 
 -------------------------------------------------------------------------------
 
@@ -140,6 +144,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -223,6 +239,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -306,6 +334,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -389,6 +429,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -472,6 +524,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -555,6 +619,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -638,6 +714,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -721,6 +809,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -804,6 +904,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -887,6 +999,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -970,6 +1094,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -1053,6 +1189,18 @@ WHERE op = '-|- bigintspanset';
 UPDATE test_bigintspanset_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_bigintspanset_idx t1, tbl_bigintspanset t2 WHERE t1.b = t2.b')
 WHERE op = '= bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigint WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigint';
+UPDATE test_bigintspanset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspan WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspan';
+UPDATE test_bigintspanset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<-> bigintspanset';
+UPDATE test_bigintspanset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, ',' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_bigintspanset WHERE b IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.b <-> t2.b)::text, '','' ORDER BY t1.b <-> t2.b) AS d FROM (SELECT t1.b FROM tbl_bigintspanset_idx t1 WHERE t1.b << t2.b ORDER BY t1.b <-> t2.b LIMIT 3) t1) s')
+WHERE op = '<< <-> bigintspanset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;

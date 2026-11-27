@@ -48,6 +48,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -199,9 +200,10 @@ mest_key_answers(int16 flags, StrategyNumber strategy)
 /**
  * @brief Return the strategy a key of a piece of a value answers in place of
  * a strategy of a multi-entry index whose keys are spans
- * @details A span carries no flags, so a class whose keys are spans keys the
- * pieces of a value alone, the components of a span set, the elements of a
- * set or the pieces of a temporal value. The span of a value is the same as a
+ * @details A class whose keys are spans keys the pieces of a value, the
+ * components of a span set, the elements of a set or the pieces of a temporal
+ * value, a set or a span set also by its extent, which a scan that is not
+ * ordered leaves out (#mest_span_key_answers). The span of a value is the same as a
  * query, or a value equals it, only when every piece lies within the query, so
  * a key of a piece answers them as contained by; a value contains a query
  * only when some piece meets it, so a key of a piece answers the contains as
@@ -246,6 +248,59 @@ mest_pieces_scankeys(ScanKey keys, int nkeys)
   for (i = 0; i < nkeys; i++)
     result[i].sk_strategy = mest_pieces_strategy(result[i].sk_strategy);
   return result;
+}
+
+/**
+ * @brief Return true if a key of a multi-entry index whose keys are spans
+ * answers a scan, ordered or not
+ * @details A set or a span set is keyed by the spans of its elements or of
+ * its components and by its extent, its bounding span, which carries the flag
+ * @p MEOS_FLAG_WHOLE (#mest_span_keys_whole). The distance of the value is
+ * that of its extent, which a key of a piece overstates, so an ordered scan
+ * reads the key of the extent alone, which answers every strategy as the key
+ * of a single-entry index does and the distance exactly; a scan that is not
+ * ordered reads the keys of the pieces alone, which answer the strategies of
+ * #mest_pieces_strategy more selectively. Each value is reported at the
+ * smallest distance among its keys, and a key of a piece of an ordered scan
+ * lies at the maximum one. The index keeps the keys of the extents and those
+ * of the pieces in subtrees of their own, an inner key over both carrying the
+ * flag @p MEOS_FLAG_PARTS, which answers any scan (#Span_mgist_union,
+ * #Span_mquadtree_choose). The keys of a temporal value keyed by spans are
+ * its pieces, whose classes hold no distance
+ * @param[in] flags Flags of the key
+ * @param[in] ordered True when the scan is ordered
+ */
+bool
+mest_span_key_answers(int16 flags, bool ordered)
+{
+  return MEOS_FLAGS_GET_PARTS(flags) || MEOS_FLAGS_GET_WHOLE(flags) == ordered;
+}
+
+/**
+ * @brief Return the keys of a multi-entry index over the spans of the pieces
+ * of a set or a span set followed by its extent, as Datums
+ * @details The extent carries the flag @p MEOS_FLAG_WHOLE, which the keys of
+ * the pieces do not, whatever bytes the spans they were copied from held
+ * (#mest_span_key_answers)
+ * @param[in] spans Array of the spans of the pieces, freed
+ * @param[in] extent Extent of the value
+ * @param[in,out] count Number of spans of the pieces on input, of the keys on
+ * output
+ */
+Datum *
+mest_span_keys_whole(Span *spans, const Span *extent, int32 *count)
+{
+  assert(spans); assert(extent); assert(count); assert(*count > 0);
+  Span *keys = palloc(sizeof(Span) * (*count + 1));
+  memcpy(keys, spans, sizeof(Span) * *count);
+  pfree(spans);
+  for (int i = 0; i < *count; i++)
+    keys[i].flags = 0;
+  keys[*count] = *extent;
+  keys[*count].flags = 0;
+  MEOS_FLAGS_SET_WHOLE(keys[*count].flags, true);
+  (*count)++;
+  return mest_keys(keys, sizeof(Span), *count);
 }
 
 PG_FUNCTION_INFO_V1(Mest_count_options);
@@ -362,7 +417,7 @@ Mest_spgist_compress(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_mest_equisplit);
 /**
  * @brief Multi-entry extract method of a set keyed by the spans of an element
- * or of several
+ * or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are a number of spans of its consecutive
  * elements, the number being the option of the class (#mest_count) and the
  * split that of #set_split_n_spans
@@ -373,13 +428,15 @@ Set_mest_equisplit(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = set_split_n_spans(s, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  Span extent;
+  set_set_span(s, &extent);
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &extent, nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Set_mest_segsplit);
 /**
  * @brief Multi-entry extract method of a set keyed by the spans of an element
- * or of several
+ * or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are the spans of its consecutive elements a
  * number at a time, the number being the option of the class (#mest_count) and
  * the split that of #set_split_each_n_spans
@@ -390,13 +447,15 @@ Set_mest_segsplit(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = set_split_each_n_spans(s, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  Span extent;
+  set_set_span(s, &extent);
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &extent, nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Set_mest_mergesplit);
 /**
  * @brief Multi-entry extract method of a set keyed by the spans of an element
- * or of several
+ * or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are a number of spans merging the spans of its
  * elements least apart, the number being the option of the class (#mest_count)
  * and the split that of #set_merge_n_spans
@@ -407,13 +466,15 @@ Set_mest_mergesplit(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = set_merge_n_spans(s, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  Span extent;
+  set_set_span(s, &extent);
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &extent, nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Set_mest_adaptsplit);
 /**
  * @brief Multi-entry extract method of a set keyed by the spans of an element
- * or of several
+ * or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are the spans merging the spans of its elements
  * a number at a time, least apart, the number being the option of the class
  * (#mest_count) and the split that of #set_merge_each_n_spans
@@ -424,13 +485,15 @@ Set_mest_adaptsplit(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = set_merge_each_n_spans(s, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  Span extent;
+  set_set_span(s, &extent);
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &extent, nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Spanset_mest_equisplit);
 /**
  * @brief Multi-entry extract method of a span set keyed by the spans of a
- * component or of several
+ * component or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are a number of spans of its consecutive
  * components, the number being the option of the class (#mest_count) and the
  * split that of #spanset_split_n_spans
@@ -441,13 +504,13 @@ Spanset_mest_equisplit(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = spanset_split_n_spans(ss, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &ss->span, nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Spanset_mest_segsplit);
 /**
  * @brief Multi-entry extract method of a span set keyed by the spans of a
- * component or of several
+ * component or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are the spans of its consecutive components a
  * number at a time, the number being the option of the class (#mest_count) and
  * the split that of #spanset_split_each_n_spans
@@ -458,13 +521,13 @@ Spanset_mest_segsplit(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = spanset_split_each_n_spans(ss, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &ss->span, nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Spanset_mest_mergesplit);
 /**
  * @brief Multi-entry extract method of a span set keyed by the spans of a
- * component or of several
+ * component or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are a number of spans merging the spans of its
  * components least apart, the number being the option of the class
  * (#mest_count) and the split that of #spanset_merge_n_spans
@@ -475,13 +538,13 @@ Spanset_mest_mergesplit(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = spanset_merge_n_spans(ss, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &ss->span, nkeys));
 }
 
 PG_FUNCTION_INFO_V1(Spanset_mest_adaptsplit);
 /**
  * @brief Multi-entry extract method of a span set keyed by the spans of a
- * component or of several
+ * component or of several and by its extent (#mest_span_keys_whole)
  * @details The keys of a value are the spans merging the spans of its
  * components a number at a time, least apart, the number being the option of
  * the class (#mest_count) and the split that of #spanset_merge_each_n_spans
@@ -492,7 +555,7 @@ Spanset_mest_adaptsplit(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   Span *spans = spanset_merge_each_n_spans(ss, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+  PG_RETURN_POINTER(mest_span_keys_whole(spans, &ss->span, nkeys));
 }
 
 /*****************************************************************************
@@ -658,6 +721,336 @@ Temporal_mest_segsplit(PG_FUNCTION_ARGS)
 
 /* GENERATED-BOXMEST-END temporal */
 
+/*****************************************************************************
+ * The structures of the keys of the sets and span sets
+ *****************************************************************************/
+
+/**
+ * @brief Return the flags of a key over the keys of the sets and span sets
+ * whose flags are given: @p MEOS_FLAG_WHOLE over keys of extents alone, none
+ * over keys of pieces alone, and @p MEOS_FLAG_PARTS over keys of both
+ * (#mest_span_key_answers)
+ */
+static int16
+span_mest_flags(int16 flags1, int16 flags2)
+{
+  int16 result = 0;
+  if (MEOS_FLAGS_GET_PARTS(flags1) || MEOS_FLAGS_GET_PARTS(flags2) ||
+      MEOS_FLAGS_GET_WHOLE(flags1) != MEOS_FLAGS_GET_WHOLE(flags2))
+    MEOS_FLAGS_SET_PARTS(result, true);
+  else
+    MEOS_FLAGS_SET_WHOLE(result, MEOS_FLAGS_GET_WHOLE(flags1));
+  return result;
+}
+
+/**
+ * @brief Return true if two keys of the sets and span sets have the same
+ * structure, the extents, the pieces, or both
+ */
+static bool
+span_mest_same_structure(int16 flags1, int16 flags2)
+{
+  return MEOS_FLAGS_GET_PARTS(flags1) == MEOS_FLAGS_GET_PARTS(flags2) &&
+    MEOS_FLAGS_GET_WHOLE(flags1) == MEOS_FLAGS_GET_WHOLE(flags2);
+}
+
+extern PGDLLEXPORT Datum Span_gist_union(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Span_gist_penalty(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Span_gist_picksplit(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Span_gist_same(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Span_quadtree_choose(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Span_quadtree_picksplit(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Span_kdtree_choose(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Span_kdtree_picksplit(PG_FUNCTION_ARGS);
+
+PGDLLEXPORT Datum Span_mgist_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mgist_union);
+/**
+ * @brief Multi-entry GiST union method of the sets and span sets, as
+ * #Span_gist_union answers it, the key carrying the flags of the structures
+ * of the keys under it (#span_mest_flags)
+ */
+Datum
+Span_mgist_union(PG_FUNCTION_ARGS)
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GISTENTRY *ent = entryvec->vector;
+  Span *result = DatumGetSpanP(Span_gist_union(fcinfo));
+  int16 flags = DatumGetSpanP(ent[0].key)->flags;
+  for (int i = 1; i < entryvec->n; i++)
+    flags = span_mest_flags(flags, DatumGetSpanP(ent[i].key)->flags);
+  result->flags = flags;
+  PG_RETURN_SPAN_P(result);
+}
+
+PGDLLEXPORT Datum Span_mgist_penalty(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mgist_penalty);
+/**
+ * @brief Multi-entry GiST penalty method of the sets and span sets, as
+ * #Span_gist_penalty answers it
+ * @details A key goes under a key of its structure when there is one, else
+ * under a key over both structures, so that the keys of the extents and those
+ * of the pieces gather under keys of their own, as #bbox_gist_penalty places
+ * the boxes of several structures
+ */
+Datum
+Span_mgist_penalty(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+  float *penalty = (float *) PG_GETARG_POINTER(2);
+  int16 orig = DatumGetSpanP(origentry->key)->flags,
+    new = DatumGetSpanP(newentry->key)->flags;
+  if (MEOS_FLAGS_GET_PARTS(orig))
+    *penalty = FLT_MAX / 2;
+  else if (! span_mest_same_structure(orig, new))
+    *penalty = FLT_MAX;
+  else
+    return Span_gist_penalty(fcinfo);
+  PG_RETURN_POINTER(penalty);
+}
+
+/**
+ * @brief Return the union of the keys of some entries of a GiST page, with the
+ * flags of their structures
+ */
+static Span *
+span_mest_union_entries(GISTENTRY *ent, OffsetNumber *offsets, int count)
+{
+  Span *result = span_copy(DatumGetSpanP(ent[offsets[0]].key));
+  int16 flags = result->flags;
+  for (int i = 1; i < count; i++)
+  {
+    const Span *key = DatumGetSpanP(ent[offsets[i]].key);
+    span_expand(key, result);
+    flags = span_mest_flags(flags, key->flags);
+  }
+  result->flags = flags;
+  return result;
+}
+
+PGDLLEXPORT Datum Span_mgist_picksplit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mgist_picksplit);
+/**
+ * @brief Multi-entry GiST picksplit method of the sets and span sets
+ * @details The entries of the structure of the first one go to the left and
+ * the others to the right, keys over both structures to the right, as
+ * #bbox_gist_split_structures splits the boxes of several structures; the
+ * entries of one structure, or keys over both alone, are split as
+ * #Span_gist_picksplit splits them
+ */
+Datum
+Span_mgist_picksplit(PG_FUNCTION_ARGS)
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
+  GISTENTRY *ent = entryvec->vector;
+  OffsetNumber maxoff = (OffsetNumber) (entryvec->n - 1), i;
+  int16 first = DatumGetSpanP(ent[FirstOffsetNumber].key)->flags;
+  bool split = ! MEOS_FLAGS_GET_PARTS(first);
+  if (split)
+  {
+    for (i = OffsetNumberNext(FirstOffsetNumber); i <= maxoff;
+        i = OffsetNumberNext(i))
+      if (! span_mest_same_structure(first,
+          DatumGetSpanP(ent[i].key)->flags))
+        break;
+    split = (i <= maxoff);
+  }
+  if (! split)
+  {
+    Span_gist_picksplit(fcinfo);
+    /* Every entry has the structure of the first, or every one is over both */
+    int16 flags = first;
+    for (i = OffsetNumberNext(FirstOffsetNumber); i <= maxoff;
+        i = OffsetNumberNext(i))
+      flags = span_mest_flags(flags, DatumGetSpanP(ent[i].key)->flags);
+    /* A side the split leaves empty has no union (#span_gist_fallback_split) */
+    if (DatumGetPointer(v->spl_ldatum))
+      DatumGetSpanP(v->spl_ldatum)->flags = flags;
+    if (DatumGetPointer(v->spl_rdatum))
+      DatumGetSpanP(v->spl_rdatum)->flags = flags;
+    PG_RETURN_POINTER(v);
+  }
+  size_t nbytes = (maxoff + 1) * sizeof(OffsetNumber);
+  v->spl_left = palloc(nbytes);
+  v->spl_right = palloc(nbytes);
+  v->spl_nleft = v->spl_nright = 0;
+  for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
+  {
+    if (span_mest_same_structure(first, DatumGetSpanP(ent[i].key)->flags))
+      v->spl_left[v->spl_nleft++] = i;
+    else
+      v->spl_right[v->spl_nright++] = i;
+  }
+  v->spl_ldatum = SpanPGetDatum(span_mest_union_entries(ent, v->spl_left,
+    v->spl_nleft));
+  v->spl_rdatum = SpanPGetDatum(span_mest_union_entries(ent, v->spl_right,
+    v->spl_nright));
+  PG_RETURN_POINTER(v);
+}
+
+PGDLLEXPORT Datum Span_mgist_same(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mgist_same);
+/**
+ * @brief Multi-entry GiST same method of the sets and span sets, as
+ * #Span_gist_same answers it, the keys having the same flags
+ */
+Datum
+Span_mgist_same(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  bool *result = (bool *) PG_GETARG_POINTER(2);
+  *result = span_eq(s1, s2) && s1->flags == s2->flags;
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Choose the node of an inner tuple of the sets and span sets for the
+ * keys of the extents and those of the pieces
+ * @details An inner tuple whose prefix carries the flag @p MEOS_FLAG_PARTS
+ * sends the keys of the structure of its prefix to its first node and the
+ * others to its second one, without adding a level. A key reaching an inner
+ * tuple of the other structure splits it: a tuple over both structures is
+ * placed above it, the inner tuple becoming its first node, as
+ * #stbox_spgist_choose_parts places the boxes of several structures
+ * @return True when the key is placed by this function
+ */
+static bool
+span_mspgist_choose_parts(spgChooseIn *in, spgChooseOut *out)
+{
+  Span *centroid = DatumGetSpanP(in->prefixDatum),
+    *key = DatumGetSpanP(in->leafDatum);
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+  {
+    out->resultType = spgMatchNode;
+    out->result.matchNode.nodeN = (MEOS_FLAGS_GET_WHOLE(centroid->flags) ==
+      MEOS_FLAGS_GET_WHOLE(key->flags)) ? 0 : 1;
+    out->result.matchNode.levelAdd = 0;
+    out->result.matchNode.restDatum = PointerGetDatum(key);
+    return true;
+  }
+  if (MEOS_FLAGS_GET_WHOLE(centroid->flags) == MEOS_FLAGS_GET_WHOLE(key->flags))
+    return false;
+  Span *parts = span_copy(centroid);
+  MEOS_FLAGS_SET_PARTS(parts->flags, true);
+  out->resultType = spgSplitTuple;
+  out->result.splitTuple.prefixHasPrefix = true;
+  out->result.splitTuple.prefixPrefixDatum = SpanPGetDatum(parts);
+  out->result.splitTuple.prefixNNodes = 2;
+  out->result.splitTuple.prefixNodeLabels = NULL;
+  out->result.splitTuple.childNodeN = 0;
+  out->result.splitTuple.postfixHasPrefix = true;
+  out->result.splitTuple.postfixPrefixDatum = SpanPGetDatum(span_copy(centroid));
+  return true;
+}
+
+/**
+ * @brief Split the keys of a leaf page of the sets and span sets
+ * @details Keys of both structures go to the nodes of an inner tuple carrying
+ * the flag @p MEOS_FLAG_PARTS (#span_mspgist_choose_parts); keys of one
+ * structure are split by the function given, whose prefix takes the flags of
+ * their structure
+ */
+static void
+span_mspgist_picksplit(FunctionCallInfo fcinfo,
+  Datum (*picksplit)(FunctionCallInfo))
+{
+  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
+  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  Span *first = DatumGetSpanP(in->datums[0]);
+  bool whole = MEOS_FLAGS_GET_WHOLE(first->flags);
+  int i;
+  for (i = 1; i < in->nTuples; i++)
+    if (MEOS_FLAGS_GET_WHOLE(DatumGetSpanP(in->datums[i])->flags) != whole)
+      break;
+  if (i == in->nTuples)
+  {
+    picksplit(fcinfo);
+    Span *centroid = DatumGetSpanP(out->prefixDatum);
+    centroid->flags = 0;
+    MEOS_FLAGS_SET_WHOLE(centroid->flags, whole);
+    return;
+  }
+  Span *parts = span_copy(first);
+  parts->flags = 0;
+  MEOS_FLAGS_SET_WHOLE(parts->flags, whole);
+  MEOS_FLAGS_SET_PARTS(parts->flags, true);
+  out->hasPrefix = true;
+  out->prefixDatum = SpanPGetDatum(parts);
+  out->nNodes = 2;
+  out->nodeLabels = NULL;
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+  for (i = 0; i < in->nTuples; i++)
+  {
+    out->leafTupleDatums[i] = in->datums[i];
+    out->mapTuplesToNodes[i] =
+      (MEOS_FLAGS_GET_WHOLE(DatumGetSpanP(in->datums[i])->flags) == whole) ?
+      0 : 1;
+  }
+  return;
+}
+
+PGDLLEXPORT Datum Span_mquadtree_choose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mquadtree_choose);
+/**
+ * @brief Multi-entry SP-GiST choose method of the quad-tree of the sets and
+ * span sets, as #Span_quadtree_choose answers it within a structure
+ * (#span_mspgist_choose_parts)
+ */
+Datum
+Span_mquadtree_choose(PG_FUNCTION_ARGS)
+{
+  if (span_mspgist_choose_parts((spgChooseIn *) PG_GETARG_POINTER(0),
+      (spgChooseOut *) PG_GETARG_POINTER(1)))
+    PG_RETURN_VOID();
+  return Span_quadtree_choose(fcinfo);
+}
+
+PGDLLEXPORT Datum Span_mkdtree_choose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mkdtree_choose);
+/**
+ * @brief Multi-entry SP-GiST choose method of the k-d tree of the sets and
+ * span sets, as #Span_kdtree_choose answers it within a structure
+ * (#span_mspgist_choose_parts)
+ */
+Datum
+Span_mkdtree_choose(PG_FUNCTION_ARGS)
+{
+  if (span_mspgist_choose_parts((spgChooseIn *) PG_GETARG_POINTER(0),
+      (spgChooseOut *) PG_GETARG_POINTER(1)))
+    PG_RETURN_VOID();
+  return Span_kdtree_choose(fcinfo);
+}
+
+PGDLLEXPORT Datum Span_mquadtree_picksplit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mquadtree_picksplit);
+/**
+ * @brief Multi-entry SP-GiST picksplit method of the quad-tree of the sets and
+ * span sets (#span_mspgist_picksplit)
+ */
+Datum
+Span_mquadtree_picksplit(PG_FUNCTION_ARGS)
+{
+  span_mspgist_picksplit(fcinfo, Span_quadtree_picksplit);
+  PG_RETURN_VOID();
+}
+
+PGDLLEXPORT Datum Span_mkdtree_picksplit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mkdtree_picksplit);
+/**
+ * @brief Multi-entry SP-GiST picksplit method of the k-d tree of the sets and
+ * span sets (#span_mspgist_picksplit)
+ */
+Datum
+Span_mkdtree_picksplit(PG_FUNCTION_ARGS)
+{
+  span_mspgist_picksplit(fcinfo, Span_kdtree_picksplit);
+  PG_RETURN_VOID();
+}
+
 /* GENERATED-MESTCONSISTENT-BEGIN temporal — tools/codegen/inherited/generate.py from templates/mestconsistent.c.tmpl; DO NOT EDIT BY HAND;
  * edit the template + manifest.d/boxtypes.yaml and re-run. */
 
@@ -672,13 +1065,44 @@ PG_FUNCTION_INFO_V1(Span_mgist_consistent);
 Datum
 Span_mgist_consistent(PG_FUNCTION_ARGS)
 {
-  /* A key of a piece answers the strategy of #mest_pieces_strategy */
-  fcinfo->args[2].value = UInt16GetDatum(
-    mest_pieces_strategy((StrategyNumber) PG_GETARG_UINT16(2)));
+  /* A key answers by the scan, ordered or not, and by the structure of the
+   * keys under it (#mest_span_key_answers); a key of a piece answers the
+   * strategy of #mest_pieces_strategy */
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  bool ordered = PG_NARGS() > 5 && PG_GETARG_BOOL(5);
+  if (! mest_span_key_answers(DatumGetSpanP(entry->key)->flags, ordered))
+    PG_RETURN_BOOL(false);
+  if (! ordered)
+    fcinfo->args[2].value = UInt16GetDatum(
+      mest_pieces_strategy((StrategyNumber) PG_GETARG_UINT16(2)));
   Datum result = Span_gist_consistent(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;
   return result;
+}
+
+extern PGDLLEXPORT Datum Span_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_mgist_distance);
+/**
+ * @brief Multi-entry GiST distance method of the classes keyed by the spans of
+ * the pieces and of the extent of a value, as #Span_gist_distance answers it
+ * @details The distance of a value is that of its extent, which the key of a
+ * piece overstates, so a key over pieces alone lies at the maximum distance, as
+ * #Span_gist_distance places a key it cannot measure, and the value is reported at the
+ * distance of the key of its extent, the smallest of its keys
+ */
+Datum
+Span_mgist_distance(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  int16 flags = DatumGetSpanP(entry->key)->flags;
+  if (! MEOS_FLAGS_GET_WHOLE(flags) && ! MEOS_FLAGS_GET_PARTS(flags))
+  {
+    bool *recheck = (bool *) PG_GETARG_POINTER(4);
+    *recheck = false;
+    PG_RETURN_FLOAT8(DBL_MAX);
+  }
+  return Span_gist_distance(fcinfo);
 }
 
 extern PGDLLEXPORT Datum Span_kdtree_inner_consistent(PG_FUNCTION_ARGS);
@@ -688,14 +1112,42 @@ PG_FUNCTION_INFO_V1(Span_mkdtree_inner_consistent);
  * the spans of the pieces of a value, as
  * #Span_kdtree_inner_consistent answers it
  * @details The nodes are chosen for the strategies a key of a piece answers
- * (#mest_pieces_strategy)
+ * (#mest_pieces_strategy), or, in an ordered scan, which the key of the extent
+ * of a value answers (#mest_span_key_answers), for the strategies themselves
  */
 Datum
 Span_mkdtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  /* A tuple over the keys of the extents and of the pieces sends the search
+   * to the node of the structure the scan reads, where its tree starts
+   * without a traversal value; a tuple of the other structure to none
+   * (#mest_span_key_answers) */
+  const Span *centroid = DatumGetSpanP(in->prefixDatum);
+  bool ordered = in->norderbys > 0;
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags) ||
+      ! mest_span_key_answers(centroid->flags, ordered))
+  {
+    spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
+    out->nNodes = 0;
+    out->nodeNumbers = palloc(sizeof(int));
+    out->levelAdds = palloc0(sizeof(int));
+    out->traversalValues = palloc0(sizeof(void *));
+    if (ordered)
+      out->distances = palloc(sizeof(double *));
+    if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+    {
+      out->nodeNumbers[0] =
+        (MEOS_FLAGS_GET_WHOLE(centroid->flags) == ordered) ? 0 : 1;
+      if (ordered)
+        out->distances[0] = palloc0(sizeof(double) * in->norderbys);
+      out->nNodes = 1;
+    }
+    PG_RETURN_VOID();
+  }
   ScanKey keys = in->scankeys;
-  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  if (! ordered)
+    in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
   Span_kdtree_inner_consistent(fcinfo);
   if (in->scankeys != keys)
     pfree(in->scankeys);
@@ -710,14 +1162,42 @@ PG_FUNCTION_INFO_V1(Span_mquadtree_inner_consistent);
  * the spans of the pieces of a value, as
  * #Span_quadtree_inner_consistent answers it
  * @details The nodes are chosen for the strategies a key of a piece answers
- * (#mest_pieces_strategy)
+ * (#mest_pieces_strategy), or, in an ordered scan, which the key of the extent
+ * of a value answers (#mest_span_key_answers), for the strategies themselves
  */
 Datum
 Span_mquadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  /* A tuple over the keys of the extents and of the pieces sends the search
+   * to the node of the structure the scan reads, where its tree starts
+   * without a traversal value; a tuple of the other structure to none
+   * (#mest_span_key_answers) */
+  const Span *centroid = DatumGetSpanP(in->prefixDatum);
+  bool ordered = in->norderbys > 0;
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags) ||
+      ! mest_span_key_answers(centroid->flags, ordered))
+  {
+    spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
+    out->nNodes = 0;
+    out->nodeNumbers = palloc(sizeof(int));
+    out->levelAdds = palloc0(sizeof(int));
+    out->traversalValues = palloc0(sizeof(void *));
+    if (ordered)
+      out->distances = palloc(sizeof(double *));
+    if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+    {
+      out->nodeNumbers[0] =
+        (MEOS_FLAGS_GET_WHOLE(centroid->flags) == ordered) ? 0 : 1;
+      if (ordered)
+        out->distances[0] = palloc0(sizeof(double) * in->norderbys);
+      out->nNodes = 1;
+    }
+    PG_RETURN_VOID();
+  }
   ScanKey keys = in->scankeys;
-  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  if (! ordered)
+    in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
   Span_quadtree_inner_consistent(fcinfo);
   if (in->scankeys != keys)
     pfree(in->scankeys);
@@ -738,17 +1218,21 @@ Datum
 Span_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
-  /* A key of a piece answers the strategies of #mest_pieces_strategy */
+  /* A leaf answers by the scan, ordered or not (#mest_span_key_answers); a
+   * key of a piece answers the strategies of #mest_pieces_strategy, and the
+   * key of the extent the distance of the value, exactly */
+  bool ordered = in->norderbys > 0;
+  if (! mest_span_key_answers(DatumGetSpanP(in->leafDatum)->flags, ordered))
+    PG_RETURN_BOOL(false);
   ScanKey keys = in->scankeys;
-  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  if (! ordered)
+    in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
   Datum result = Span_spgist_leaf_consistent(fcinfo);
   if (in->scankeys != keys)
     pfree(in->scankeys);
   in->scankeys = keys;
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   out->recheck = true;
-  if (out->distances)
-    out->recheckDistances = true;
   return result;
 }
 
