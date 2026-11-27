@@ -125,13 +125,9 @@ jobs:
         run: |
           export PATH=/usr/lib/postgresql/${{ env.PGVER }}/bin:$PATH
           cd build
-          MOBILITYDB_TESTS='${{ matrix.tests }}' ctest -R '^regress$' --output-on-failure
-
-      - name: Show the time of every test
-        # The summary of pg_regress, one line per test with its time, from
-        # which the shards are balanced
-        if: always()
-        run: cat build/mobilitydb/test/regress/regression.out || true
+          # Verbose, so that the output of pg_regress, one line per test with
+          # its time, from which the shards are balanced, reaches the log
+          MOBILITYDB_TESTS='${{ matrix.tests }}' ctest -R '^regress$' -V
 
       - name: Show the differences
         if: failure()
