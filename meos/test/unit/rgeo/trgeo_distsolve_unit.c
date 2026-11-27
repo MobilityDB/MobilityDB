@@ -622,6 +622,50 @@ main(int argc, char **argv)
       fail++;
   }
 
+  /* 12. A root of multiplicity three whose terms cancel: f = A*w*(t - r) -
+   * A*sin(w*(t - r)) is about A*w^3*(t - r)^3 / 6 near r, the function of the
+   * walk where an edge of a body that does not turn and a vertex of a body
+   * that turns start on one line.  Near r, f and f' round to zero in doubles,
+   * as 1 - cos(x) is zero for |x| below 1.1e-8.  The first trial is the
+   * function 5t - 5 sin(t) of that walk on its interval, with r at the lower
+   * end, which is no crossing.  The others put r inside: the roots come
+   * without spending the budget, and the one crossing goes up within the
+   * width of the group of roots where |f| <= ftol */
+  {
+    int bad = 0;
+    for (int k = 0; k < trials; k++)
+    {
+      double r0 = (k == 0) ? 0.0 : rnd(0.05, 0.95);
+      double A = (k == 0) ? 5.0 : rnd(0.1, 5.0);
+      double w = (k == 0) ? 1.0 : rnd(0.5, 20.0);
+      double lo = 0.0, hi = (k == 0) ? 0.51253950810593418 : 1.0;
+      double ftol = 1.69e-12;
+      DistFun f;
+      distfun_init(&f);
+      distfun_add(&f, w, -w * r0, 0.0, 0.0, 0.0, -A);
+      distfun_add_poly(&f, 0.0, A * w, -A * w * r0);
+      double roots[DISTFUN_MAXROOTS];
+      int dirs[DISTFUN_MAXROOTS];
+      int n = distfun_roots(&f, 0.0, lo, hi, ftol, roots, DISTFUN_MAXROOTS);
+      if (n < 1)
+      {
+        bad++;
+        continue;
+      }
+      n = distfun_crossings(&f, 0.0, lo, hi, ftol, roots, dirs,
+        DISTFUN_MAXROOTS);
+      /* The group of roots: |f| <= ftol for |t - r| <= (6 ftol / (A w^3))^(1/3) */
+      double width = 2.0 * cbrt(6.0 * ftol / (A * w * w * w));
+      if (k == 0 ? n != 0 :
+          (n != 1 || dirs[0] != 1 || fabs(roots[0] - r0) > width))
+        bad++;
+    }
+    printf("12. roots of multiplicity three          failures %d %s\n", bad,
+      bad ? "FAIL" : "ok");
+    if (bad)
+      fail++;
+  }
+
   printf("\n%s\n", fail ? "FAILURES" : "all checks passed");
   return fail ? 1 : 0;
 }
