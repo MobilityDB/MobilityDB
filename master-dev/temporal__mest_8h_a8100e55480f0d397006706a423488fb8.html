@@ -87,6 +87,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__mest_8h_aba7f81ca2bf2996d4ba4338c0e86ca8f.html#aba7f81ca2bf2996d4ba4338c0e86ca8f">mest_keys_whole</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__mest_8h_ac99a2e8fdee0700c53c7a08973d43957.html#ac99a2e8fdee0700c53c7a08973d43957">mest_pieces_scankeys</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="temporal__mest_8h_a8100e55480f0d397006706a423488fb8.html#a8100e55480f0d397006706a423488fb8">mest_pieces_strategy</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__mest_8h_ae3a668da827b74ebc8657bd478b935aa.html#ae3a668da827b74ebc8657bd478b935aa">mest_span_key_answers</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__mest_8h_a55492babbf62b263175cbf6e98ea4695.html#a55492babbf62b263175cbf6e98ea4695">mest_span_keys_whole</a></td></tr>
         </table>
       </div>
    </td>
@@ -108,7 +110,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the strategy a key of a piece of a value answers in place of a strategy of a multi-entry index whose keys are spans. </p>
-<p >A span carries no flags, so a class whose keys are spans keys the pieces of a value alone, the components of a span set, the elements of a set or the pieces of a temporal value. The span of a value is the same as a query, or a value equals it, only when every piece lies within the query, so a key of a piece answers them as contained by; a value contains a query only when some piece meets it, so a key of a piece answers the contains as the overlaps. Every other strategy is its own </p><dl class="params"><dt>Parameters</dt><dd>
+<p >A class whose keys are spans keys the pieces of a value, the components of a span set, the elements of a set or the pieces of a temporal value, a set or a span set also by its extent, which a scan that is not ordered leaves out (<a class="el" href="temporal__mest_8c_ae3a668da827b74ebc8657bd478b935aa.html#ae3a668da827b74ebc8657bd478b935aa" title="Return true if a key of a multi-entry index whose keys are spans answers a scan, ordered or not.">mest_span_key_answers</a>). The span of a value is the same as a query, or a value equals it, only when every piece lies within the query, so a key of a piece answers them as contained by; a value contains a query only when some piece meets it, so a key of a piece answers the contains as the overlaps. Every other strategy is its own </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">strategy</td><td>Strategy number of the operator </td></tr>
   </table>
