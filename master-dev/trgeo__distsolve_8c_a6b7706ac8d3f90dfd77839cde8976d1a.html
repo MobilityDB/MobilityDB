@@ -173,6 +173,7 @@ $(function() {
 <li>If |f(m)| &gt; (h/2) * max|f'| over the cell, with m the middle and h the width of the cell, the cell has no root.</li>
 <li>If |f(m)| &gt; (h/2) * |f'(m)| + (h/2)^2 / 2 * max|f''| over the cell, the cell has no root, by the Taylor expansion of <code>f</code> at m. This test reads no bound of f', which is loose where <code>f</code> is the difference of two large functions that cancel.</li>
 <li>If |f'(m)| &gt; (h/2) * max|f''| over the cell, <code>f</code> is monotonic in the cell. Since <code>f</code> does not change sign, the cell has no root.</li>
+<li>If |f(m)| + (h/2) * |f'(m)| + (h/2)^2 / 2 * max|f''| &lt;= <code>ftol</code>, the bound of the Taylor test read the other way, |f| is within <code>ftol</code> in the whole cell, whose ends are then roots of one group. At a root of multiplicity three, as the one of 5t - 5 sin(t) at 0, f and f' round to zero in doubles near the root, so that no test above closes a cell there.</li>
 <li>Otherwise, it splits the cell in two.</li>
 </ul>
 <p >A value at a cell boundary that is within <code>ftol</code> of the level is also a root. Thus a function that touches the level gives one or more roots. Near a touch, many cell boundaries are within <code>ftol</code>. Of a group of such roots, the function keeps the first and the last, see <a class="el" href="trgeo__distsolve_8c_adc3908abff5fb8c51e488c39ff3fad20.html#adc3908abff5fb8c51e488c39ff3fad20" title="Remove each root that is inside a group of roots between which |g| &lt;= ftol.">root_compact()</a>.</p>
