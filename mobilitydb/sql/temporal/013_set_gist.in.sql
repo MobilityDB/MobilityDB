@@ -194,6 +194,10 @@ CREATE FUNCTION span_gist_consistent(internal, dateset, smallint, oid, internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gist_distance(internal, dateset, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
@@ -231,6 +235,7 @@ CREATE OPERATOR CLASS dateset_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(datespan, datespan, internal),
+  FUNCTION  8  span_gist_distance(internal, dateset, smallint, oid, internal),
   FUNCTION 11  span_gist_sortsupport(internal);
 
 /*****************************************************************************/
@@ -238,6 +243,10 @@ CREATE OPERATOR CLASS dateset_rtree_ops
 CREATE FUNCTION span_gist_consistent(internal, tstzset, smallint, oid, internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gist_distance(internal, tstzset, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -276,4 +285,5 @@ CREATE OPERATOR CLASS tstzset_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION  8  span_gist_distance(internal, tstzset, smallint, oid, internal),
   FUNCTION 11  span_gist_sortsupport(internal);
