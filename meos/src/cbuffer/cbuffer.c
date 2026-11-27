@@ -417,6 +417,60 @@ cbuffer_as_ewkt(const Cbuffer *cb, int maxdd, size_t *size_out)
   return spatialbase_as_ewkt(PointerGetDatum(cb), T_CBUFFER, maxdd, size_out);
 }
 
+/**
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of circular buffers, each written by #cbuffer_as_text or #cbuffer_as_ewkt
+ * @param[in] cbarr Array of circular buffers
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[in] extended True when the output is in EWKT
+ */
+static char **
+cbufferarr_wkt_out(const Cbuffer **cbarr, int count, int maxdd, bool extended)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cbarr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  char **result = palloc(sizeof(char *) * count);
+  size_t size_out;
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? cbuffer_as_ewkt(cbarr[i], maxdd, &size_out) :
+      cbuffer_as_text(cbarr[i], maxdd, &size_out);
+  return result;
+}
+
+/**
+ * @ingroup meos_cbuffer_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * circular buffers
+ * @param[in] cbarr Array of circular buffers
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_text()
+ */
+char **
+cbufferarr_as_text(const Cbuffer **cbarr, int count, int maxdd)
+{
+  return cbufferarr_wkt_out(cbarr, count, maxdd, false);
+}
+
+/**
+ * @ingroup meos_cbuffer_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of an
+ * array of circular buffers
+ * @param[in] cbarr Array of circular buffers
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_ewkt()
+ */
+char **
+cbufferarr_as_ewkt(const Cbuffer **cbarr, int count, int maxdd)
+{
+  return cbufferarr_wkt_out(cbarr, count, maxdd, true);
+}
+
 /*****************************************************************************
  * WKB and HexWKB input/output functions for circular buffers
  *****************************************************************************/

@@ -127,6 +127,8 @@ extern char *npoint_as_ewkt(const Npoint *np, int maxdd, size_t *size_out);
 extern char *npoint_as_hexewkb(const Npoint *np, uint8_t variant, size_t *size_out);
 extern char *npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out);
 extern char *npoint_as_text(const Npoint *np, int maxdd, size_t *size_out);
+extern char **npointarr_as_ewkt(const Npoint **nparr, int count, int maxdd);
+extern char **npointarr_as_text(const Npoint **nparr, int count, int maxdd);
 extern uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out);
 extern Npoint *npoint_from_hexwkb(const char *hexwkb);
 extern Npoint *npoint_from_wkb(const uint8_t *wkb, size_t size);

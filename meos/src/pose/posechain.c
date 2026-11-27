@@ -517,6 +517,60 @@ posechain_as_ewkt(const PoseChain *pc, int maxdd, size_t *size_out)
   return posechain_wkt_out(pc, true, maxdd, size_out);
 }
 
+/**
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of pose chains, each written by #posechain_as_text or #posechain_as_ewkt
+ * @param[in] posechainarr Array of pose chains
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[in] extended True when the output is in EWKT
+ */
+static char **
+posechainarr_wkt_out(const PoseChain **posechainarr, int count, int maxdd, bool extended)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(posechainarr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  char **result = palloc(sizeof(char *) * count);
+  size_t size_out;
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? posechain_as_ewkt(posechainarr[i], maxdd, &size_out) :
+      posechain_as_text(posechainarr[i], maxdd, &size_out);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * pose chains
+ * @param[in] posechainarr Array of pose chains
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_text()
+ */
+char **
+posechainarr_as_text(const PoseChain **posechainarr, int count, int maxdd)
+{
+  return posechainarr_wkt_out(posechainarr, count, maxdd, false);
+}
+
+/**
+ * @ingroup meos_posechain_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of an
+ * array of pose chains
+ * @param[in] posechainarr Array of pose chains
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_ewkt()
+ */
+char **
+posechainarr_as_ewkt(const PoseChain **posechainarr, int count, int maxdd)
+{
+  return posechainarr_wkt_out(posechainarr, count, maxdd, true);
+}
+
 /*****************************************************************************/
 
 /**

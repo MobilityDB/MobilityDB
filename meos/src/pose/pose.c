@@ -1057,6 +1057,60 @@ pose_as_ewkt(const Pose *pose, int maxdd, size_t *size_out)
   return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd, size_out);
 }
 
+/**
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of poses, each written by #pose_as_text or #pose_as_ewkt
+ * @param[in] posearr Array of poses
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[in] extended True when the output is in EWKT
+ */
+static char **
+posearr_wkt_out(const Pose **posearr, int count, int maxdd, bool extended)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(posearr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  char **result = palloc(sizeof(char *) * count);
+  size_t size_out;
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? pose_as_ewkt(posearr[i], maxdd, &size_out) :
+      pose_as_text(posearr[i], maxdd, &size_out);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * poses
+ * @param[in] posearr Array of poses
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_text()
+ */
+char **
+posearr_as_text(const Pose **posearr, int count, int maxdd)
+{
+  return posearr_wkt_out(posearr, count, maxdd, false);
+}
+
+/**
+ * @ingroup meos_pose_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of an
+ * array of poses
+ * @param[in] posearr Array of poses
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_ewkt()
+ */
+char **
+posearr_as_ewkt(const Pose **posearr, int count, int maxdd)
+{
+  return posearr_wkt_out(posearr, count, maxdd, true);
+}
+
 /*****************************************************************************
  * WKB and HexWKB input/output functions for poses
  *****************************************************************************/
