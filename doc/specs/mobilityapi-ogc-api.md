@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.6.0 |
+| Version | v1.7.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`d41015d`](https://github.com/MobilityDB/MobilityAPI/tree/d41015d): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`2970dd1`](https://github.com/MobilityDB/MobilityAPI/tree/2970dd1): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -121,6 +121,7 @@ for the geometry's interpolation, and 404 for a geometry that does not exist.
 | `form` admits any three characters | units written as register URIs, which only the URI branch matches |
 | interpolation spelled with two vocabularies | both read through one mapping (section 4.2) |
 | the instants of a temporal geometry unconstrained | RFC 3339 instants |
+| a `bbox` over a collection of geographies, and one whose minLon exceeds its maxLon | the region between two meridians and two parallels, which `eOverlaps` decides exactly against a geodetic box, a moving point along its geodesics; a box crossing the antimeridian read as the two boxes either side of it, as OGC API – Features reads it; a minLat above the maxLat refused with 400 |
 | 10 of the 16 published examples fail the schema they are attached to, 13 under JSON Schema's default reading of `format` | the count measured in the suite |
 
 The candidate resolutions of these points, as text a working group can adopt,
@@ -255,8 +256,9 @@ MobilityDB:
 
 The geometry is read in CRS84 and carried into the collection's system, or read
 as a geography over a collection of geographies (`tgeogpoint`, `tgeography`),
-which MobilityDB does not relate to a planar geometry; the rectangle of a `cube`
-over such a collection is then a polygon whose edges are geodesics. A
+which MobilityDB does not relate to a planar geometry; the bbox of a `cube` over
+such a collection is the region between two meridians and two parallels, read
+as `/items` reads its `bbox` (section 4.4). A
 `datetime`, an instant or an interval, restricts each feature to it before the
 test; an open end of an interval is the bound of the collection's time extent on
 that side. The answer is a FeatureCollection of whole features, paged as
