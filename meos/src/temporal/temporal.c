@@ -1026,10 +1026,10 @@ temporal_out(const Temporal *temp, int maxdd, size_t *size_out)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of an array of
  * temporal values
- * @param[in] temparr Array of temporal value
+ * @param[in] temparr Array of temporal values
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Number of decimal digits
  * @csqlfn #Temporalarr_as_text()
@@ -1038,9 +1038,9 @@ char **
 temparr_out(const Temporal **temparr, int count, int maxdd)
 {
   size_t str_size;
-  assert(temparr); assert(count > 0);
   /* Ensure the validity of the arguments */
-  if (! ensure_not_negative(maxdd))
+  VALIDATE_NOT_NULL(temparr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
     return NULL;
 
   char **result = palloc(sizeof(text *) * count);
