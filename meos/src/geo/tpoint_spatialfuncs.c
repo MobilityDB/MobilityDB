@@ -582,7 +582,7 @@ geogpointsegm_closest(Datum start, Datum end, Datum point)
  * @param[in] start2,end2 Coordinates of the ends of the second segment
  * @param[in] n Number of coordinates, 2 or 3
  */
-static int
+int
 pointsegm_meet_coord(const double *start1, const double *end1,
   const double *start2, const double *end2, int n)
 {
