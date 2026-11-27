@@ -349,7 +349,12 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   tier (`mest_key_answers`), and the twin of a span its `PIECES` block, which
   reads the same span as contained by (`mest_pieces_scankeys`), as the inner
   consistent twins of the SP-GiST classes of a span do
-  (`mest_inner_consistent`).
+  (`mest_inner_consistent`). The tier of every strategy is stated once in
+  `manifest.d/meststrategies.yaml`, from which the generator derives
+  `MEST_STRATEGIES`, `MEST_WHOLE_STRATEGIES` and `MEST_VALUE_STRATEGIES` and
+  renders `mest_key_answers` and `mest_pieces_strategy`
+  (`templates/mesttiers.c.tmpl`, the `GENERATED-MESTTIERS` region of
+  `temporal_mest.c`).
   The multi-entry classes of the sets and span sets come from their GiST and
   SP-GiST classes (`MEST_VALUE_FILES`, `render_valuemestfile`), into
   `mobilitydb/mest/temporal/012_spanset_m*.in.sql` and `013_set_m*.in.sql`,
