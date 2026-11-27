@@ -13,11 +13,11 @@ drafting the Stream part from. OGC holds no draft of a Stream part. Each
 requirement below is stated with its abstract test, how a working
 implementation answers it, and the test of that implementation's suite that
 measures it. The implementation is MobilityAPI at commit
-[`0f66c71`](https://github.com/MobilityDB/MobilityAPI/tree/0f66c71), over
+[`68b2b62`](https://github.com/MobilityDB/MobilityAPI/tree/68b2b62), over
 MobilityDB, whose library MEOS computes every value a query answers. Its user
 document is [MobilityAPI and the OGC API
 Standards](https://github.com/MobilityDB/MobilityDB/blob/master/doc/specs/mobilityapi-ogc-api.md)
-v2.0.0, section 5.
+v2.1.0, section 5.
 
 The proposal builds on the document titled "OGC API – Moving Features – Part 4:
 Stream Extension" (labelled YY-999), whose numbering of requirements 1 to 5 it
@@ -139,6 +139,7 @@ feature's temporal geometry restricted to the window:
 | `LENGTH` | a moving point | the distance travelled; on the spheroid in metres for a point in longitude and latitude |
 | `LENGTH` | lines or polygons | the length the feature covers during the window, each overlap counted once |
 | `AREA` | lines or polygons | the area the feature covers during the window, each overlap counted once |
+| `VOLUME` | lines or polygons | the space-time volume of the window, the integral of the feature's area over the window's time, in square units times seconds |
 | `TO_TRAJ` | a moving point | the path of the window, in GeoJSON |
 | `INTERSECT` | a moving point, lines or polygons | whether the window ever meets the query's `region` |
 
@@ -151,15 +152,18 @@ point interpolated there.
 COUNT window and over a TUMBLING window whose bound falls inside a segment;
 `INTERSECT` with a region met in one window only; over two overlapping squares,
 `AREA` counting their overlap once; over two overlapping lines, `LENGTH` counting
-it once.
+it once; over a polygon held for a known time, `VOLUME` its area times that time.
 
 *MobilityAPI.* `geometryAggregations` (`stream_geometry.go`) and `runGeometry`
 (`stream_geometry_meos.go`), through MEOS's `tpoint_length`, `tpoint_trajectory`,
-`traversed_area` with its union, `geo_length`, `geo_area` and `eintersects`.
+`traversed_area` with its union, `geo_length`, `geo_area`, `eintersects`, and
+`tgeo_space_time_volume`, `tcbuffer_space_time_volume` and
+`trgeometry_space_time_volume`, whose microseconds it reads as seconds.
 Measured by `TestLiveGeometryWindowAggregates` (a 30-minute window cut a quarter
 along a segment: 3149.867 m over 3 instants, then 1352.082 m over 1) and
 `TestLiveGeometryWindowShapes` (`AREA` 7 of two overlapping 2 × 2 squares,
-`LENGTH` 3 of lines 0–2 and 1–3).
+`LENGTH` 3 of lines 0–2 and 1–3, `VOLUME` 2400 of a 2 × 2 square held for 600
+seconds and 0 of the lines).
 
 ### Requirement 8 — what is not defined is refused
 
@@ -171,8 +175,8 @@ region or one that is no geometry.
 *Abstract test.* Submit each case and check 400 with a reason.
 
 *MobilityAPI.* `postQuery`, `parseWindow`, `postGeometryAggregate`. Measured by
-`TestLiveGeometryWindowShapes`, whose refusals include `AREA` over a point,
-`VOLUME`, `INTERSECT` without a region and with a region that is no WKT, and an
+`TestLiveGeometryWindowShapes`, whose refusals include `AREA` and `VOLUME` over a
+point, `INTERSECT` without a region and with a region that is no WKT, and an
 unknown window.
 
 ### Requirement 9 — lifecycle
@@ -243,11 +247,15 @@ applies.
   `running`. A query that starts on registration never shows it; MobilityAPI
   answers `running` at once. Either the state is dropped, or it is defined as the
   state of a query whose source has not delivered.
-- **`VOLUME` of a moving polygon.** No function of MEOS answers it, and the
-  proposal does not define it. For a polygon held from instant to instant, the
-  space-time volume is the sum of each value's area times the time it is held,
-  which is exact; for a polygon in continuous motion it needs a definition.
-  MobilityAPI refuses it.
+- **`VOLUME` of a moving polygon.** The proposal lists it for moving polygons
+  without defining it. MobilityAPI answers the space-time volume, the integral
+  of the area over the window's time: values at two instants never meet in space
+  and time, so no union is needed and the volume is as exact as the area. A
+  polygon held from instant to instant gives the sum of each value's area times
+  the time it is held; a rigid geometry, its area times the time; a circular
+  buffer whose radius moves linearly, the closed form of the integral of its disc.
+  The unit is the square unit of the collection times seconds, the unit the
+  windows are stated in; the drafting group defines the unit of the part.
 - **`AREA` and `LENGTH` of a window of shapes.** The proposal lists them for
   moving lines and polygons without defining them. MobilityAPI answers what the
   feature covers during the window, each overlap counted once, because a line
