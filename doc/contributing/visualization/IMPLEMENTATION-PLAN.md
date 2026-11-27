@@ -29,7 +29,7 @@
 | Row | Repository | What | State |
 |---|---|---|---|
 | V1 | MobilityDB | The coordinates and timestamps of each instant: `double *tpoint_coords(const Temporal *temp, double **ycoords, double **zcoords, TimestampTz **times, int *count)`, the inverse of `tpointseq_make_coords`, no SQL function (row G121 of MobilityDB #2861) | done: MobilityDB #3966, merged as `53d7dbd645` |
-| V2 | MEOS.js, PyMEOS | The bindings the viewers install, released from one tag of MobilityDB (rows X5 to X8 of MobilityDB #3928): MEOS.js 2.0.0 carries `meos.js/viewer` and decides the redundant instants of a sequence exactly | `meos.js/viewer`: MEOS.js #68, merged as `f328ad7d55`; MEOS.js 2.0.0: MEOS.js #69, a draft until every binding passes on the tag of `5093da48f5`, its surface regenerated from that commit first |
+| V2 | MEOS.js, PyMEOS | The bindings the viewers install, released from one tag of MobilityDB (rows X5 to X8 of MobilityDB #3928): MEOS.js 2.0.0 carries `meos.js/viewer` and decides the redundant instants of a sequence exactly | `meos.js/viewer`: MEOS.js #68, merged as `f328ad7d55`; MEOS.js 2.0.0: MEOS.js #69, a draft until every binding passes on the tag `v1.4.0-beta1` of `5093da48f5`, its surface regenerated from that commit first |
 | V3 | PyMEOS-CFFI | Windows wheels, so the Python of QGIS on Windows installs PyMEOS | open |
 | V4 | MobilityAPI | `asBinary` as its binary response (row IO-B24 of MobilityDB #3788) | open |
 | V5 | MobilityAPI, MobilityFlink | The watermark of a stream carried through the bridge to each event | open |
