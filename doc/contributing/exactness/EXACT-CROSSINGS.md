@@ -562,6 +562,18 @@ diffs classified:
    2026-11-19 a pair neither proved to meet nor separated is answered as no meeting, which
    is the answer of all 91, so the separation is a measure and no part of the engine; this
    closes the section 7 order.
+   MobilityDB #3976, open, branch `perf/tcbuffer-value-crossing`, one commit `bfec1210b6` on
+   master `5093da48f5`, meets a circular buffer segment and a circular buffer value as the
+   point of centre and radius standing still at that value: tsegment_intersection_value reads
+   it through tcbuffersegm_crossing, the cross products of pointsegm_meet_coord on the stored
+   doubles dated by tnumbersegm_crossing to the nearest microsecond, and the ever walk against
+   a value through tcbuffersegm_meet, so `cbuffersegm_locate`, its three serialized points and
+   its band of MEOS_EPSILON are removed. A value 1e-9 off the segment in radius or centre no
+   longer meets it, and a meeting `pointsegm_locate` dated at 23:59:59.999999 is dated at the
+   midnight the doubles round to; a CGAL::Gmpq judge agrees on 6408 rows of benchmark
+   segments against values in their middle, at their ends and moved by 1e-9. On the paired
+   tcbuffer benchmark `?=` with a static disc goes from 1.47-1.89 to 0.57-0.58 times its
+   tgeompoint counterpart and `#=` from 1.07-1.54 to 0.65-0.69, measured beside a Windows build.
    A planar meeting `tgeompointsegm_meet` decides is still DATED by truncation:
    `tsegment_intersection` reaches `tgeompointsegm_distance_turnpt`, which states
    `lower + (TimestampTz) (duration * fraction)` of a closest-approach fraction and drops a
