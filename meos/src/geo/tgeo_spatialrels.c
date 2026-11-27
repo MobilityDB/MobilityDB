@@ -1769,6 +1769,7 @@ ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * @csqlfn #Eintersects_tgeo_geo(), #Eintersects_tpose_geo(),
  * #Eintersects_tquadbin_geo(), #Eintersects_tnpoint_geo(),
  * #Eintersects_tposechain_geo()
+ * #Eintersects_th3index_geo(), #Eintersects_ts2cell_geo()
  */
 int
 eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -1799,6 +1800,7 @@ aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @csqlfn #Eintersects_geo_tgeo(), #Eintersects_geo_tpose(),
  * #Eintersects_geo_tquadbin(), #Eintersects_geo_tnpoint(),
  * #Eintersects_geo_tposechain()
+ * #Eintersects_geo_th3index(), #Eintersects_geo_ts2cell()
  */
 int
 eintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
@@ -1884,6 +1886,7 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @csqlfn #Eintersects_tgeo_tgeo(), #Eintersects_tpose_tpose(),
  * #Eintersects_tquadbin_tquadbin(), #Eintersects_tnpoint_tnpoint(),
  * #Eintersects_tposechain_tposechain()
+ * #Eintersects_th3index_th3index(), #Eintersects_ts2cell_ts2cell()
  */
 int
 eintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
