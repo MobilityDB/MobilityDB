@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.9.0 |
+| Version | v2.0.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`aa15717`](https://github.com/MobilityDB/MobilityAPI/tree/aa15717): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `stream_websocket.go`, `stream_kafka.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`bec7d9d`](https://github.com/MobilityDB/MobilityAPI/tree/bec7d9d): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `stream_websocket.go`, `stream_kafka.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -51,15 +51,14 @@ is also listed under `http://` (section 3.1).
 | standard | class | identifier |
 |---|---|---|
 | OGC API – Moving Features – Part 1: Core (OGC 22-003r3) | common, mf-collection, movingfeatures | `http://www.opengis.net/spec/ogcapi-movingfeatures-1/1.0/conf/<class>` |
-| OGC API – Moving Features – Part 4: Stream Extension (draft) | cquery | `http://www.opengis.net/spec/ogcapi-movingfeatures-4/1.0/conf/cquery` |
 | OGC API – Common – Part 1: Core (OGC 19-072) | core, landing-page | `http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/<class>` |
 | OGC API – Common – Part 2: Geospatial Data (OGC 20-024) | collections | `https://` and `http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections` |
 | OGC API – Coverages – Part 1: Core (OGC 19-087, 1.0.0rc4 draft) | core, subsetting-spatial, subsetting-temporal, field-selection, geotiff, coveragejson, netcdf | `https://` and `http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/<class>` |
 | OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, collections, queries, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
 
 The service serves 57 operations. The API definition at `GET /api` marks each
-with the class it is a requirement of (`x-conformance-class`), 43 of them, or
-as an extension (`x-mobilityapi-extension`), 14 of them (section 9). The suite
+with the class it is a requirement of (`x-conformance-class`), 38 of them, or
+as an extension (`x-mobilityapi-extension`), 19 of them (section 9). The suite
 fails if a route is served and not described, described and not served, or
 marked with a class the conformance declaration does not list.
 
@@ -131,10 +130,15 @@ Applied to the schema, every document MobilityAPI writes is valid under both
 readings of `format`, and 5 of the 16 published examples fail, the five whose
 example is wrong.
 
-## 5. Moving Features Part 4
+## 5. Continuous queries
 
-The Continuous Query class is implemented after the draft MobilityAPI reads,
-keyed by its requirement numbers.
+The continuous queries follow the Stream proposal for OGC API – Moving Features,
+titled "Part 4: Stream Extension". OGC holds no draft of a Stream part, so the
+service claims no conformance class for them: every route of a continuous query
+is a MobilityAPI extension (section 9), and the conformance declaration lists no
+class of a Moving Features Part 4. The requirements of the proposal's Continuous
+Query, keyed by the numbers it gives them, are met as follows, each by code and a
+test `CONFORMANCE.md` names.
 
 | requirement | answer |
 |---|---|
@@ -306,6 +310,7 @@ same document. The class `covjson` of EDR 1.1 is declared.
 | `PUT /collections/{collectionId}/items/{mFeatureId}` | a moving feature replaced |
 | `GET /collections/{collectionId}/export` | the collection as NDJSON, or GeoParquet with a bbox and time sidecar |
 | `POST /collections/{collectionId}/bulk` | a batch of observations appended |
+| `POST`, `GET`, `DELETE .../tproperties/{tPropertyName}/queries[/{queryId}]`, `GET .../queries/{queryId}/stream` | continuous queries over a temporal property (section 5), streamed as Server-Sent Events |
 | `POST .../tproperties/{tPropertyName}/ingest` | records pushed to a live continuous query |
 | `POST`, `GET`, `DELETE .../tgsequence/queries[/{queryId}]`, `GET .../queries/{queryId}/stream` | continuous queries over a temporal geometry, streamed as Server-Sent Events |
 | `GET .../tproperties/{tPropertyName}/queries/{queryId}/ws`, `GET .../tgsequence/queries/{queryId}/ws` | the results of a continuous query over a WebSocket |
@@ -362,8 +367,6 @@ at its major number when an answer stated here changes.
 ## 12. Out of scope
 
 - The `VOLUME` of Table 7 of the Stream proposal.
-- A newer Part 4 draft, describing a Continuous Query resource with `id`,
-  `pubtime`, `target`, `filter` and `queryResult`.
 - The LAS and LAZ encodings of the Coverages draft, which encode point clouds,
   not the coverage of a raster collection.
 
@@ -389,7 +392,8 @@ queries over Server-Sent Events.
 
 The authoritative statement is the service's source and its suite at the
 commit named in the header: the conformance declaration (`conformsTo`), the
-route table (`routeTable`), the Part 4 requirements (`CONFORMANCE.md`) and the
+route table (`routeTable`), the requirements of the Stream proposal
+(`CONFORMANCE.md`) and the
 surface (`api/surface.json`). A correction to this document is a change to
 MobilityAPI's behaviour or to the suite that measures it, stated here with its
 version raised.
