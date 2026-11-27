@@ -261,6 +261,7 @@ extern TSequenceSet *tcbufferseqset_from_base_tstzspanset(const Cbuffer *cb, con
 extern Cbuffer *tcbuffer_end_value(const Temporal *temp);
 extern Set *tcbuffer_points(const Temporal *temp);
 extern Set *tcbuffer_radius(const Temporal *temp);
+extern double tcbuffer_space_time_volume(const Temporal *temp);
 extern GSERIALIZED *tcbuffer_traversed_area(const Temporal *temp, bool unary_union);
 extern GSERIALIZED *tcbuffer_convex_hull(const Temporal *temp);
 extern Cbuffer *tcbuffer_start_value(const Temporal *temp);

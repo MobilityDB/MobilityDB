@@ -1035,6 +1035,23 @@ SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
 </programlisting>
 				<para>El argumento es falso salvo que se indique, y la función responde entonces las piezas que barre el búfer, cada una un disco o la región que un disco barre entre dos instantes consecutivos, reunidas en una geometría. Con <varname>unary_union = true</varname> se disuelven en la región que cubren, calculada de forma exacta: cada encuentro de los círculos y de los segmentos que los unen se decide sobre las coordenadas de entrada, ningún arco se reemplaza por segmentos y solo se redondean los vértices del resultado, cada uno una vez. El resultado conserva sus arcos, como <varname>CURVEPOLYGON</varname> o <varname>MULTISURFACE</varname>. Donde el búfer mantiene un radio nulo, la línea o el punto que traza y que ningún disco cubre se devuelve junto a las superficies en una <varname>GEOMETRYCOLLECTION</varname>. Donde el cálculo no puede decidir un encuentro o un orden de los bordes, la función genera un error en lugar de responder una aproximación.</para>
 			</listitem>
+			<listitem xml:id="tcbuffer_spaceTimeVolume">
+				<indexterm significance="normal"><primary><varname>spaceTimeVolume</varname></primary></indexterm>
+				<para>Devuelve el volumen espacio-temporal del búfer circular temporal, la integral del área de su disco sobre el tiempo</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spaceTimeVolume(tcbuffer) → float
+</programlisting>
+				<para>El radio de un segmento en interpolación lineal varía linealmente entre sus instantes, y el volumen del segmento se calcula exactamente en forma cerrada; el movimiento del centro no cambia ningún área. El tiempo se lee en microsegundos, como lo lee <link linkend="tnumber_integral"><varname>integral</varname></link>, por lo que el resultado está en las unidades cuadradas del búfer por microsegundos. Un búfer de instantes tiene un volumen cero.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round((spaceTimeVolume(tcbuffer '[Cbuffer(Point(1 1),1)@2001-01-01,
+  Cbuffer(Point(5 5),2)@2001-01-02]') / (24 * 3600 * 1e6 * pi()))::numeric, 6);
+-- 2.333333
+SELECT round((spaceTimeVolume(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1),1)@2001-01-01,
+  Cbuffer(Point(5 5),2)@2001-01-02]') / (24 * 3600 * 1e6 * pi()))::numeric, 6);
+-- 1.000000
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcbuffer_centroid">
 				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
 				<para>Devuelve el punto geométrico temporal dado por los centros de un búfer circular temporal</para>

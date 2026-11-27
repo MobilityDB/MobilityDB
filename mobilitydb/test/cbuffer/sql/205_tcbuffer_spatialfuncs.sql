@@ -8,6 +8,13 @@ SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.3)@2001-01-01, Cb
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-02]'));
 SELECT ST_AsText(traversedArea(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(5 5),0.5)@2001-01-02], [Cbuffer(Point(9 9),0.5)@2001-01-03, Cbuffer(Point(12 12),0.5)@2001-01-04]}'));
 
+-- Space-time volume, the integral of the area of the disc over the time in
+-- microseconds, read here in days and over pi
+SELECT round((spaceTimeVolume(tcbuffer '[Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(5 5),2)@2001-01-02]') / (24 * 3600 * 1e6 * pi()))::numeric, 6);
+SELECT round((spaceTimeVolume(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(5 5),2)@2001-01-02]') / (24 * 3600 * 1e6 * pi()))::numeric, 6);
+SELECT spaceTimeVolume(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
+SELECT spaceTimeVolume(NULL::tcbuffer);
+
 -------------------------------------------------------------------------------
 -- Restriction to a geometry (atGeometry / minusGeometry)
 -- The restriction is by the circular disk footprint, not the centre path: the
