@@ -148,6 +148,11 @@ INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&< floatspan', (SELECT COUNT(*
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&< tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp &< t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&< tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp &< t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&< tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&& tstzspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&& floatspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&& tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&& tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&& tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&> floatspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&> tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp &> t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&> tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp &> t2.b)::text);
@@ -156,11 +161,26 @@ INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('>> floatspan', (SELECT COUNT(*
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('>> tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp >> t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('>> tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp >> t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('>> tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('~= floatspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('~= tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('~= tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('~= tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('@> tstzspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('@> floatspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('@> tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('@> tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('@> tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('<@ floatspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp <@ t2.v)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('<@ tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp <@ t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('<@ tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp <@ t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('<@ tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('-|- floatspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('-|- tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('-|- tbox x', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('-|- tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&<# tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp &<# t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('&<# tfloat', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &<# t2.temp)::text);
@@ -176,9 +196,17 @@ INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('#&> tfloat', (SELECT COUNT(*) 
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('?&& tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ?&& t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('%&& tbox', (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp %&& t2.b)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox >> tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tstzspan && tfloat', (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox && tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox << tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tstzspan ~= tfloat', (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox ~= tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tstzspan <@ tfloat', (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox <@ tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tstzspan @> tfloat', (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox @> tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tstzspan -|- tfloat', (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text);
+INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox -|- tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tstzspan #>> tfloat', (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tbox #>> tfloat', (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b #>> t1.temp)::text);
 INSERT INTO test_tfloat_mest(op, no_idx) VALUES ('tstzspan <<# tfloat', (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <<# t1.temp)::text);
@@ -217,6 +245,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -241,6 +284,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -256,6 +329,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -301,15 +389,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -367,6 +479,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -391,6 +518,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -406,6 +563,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -451,15 +623,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -517,6 +713,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -541,6 +752,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -556,6 +797,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -601,15 +857,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -667,6 +947,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -691,6 +986,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -706,6 +1031,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -751,15 +1091,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -817,6 +1181,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -841,6 +1220,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -856,6 +1265,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -901,15 +1325,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -967,6 +1415,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -991,6 +1454,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1006,6 +1499,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1051,15 +1559,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -1117,6 +1649,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -1141,6 +1688,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1156,6 +1733,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1201,15 +1793,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -1267,6 +1883,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -1291,6 +1922,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1306,6 +1967,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1351,15 +2027,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -1417,6 +2117,21 @@ WHERE op = '&< tbox x';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp && t2.v')
+WHERE op = '&& floatspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& tbox x';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tfloat';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp &> t2.v')
 WHERE op = '&> floatspan';
@@ -1441,6 +2156,36 @@ WHERE op = '>> tbox x';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp ~= t2.v')
+WHERE op = '~= floatspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= tbox x';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp @> t2.v')
+WHERE op = '@> floatspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> tbox x';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tfloat';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1456,6 +2201,21 @@ WHERE op = '<@ tbox x';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_vspan t2 WHERE t1.temp -|- t2.v')
+WHERE op = '-|- floatspan';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- tbox x';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tfloat';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_idx t1, tbl_tfloat_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1501,15 +2261,39 @@ WHERE op = '%&& tbox';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'tbox >> tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'tbox && tfloat';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'tbox << tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'tbox ~= tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'tbox <@ tfloat';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tfloat';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'tbox @> tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tfloat';
+UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_box t2, tbl_tfloat_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'tbox -|- tfloat';
 UPDATE test_tfloat_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tfloat_span t2, tbl_tfloat_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tfloat';
@@ -1546,7 +2330,7 @@ SELECT COUNT(*) FROM tbl_tfloat_idx;
 SELECT COUNT(*) FROM test_tfloat_mest;
  count 
 -------
-    46
+    74
 (1 row)
 
 SELECT op, no_idx FROM test_tfloat_mest ORDER BY op;
@@ -1559,6 +2343,11 @@ SELECT op, no_idx FROM test_tfloat_mest ORDER BY op;
  #>> tfloat          | 143144
  #>> tstzspan        | 263919
  %&& tbox            | 207
+ && floatspan        | 226448
+ && tbox             | 523
+ && tbox x           | 190844
+ && tfloat           | 123
+ && tstzspan         | 725
  &< floatspan        | 252931
  &< tbox             | 251557
  &< tbox x           | 211604
@@ -1570,6 +2359,11 @@ SELECT op, no_idx FROM test_tfloat_mest ORDER BY op;
  &> tbox             | 219584
  &> tbox x           | 156577
  &> tfloat           | 133886
+ -|- floatspan       | 16
+ -|- tbox            | 16
+ -|- tbox x          | 14
+ -|- tfloat          | 14
+ -|- tstzspan        | 14
  << floatspan        | 156069
  << tbox             | 124110
  << tbox x           | 144217
@@ -1587,18 +2381,36 @@ SELECT op, no_idx FROM test_tfloat_mest ORDER BY op;
  >> tbox x           | 84779
  >> tfloat           | 41644
  ?&& tbox            | 476
+ @> floatspan        | 109311
+ @> tbox             | 58
+ @> tbox x           | 103725
+ @> tfloat           | 38
+ @> tstzspan         | 67
  tbox #>> tfloat     | 216802
+ tbox && tfloat      | 523
+ tbox -|- tfloat     | 16
  tbox << tfloat      | 90415
  tbox <<# tfloat     | 254776
+ tbox <@ tfloat      | 58
  tbox >> tfloat      | 124110
  tbox @> tfloat      | 207
+ tbox ~= tfloat      | 17
  tstzspan #>> tfloat | 207676
+ tstzspan && tfloat  | 725
+ tstzspan -|- tfloat | 14
  tstzspan <<# tfloat | 263919
+ tstzspan <@ tfloat  | 67
  tstzspan @> tfloat  | 597
+ tstzspan ~= tfloat  | 12
  |=| floatspan       | 0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000
  |=| tbox            | 0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.965566,6.836356,12.210976,27.352849,37.873562
  |=| tfloat          | 0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.033136,0.318053,0.365626,0.547634,0.705385,6.232650,7.322202,9.692857,14.244562,27.352849,37.873562
-(46 rows)
+ ~= floatspan        | 18
+ ~= tbox             | 17
+ ~= tbox x           | 12
+ ~= tfloat           | 17
+ ~= tstzspan         | 12
+(74 rows)
 
 SELECT * FROM test_tfloat_mest
 WHERE no_idx IS DISTINCT FROM rtree_equi_idx OR NOT rtree_equi_probe OR

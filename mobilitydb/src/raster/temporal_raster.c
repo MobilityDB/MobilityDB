@@ -1514,10 +1514,13 @@ Raster_rescale(PG_FUNCTION_ARGS)
 /**
  * @brief Return the summarystats record of the statistics of a band
  * @details The record #Raster_summary_stats answers, built as the PostGIS
- * RASTER_summaryStats builds it, and the one the aggregate answers. An error
- * in MEOS never returns here, so missing statistics are a band with no pixel
- * to count: the record PostGIS answers for it counts none and states no
- * statistic, rather than being no record at all. The statistics are freed
+ * RASTER_summaryStats builds it, and the one the aggregate answers; the inverse
+ * of #record_bandstats, which reads a record counting no pixel back as
+ * statistics counting none. Statistics counting no pixel, which MEOS answers
+ * for a band none of whose pixels carries a value, are the record PostGIS
+ * answers for it, counting none and stating no statistic; so are missing
+ * statistics, the answer of the aggregate over no raster. The statistics are
+ * freed
  */
 static Datum
 bandstats_record(FunctionCallInfo fcinfo, BandStats *stats)
@@ -1530,11 +1533,13 @@ bandstats_record(FunctionCallInfo fcinfo, BandStats *stats)
   tupdesc = BlessTupleDesc(tupdesc);
   Datum values[6];
   bool isnull[6] = {false, false, false, false, false, false};
-  if (! stats)
+  if (! stats || stats->count == 0)
   {
     values[0] = Int64GetDatum(0);
     for (int i = 1; i < 6; i++)
       isnull[i] = true;
+    if (stats)
+      pfree(stats);
   }
   else
   {

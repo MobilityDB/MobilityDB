@@ -276,7 +276,8 @@ bbox_same_structure(MeosType bboxtype, const void *box1, const void *box2)
   {
     const TBox *b1 = (const TBox *) box1, *b2 = (const TBox *) box2;
     if (MEOS_FLAGS_GET_X(b1->flags) != MEOS_FLAGS_GET_X(b2->flags) ||
-        MEOS_FLAGS_GET_T(b1->flags) != MEOS_FLAGS_GET_T(b2->flags))
+        MEOS_FLAGS_GET_T(b1->flags) != MEOS_FLAGS_GET_T(b2->flags) ||
+        MEOS_FLAGS_GET_WHOLE(b1->flags) != MEOS_FLAGS_GET_WHOLE(b2->flags))
       return false;
     return ! MEOS_FLAGS_GET_X(b1->flags) ||
       b1->span.spantype == b2->span.spantype;
@@ -293,7 +294,8 @@ bbox_same_structure(MeosType bboxtype, const void *box1, const void *box2)
     if (MEOS_FLAGS_GET_X(f1) != MEOS_FLAGS_GET_X(f2) ||
         MEOS_FLAGS_GET_Z(f1) != MEOS_FLAGS_GET_Z(f2) ||
         MEOS_FLAGS_GET_T(f1) != MEOS_FLAGS_GET_T(f2) ||
-        MEOS_FLAGS_GET_GEODETIC(f1) != MEOS_FLAGS_GET_GEODETIC(f2))
+        MEOS_FLAGS_GET_GEODETIC(f1) != MEOS_FLAGS_GET_GEODETIC(f2) ||
+        MEOS_FLAGS_GET_WHOLE(f1) != MEOS_FLAGS_GET_WHOLE(f2))
       return false;
     return ! MEOS_FLAGS_GET_X(f1) || b1->srid == b2->srid;
   }
@@ -984,7 +986,7 @@ tnumber_set_tbox(const Temporal *temp, TBox *box)
  * @param[in] lower_inc, upper_inc True when the corresponding bound is
  * inclusive, false otherwise
  * @param[in] interp Interpolation
- * @param[in] box Box
+ * @param[out] box Box
  */
 static void
 tnumberinstarr_set_tbox(TInstant **instants, int count, bool lower_inc,
@@ -993,6 +995,9 @@ tnumberinstarr_set_tbox(TInstant **instants, int count, bool lower_inc,
   assert(tnumber_type(instants[0]->temptype));
   MeosType basetype = temptype_basetype(instants[0]->temptype);
   MeosType spantype = basetype_spantype(basetype);
+  /* Zero-fill the box, whose flags are set bit by bit below, as
+   * #tnumberinst_set_tbox does */
+  memset(box, 0, sizeof(TBox));
   /* For discrete or step interpolation the bounds are always inclusive */
   bool lower_inc1 = lower_inc;
   bool upper_inc1 = upper_inc;
@@ -1658,10 +1663,11 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
   assert(span_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= span_count) ? ss->totalcount : span_count;
-  Span *result = palloc(sizeof(Span) * nboxes);
   if (ss->totalcount <= span_count)
     return tsequenceset_spans(ss, count);
+
+  /* At most span_count boxes, the segments being more */
+  Span *result = palloc(sizeof(Span) * span_count);
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */
@@ -2438,10 +2444,11 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
   assert(box_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
-  TBox *result = palloc(sizeof(TBox) * nboxes);
   if (ss->totalcount <= box_count)
     return tnumberseqset_tboxes(ss, count);
+
+  /* At most box_count boxes, the segments being more */
+  TBox *result = palloc(sizeof(TBox) * box_count);
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */

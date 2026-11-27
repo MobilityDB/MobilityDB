@@ -708,6 +708,280 @@ def mest_indextest_file(path: str) -> str:
     return "mobilitydb/test/mest/sql/" + name
 
 
+# The fixture table of a type of the sets and span sets, or of their base or
+# span type, `tbl_<name>(k, <column>)`, its column named by the base type
+_VALUE_FIXTURES = (("bigint", "b"), ("int", "i"), ("float", "f"), ("date", "d"),
+                   ("tstz", "t"), ("timestamptz", "t"))
+_VALUE_BASES = {"integer": "int", "bigint": "bigint", "float": "float",
+                "date": "date", "timestamptz": "timestamptz"}
+
+
+def _value_fixture(typ: str) -> tuple:
+    """The fixture table of the type `typ` and its column"""
+    name = _VALUE_BASES.get(typ, typ)
+    col = next(c for pfx, c in _VALUE_FIXTURES if name.startswith(pfx))
+    return f"tbl_{name}", col
+
+
+# The control of the multi-entry tests: for one type of each kind of key, the
+# class of its segment split and a control class, the same class with the
+# consistent method of the single-entry class, which reads a key as if it were
+# the whole value and so answers some operators wrongly. The test, written
+# with the template and the comparison of every multi-entry test, passes only
+# if the comparison notices the control (MEST_CONTROL_TEST)
+MEST_CONTROL_TYPES = (
+    ("tbool", "mobilitydb/mest/temporal/043_temporal_mgist.in.sql", "temp"),
+    ("tgeompoint", "mobilitydb/mest/geo/073_tpoint_mgist.in.sql", "temp"),
+    ("intspanset", "mobilitydb/mest/temporal/012_spanset_mgist.in.sql", "i"))
+MEST_CONTROL_TEST = "mobilitydb/test/mest/sql/000_mest_control_tbl.sql"
+# The fixture of a right argument of a control row, `tbl_<name>(k, <column>)`,
+# and the strategies its values cannot take, those of the z axis, the fixture of
+# a temporal point having two dimensions
+_CONTROL_FIXTURES = {"tbool": ("tbool", "temp"), "tgeompoint": ("tgeompoint", "temp"),
+                     "tstzspan": ("tstzspan", "t"), "stbox": ("stbox", "b"),
+                     "intspanset": ("intspanset", "i"), "intspan": ("intspan", "i"),
+                     "integer": ("int", "i")}
+_CONTROL_SKIPPED = {32, 33, 34, 35}
+
+
+def render_mestcontroltest() -> str:
+    """The control of the multi-entry tests, templates/mestindextest.sql.tmpl
+    filled once per type of #MEST_CONTROL_TYPES: the class of the segment
+    split of the R-tree, as the generated file of the type writes it, and its
+    control, the same class whose consistent method is that of the single-
+    entry class, each answering every member of the class with a right
+    argument of a fixture, the distance left out, a column each; the rows of
+    the control differing from the scan are the expected output"""
+    q = "'"
+    parts = []
+    for typ, path, col in MEST_CONTROL_TYPES:
+        text = (ROOT / path).read_text()
+        cls = re.search(rf"CREATE OPERATOR CLASS {typ}_mrtree_segsplit_ops\n.*?;\n",
+                        text, re.S).group(0)
+        control = (cls.replace(f"{typ}_mrtree_segsplit_ops",
+                               f"{typ}_mrtree_control_ops", 1)
+                   .replace("_mgist_consistent(", "_gist_consistent(", 1))
+        rows = []
+        for st, op, right in re.findall(
+                rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\),?$", cls, re.M):
+            if right not in _CONTROL_FIXTURES or int(st) in _CONTROL_SKIPPED:
+                continue
+            rtbl, rcol = _CONTROL_FIXTURES[right]
+            rows.append((f"{op} {right}",
+                         f"SELECT COUNT(*) FROM tbl_{typ}_idx t1, tbl_{rtbl} t2 "
+                         f"WHERE t1.{col} {op} t2.{rcol}"))
+        cols = [("rtree_seg", f"{typ}_mrtree_segsplit_ops"),
+                ("control", f"{typ}_mrtree_control_ops")]
+        blocks = []
+        for c, opclass in cols:
+            b = ["-" * 79, "",
+                 f"CREATE INDEX tbl_{typ}_idx_{c} ON tbl_{typ}_idx",
+                 f"  USING mgist({col} {opclass});",
+                 "SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+                 "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+            for label, query in rows:
+                b += [f"UPDATE test_{typ}_mest SET {c}_idx = ({query})::text,",
+                      f"  {c}_probe = pg_temp.test_probes_index("
+                      f"'{query.replace(q, q * 2)}')",
+                      f"WHERE op = '{label}';"]
+            b += ["RESET enable_seqscan;", "RESET enable_hashjoin;",
+                  "RESET enable_mergejoin;", "RESET enable_sort;",
+                  f"DROP INDEX tbl_{typ}_idx_{c};", ""]
+            blocks.append("\n".join(b))
+        header = textwrap.fill(
+            f"The control of the multi-entry tests for a {typ}: the class of the "
+            "segment split of the R-tree and its control, the same class whose "
+            "consistent method is that of the single-entry class, which reads a "
+            "key as the whole value. The rows printed are those where an index "
+            "differs from the sequential scan: none of the class, and some of "
+            "the control, which the comparison of every multi-entry test notices.",
+            width=83, initial_indent="-- ", subsequent_indent="-- ")
+        tables = (f"DROP TABLE IF EXISTS tbl_{typ}_idx;\n"
+                  f"CREATE TEMP TABLE tbl_{typ}_idx AS TABLE tbl_{typ};\n"
+                  f"ANALYZE tbl_{typ}_idx;\n\n" + control)
+        part = read_template("mestindextest.sql.tmpl")
+        for k, v in (("{HEADER}", header), ("{TABLES}", tables),
+                     ("{COLUMNS}", ",\n".join(f"  {c}_idx text, {c}_probe boolean"
+                                              for c, _ in cols)),
+                     ("{ROWS}", "\n".join(f"INSERT INTO test_{typ}_mest(op, no_idx) "
+                                          f"VALUES ('{label}', ({qr})::text);"
+                                          for label, qr in rows)),
+                     ("{BLOCKS}", "\n".join(blocks)[:-1]),
+                     ("{COUNTS}", f"SELECT COUNT(*) FROM tbl_{typ}_idx;"),
+                     ("{DIFFER}", " OR\n  ".join(f"no_idx IS DISTINCT FROM {c}_idx OR "
+                                                 f"NOT {c}_probe" for c, _ in cols)),
+                     ("{DROPS}", f"DROP TABLE tbl_{typ}_idx;\n"
+                                 f"DROP OPERATOR FAMILY {typ}_mrtree_control_ops "
+                                 "USING mgist;"),
+                     ("{TEMP}", typ)):
+            part = part.replace(k, v)
+        parts.append(part)
+    return "\n".join(parts)
+
+
+# The multi-entry test of the temporal point clouds, every class of the GiST
+# and SP-GiST files of the point clouds, its rows those of the class of the
+# segment split of the R-tree with a right argument of a fixture
+MEST_TPC_TYPES = ("tpcpoint", "tpcpatch")
+MEST_TPC_FILES = ("mobilitydb/mest/pointcloud/439_tpc_mgist.in.sql",
+                  "mobilitydb/mest/pointcloud/440_tpc_mspgist.in.sql")
+MEST_TPC_TEST = "mobilitydb/test/mest/sql/439_tpc_mest_tbl.sql"
+_TPC_FIXTURES = {"tpcpoint": ("tpcpoint", "temp"), "tpcpatch": ("tpcpatch", "temp"),
+                 "tpcbox": ("tpcbox", "b"), "tstzspan": ("tstzspan", "t")}
+
+
+def render_tpcmesttest() -> str:
+    """The multi-entry test of the temporal point clouds,
+    templates/mestindextest.sql.tmpl filled once per type of #MEST_TPC_TYPES as
+    #render_mestindextest fills it: every member of the class of the segment
+    split of the R-tree with a right argument of #_TPC_FIXTURES, the distance
+    left out, answered by the scan and under the index of every class of
+    #MEST_TPC_FILES, a column each"""
+    q = "'"
+    texts = [(ROOT / f).read_text() for f in MEST_TPC_FILES]
+    parts = []
+    for typ in MEST_TPC_TYPES:
+        seg = re.search(rf"CREATE OPERATOR CLASS {typ}_mrtree_segsplit_ops\n.*?;\n",
+                        texts[0], re.S).group(0)
+        rows = []
+        for st, op, right in re.findall(
+                rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\),?$", seg, re.M):
+            if right not in _TPC_FIXTURES:
+                continue
+            rtbl, rcol = _TPC_FIXTURES[right]
+            rows.append((f"{op} {right}",
+                         f"SELECT COUNT(*) FROM tbl_{typ}_idx t1, tbl_{rtbl} t2 "
+                         f"WHERE t1.temp {op} t2.{rcol}"))
+        cols = []
+        for text, am in zip(texts, ("mgist", "mspgist")):
+            for kind, split in re.findall(
+                    rf"CREATE OPERATOR CLASS {typ}_m(rtree|quadtree|kdtree)_(\w+?)split_ops",
+                    text):
+                cols.append((f"{kind}_{split}", f"{typ}_m{kind}_{split}split_ops", am))
+        blocks = []
+        for c, opclass, am in cols:
+            b = ["-" * 79, "",
+                 f"CREATE INDEX tbl_{typ}_idx_{c} ON tbl_{typ}_idx",
+                 f"  USING {am}(temp {opclass});",
+                 "SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+                 "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+            for label, query in rows:
+                b += [f"UPDATE test_{typ}_mest SET {c}_idx = ({query})::text,",
+                      f"  {c}_probe = pg_temp.test_probes_index("
+                      f"'{query.replace(q, q * 2)}')",
+                      f"WHERE op = '{label}';"]
+            b += ["RESET enable_seqscan;", "RESET enable_hashjoin;",
+                  "RESET enable_mergejoin;", "RESET enable_sort;",
+                  f"DROP INDEX tbl_{typ}_idx_{c};", ""]
+            blocks.append("\n".join(b))
+        header = textwrap.fill(
+            f"The multi-entry R-tree mgist, quad-tree and k-d tree mspgist indexes "
+            f"of a {typ}, keyed by the boxes of its pieces and of the whole value, "
+            "one per split. Under each index every operator the class holds, with "
+            "each right argument of a fixture, answers the rows a sequential scan "
+            "gives, from a plan that probes the index.",
+            width=83, initial_indent="-- ", subsequent_indent="-- ")
+        tables = (f"DROP TABLE IF EXISTS tbl_{typ}_idx;\n"
+                  f"CREATE TEMP TABLE tbl_{typ}_idx AS TABLE tbl_{typ};\n"
+                  f"ANALYZE tbl_{typ}_idx;\n")
+        part = read_template("mestindextest.sql.tmpl")
+        for k, v in (("{HEADER}", header), ("{TABLES}", tables),
+                     ("{COLUMNS}", ",\n".join(f"  {c}_idx text, {c}_probe boolean"
+                                              for c, _, _ in cols)),
+                     ("{ROWS}", "\n".join(f"INSERT INTO test_{typ}_mest(op, no_idx) "
+                                          f"VALUES ('{label}', ({qr})::text);"
+                                          for label, qr in rows)),
+                     ("{BLOCKS}", "\n".join(blocks)[:-1]),
+                     ("{COUNTS}", f"SELECT COUNT(*) FROM tbl_{typ}_idx;"),
+                     ("{DIFFER}", " OR\n  ".join(f"no_idx IS DISTINCT FROM {c}_idx OR "
+                                                 f"NOT {c}_probe" for c, _, _ in cols)),
+                     ("{DROPS}", f"DROP TABLE tbl_{typ}_idx;"), ("{TEMP}", typ)):
+            part = part.replace(k, v)
+        parts.append(part)
+    return "\n".join(parts)
+
+
+def valuemest_test_files() -> list:
+    """The multi-entry tests of the sets and span sets, as (type, the GiST class
+    of the type, the test file)"""
+    out = []
+    for path in MEST_VALUE_FILES:
+        if not path.endswith("_gist.in.sql"):
+            continue
+        nnn = path.rsplit("/", 1)[1].split("_", 1)[0]
+        for base, typ in re.findall(
+                r"(CREATE OPERATOR CLASS (\w+?)_rtree_ops\n.*?;\n)",
+                (ROOT / path).read_text(), re.S):
+            out.append((typ, base,
+                        f"mobilitydb/test/mest/sql/{nnn}_{typ}_mest_tbl.sql"))
+    return out
+
+
+def render_valuemesttest(typ: str, base: str) -> str:
+    """The multi-entry index test of the set or span set `typ` whose GiST class
+    is `base`, templates/mestindextest.sql.tmpl filled as #render_mestindextest
+    fills it: every member of #MEST_VALUE_STRATEGIES the class holds, with each
+    right argument it declares, answered by the scan and under the index of
+    each tree and split of #render_valuemestfile, a column each: the number of
+    pairs of the fixture of `typ` and of the right argument it holds on"""
+    tbl, col = _value_fixture(typ)
+    q = "'"
+    rows = []
+    for st, op, right in re.findall(
+            rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\)", base, re.M):
+        if int(st) not in MEST_VALUE_STRATEGIES:
+            continue
+        rtbl, rcol = _value_fixture(right)
+        label = f"{op} {right}"
+        query = (f"SELECT COUNT(*) FROM {tbl}_idx t1, {rtbl} t2 "
+                 f"WHERE t1.{col} {op} t2.{rcol}")
+        rows.append((label, query))
+    cols = [(kind, split) for kind in TEMPOPCLASS_KINDS for split in MEST_VALUE_SPLITS]
+    blocks = []
+    for kind, split in cols:
+        am = "mgist" if TEMPOPCLASS_KINDS[kind] == "gist" else "mspgist"
+        c = f"{kind}_{split}"
+        b = ["-" * 79, "",
+             f"CREATE INDEX {tbl}_idx_{c} ON {tbl}_idx",
+             f"  USING {am}({col} {typ}_m{kind}_{split}split_ops);",
+             "SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+             "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+        for label, query in rows:
+            b += [f"UPDATE test_{typ}_mest SET {c}_idx = ({query})::text,",
+                  f"  {c}_probe = pg_temp.test_probes_index("
+                  f"'{query.replace(q, q * 2)}')",
+                  f"WHERE op = '{label}';"]
+        b += ["RESET enable_seqscan;", "RESET enable_hashjoin;",
+              "RESET enable_mergejoin;", "RESET enable_sort;",
+              f"DROP INDEX {tbl}_idx_{c};", ""]
+        blocks.append("\n".join(b))
+    header = textwrap.fill(
+        f"The multi-entry R-tree mgist, quad-tree and k-d tree mspgist indexes of a "
+        f"{typ}, keyed by the spans of its "
+        f"{'components' if 'spanset' in typ else 'elements'}, one per split "
+        f"({', '.join(MEST_VALUE_SPLITS)}). Under each index every operator the "
+        "class holds, with each right argument it declares, answers the rows a "
+        "sequential scan gives, from a plan that probes the index.",
+        width=83, initial_indent="-- ", subsequent_indent="-- ")
+    tables = (f"DROP TABLE IF EXISTS {tbl}_idx;\n"
+              f"CREATE TEMP TABLE {tbl}_idx AS TABLE {tbl};\n"
+              f"ANALYZE {tbl}_idx;\n")
+    text = read_template("mestindextest.sql.tmpl")
+    for k, v in (("{HEADER}", header), ("{TABLES}", tables),
+                 ("{COLUMNS}", ",\n".join(f"  {k}_{s}_idx text, {k}_{s}_probe boolean"
+                                          for k, s in cols)),
+                 ("{ROWS}", "\n".join(f"INSERT INTO test_{typ}_mest(op, no_idx) VALUES "
+                                      f"('{label}', ({qr})::text);"
+                                      for label, qr in rows)),
+                 ("{BLOCKS}", "\n".join(blocks)[:-1]),
+                 ("{COUNTS}", f"SELECT COUNT(*) FROM {tbl}_idx;"),
+                 ("{DIFFER}", " OR\n  ".join(f"no_idx IS DISTINCT FROM {k}_{s}_idx OR "
+                                             f"NOT {k}_{s}_probe" for k, s in cols)),
+                 ("{DROPS}", f"DROP TABLE {tbl}_idx;"), ("{TEMP}", typ)):
+        text = text.replace(k, v)
+    return text
+
+
 def render_mestindextest(test: dict, sub: dict, which: int = 0) -> str | None:
     """The multi-entry index test of the subtype `sub` over the values of the
     dimension `which` of its entry `test` of manifest.d/indextests.yaml,
@@ -1544,19 +1818,179 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
 # A class holds the members of the GiST or SP-GiST class of its type that a
 # value answers when every box of its pieces answers it (#MEST_STRATEGIES).
 MEST_AM = {"gist": "mgist", "spgist": "mspgist"}
-# The strategies a multi-entry class serves. The keys of a value are the boxes
-# of its pieces, each within the box of the value, so a predicate holding on
-# the box of the value when it holds on every piece (the position operators
-# of every axis, contained by) is held by some key of every value answering
-# it, as the ever overlaps is, and the always overlaps; the nearest approach
-# distance is bounded below by the distance to the nearest key. Overlaps,
-# same, contains and adjacent read the box of the whole value, which a query
-# between two pieces meets and no key does, and stay with the scan.
-MEST_STRATEGIES = {1, 2, 4, 5, 8, 9, 10, 11, 12, 25, 28, 29, 30, 31, 32, 33,
-                   34, 35, 36, 37}
+# The tier of every strategy a multi-entry class holds, stated once in
+# manifest.d/meststrategies.yaml: the strategies every class of a temporal
+# type holds, answered by the keys of its pieces (MEST_STRATEGIES); those a
+# class whose box carries flags answers from the key of the box of the whole
+# value (MEST_WHOLE_STRATEGIES, #mest_keys_whole, #mest_key_answers); and those
+# a class of a set or a span set holds (MEST_VALUE_STRATEGIES). A key of a
+# piece answers a strategy as the one its entry names (#mest_pieces_strategy)
+MEST_TIERS = load_manifest().get("meststrategies") or []
+MEST_STRATEGIES = {e["num"] for e in MEST_TIERS
+                   if e.get("boxes") == "pieces" or "spans" in e}
+MEST_WHOLE_STRATEGIES = {e["num"] for e in MEST_TIERS if e.get("boxes") == "whole"}
+MEST_WHOLE_BOXES = ("tbox", "stbox", "tpcbox")
+# The names of the strategies the C of the multi-entry classes reads, those of
+# access/stratnum.h of PostgreSQL and of meos/include/temporal/meos_catalog.h
+MEST_STRATEGY_NAMES = {3: "RTOverlapStrategyNumber", 6: "RTSameStrategyNumber",
+                       7: "RTContainsStrategyNumber",
+                       8: "RTContainedByStrategyNumber",
+                       17: "RTAdjacentStrategyNumber", 18: "RTEqualStrategyNumber"}
 MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
                 "merge": "mest_count_options", "adapt": "mest_count_options",
                 "tile": "mest_tile_options", "bin": "mest_bin_options"}
+
+
+# The multi-entry classes of the sets and span sets, keyed by the spans of the
+# elements or the components of a value as its splits group them. The overlaps,
+# the contains, the contained by and the equals of a set or a span set read its
+# elements or its components, so some key of a value answering them passes the
+# test of the overlaps (overlaps, contains) or of contained by (contained by,
+# equals) against the span of the query; a position operator and the adjacency
+# read the first or the last of them. The classes hold no distance: the
+# distance to a key is a lower bound, rechecked, which PostgreSQL accepts only
+# from an operator returning a float, and the distance of an integer, a date or
+# a timestamp is none; an ordered scan of mspgist over the keys of a set of
+# floats split into several keys fails with "index returned tuples in wrong
+# order". The classes are those of the GiST and SP-GiST files of
+# MEST_VALUE_FILES, each split of #MEST_VALUE_SPLITS taking the extraction
+# method of the set or the span set (Set_mest_*split, Spanset_mest_*split)
+MEST_VALUE_STRATEGIES = {e["num"] for e in MEST_TIERS if "values" in e}
+MEST_VALUE_FILES = ("mobilitydb/sql/temporal/012_spanset_gist.in.sql",
+                    "mobilitydb/sql/temporal/012_spanset_spgist.in.sql",
+                    "mobilitydb/sql/temporal/013_set_gist.in.sql",
+                    "mobilitydb/sql/temporal/013_set_spgist.in.sql")
+MEST_VALUE_SPLITS = ("equi", "seg", "merge", "adapt")
+
+
+def render_valuemestfile(path: str, declared: set) -> str:
+    """The multi-entry classes of the sets or the span sets of the GiST or
+    SP-GiST file `path`, a class per class of the file and per split of
+    #MEST_VALUE_SPLITS, as #render_mestfile writes those of a box type: the
+    members of #MEST_VALUE_STRATEGIES the class holds, its consistent methods
+    the twins of those of the class (#mest_consistent, #mest_inner_consistent),
+    its compress method that of every multi-entry class and its extraction
+    method that of the set or the span set; `declared` holds the functions the
+    files before declare"""
+    text = (ROOT / path).read_text()
+    stem = "spanset" if "_spanset_" in path else "set"
+    am = "gist" if path.endswith("_gist.in.sql") else "spgist"
+    out, classes = [], []
+    for base, typ, kind in re.findall(
+            r"(CREATE OPERATOR CLASS (\w+?)_(rtree|quadtree|kdtree)_ops\n.*?;\n)",
+            text, re.S):
+        funcs = {int(n): f for n, f in
+                 re.findall(r"^  FUNCTION +(\d+) +(.*?)[,;]?$", base, re.M)}
+        members = _mest_members(base, held=MEST_VALUE_STRATEGIES)
+        storage = re.search(r"^  STORAGE (\w+),", base, re.M)
+        for split in MEST_VALUE_SPLITS:
+            options = MEST_OPTIONS[split] + "(internal)"
+            extract = f"{stem}_mest_{split}split(internal, internal, internal)"
+            default = "DEFAULT " if split == "equi" and kind in ("rtree", "quadtree") \
+                else ""
+            if am == "gist":
+                fl = [f"  FUNCTION  1 {mest_consistent(funcs[1])}",
+                      f"  FUNCTION  2 {funcs[2]}",
+                      "  FUNCTION  3 mest_gist_compress(internal)",
+                      f"  FUNCTION  5 {funcs[5]}",
+                      f"  FUNCTION  6 {funcs[6]}",
+                      f"  FUNCTION  7 {funcs[7]}"]
+                if 8 in funcs:
+                    fl.append(f"  FUNCTION  8 {funcs[8]}")
+                fl += [f"  FUNCTION 10 {options}", f"  FUNCTION 13 {extract}"]
+                head = (f"CREATE OPERATOR CLASS {typ}_m{kind}_{split}split_ops\n"
+                        f"  {default}FOR TYPE {typ} USING mgist AS\n"
+                        f"  STORAGE {storage.group(1)},\n")
+            else:
+                inner = funcs[4].replace(f"_{kind}_inner_consistent(",
+                                         f"_m{kind}_inner_consistent(", 1)
+                fl = [f"  FUNCTION  1 {funcs[1]}",
+                      f"  FUNCTION  2 {funcs[2]}",
+                      f"  FUNCTION  3 {funcs[3]}",
+                      f"  FUNCTION  4 {inner}",
+                      f"  FUNCTION  5 {mest_consistent(funcs[5])}",
+                      "  FUNCTION  6 mest_spgist_compress(internal)",
+                      f"  FUNCTION  7 {options}",
+                      f"  FUNCTION  8 {extract}"]
+                head = (f"CREATE OPERATOR CLASS {typ}_m{kind}_{split}split_ops\n"
+                        f"  {default}FOR TYPE {typ} USING mspgist AS\n")
+            classes.append(head + "\n".join(members) + "\n  -- functions\n"
+                           + ",\n".join(fl) + ";\n")
+    for split in MEST_VALUE_SPLITS:
+        if (stem, split) in declared:
+            continue
+        declared.add((stem, split))
+        cstem = stem.capitalize()
+        out.append(f"CREATE FUNCTION {stem}_mest_{split}split"
+                   "(internal, internal, internal)\n  RETURNS internal\n"
+                   f"  AS 'MODULE_PATHNAME', '{cstem}_mest_{split}split'\n"
+                   "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
+    for twin, args, orig in mest_twins_of("\n".join(classes)):
+        if ("consistent", twin, args) in declared:
+            continue
+        declared.add(("consistent", twin, args))
+        rettype = "void" if twin.endswith("_inner_consistent") else "boolean"
+        out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS {rettype}\n"
+                   f"  AS 'MODULE_PATHNAME', "
+                   f"'{mest_twin_symbol(sql_c_symbol(orig))}'\n"
+                   "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
+    return "\n".join(out + classes)
+
+
+def mest_pieces_map() -> dict:
+    """The strategy a key of a piece answers each strategy as, where another
+    (manifest.d/meststrategies.yaml, `spans` and `values`), one strategy for
+    both kinds of class"""
+    out = {}
+    for e in MEST_TIERS:
+        for kind in ("spans", "values"):
+            to = e.get(kind)
+            if to is None or to == "self":
+                continue
+            if out.get(e["num"], to) != to:
+                sys.exit(f"meststrategies: strategy {e['num']} is answered as "
+                         f"{out[e['num']]} and as {to}")
+            out[e["num"]] = to
+    return out
+
+
+def _mest_strategy_list(nums) -> str:
+    """The C test of a strategy against the strategies `nums`"""
+    return " ||\n    ".join(f"strategy == {MEST_STRATEGY_NAMES[n]}"
+                             for n in sorted(nums))
+
+
+def render_mesttiers() -> str:
+    """The C of the tiers of the multi-entry classes, templates/mesttiers.c.tmpl
+    filled from manifest.d/meststrategies.yaml: the strategies the key of the
+    box of the whole value answers (#mest_key_answers) and the strategy a key
+    of a piece answers each strategy as (#mest_pieces_strategy)"""
+    groups = {}
+    for frm, to in sorted(mest_pieces_map().items()):
+        groups.setdefault(to, []).append(frm)
+    pieces = "".join(f"  if ({_mest_strategy_list(frm)})\n"
+                     f"    return {MEST_STRATEGY_NAMES[to]};\n"
+                     for to, frm in sorted(groups.items()))
+    return (read_template("mesttiers.c.tmpl")
+            .replace("{WHOLE}", _mest_strategy_list(MEST_WHOLE_STRATEGIES))
+            .replace("{PIECES}", pieces))
+
+
+def _mesttiers_markers():
+    """BEGIN/END markers of the tiers of the multi-entry classes, as
+    #_mestconsistent_markers marks the consistent twins"""
+    begin = ("/* GENERATED-MESTTIERS-BEGIN — tools/codegen/inherited/generate.py "
+             "from templates/mesttiers.c.tmpl;\n * DO NOT EDIT BY HAND; edit the "
+             "template + manifest.d/meststrategies.yaml and re-run. */\n")
+    return begin, "/* GENERATED-MESTTIERS-END */\n"
+
+
+def splice_mesttiers(filetext: str, rendered: str) -> str:
+    """Replace the text strictly between the markers of the tiers"""
+    begin, end = _mesttiers_markers()
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
 
 
 def mest_path(path: str) -> str:
@@ -1582,7 +2016,7 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
     sfn = tc.get("spgistfn", "stbox")
     am = TEMPOPCLASS_KINDS[kind]
     base = _tempopclass_text(temp, kind)
-    members = _mest_members(base)
+    members = _mest_members(base, box in MEST_WHOLE_BOXES)
     options = ((oc.get("mestoptions") or {}).get(split) or MEST_OPTIONS[split]) \
         + "(internal)"
     extract = (f"{(stem or oc['meststem']).lower()}_mest_{split}split"
@@ -1613,7 +2047,7 @@ def render_mestopclass(temp: str, bt: dict, kind: str, split: str,
                  "(internal, internal)",
                  f"  FUNCTION  2 {sfn}_{kind}_choose(internal, internal)",
                  f"  FUNCTION  3 {sfn}_{kind}_picksplit(internal, internal)",
-                 f"  FUNCTION  4 {sfn}_{kind}_inner_consistent(internal, internal)",
+                 f"  FUNCTION  4 {mest_inner_consistent(sfn, kind, box)}",
                  f"  FUNCTION  5 {mest_consistent(sfn + '_spgist_leaf_consistent(internal, internal)')}",
                  "  FUNCTION  6 mest_spgist_compress(internal)",
                  f"  FUNCTION  7 {options}",
@@ -1641,9 +2075,13 @@ def _tempopclass_text(temp: str, kind: str) -> str:
     return render_family_tempopclass(kind, sub)
 
 
-def _mest_members(base: str) -> list:
+def _mest_members(base: str, whole: bool = False, held: set = None) -> list:
     """The members of the class `base` a multi-entry class holds, the
-    strategies of #MEST_STRATEGIES, each under the comment it has there"""
+    strategies of #MEST_STRATEGIES, each under the comment it has there, and
+    those of #MEST_WHOLE_STRATEGIES where the class keys the box of the whole
+    value beside the boxes of its pieces (`whole`), or the strategies `held`"""
+    if held is None:
+        held = MEST_STRATEGIES | (MEST_WHOLE_STRATEGIES if whole else set())
     body = base.split("\n  -- functions\n")[0].split("\n")
     out, comment = [], None
     for line in body:
@@ -1651,7 +2089,7 @@ def _mest_members(base: str) -> list:
             comment = line
             continue
         m = re.match(r"  OPERATOR +(\d+) ", line)
-        if m and int(m.group(1)) in MEST_STRATEGIES:
+        if m and int(m.group(1)) in held:
             if comment:
                 out.append(comment)
                 comment = None
@@ -1676,9 +2114,11 @@ def sql_c_symbol(name: str) -> str:
 
 def mest_twin_symbol(symbol: str) -> str:
     """The C symbol of the multi-entry twin of the consistent method `symbol`,
-    as #mest_consistent names its SQL function"""
-    return (symbol.replace("_gist_consistent", "_mgist_consistent", 1)
-            .replace("_spgist_leaf_consistent", "_mspgist_leaf_consistent", 1))
+    as #mest_consistent and #mest_inner_consistent name its SQL function"""
+    return re.sub(r"_(quadtree|kdtree)_inner_consistent", r"_m\1_inner_consistent",
+                  symbol.replace("_gist_consistent", "_mgist_consistent", 1)
+                  .replace("_spgist_leaf_consistent", "_mspgist_leaf_consistent",
+                           1), count=1)
 
 
 def mest_twins_of(text: str) -> list:
@@ -1686,9 +2126,12 @@ def mest_twins_of(text: str) -> list:
     (twin SQL name, its arguments, original SQL name)"""
     out = []
     for twin, args in re.findall(
-            r"FUNCTION +[15] (\w+_m(?:gist|spgist_leaf)_consistent)\(([^)]*)\)", text):
-        orig = (twin.replace("_mgist_consistent", "_gist_consistent", 1)
-                .replace("_mspgist_leaf_consistent", "_spgist_leaf_consistent", 1))
+            r"FUNCTION +[145] (\w+_m(?:gist|spgist_leaf|quadtree_inner|kdtree_inner)"
+            r"_consistent)\(([^)]*)\)", text):
+        orig = re.sub(r"_m(quadtree|kdtree)_inner_consistent", r"_\1_inner_consistent",
+                      twin.replace("_mgist_consistent", "_gist_consistent", 1)
+                      .replace("_mspgist_leaf_consistent", "_spgist_leaf_consistent",
+                               1), count=1)
         if (twin, args, orig) not in out:
             out.append((twin, args, orig))
     return out
@@ -1697,11 +2140,26 @@ def mest_twins_of(text: str) -> list:
 def render_mestconsistent(symbols: list) -> str:
     """The C bodies of the consistent twins of the GiST and SP-GiST methods
     `symbols`, from templates/mestconsistent.c.tmpl, whose first chunk is a
-    GiST twin and whose chunk after `/* SPGIST */` an SP-GiST leaf one"""
-    gist, spgist = read_template("mestconsistent.c.tmpl").split("/* SPGIST */\n")
+    GiST twin, whose chunk after `/* SPGIST */` an SP-GiST leaf one and whose
+    chunk after `/* SPGIST-INNER */` an SP-GiST inner one"""
+    gist, rest = read_template("mestconsistent.c.tmpl").split("/* SPGIST */\n")
+    spgist, inner = rest.split("/* SPGIST-INNER */\n")
     out = []
     for sym in symbols:
-        chunk = spgist if "_spgist_leaf_consistent" in sym else gist
+        chunk = (spgist if "_spgist_leaf_consistent" in sym else
+                 inner if "_inner_consistent" in sym else gist)
+        # A key carrying flags (an stbox, which a tpcbox begins with, or a tbox)
+        # answers by its tier, the TIER block of the template; a span carries
+        # no flags and keys the pieces alone, so its twin answers the same span
+        # from the keys of the pieces, as contained by, the PIECES block
+        keytype = ("STBox" if sym.startswith(("Stbox_", "Tpcbox_")) else
+                   "TBox" if sym.startswith(("Tnumber_", "Tbox_")) else None)
+        keep, drop = ("TIER", "PIECES") if keytype else ("PIECES", "TIER")
+        chunk = re.sub(rf"/\* {keep}-(BEGIN|END) \*/\n", "", chunk)
+        chunk = re.sub(rf"/\* {drop}-BEGIN \*/\n.*?/\* {drop}-END \*/\n", "", chunk,
+                       flags=re.S)
+        if keytype:
+            chunk = chunk.replace("{KEYTYPE}", keytype)
         out.append(chunk.replace("{SYM}", sym)
                    .replace("{TWIN}", mest_twin_symbol(sym)).strip("\n") + "\n")
     return "\n" + "\n".join(out) + "\n"
@@ -1734,6 +2192,17 @@ def mest_consistent(signature: str) -> str:
     covering a part of a value (#render_mestconsistent)"""
     return (signature.replace("_gist_consistent(", "_mgist_consistent(", 1)
             .replace("_spgist_leaf_consistent(", "_mspgist_leaf_consistent(", 1))
+
+
+def mest_inner_consistent(sfn: str, kind: str, box: str) -> str:
+    """The SP-GiST inner consistent method of a multi-entry class of the tree
+    `kind` over the box type `box`: that of the SP-GiST class of `sfn`, whose
+    nodes a key carrying flags reaches as a key of the class does, or, for a key
+    of a span, its twin choosing the nodes of the same span as of contained by
+    (#render_mestconsistent)"""
+    sig = f"{sfn}_{kind}_inner_consistent(internal, internal)"
+    return sig if box in MEST_WHOLE_BOXES else sig.replace(
+        f"_{kind}_inner_consistent(", f"_m{kind}_inner_consistent(", 1)
 
 
 def render_mestfile(bt: dict, am: str, partners: list, strategies: list,
@@ -1778,7 +2247,8 @@ def render_mestfile(bt: dict, am: str, partners: list, strategies: list,
             if ("consistent", twin, args) in declared:
                 continue
             declared.add(("consistent", twin, args))
-            out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS boolean\n"
+            rettype = "void" if twin.endswith("_inner_consistent") else "boolean"
+            out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS {rettype}\n"
                        f"  AS 'MODULE_PATHNAME', "
                        f"'{mest_twin_symbol(sql_c_symbol(orig))}'\n"
                        "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
@@ -6634,6 +7104,13 @@ def render_boxmest(row: dict) -> str:
         name = re.match(r"\{CSTEM\}_mest_(\w+)split\)", chunk).group(1)
         chunks[name] = "\nPG_FUNCTION_INFO_V1(" + chunk.rstrip("\n") + "\n"
     out = "".join(chunks[s] for s in row["mestsplits"])
+    # A box carrying flags (a tbox, an stbox, a tpcbox) gains the key of the box
+    # of the whole value, marked as a structure of its own (#mest_keys_whole),
+    # which the box operators read; a span carries no flags and keys the pieces
+    # alone
+    keys = ("mest_keys(boxes, sizeof(Span), *nkeys)" if row["CTYPE"] == "Span"
+            else "mest_keys_whole(temp, boxes, sizeof({CTYPE}), nkeys)")
+    out = out.replace("{KEYS}", keys)
     for key in ("CSTEM", "PFX", "BOXES", "CTYPE", "NOUN", "NOUNBOXES"):
         out = out.replace("{" + key + "}", row[key])
     return out + "\n"
@@ -6817,6 +7294,24 @@ def main() -> int:
                             break
                     if len(g) != len(c):
                         print(f"     line count gen={len(g)} cur={len(c)}")
+        # The multi-entry test of the temporal point clouds
+        p = ROOT / MEST_TPC_TEST
+        same = p.exists() and p.read_text() == render_tpcmesttest()
+        ok = ok and same
+        print(f"[{'OK ' if same else 'DIFF'}] self-regen mest tpc -> {MEST_TPC_TEST}")
+        # The control of the multi-entry tests
+        p = ROOT / MEST_CONTROL_TEST
+        same = p.exists() and p.read_text() == render_mestcontroltest()
+        ok = ok and same
+        print(f"[{'OK ' if same else 'DIFF'}] self-regen mest control -> "
+              f"{MEST_CONTROL_TEST}")
+        # The multi-entry tests of the sets and span sets
+        for typ, base, f in valuemest_test_files():
+            p = ROOT / f
+            same = p.exists() and p.read_text() == render_valuemesttest(typ, base)
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen mest valuetest {typ} "
+                  f"-> {f}")
         # The index tests, each the test #render_indextest writes for its type
         bytemp = {sub["temp"]: sub for sub in mf["subtypes"]}
         for test, which, f in [(t, i, f) for t in mf.get("indextests", [])
@@ -7344,6 +7839,14 @@ def main() -> int:
                 mp = ROOT / mest_indextest_file(f)
                 mp.write_text(text)
                 print(f"wrote {mp.relative_to(ROOT)}")
+    # The multi-entry tests of the sets and span sets
+    for typ, base, f in valuemest_test_files():
+        p = ROOT / f
+        if args.check:
+            print(f"would write {f}")
+            continue
+        p.write_text(render_valuemesttest(typ, base))
+        print(f"wrote {f}")
 
     for fam in mf.get("tempspatialrel_families", []):
         p = ROOT / fam["file"]
@@ -7433,6 +7936,11 @@ def main() -> int:
     # class taking it, as #render_mestfile states; a file holding no class is
     # left out
     declared = set()
+    # The multi-entry classes of the sets and span sets, whose files load
+    # first and so declare the twins of the span the later files take
+    for path in MEST_VALUE_FILES:
+        mestfiles.setdefault(mest_path(path), []).append(
+            render_valuemestfile(path, declared))
     for bt in mf.get("boxtypes", []):
         oc = bt.get("opclasses") or {}
         if not oc.get("mestsplits"):
@@ -7979,6 +8487,27 @@ def main() -> int:
             twins.setdefault(target, [])
             if sym not in twins[target]:
                 twins[target].append(sym)
+    # The control of the multi-entry tests (#render_mestcontroltest), from the
+    # classes the files above hold
+    if args.check:
+        print(f"would write {MEST_CONTROL_TEST}")
+    else:
+        (ROOT / MEST_CONTROL_TEST).write_text(render_mestcontroltest())
+        print(f"wrote {MEST_CONTROL_TEST}")
+    # The multi-entry test of the temporal point clouds (#render_tpcmesttest)
+    if args.check:
+        print(f"would write {MEST_TPC_TEST}")
+    else:
+        (ROOT / MEST_TPC_TEST).write_text(render_tpcmesttest())
+        print(f"wrote {MEST_TPC_TEST}")
+    # The tiers of the multi-entry classes (#render_mesttiers)
+    target = "mobilitydb/src/temporal/temporal_mest.c"
+    if args.check:
+        print(f"would splice mesttiers -> {target}")
+    else:
+        p = ROOT / target
+        p.write_text(splice_mesttiers(p.read_text(), render_mesttiers()))
+        print(f"spliced mesttiers -> {target}")
     for target, syms in sorted(twins.items()):
         fam = pathlib.Path(target).parent.name
         if args.check:

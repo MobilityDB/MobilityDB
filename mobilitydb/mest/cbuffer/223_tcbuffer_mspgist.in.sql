@@ -45,12 +45,24 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -67,6 +79,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -109,12 +125,24 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -131,6 +159,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -173,12 +205,24 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -195,6 +239,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -237,12 +285,24 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -259,6 +319,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -301,12 +365,24 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -323,6 +399,10 @@ CREATE OPERATOR CLASS tcbuffer_mquadtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -365,12 +445,24 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -387,6 +479,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -429,12 +525,24 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -451,6 +559,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -493,12 +605,24 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -515,6 +639,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -557,12 +685,24 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -579,6 +719,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
@@ -621,12 +765,24 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tcbuffer, stbox),
   OPERATOR  2    &< (tcbuffer, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (tcbuffer, tstzspan),
+  OPERATOR  3    && (tcbuffer, stbox),
+  OPERATOR  3    && (tcbuffer, tcbuffer),
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
   -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (tcbuffer, tstzspan),
+  OPERATOR  6    ~= (tcbuffer, stbox),
+  OPERATOR  6    ~= (tcbuffer, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (tcbuffer, tstzspan),
+  OPERATOR  7    @> (tcbuffer, stbox),
+  OPERATOR  7    @> (tcbuffer, tcbuffer),
   -- contained by
   OPERATOR  8    <@ (tcbuffer, tstzspan),
   OPERATOR  8    <@ (tcbuffer, stbox),
@@ -643,6 +799,10 @@ CREATE OPERATOR CLASS tcbuffer_mkdtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tcbuffer, stbox),
   OPERATOR  12    |&> (tcbuffer, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (tcbuffer, tstzspan),
+  OPERATOR  17    -|- (tcbuffer, stbox),
+  OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
   OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,

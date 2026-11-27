@@ -39,6 +39,9 @@
 
 CREATE OPERATOR CLASS tjsonb_mquadtree_equisplit_ops
   DEFAULT FOR TYPE tjsonb USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -62,7 +65,7 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_equisplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -70,6 +73,9 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_equisplit_ops
 
 CREATE OPERATOR CLASS tjsonb_mquadtree_segsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -93,7 +99,7 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_segsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -101,6 +107,9 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_segsplit_ops
 
 CREATE OPERATOR CLASS tjsonb_mquadtree_binsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -124,7 +133,7 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_binsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_quadtree_choose(internal, internal),
   FUNCTION  3 span_quadtree_picksplit(internal, internal),
-  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),
@@ -132,6 +141,9 @@ CREATE OPERATOR CLASS tjsonb_mquadtree_binsplit_ops
 
 CREATE OPERATOR CLASS tjsonb_mkdtree_equisplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -155,7 +167,7 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_equisplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -163,6 +175,9 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_equisplit_ops
 
 CREATE OPERATOR CLASS tjsonb_mkdtree_segsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -186,7 +201,7 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_segsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_count_options(internal),
@@ -194,6 +209,9 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_segsplit_ops
 
 CREATE OPERATOR CLASS tjsonb_mkdtree_binsplit_ops
   FOR TYPE tjsonb USING mspgist AS
+  -- same
+  OPERATOR  6    ~= (tjsonb, tstzspan),
+  OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contained by
   OPERATOR  8    <@# (tjsonb, tstzspan),
   OPERATOR  8    <@# (tjsonb, tjsonb),
@@ -217,7 +235,7 @@ CREATE OPERATOR CLASS tjsonb_mkdtree_binsplit_ops
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
   FUNCTION  2 span_kdtree_choose(internal, internal),
   FUNCTION  3 span_kdtree_picksplit(internal, internal),
-  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
   FUNCTION  7 mest_bin_options(internal),

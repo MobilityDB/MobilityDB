@@ -51,12 +51,24 @@ CREATE OPERATOR CLASS tquadbin_mrtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tquadbin, stbox),
   OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps
+  OPERATOR  3    && (tquadbin, tstzspan),
+  OPERATOR  3    && (tquadbin, stbox),
+  OPERATOR  3    && (tquadbin, tquadbin),
   -- overlaps or right
   OPERATOR  4    &> (tquadbin, stbox),
   OPERATOR  4    &> (tquadbin, tquadbin),
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
+  -- contains
+  OPERATOR  7    @> (tquadbin, tstzspan),
+  OPERATOR  7    @> (tquadbin, stbox),
+  OPERATOR  7    @> (tquadbin, tquadbin),
   -- contained by
   OPERATOR  8    <@ (tquadbin, tstzspan),
   OPERATOR  8    <@ (tquadbin, stbox),
@@ -73,6 +85,10 @@ CREATE OPERATOR CLASS tquadbin_mrtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tquadbin, stbox),
   OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- adjacent
+  OPERATOR  17    -|- (tquadbin, tstzspan),
+  OPERATOR  17    -|- (tquadbin, stbox),
+  OPERATOR  17    -|- (tquadbin, tquadbin),
   -- overlaps or before
   OPERATOR  28    &<# (tquadbin, tstzspan),
   OPERATOR  28    &<# (tquadbin, stbox),
@@ -112,12 +128,24 @@ CREATE OPERATOR CLASS tquadbin_mrtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tquadbin, stbox),
   OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps
+  OPERATOR  3    && (tquadbin, tstzspan),
+  OPERATOR  3    && (tquadbin, stbox),
+  OPERATOR  3    && (tquadbin, tquadbin),
   -- overlaps or right
   OPERATOR  4    &> (tquadbin, stbox),
   OPERATOR  4    &> (tquadbin, tquadbin),
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
+  -- contains
+  OPERATOR  7    @> (tquadbin, tstzspan),
+  OPERATOR  7    @> (tquadbin, stbox),
+  OPERATOR  7    @> (tquadbin, tquadbin),
   -- contained by
   OPERATOR  8    <@ (tquadbin, tstzspan),
   OPERATOR  8    <@ (tquadbin, stbox),
@@ -134,6 +162,10 @@ CREATE OPERATOR CLASS tquadbin_mrtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tquadbin, stbox),
   OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- adjacent
+  OPERATOR  17    -|- (tquadbin, tstzspan),
+  OPERATOR  17    -|- (tquadbin, stbox),
+  OPERATOR  17    -|- (tquadbin, tquadbin),
   -- overlaps or before
   OPERATOR  28    &<# (tquadbin, tstzspan),
   OPERATOR  28    &<# (tquadbin, stbox),
@@ -173,12 +205,24 @@ CREATE OPERATOR CLASS tquadbin_mrtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tquadbin, stbox),
   OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps
+  OPERATOR  3    && (tquadbin, tstzspan),
+  OPERATOR  3    && (tquadbin, stbox),
+  OPERATOR  3    && (tquadbin, tquadbin),
   -- overlaps or right
   OPERATOR  4    &> (tquadbin, stbox),
   OPERATOR  4    &> (tquadbin, tquadbin),
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
+  -- contains
+  OPERATOR  7    @> (tquadbin, tstzspan),
+  OPERATOR  7    @> (tquadbin, stbox),
+  OPERATOR  7    @> (tquadbin, tquadbin),
   -- contained by
   OPERATOR  8    <@ (tquadbin, tstzspan),
   OPERATOR  8    <@ (tquadbin, stbox),
@@ -195,6 +239,10 @@ CREATE OPERATOR CLASS tquadbin_mrtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tquadbin, stbox),
   OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- adjacent
+  OPERATOR  17    -|- (tquadbin, tstzspan),
+  OPERATOR  17    -|- (tquadbin, stbox),
+  OPERATOR  17    -|- (tquadbin, tquadbin),
   -- overlaps or before
   OPERATOR  28    &<# (tquadbin, tstzspan),
   OPERATOR  28    &<# (tquadbin, stbox),
@@ -234,12 +282,24 @@ CREATE OPERATOR CLASS tquadbin_mrtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tquadbin, stbox),
   OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps
+  OPERATOR  3    && (tquadbin, tstzspan),
+  OPERATOR  3    && (tquadbin, stbox),
+  OPERATOR  3    && (tquadbin, tquadbin),
   -- overlaps or right
   OPERATOR  4    &> (tquadbin, stbox),
   OPERATOR  4    &> (tquadbin, tquadbin),
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
+  -- contains
+  OPERATOR  7    @> (tquadbin, tstzspan),
+  OPERATOR  7    @> (tquadbin, stbox),
+  OPERATOR  7    @> (tquadbin, tquadbin),
   -- contained by
   OPERATOR  8    <@ (tquadbin, tstzspan),
   OPERATOR  8    <@ (tquadbin, stbox),
@@ -256,6 +316,10 @@ CREATE OPERATOR CLASS tquadbin_mrtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tquadbin, stbox),
   OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- adjacent
+  OPERATOR  17    -|- (tquadbin, tstzspan),
+  OPERATOR  17    -|- (tquadbin, stbox),
+  OPERATOR  17    -|- (tquadbin, tquadbin),
   -- overlaps or before
   OPERATOR  28    &<# (tquadbin, tstzspan),
   OPERATOR  28    &<# (tquadbin, stbox),
@@ -295,12 +359,24 @@ CREATE OPERATOR CLASS tquadbin_mrtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tquadbin, stbox),
   OPERATOR  2    &< (tquadbin, tquadbin),
+  -- overlaps
+  OPERATOR  3    && (tquadbin, tstzspan),
+  OPERATOR  3    && (tquadbin, stbox),
+  OPERATOR  3    && (tquadbin, tquadbin),
   -- overlaps or right
   OPERATOR  4    &> (tquadbin, stbox),
   OPERATOR  4    &> (tquadbin, tquadbin),
   -- strictly right
   OPERATOR  5    >> (tquadbin, stbox),
   OPERATOR  5    >> (tquadbin, tquadbin),
+  -- same
+  OPERATOR  6    ~= (tquadbin, tstzspan),
+  OPERATOR  6    ~= (tquadbin, stbox),
+  OPERATOR  6    ~= (tquadbin, tquadbin),
+  -- contains
+  OPERATOR  7    @> (tquadbin, tstzspan),
+  OPERATOR  7    @> (tquadbin, stbox),
+  OPERATOR  7    @> (tquadbin, tquadbin),
   -- contained by
   OPERATOR  8    <@ (tquadbin, tstzspan),
   OPERATOR  8    <@ (tquadbin, stbox),
@@ -317,6 +393,10 @@ CREATE OPERATOR CLASS tquadbin_mrtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tquadbin, stbox),
   OPERATOR  12    |&> (tquadbin, tquadbin),
+  -- adjacent
+  OPERATOR  17    -|- (tquadbin, tstzspan),
+  OPERATOR  17    -|- (tquadbin, stbox),
+  OPERATOR  17    -|- (tquadbin, tquadbin),
   -- overlaps or before
   OPERATOR  28    &<# (tquadbin, tstzspan),
   OPERATOR  28    &<# (tquadbin, stbox),

@@ -144,10 +144,26 @@ CREATE TEMP TABLE test_tgeogpoint_mest(op text, no_idx text,
   kdtree_linear_idx text, kdtree_linear_probe boolean,
   kdtree_adapt_idx text, kdtree_adapt_probe boolean);
 
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('&& tstzspan', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('&& stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('&& stbox x', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('&& tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('~= stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('~= stbox x', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('~= tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('@> tstzspan', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('@> stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('@> stbox x', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('@> tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('<@ stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp <@ t2.b)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('<@ stbox x', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp <@ t2.b)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('<@ tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('-|- stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('-|- stbox x', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('-|- tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('&<# stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp &<# t2.b)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('&<# tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp &<# t2.temp)::text);
@@ -162,8 +178,16 @@ INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('#&> stbox', (SELECT COUNT(
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('#&> tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp #&> t2.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('?&& stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ?&& t2.b)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('%&& stbox', (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('tstzspan && tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('stbox && tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('tstzspan ~= tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('stbox ~= tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('tstzspan <@ tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('stbox <@ tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('tstzspan @> tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('stbox @> tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('tstzspan -|- tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text);
+INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('stbox -|- tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('tstzspan #>> tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('stbox #>> tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b #>> t1.temp)::text);
 INSERT INTO test_tgeogpoint_mest(op, no_idx) VALUES ('tstzspan <<# tgeogpoint', (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <<# t1.temp)::text);
@@ -180,6 +204,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -192,6 +252,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -234,12 +306,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -275,6 +371,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -287,6 +419,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -329,12 +473,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -370,6 +538,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -382,6 +586,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -424,12 +640,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -465,6 +705,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -477,6 +753,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -519,12 +807,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -560,6 +872,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -572,6 +920,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -614,12 +974,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -655,6 +1039,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -667,6 +1087,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -709,12 +1141,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -750,6 +1206,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -762,6 +1254,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -804,12 +1308,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -845,6 +1373,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -857,6 +1421,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -899,12 +1475,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -940,6 +1540,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -952,6 +1588,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -994,12 +1642,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1035,6 +1707,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1047,6 +1755,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1089,12 +1809,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1130,6 +1874,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1142,6 +1922,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1184,12 +1976,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1225,6 +2041,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1237,6 +2089,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1279,12 +2143,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1320,6 +2208,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1332,6 +2256,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1374,12 +2310,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1415,6 +2375,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1427,6 +2423,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1469,12 +2477,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1510,6 +2542,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1522,6 +2590,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1564,12 +2644,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_tile_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_tile_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1605,6 +2709,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1617,6 +2757,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1659,12 +2811,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1700,6 +2876,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1712,6 +2924,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1754,12 +2978,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_linear_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_linear_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';
@@ -1795,6 +3043,42 @@ SET enable_seqscan = off;
 SET enable_hashjoin = off;
 SET enable_mergejoin = off;
 SET enable_sort = off;
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1807,6 +3091,18 @@ WHERE op = '<@ stbox x';
 UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp <@ t2.temp')
 WHERE op = '<@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1849,12 +3145,36 @@ WHERE op = '?&& stbox';
 UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_idx t1, tbl_tgeogpoint_box t2 WHERE t1.temp %&& t2.b')
 WHERE op = '%&& stbox';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b @> t1.temp')
 WHERE op = 'stbox @> tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tgeogpoint';
+UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_box t2, tbl_tgeogpoint_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tgeogpoint';
 UPDATE test_tgeogpoint_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeogpoint_span t2, tbl_tgeogpoint_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> tgeogpoint';

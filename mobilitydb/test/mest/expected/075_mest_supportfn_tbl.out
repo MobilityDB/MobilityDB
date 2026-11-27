@@ -125,13 +125,13 @@ FROM test_mest_supportfn ORDER BY k;
  12 |    975 | t          | t           | t            | t
  13 |   1589 | t          | t           | t            | t
  14 |   2205 | t          | t           | t            | t
- 15 |   2811 | t          | f           | t            | f
+ 15 |   2811 | t          | t           | t            | t
  21 |   2589 | t          | t           | t            | t
  22 |      0 | t          | t           | t            | t
  23 |   2731 | t          | t           | t            | t
  24 |   1639 | t          | t           | t            | t
  25 |   4413 | t          | t           | t            | t
- 26 |   4380 | t          | f           | t            | f
+ 26 |   4380 | t          | t           | t            | t
 (21 rows)
 
 DROP TABLE test_mest_supportfn;

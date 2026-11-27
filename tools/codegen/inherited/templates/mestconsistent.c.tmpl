@@ -1,4 +1,3 @@
-
 extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1({TWIN});
 /**
@@ -10,6 +9,19 @@ PG_FUNCTION_INFO_V1({TWIN});
 Datum
 {TWIN}(PG_FUNCTION_ARGS)
 {
+/* TIER-BEGIN */
+  /* The key answers by its tier (#mest_key_answers) */
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (! mest_key_answers(((const {KEYTYPE} *)
+      DatumGetPointer(entry->key))->flags,
+      (StrategyNumber) PG_GETARG_UINT16(2)))
+    PG_RETURN_BOOL(false);
+/* TIER-END */
+/* PIECES-BEGIN */
+  /* A key of a piece answers the strategy of #mest_pieces_strategy */
+  fcinfo->args[2].value = UInt16GetDatum(
+    mest_pieces_strategy((StrategyNumber) PG_GETARG_UINT16(2)));
+/* PIECES-END */
   Datum result = {SYM}(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;
@@ -28,10 +40,49 @@ PG_FUNCTION_INFO_V1({TWIN});
 Datum
 {TWIN}(PG_FUNCTION_ARGS)
 {
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+/* TIER-BEGIN */
+  /* The key answers by its tier (#mest_key_answers) */
+  int16 flags = ((const {KEYTYPE} *) DatumGetPointer(in->leafDatum))->flags;
+  for (int i = 0; i < in->nkeys; i++)
+    if (! mest_key_answers(flags, in->scankeys[i].sk_strategy))
+      PG_RETURN_BOOL(false);
   Datum result = {SYM}(fcinfo);
+/* TIER-END */
+/* PIECES-BEGIN */
+  /* A key of a piece answers the strategies of #mest_pieces_strategy */
+  ScanKey keys = in->scankeys;
+  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  Datum result = {SYM}(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+/* PIECES-END */
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   out->recheck = true;
   if (out->distances)
     out->recheckDistances = true;
   return result;
+}
+/* SPGIST-INNER */
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
+ * the spans of the pieces of a value, as
+ * #{SYM} answers it
+ * @details The nodes are chosen for the strategies a key of a piece answers
+ * (#mest_pieces_strategy)
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  ScanKey keys = in->scankeys;
+  in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  {SYM}(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+  PG_RETURN_VOID();
 }
