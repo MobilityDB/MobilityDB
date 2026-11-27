@@ -78,7 +78,7 @@ generator carries it to every family, the whole-box key marked rather than mixed
 |---|---|---|
 | IX13 | P2: `temporal_supportfn.c` accepts the `mgist` and `mspgist` classes, so that a function call is served as its operator is | done: MobilityDB #3934 first, MERGED as `d3110eb738`, the ever and always equality of a temporal number and a number served by every GiST and SP-GiST index (10 of 10 plans probing the index, 0 of 10 without it); then MobilityDB #3936 on it, MERGED as `65c18efffb`, the ever and always comparisons and relationships rewritten into `?&&` under `mgist` and `mspgist`, the portable position and containment predicates into their own operators (`075_mest_supportfn_tbl`: 18 of 21 predicates probing the index under each method, 0 of 42 plans without it, every count as the scan) |
 | IX14 | The multi-entry tests as an output of the index-test generator, one column per tree and split, replacing the hand-cloned ones; each class proved against the scan for every operator, with an unsound operator as its negative control | open |
-| IX15 | P4: `contrib/mobilitydb` of mest retired | open |
+| IX15 | P4: `contrib/mobilitydb` of mest retired | done: MobilityDB/mest #44, MERGED as `0eabd2e`, the contrib and its CI job removed, the READMEs pointing to `mobilitydb_mest`; MobilityDB checks its multi-entry classes itself (MobilityDB #3951, the multi-entry tests in CI) |
 | IX16 | The section on the indexes of `doc/specs/meos-value-boxes.md`: every type is indexed as its box, and which operators each index answers | open, closes the plan |
 
 ## Acceptance of the whole
