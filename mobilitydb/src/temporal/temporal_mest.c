@@ -169,15 +169,18 @@ mest_keys_whole(const Temporal *temp, void *boxes, size_t size, int32 *count)
   return mest_keys(keys, size, *count);
 }
 
+/* GENERATED-MESTTIERS-BEGIN — tools/codegen/inherited/generate.py from templates/mesttiers.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/meststrategies.yaml and re-run. */
+
 /**
  * @brief Return true if a key of a multi-entry index may answer a strategy
  * @details The key of the box of a whole value (#mest_keys_whole) answers the
- * operators reading the interior or a face of the box of the value, which no
- * piece witnesses: the overlaps, the contains and the adjacency, and the same
- * box, which it answers exactly. The keys of the pieces answer every other
- * operator, each holding on the box of a value iff on the box of one of its
- * pieces or of every one. A key over the keys of several structures stands for
- * both and answers any
+ * strategies whose tier is that of the whole value, the operators reading the
+ * interior or a face of the box of the value, which no piece witnesses, and
+ * the same box, which it answers exactly. The keys of the pieces answer every
+ * other operator, each holding on the box of a value iff on the box of one of
+ * its pieces or of every one. A key over the keys of several structures
+ * stands for both and answers any
  * @param[in] flags Flags of the key
  * @param[in] strategy Strategy number of the operator
  */
@@ -208,12 +211,15 @@ mest_key_answers(int16 flags, StrategyNumber strategy)
 StrategyNumber
 mest_pieces_strategy(StrategyNumber strategy)
 {
-  if (strategy == RTSameStrategyNumber || strategy == RTEqualStrategyNumber)
-    return RTContainedByStrategyNumber;
   if (strategy == RTContainsStrategyNumber)
     return RTOverlapStrategyNumber;
+  if (strategy == RTSameStrategyNumber ||
+    strategy == RTEqualStrategyNumber)
+    return RTContainedByStrategyNumber;
   return strategy;
 }
+
+/* GENERATED-MESTTIERS-END */
 
 /**
  * @brief Return the scan keys a key of a piece of a value answers in place of

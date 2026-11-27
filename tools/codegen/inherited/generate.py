@@ -1640,25 +1640,24 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
 # A class holds the members of the GiST or SP-GiST class of its type that a
 # value answers when every box of its pieces answers it (#MEST_STRATEGIES).
 MEST_AM = {"gist": "mgist", "spgist": "mspgist"}
-# The strategies a multi-entry class serves. The keys of a value are the boxes
-# of its pieces, each within the box of the value, so a predicate holding on
-# the box of the value when it holds on every piece (the position operators
-# of every axis, contained by) is held by some key of every value answering
-# it, as the ever overlaps is, and the always overlaps; the nearest approach
-# distance is bounded below by the distance to the nearest key. The same box
-# holds on the box of a value only when every piece lies within the query, so
-# a key of a piece answers it as contained by. Overlaps, contains and adjacent
-# read the box of the whole value, which a query between two pieces meets and
-# no key does.
-MEST_STRATEGIES = {1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 25, 28, 29, 30, 31, 32,
-                   33, 34, 35, 36, 37}
-# The box operators reading the interior or a face of the box of a value, which
-# no piece witnesses, and the same box, which that key answers exactly: a class
-# whose box carries flags answers them from the key of the box of the whole
-# value (#mest_keys_whole, #mest_key_answers); a class whose key is a span
-# answers the same box from the keys of the pieces, as contained by
-MEST_WHOLE_STRATEGIES = {3, 6, 7, 17}
+# The tier of every strategy a multi-entry class holds, stated once in
+# manifest.d/meststrategies.yaml: the strategies every class of a temporal
+# type holds, answered by the keys of its pieces (MEST_STRATEGIES); those a
+# class whose box carries flags answers from the key of the box of the whole
+# value (MEST_WHOLE_STRATEGIES, #mest_keys_whole, #mest_key_answers); and those
+# a class of a set or a span set holds (MEST_VALUE_STRATEGIES). A key of a
+# piece answers a strategy as the one its entry names (#mest_pieces_strategy)
+MEST_TIERS = load_manifest().get("meststrategies") or []
+MEST_STRATEGIES = {e["num"] for e in MEST_TIERS
+                   if e.get("boxes") == "pieces" or "spans" in e}
+MEST_WHOLE_STRATEGIES = {e["num"] for e in MEST_TIERS if e.get("boxes") == "whole"}
 MEST_WHOLE_BOXES = ("tbox", "stbox", "tpcbox")
+# The names of the strategies the C of the multi-entry classes reads, those of
+# access/stratnum.h of PostgreSQL and of meos/include/temporal/meos_catalog.h
+MEST_STRATEGY_NAMES = {3: "RTOverlapStrategyNumber", 6: "RTSameStrategyNumber",
+                       7: "RTContainsStrategyNumber",
+                       8: "RTContainedByStrategyNumber",
+                       17: "RTAdjacentStrategyNumber", 18: "RTEqualStrategyNumber"}
 MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
                 "merge": "mest_count_options", "adapt": "mest_count_options",
                 "tile": "mest_tile_options", "bin": "mest_bin_options"}
@@ -1678,7 +1677,7 @@ MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
 # order". The classes are those of the GiST and SP-GiST files of
 # MEST_VALUE_FILES, each split of #MEST_VALUE_SPLITS taking the extraction
 # method of the set or the span set (Set_mest_*split, Spanset_mest_*split)
-MEST_VALUE_STRATEGIES = {1, 2, 3, 4, 5, 7, 8, 17, 18, 28, 29, 30, 31}
+MEST_VALUE_STRATEGIES = {e["num"] for e in MEST_TIERS if "values" in e}
 MEST_VALUE_FILES = ("mobilitydb/sql/temporal/012_spanset_gist.in.sql",
                     "mobilitydb/sql/temporal/012_spanset_spgist.in.sql",
                     "mobilitydb/sql/temporal/013_set_gist.in.sql",
@@ -1758,6 +1757,62 @@ def render_valuemestfile(path: str, declared: set) -> str:
                    f"'{mest_twin_symbol(sql_c_symbol(orig))}'\n"
                    "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
     return "\n".join(out + classes)
+
+
+def mest_pieces_map() -> dict:
+    """The strategy a key of a piece answers each strategy as, where another
+    (manifest.d/meststrategies.yaml, `spans` and `values`), one strategy for
+    both kinds of class"""
+    out = {}
+    for e in MEST_TIERS:
+        for kind in ("spans", "values"):
+            to = e.get(kind)
+            if to is None or to == "self":
+                continue
+            if out.get(e["num"], to) != to:
+                sys.exit(f"meststrategies: strategy {e['num']} is answered as "
+                         f"{out[e['num']]} and as {to}")
+            out[e["num"]] = to
+    return out
+
+
+def _mest_strategy_list(nums) -> str:
+    """The C test of a strategy against the strategies `nums`"""
+    return " ||\n    ".join(f"strategy == {MEST_STRATEGY_NAMES[n]}"
+                             for n in sorted(nums))
+
+
+def render_mesttiers() -> str:
+    """The C of the tiers of the multi-entry classes, templates/mesttiers.c.tmpl
+    filled from manifest.d/meststrategies.yaml: the strategies the key of the
+    box of the whole value answers (#mest_key_answers) and the strategy a key
+    of a piece answers each strategy as (#mest_pieces_strategy)"""
+    groups = {}
+    for frm, to in sorted(mest_pieces_map().items()):
+        groups.setdefault(to, []).append(frm)
+    pieces = "".join(f"  if ({_mest_strategy_list(frm)})\n"
+                     f"    return {MEST_STRATEGY_NAMES[to]};\n"
+                     for to, frm in sorted(groups.items()))
+    return (read_template("mesttiers.c.tmpl")
+            .replace("{WHOLE}", _mest_strategy_list(MEST_WHOLE_STRATEGIES))
+            .replace("{PIECES}", pieces))
+
+
+def _mesttiers_markers():
+    """BEGIN/END markers of the tiers of the multi-entry classes, as
+    #_mestconsistent_markers marks the consistent twins"""
+    begin = ("/* GENERATED-MESTTIERS-BEGIN — tools/codegen/inherited/generate.py "
+             "from templates/mesttiers.c.tmpl;\n * DO NOT EDIT BY HAND; edit the "
+             "template + manifest.d/meststrategies.yaml and re-run. */\n")
+    return begin, "/* GENERATED-MESTTIERS-END */\n"
+
+
+def splice_mesttiers(filetext: str, rendered: str) -> str:
+    """Replace the text strictly between the markers of the tiers"""
+    begin, end = _mesttiers_markers()
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
 
 
 def mest_path(path: str) -> str:
@@ -8243,6 +8298,14 @@ def main() -> int:
             twins.setdefault(target, [])
             if sym not in twins[target]:
                 twins[target].append(sym)
+    # The tiers of the multi-entry classes (#render_mesttiers)
+    target = "mobilitydb/src/temporal/temporal_mest.c"
+    if args.check:
+        print(f"would splice mesttiers -> {target}")
+    else:
+        p = ROOT / target
+        p.write_text(splice_mesttiers(p.read_text(), render_mesttiers()))
+        print(f"spliced mesttiers -> {target}")
     for target, syms in sorted(twins.items()):
         fam = pathlib.Path(target).parent.name
         if args.check:
