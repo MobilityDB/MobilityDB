@@ -141,3 +141,26 @@ SELECT COUNT(*) FROM tbl_datespan_excl;
 DROP TABLE tbl_datespan_excl;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The nearest span sets of dates and of timestamps, read through the GiST index
+
+CREATE TEMP TABLE tbl_datespanset AS TABLE tbl_datespanset;
+CREATE TEMP TABLE tbl_tstzspanset AS TABLE tbl_tstzspanset;
+ANALYZE tbl_datespanset, tbl_tstzspanset;
+CREATE INDEX tbl_datespanset_rtree_idx ON tbl_datespanset USING GIST(d);
+CREATE INDEX tbl_tstzspanset_rtree_idx ON tbl_tstzspanset USING GIST(t);
+SET enable_seqscan = off;
+EXPLAIN (COSTS OFF) SELECT d <-> date '2001-06-01' FROM tbl_datespanset
+  ORDER BY d <-> date '2001-06-01' LIMIT 3;
+SELECT d <-> date '2001-06-01' FROM tbl_datespanset
+  ORDER BY d <-> date '2001-06-01' LIMIT 3;
+EXPLAIN (COSTS OFF) SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzspanset
+  ORDER BY t <-> timestamptz '2001-06-01' LIMIT 3;
+SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzspanset
+  ORDER BY t <-> timestamptz '2001-06-01' LIMIT 3;
+RESET enable_seqscan;
+DROP INDEX tbl_datespanset_rtree_idx;
+DROP INDEX tbl_tstzspanset_rtree_idx;
+
+-------------------------------------------------------------------------------
