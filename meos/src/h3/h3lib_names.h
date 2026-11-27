@@ -30,15 +30,21 @@
 /**
  * @file
  * @brief The names of the internal functions and tables of the core library
- * of H3 vendored under h3lib/, each prefixed by `meos_` as H3_PREFIX
- * prefixes its public names
+ * of H3 vendored under h3lib/, each prefixed as H3_PREFIX prefixes its
+ * public names
  * @details The build of the object library h3core includes this header
  * before every source, so that no global symbol of the vendored library
  * keeps a name of libh3, which MEOS also links: a static libmeos linked
  * with a static libh3 then defines each name once. The names are those the
- * sources of h3lib/lib define without H3_PREFIX; the test
- * h3lib_names_unit fails when a global symbol of h3core carries none of
- * the prefixes `meos_` and `h3_` (the functions of h3_vertex.c).
+ * sources of h3lib/lib define without H3_PREFIX. A name H3 begins with an
+ * underscore, its mark of a name private to the library, takes the prefix
+ * `meos_h3_` in place of the underscore (`_iterInitParent` reads
+ * `meos_h3_iterInitParent`), and any other name the prefix `meos_`
+ * (`iterInitParent` reads `meos_iterInitParent`), so no name carries two
+ * underscores and the two names H3 tells apart by the underscore stay
+ * apart. The test h3lib_names_unit fails when a global symbol of h3core
+ * carries none of the prefixes `meos_` and `h3_` (the functions of
+ * h3_vertex.c), or carries `meos__`.
  */
 
 #ifndef __H3LIB_NAMES_H__
@@ -49,43 +55,43 @@
 #define PENTAGON_ROTATIONS_REVERSE meos_PENTAGON_ROTATIONS_REVERSE
 #define PENTAGON_ROTATIONS_REVERSE_NONPOLAR meos_PENTAGON_ROTATIONS_REVERSE_NONPOLAR
 #define PENTAGON_ROTATIONS_REVERSE_POLAR meos_PENTAGON_ROTATIONS_REVERSE_POLAR
-#define _adjustOverageClassII meos__adjustOverageClassII
-#define _adjustPentVertOverage meos__adjustPentVertOverage
-#define _baseCellIsCwOffset meos__baseCellIsCwOffset
-#define _baseCellToCCWrot60 meos__baseCellToCCWrot60
-#define _baseCellToFaceIjk meos__baseCellToFaceIjk
-#define _faceIjkPentToCellBoundary meos__faceIjkPentToCellBoundary
-#define _faceIjkPentToVerts meos__faceIjkPentToVerts
-#define _faceIjkToBaseCell meos__faceIjkToBaseCell
-#define _faceIjkToBaseCellCCWrot60 meos__faceIjkToBaseCellCCWrot60
-#define _faceIjkToCellBoundary meos__faceIjkToCellBoundary
-#define _faceIjkToH3 meos__faceIjkToH3
-#define _faceIjkToVec3 meos__faceIjkToVec3
-#define _faceIjkToVerts meos__faceIjkToVerts
-#define _getBaseCellDirection meos__getBaseCellDirection
-#define _getBaseCellNeighbor meos__getBaseCellNeighbor
-#define _getEdgeHexagons meos__getEdgeHexagons
-#define _gridDiskDistancesInternal meos__gridDiskDistancesInternal
-#define _gridRingInternal meos__gridRingInternal
-#define _h3LeadingNonZeroDigit meos__h3LeadingNonZeroDigit
-#define _h3Rotate60ccw meos__h3Rotate60ccw
-#define _h3Rotate60cw meos__h3Rotate60cw
-#define _h3RotatePent60ccw meos__h3RotatePent60ccw
-#define _h3RotatePent60cw meos__h3RotatePent60cw
-#define _h3ToFaceIjk meos__h3ToFaceIjk
-#define _h3ToFaceIjkWithInitializedFijk meos__h3ToFaceIjkWithInitializedFijk
-#define _hexRadiusKm meos__hexRadiusKm
-#define _ipow meos__ipow
-#define _isBaseCellPentagon meos__isBaseCellPentagon
-#define _isBaseCellPolarPentagon meos__isBaseCellPolarPentagon
-#define _iterInitParent meos__iterInitParent
-#define _posAngleRads meos__posAngleRads
-#define _setGeoRads meos__setGeoRads
-#define _v2dAlmostEquals meos__v2dAlmostEquals
-#define _v2dIntersect meos__v2dIntersect
-#define _v2dMag meos__v2dMag
-#define _vec3ToFaceIjk meos__vec3ToFaceIjk
-#define _zeroIndexDigits meos__zeroIndexDigits
+#define _adjustOverageClassII meos_h3_adjustOverageClassII
+#define _adjustPentVertOverage meos_h3_adjustPentVertOverage
+#define _baseCellIsCwOffset meos_h3_baseCellIsCwOffset
+#define _baseCellToCCWrot60 meos_h3_baseCellToCCWrot60
+#define _baseCellToFaceIjk meos_h3_baseCellToFaceIjk
+#define _faceIjkPentToCellBoundary meos_h3_faceIjkPentToCellBoundary
+#define _faceIjkPentToVerts meos_h3_faceIjkPentToVerts
+#define _faceIjkToBaseCell meos_h3_faceIjkToBaseCell
+#define _faceIjkToBaseCellCCWrot60 meos_h3_faceIjkToBaseCellCCWrot60
+#define _faceIjkToCellBoundary meos_h3_faceIjkToCellBoundary
+#define _faceIjkToH3 meos_h3_faceIjkToH3
+#define _faceIjkToVec3 meos_h3_faceIjkToVec3
+#define _faceIjkToVerts meos_h3_faceIjkToVerts
+#define _getBaseCellDirection meos_h3_getBaseCellDirection
+#define _getBaseCellNeighbor meos_h3_getBaseCellNeighbor
+#define _getEdgeHexagons meos_h3_getEdgeHexagons
+#define _gridDiskDistancesInternal meos_h3_gridDiskDistancesInternal
+#define _gridRingInternal meos_h3_gridRingInternal
+#define _h3LeadingNonZeroDigit meos_h3_h3LeadingNonZeroDigit
+#define _h3Rotate60ccw meos_h3_h3Rotate60ccw
+#define _h3Rotate60cw meos_h3_h3Rotate60cw
+#define _h3RotatePent60ccw meos_h3_h3RotatePent60ccw
+#define _h3RotatePent60cw meos_h3_h3RotatePent60cw
+#define _h3ToFaceIjk meos_h3_h3ToFaceIjk
+#define _h3ToFaceIjkWithInitializedFijk meos_h3_h3ToFaceIjkWithInitializedFijk
+#define _hexRadiusKm meos_h3_hexRadiusKm
+#define _ipow meos_h3_ipow
+#define _isBaseCellPentagon meos_h3_isBaseCellPentagon
+#define _isBaseCellPolarPentagon meos_h3_isBaseCellPolarPentagon
+#define _iterInitParent meos_h3_iterInitParent
+#define _posAngleRads meos_h3_posAngleRads
+#define _setGeoRads meos_h3_setGeoRads
+#define _v2dAlmostEquals meos_h3_v2dAlmostEquals
+#define _v2dIntersect meos_h3_v2dIntersect
+#define _v2dMag meos_h3_v2dMag
+#define _vec3ToFaceIjk meos_h3_vec3ToFaceIjk
+#define _zeroIndexDigits meos_h3_zeroIndexDigits
 #define addLinkedCoord meos_addLinkedCoord
 #define addLinkedLoop meos_addLinkedLoop
 #define addNewLinkedLoop meos_addNewLinkedLoop
