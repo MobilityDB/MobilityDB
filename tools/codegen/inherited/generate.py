@@ -723,6 +723,102 @@ def _value_fixture(typ: str) -> tuple:
     return f"tbl_{name}", col
 
 
+# The control of the multi-entry tests: for one type of each kind of key, the
+# class of its segment split and a control class, the same class with the
+# consistent method of the single-entry class, which reads a key as if it were
+# the whole value and so answers some operators wrongly. The test, written
+# with the template and the comparison of every multi-entry test, passes only
+# if the comparison notices the control (MEST_CONTROL_TEST)
+MEST_CONTROL_TYPES = (
+    ("tbool", "mobilitydb/mest/temporal/043_temporal_mgist.in.sql", "temp"),
+    ("tgeompoint", "mobilitydb/mest/geo/073_tpoint_mgist.in.sql", "temp"),
+    ("intspanset", "mobilitydb/mest/temporal/012_spanset_mgist.in.sql", "i"))
+MEST_CONTROL_TEST = "mobilitydb/test/mest/sql/000_mest_control_tbl.sql"
+# The fixture of a right argument of a control row, `tbl_<name>(k, <column>)`,
+# and the strategies its values cannot take, those of the z axis, the fixture of
+# a temporal point having two dimensions
+_CONTROL_FIXTURES = {"tbool": ("tbool", "temp"), "tgeompoint": ("tgeompoint", "temp"),
+                     "tstzspan": ("tstzspan", "t"), "stbox": ("stbox", "b"),
+                     "intspanset": ("intspanset", "i"), "intspan": ("intspan", "i"),
+                     "integer": ("int", "i")}
+_CONTROL_SKIPPED = {32, 33, 34, 35}
+
+
+def render_mestcontroltest() -> str:
+    """The control of the multi-entry tests, templates/mestindextest.sql.tmpl
+    filled once per type of #MEST_CONTROL_TYPES: the class of the segment
+    split of the R-tree, as the generated file of the type writes it, and its
+    control, the same class whose consistent method is that of the single-
+    entry class, each answering every member of the class with a right
+    argument of a fixture, the distance left out, a column each; the rows of
+    the control differing from the scan are the expected output"""
+    q = "'"
+    parts = []
+    for typ, path, col in MEST_CONTROL_TYPES:
+        text = (ROOT / path).read_text()
+        cls = re.search(rf"CREATE OPERATOR CLASS {typ}_mrtree_segsplit_ops\n.*?;\n",
+                        text, re.S).group(0)
+        control = (cls.replace(f"{typ}_mrtree_segsplit_ops",
+                               f"{typ}_mrtree_control_ops", 1)
+                   .replace("_mgist_consistent(", "_gist_consistent(", 1))
+        rows = []
+        for st, op, right in re.findall(
+                rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\),?$", cls, re.M):
+            if right not in _CONTROL_FIXTURES or int(st) in _CONTROL_SKIPPED:
+                continue
+            rtbl, rcol = _CONTROL_FIXTURES[right]
+            rows.append((f"{op} {right}",
+                         f"SELECT COUNT(*) FROM tbl_{typ}_idx t1, tbl_{rtbl} t2 "
+                         f"WHERE t1.{col} {op} t2.{rcol}"))
+        cols = [("rtree_seg", f"{typ}_mrtree_segsplit_ops"),
+                ("control", f"{typ}_mrtree_control_ops")]
+        blocks = []
+        for c, opclass in cols:
+            b = ["-" * 79, "",
+                 f"CREATE INDEX tbl_{typ}_idx_{c} ON tbl_{typ}_idx",
+                 f"  USING mgist({col} {opclass});",
+                 "SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+                 "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+            for label, query in rows:
+                b += [f"UPDATE test_{typ}_mest SET {c}_idx = ({query})::text,",
+                      f"  {c}_probe = pg_temp.test_probes_index("
+                      f"'{query.replace(q, q * 2)}')",
+                      f"WHERE op = '{label}';"]
+            b += ["RESET enable_seqscan;", "RESET enable_hashjoin;",
+                  "RESET enable_mergejoin;", "RESET enable_sort;",
+                  f"DROP INDEX tbl_{typ}_idx_{c};", ""]
+            blocks.append("\n".join(b))
+        header = textwrap.fill(
+            f"The control of the multi-entry tests for a {typ}: the class of the "
+            "segment split of the R-tree and its control, the same class whose "
+            "consistent method is that of the single-entry class, which reads a "
+            "key as the whole value. The rows printed are those where an index "
+            "differs from the sequential scan: none of the class, and some of "
+            "the control, which the comparison of every multi-entry test notices.",
+            width=83, initial_indent="-- ", subsequent_indent="-- ")
+        tables = (f"DROP TABLE IF EXISTS tbl_{typ}_idx;\n"
+                  f"CREATE TEMP TABLE tbl_{typ}_idx AS TABLE tbl_{typ};\n"
+                  f"ANALYZE tbl_{typ}_idx;\n\n" + control)
+        part = read_template("mestindextest.sql.tmpl")
+        for k, v in (("{HEADER}", header), ("{TABLES}", tables),
+                     ("{COLUMNS}", ",\n".join(f"  {c}_idx text, {c}_probe boolean"
+                                              for c, _ in cols)),
+                     ("{ROWS}", "\n".join(f"INSERT INTO test_{typ}_mest(op, no_idx) "
+                                          f"VALUES ('{label}', ({qr})::text);"
+                                          for label, qr in rows)),
+                     ("{BLOCKS}", "\n".join(blocks)[:-1]),
+                     ("{COUNTS}", f"SELECT COUNT(*) FROM tbl_{typ}_idx;"),
+                     ("{DIFFER}", " OR\n  ".join(f"no_idx IS DISTINCT FROM {c}_idx OR "
+                                                 f"NOT {c}_probe" for c, _ in cols)),
+                     ("{DROPS}", f"DROP TABLE tbl_{typ}_idx;\n"
+                                 f"DROP OPERATOR FAMILY {typ}_mrtree_control_ops "
+                                 "USING mgist;"),
+                     ("{TEMP}", typ)):
+            part = part.replace(k, v)
+        parts.append(part)
+    return "\n".join(parts)
+
+
 def valuemest_test_files() -> list:
     """The multi-entry tests of the sets and span sets, as (type, the GiST class
     of the type, the test file)"""
@@ -7116,6 +7212,12 @@ def main() -> int:
                             break
                     if len(g) != len(c):
                         print(f"     line count gen={len(g)} cur={len(c)}")
+        # The control of the multi-entry tests
+        p = ROOT / MEST_CONTROL_TEST
+        same = p.exists() and p.read_text() == render_mestcontroltest()
+        ok = ok and same
+        print(f"[{'OK ' if same else 'DIFF'}] self-regen mest control -> "
+              f"{MEST_CONTROL_TEST}")
         # The multi-entry tests of the sets and span sets
         for typ, base, f in valuemest_test_files():
             p = ROOT / f
@@ -8298,6 +8400,13 @@ def main() -> int:
             twins.setdefault(target, [])
             if sym not in twins[target]:
                 twins[target].append(sym)
+    # The control of the multi-entry tests (#render_mestcontroltest), from the
+    # classes the files above hold
+    if args.check:
+        print(f"would write {MEST_CONTROL_TEST}")
+    else:
+        (ROOT / MEST_CONTROL_TEST).write_text(render_mestcontroltest())
+        print(f"wrote {MEST_CONTROL_TEST}")
     # The tiers of the multi-entry classes (#render_mesttiers)
     target = "mobilitydb/src/temporal/temporal_mest.c"
     if args.check:
