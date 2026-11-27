@@ -13,7 +13,7 @@ drafting the Stream part from. OGC holds no draft of a Stream part. Each
 requirement below is stated with its abstract test, how a working
 implementation answers it, and the test of that implementation's suite that
 measures it. The implementation is MobilityAPI at commit
-[`bec7d9d`](https://github.com/MobilityDB/MobilityAPI/tree/bec7d9d), over
+[`0f66c71`](https://github.com/MobilityDB/MobilityAPI/tree/0f66c71), over
 MobilityDB, whose library MEOS computes every value a query answers. Its user
 document is [MobilityAPI and the OGC API
 Standards](https://github.com/MobilityDB/MobilityDB/blob/master/doc/specs/mobilityapi-ogc-api.md)
@@ -189,8 +189,7 @@ status and the end of the stream; subscribe after the stop and check the end.
 Measured by `TestRegistrySubmitBroadcastStop` and `TestSubscribeAfterStop`
 (`stream_test.go`). The cycle over HTTP is read for a geometry query by
 `TestLiveGeometryWindowAggregates`, and for a property query by
-`TestLivePropertyQueryHTTPCycleAndEvents` (`stream_http_meos_test.go`, MobilityAPI
-commit `eaff1a0`): registered with 201 and a running `cquery` link, listed, read,
+`TestLivePropertyQueryHTTPCycleAndEvents` (`stream_http_meos_test.go`): registered with 201 and a running `cquery` link, listed, read,
 stopped with 204, then 404 and the end of its stream.
 
 ### Requirement 10 — the Server-Sent Events channel
