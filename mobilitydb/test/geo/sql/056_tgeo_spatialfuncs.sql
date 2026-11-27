@@ -399,6 +399,19 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(
 -- SELECT ST_AsText(traversedArea(tgeography '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeography '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}')::geometry)) AS t(dp);
 
+-- Space-time volume, the integral of the area over the time in microseconds,
+-- read here in days
+SELECT spaceTimeVolume(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((1 1,3 1,3 3,1 3,1 1))@2001-01-02]') / (24 * 3600 * 1e6);
+SELECT spaceTimeVolume(tgeometry '{[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02], [Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03, Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-05]}') / (24 * 3600 * 1e6);
+SELECT spaceTimeVolume(tgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01');
+SELECT spaceTimeVolume(tgeometry '{Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02}');
+SELECT spaceTimeVolume(tgeometry '[Linestring(0 0,2 2)@2001-01-01, Linestring(0 0,2 2)@2001-01-02]');
+SELECT round((spaceTimeVolume(tgeography '[Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02]') / (24 * 3600 * 1e6) / area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))'))::numeric, 6);
+SELECT round((spaceTimeVolume(tgeography '[Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02]', false) / (24 * 3600 * 1e6) / area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false))::numeric, 6);
+/* Errors */
+SELECT spaceTimeVolume(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
+SELECT spaceTimeVolume(tgeometry '[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01, Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]');
+
 ---------------------------------------------------------
 
 SELECT asText(centroid(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-02, Polygon((1 1,4 4,7 1,1 1))@2001-01-03]'));

@@ -351,6 +351,19 @@ SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<para>The merged form of a value in three dimensions is the ground the body covers, with no Z: what each face sweeps on the ground between two placements the body translates between, or what each face covers at each placement of a value in step or discrete interpolation. The merged form of such a value that turns in linear interpolation is not yet supported.</para>
 				<para>The merged form of a body that is a polygon not convex, concave or with holes, that translates in linear interpolation is exact: the ground its placements cover and what the edges of its rings sweep between two of them, a point of a hole being covered where a wall of the body crosses it. Such a body that turns in linear interpolation is not yet supported: it sweeps more ground than its placements cover and less than their hull.</para>
 			</listitem>
+			<listitem xml:id="trgeometry_spaceTimeVolume">
+				<indexterm significance="normal"><primary><varname>spaceTimeVolume</varname></primary></indexterm>
+				<para>Return the space-time volume of the temporal rigid geometry, the integral of the area of its body over the time</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spaceTimeVolume(trgeometry) → float
+</programlisting>
+				<para>A rigid motion keeps the area of the body, so the volume is the area of the reference geometry times the time the value holds, whatever the motion. The time is read in microseconds, as <link linkend="tnumber_integral"><varname>integral</varname></link> reads it, so the result is in the square units of the body times microseconds. A value of instants has a volume of zero; a value with Z coordinates is refused.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT spaceTimeVolume(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),1)@2026-01-02]') / (24 * 3600 * 1e6);
+-- 1
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal network points
  */
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/array.h>
@@ -369,6 +371,25 @@ Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
   GSERIALIZED *result = tcbuffer_traversed_area(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_space_time_volume(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_space_time_volume);
+/**
+ * @ingroup mobilitydb_cbuffer_accessor
+ * @brief Return the space-time volume of a temporal circular buffer, the
+ * integral of the area of its disc over its time
+ * @sqlfn spaceTimeVolume()
+ */
+Datum
+Tcbuffer_space_time_volume(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = tcbuffer_space_time_volume(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************

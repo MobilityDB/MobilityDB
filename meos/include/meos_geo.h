@@ -724,6 +724,7 @@ extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *te
 extern Temporal *tgeo_centroid(const Temporal *temp, bool spheroid);
 extern GSERIALIZED *tgeo_convex_hull(const Temporal *temp);
 extern GSERIALIZED *tgeo_end_value(const Temporal *temp);
+extern double tgeo_space_time_volume(const Temporal *temp, bool spheroid);
 extern GSERIALIZED *tgeo_start_value(const Temporal *temp);
 extern GSERIALIZED *tgeo_traversed_area(const Temporal *temp, bool unary_union);
 extern GSERIALIZED *tgeo_value(const Temporal *temp);

@@ -350,6 +350,19 @@ SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 -- POLYGON((0 0,0 1,11 1,11 0,0 0))
 </programlisting>
 			</listitem>
+			<listitem xml:id="trgeometry_spaceTimeVolume">
+				<indexterm significance="normal"><primary><varname>spaceTimeVolume</varname></primary></indexterm>
+				<para>Devuelve el volumen espacio-temporal de la geometría rígida temporal, la integral del área de su cuerpo sobre el tiempo</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spaceTimeVolume(trgeometry) → float
+</programlisting>
+				<para>Un movimiento rígido conserva el área del cuerpo, por lo que el volumen es el área de la geometría de referencia por el tiempo que el valor se mantiene, sea cual sea el movimiento. El tiempo se lee en microsegundos, como lo lee <link linkend="tnumber_integral"><varname>integral</varname></link>, por lo que el resultado está en las unidades cuadradas del cuerpo por microsegundos. Un valor de instantes tiene un volumen cero; un valor con coordenadas Z se rechaza.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT spaceTimeVolume(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),1)@2026-01-02]') / (24 * 3600 * 1e6);
+-- 1
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

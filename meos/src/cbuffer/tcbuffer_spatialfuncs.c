@@ -673,6 +673,80 @@ tcbuffer_traversed_area(const Temporal *temp, bool unary_union)
 }
 
 /**
+ * @brief Return the space-time volume of a temporal circular buffer
+ * sequence, as #tcbuffer_space_time_volume() defines it
+ * @param[in] seq Temporal circular buffer sequence
+ */
+static double
+tcbufferseq_space_time_volume(const TSequence *seq)
+{
+  /* A sequence of instants holds no disc over an interval */
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == DISCRETE)
+    return 0.0;
+  /* The sum of the disc areas over pi, multiplied by pi once */
+  double result = 0.0;
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  double r1 = DatumGetCbufferP(tinstant_value_p(inst1))->radius;
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    double r2 = DatumGetCbufferP(tinstant_value_p(inst2))->radius;
+    double duration = (double) (inst2->t - inst1->t);
+    /* A segment of linear interpolation takes the radius linearly from r1 to
+     * r2, whose square integrates to (r1^2 + r1 r2 + r2^2) / 3 of the
+     * duration; a step holds r1 */
+    result += (interp == LINEAR) ?
+      (r1 * r1 + r1 * r2 + r2 * r2) / 3.0 * duration : r1 * r1 * duration;
+    inst1 = inst2;
+    r1 = r2;
+  }
+  return M_PI * result;
+}
+
+/**
+ * @ingroup meos_cbuffer_spatial_accessor
+ * @brief Return the space-time volume of a temporal circular buffer, the
+ * integral of the area of its disc over its time
+ * @details The body of a temporal circular buffer in space and time is its
+ * disc at each instant; discs at two times never meet, so its volume is the
+ * integral of the area of the disc, pi times the square of the radius, over
+ * the time the buffer holds a value. A segment of linear interpolation moves
+ * the centre and takes the radius linearly from one instant to the next, so
+ * the integral of each segment is exact in closed form; the centre's motion
+ * changes no area. The time is read in microseconds, as #tnumber_integral()
+ * reads it, so the volume is in the square units of the buffer times
+ * microseconds. A temporal circular buffer of instants holds no disc over an
+ * interval and has no volume
+ * @param[in] temp Temporal circular buffer
+ * @errval DBL_MAX
+ * @csqlfn #Tcbuffer_space_time_volume()
+ */
+double
+tcbuffer_space_time_volume(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TCBUFFER(temp, DBL_MAX);
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return 0.0;
+    case TSEQUENCE:
+      return tcbufferseq_space_time_volume((TSequence *) temp);
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (TSequenceSet *) temp;
+      double result = 0.0;
+      for (int i = 0; i < ss->count; i++)
+        result += tcbufferseq_space_time_volume(TSEQUENCESET_SEQ_N(ss, i));
+      return result;
+    }
+  }
+}
+
+/**
  * @brief Return true if every composing circular buffer of a temporal circular
  * buffer has a zero radius, that is, the value is a temporal point
  * @details A disc of a zero radius is the point at its centre, so such a value
