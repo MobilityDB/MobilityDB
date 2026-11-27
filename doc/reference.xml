@@ -851,6 +851,12 @@
 				<listitem>
 					<para><link linkend="mobilitydb_full_version"><varname>mobilitydbFullVersion</varname></link>: Versions of the MobilityDB extension and its dependencies</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="meos_version"><varname>meosVersion</varname></link>: Version of the MEOS library</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="meos_full_version"><varname>meosFullVersion</varname></link>: Versions of the MEOS library and its dependencies</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 	</sect1>

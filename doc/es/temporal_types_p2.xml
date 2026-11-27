@@ -751,7 +751,32 @@ mobilitydbFullVersion() → text
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT mobilitydbFullVersion();
-/* MobilityDB 1.3.0, PostgreSQL 17.2, PostGIS 3.5.2, PROJ 9.2.0, JSON-C 0.13.1 */
+/* MobilityDB 1.3.0, MEOS 1.3.0, PostgreSQL 17.2, PostGIS 3.5.2, PROJ 9.2.0,
+   JSON-C 0.13.1 */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="meos_version">
+				<indexterm significance="normal"><primary><varname>meosVersion</varname></primary></indexterm>
+				<para>Versión de la biblioteca MEOS</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+meosVersion() → text
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT meosVersion();
+-- MEOS 1.3.0
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="meos_full_version">
+				<indexterm significance="normal"><primary><varname>meosFullVersion</varname></primary></indexterm>
+				<para>Versión de la biblioteca MEOS y de sus dependencias</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+meosFullVersion() → text
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT meosFullVersion();
+/* MEOS 1.3.0, PostgreSQL 17.2, PostGIS 3.5.2, PROJ 9.2.0, JSON-C 0.13.1 */
 </programlisting>
 			</listitem>
 		</itemizedlist>

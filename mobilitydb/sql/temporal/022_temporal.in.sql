@@ -53,6 +53,16 @@ CREATE FUNCTION mobilitydbFullVersion()
   AS 'MODULE_PATHNAME', 'Mobilitydb_full_version'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION meosVersion()
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Meos_version'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION meosFullVersion()
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Meos_full_version'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 /******************************************************************************
  * Input/Output
  ******************************************************************************/
