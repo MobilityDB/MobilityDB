@@ -14,7 +14,9 @@ section 12 what MobilityAPI leaves out of scope: the EDR 1.1 classes
 geometry and its Kafka and WebSocket channels (MobilityAPI extensions, since
 OGC holds no draft of a Stream part); a newer Part 4 draft (none exists); and the
 Coverages encodings beyond GeoTIFF and CoverageJSON. This plan takes each one
-in, row by row, in `IMPLEMENTATION-PLAN.md`.
+in, row by row, in `IMPLEMENTATION-PLAN.md`. `STREAM-PROPOSAL.md` is the
+proposal for the Stream part, written from the working implementation (row U11),
+and `ogc-filings/` holds the EDR filings (row U5).
 
 ## Rules
 
