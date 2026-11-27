@@ -2170,6 +2170,36 @@ rigid_cell(DyadicWideArena *ar, const double *const *xy, const int *n,
 }
 
 /**
+ * @brief Return the time at which #rigid_convex_apart halves the cell
+ * [@p a, @p b] of fractions of a segment, @p a below @p b
+ * @details A cell at least 2^-53 long is halved at its middle, where the
+ * Taylor bound of #rigid_cell is the tightest.  A shorter one is halved at
+ * the middle of its doubles, as #monotone_halve halves a bracket of the bit
+ * patterns of the doubles, which order as the doubles do from 0 up.  Halving
+ * the length of a cell next to 0, where the doubles go down to 2^-1074,
+ * takes over a thousand halvings to reach a cell with no double inside,
+ * where a cell elsewhere takes about 53; halving its doubles takes 64 at
+ * most.  Two bodies that touch at the start of a segment, which no cell next
+ * to it proves apart or meeting, spent those thousand cells at each
+ * precision.  Above 2^-53 the two middles are the same within a range of
+ * doubles of one spacing, and below it a cell is shorter than the spacing of
+ * the doubles next to 1.
+ */
+static inline double
+rigid_cell_mid(double a, double b)
+{
+  if (b - a >= 0x1p-53)
+    return a + 0.5 * (b - a);
+  uint64 abits, bbits;
+  memcpy(&abits, &a, sizeof(abits));
+  memcpy(&bbits, &b, sizeof(bbits));
+  uint64 mbits = abits + (bbits - abits) / 2;
+  double mid;
+  memcpy(&mid, &mbits, sizeof(mid));
+  return mid;
+}
+
+/**
  * @brief Return 1 where two convex bodies in rigid motion are apart at every
  * time of [@p t0, @p t1], 0 where they meet at a time of it, 2 where the
  * precision decides neither
@@ -2183,8 +2213,9 @@ rigid_cell(DyadicWideArena *ar, const double *const *xy, const int *n,
  * bound of the side at its middle (#rigid_side_holds), and meet where a
  * vertex of one is strictly inside the other, or an edge of each has the
  * ends of the other strictly on its two sides.  A cell that proves neither
- * is halved, within a budget of cells, and the precision is raised where
- * the budget is spent, as #geog_motion_dwithin_at_wide raises it.  The outer
+ * is halved (#rigid_cell_mid), within a budget of cells, and the precision is
+ * raised where the budget is spent, as #geog_motion_dwithin_at_wide raises
+ * it.  The outer
  * side of the edges of a polygon is decided by its orientation, exactly; a
  * segment is read as its two edges, one each way, each with its right side
  * as the outer one.
@@ -2229,7 +2260,7 @@ rigid_convex_apart(const double *axy, int na, const double *apose0,
     {
       count--;
       double a = stack[2 * count], b = stack[2 * count + 1];
-      double mid = a + 0.5 * (b - a);
+      double mid = rigid_cell_mid(a, b);
       DyadicWideMark cmark = dyadic_wide_arena_mark(ar);
       int r = rigid_cell(ar, xy, n, m, outer, a, mid, b, L, K);
       dyadic_wide_arena_release(ar, cmark);
