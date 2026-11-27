@@ -441,7 +441,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   multipoint (on one tile of the STIB vehicles of a day, 39 collections among 9,997 features, to
   0, the tile encoded), by the owner's ruling of 2026-11-27 ("approved, go with the PostGIS
   rule"), the answer of `076_tpoint_analytics` for a sequence beside another,
-  branch `fix/mvtgeom-no-collection` (`01a5154b32`) rewrites 9bed2dd9e3.
+  branch `fix/mvtgeom-no-collection` (`e989e78f93`) rewrites 9bed2dd9e3,
+  MobilityDB #3980, at speed parity (1.001 over five interleaved rounds).
 - **An operator whose name its class or an ancestor already carries takes the name of its SQL
   function** in the object layers generated from the catalog, as the owner ruled on 2026-11-10
   ("go with your recommendation"): on `tjsonb`, `@>` / `<@` are `tjsonbContains` /
