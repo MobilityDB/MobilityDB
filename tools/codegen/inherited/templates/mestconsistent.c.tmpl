@@ -18,9 +18,9 @@ Datum
     PG_RETURN_BOOL(false);
 /* TIER-END */
 /* PIECES-BEGIN */
-  /* A piece of a value of the same span as the query lies within it */
-  if ((StrategyNumber) PG_GETARG_UINT16(2) == RTSameStrategyNumber)
-    fcinfo->args[2].value = UInt16GetDatum(RTContainedByStrategyNumber);
+  /* A key of a piece answers the strategy of #mest_pieces_strategy */
+  fcinfo->args[2].value = UInt16GetDatum(
+    mest_pieces_strategy((StrategyNumber) PG_GETARG_UINT16(2)));
 /* PIECES-END */
   Datum result = {SYM}(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
@@ -50,7 +50,7 @@ Datum
   Datum result = {SYM}(fcinfo);
 /* TIER-END */
 /* PIECES-BEGIN */
-  /* A piece of a value of the same span as the query lies within it */
+  /* A key of a piece answers the strategies of #mest_pieces_strategy */
   ScanKey keys = in->scankeys;
   in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
   Datum result = {SYM}(fcinfo);
@@ -71,8 +71,8 @@ PG_FUNCTION_INFO_V1({TWIN});
  * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
  * the spans of the pieces of a value, as
  * #{SYM} answers it
- * @details A piece of a value of the same span as the query lies within it,
- * so the nodes are chosen for the same span as for contained by
+ * @details The nodes are chosen for the strategies a key of a piece answers
+ * (#mest_pieces_strategy)
  */
 Datum
 {TWIN}(PG_FUNCTION_ARGS)

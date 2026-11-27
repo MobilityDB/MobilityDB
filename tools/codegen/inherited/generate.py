@@ -708,6 +708,102 @@ def mest_indextest_file(path: str) -> str:
     return "mobilitydb/test/mest/sql/" + name
 
 
+# The fixture table of a type of the sets and span sets, or of their base or
+# span type, `tbl_<name>(k, <column>)`, its column named by the base type
+_VALUE_FIXTURES = (("bigint", "b"), ("int", "i"), ("float", "f"), ("date", "d"),
+                   ("tstz", "t"), ("timestamptz", "t"))
+_VALUE_BASES = {"integer": "int", "bigint": "bigint", "float": "float",
+                "date": "date", "timestamptz": "timestamptz"}
+
+
+def _value_fixture(typ: str) -> tuple:
+    """The fixture table of the type `typ` and its column"""
+    name = _VALUE_BASES.get(typ, typ)
+    col = next(c for pfx, c in _VALUE_FIXTURES if name.startswith(pfx))
+    return f"tbl_{name}", col
+
+
+def valuemest_test_files() -> list:
+    """The multi-entry tests of the sets and span sets, as (type, the GiST class
+    of the type, the test file)"""
+    out = []
+    for path in MEST_VALUE_FILES:
+        if not path.endswith("_gist.in.sql"):
+            continue
+        nnn = path.rsplit("/", 1)[1].split("_", 1)[0]
+        for base, typ in re.findall(
+                r"(CREATE OPERATOR CLASS (\w+?)_rtree_ops\n.*?;\n)",
+                (ROOT / path).read_text(), re.S):
+            out.append((typ, base,
+                        f"mobilitydb/test/mest/sql/{nnn}_{typ}_mest_tbl.sql"))
+    return out
+
+
+def render_valuemesttest(typ: str, base: str) -> str:
+    """The multi-entry index test of the set or span set `typ` whose GiST class
+    is `base`, templates/mestindextest.sql.tmpl filled as #render_mestindextest
+    fills it: every member of #MEST_VALUE_STRATEGIES the class holds, with each
+    right argument it declares, answered by the scan and under the index of
+    each tree and split of #render_valuemestfile, a column each: the number of
+    pairs of the fixture of `typ` and of the right argument it holds on"""
+    tbl, col = _value_fixture(typ)
+    q = "'"
+    rows = []
+    for st, op, right in re.findall(
+            rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\)", base, re.M):
+        if int(st) not in MEST_VALUE_STRATEGIES:
+            continue
+        rtbl, rcol = _value_fixture(right)
+        label = f"{op} {right}"
+        query = (f"SELECT COUNT(*) FROM {tbl}_idx t1, {rtbl} t2 "
+                 f"WHERE t1.{col} {op} t2.{rcol}")
+        rows.append((label, query))
+    cols = [(kind, split) for kind in TEMPOPCLASS_KINDS for split in MEST_VALUE_SPLITS]
+    blocks = []
+    for kind, split in cols:
+        am = "mgist" if TEMPOPCLASS_KINDS[kind] == "gist" else "mspgist"
+        c = f"{kind}_{split}"
+        b = ["-" * 79, "",
+             f"CREATE INDEX {tbl}_idx_{c} ON {tbl}_idx",
+             f"  USING {am}({col} {typ}_m{kind}_{split}split_ops);",
+             "SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+             "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+        for label, query in rows:
+            b += [f"UPDATE test_{typ}_mest SET {c}_idx = ({query})::text,",
+                  f"  {c}_probe = pg_temp.test_probes_index("
+                  f"'{query.replace(q, q * 2)}')",
+                  f"WHERE op = '{label}';"]
+        b += ["RESET enable_seqscan;", "RESET enable_hashjoin;",
+              "RESET enable_mergejoin;", "RESET enable_sort;",
+              f"DROP INDEX {tbl}_idx_{c};", ""]
+        blocks.append("\n".join(b))
+    header = textwrap.fill(
+        f"The multi-entry R-tree mgist, quad-tree and k-d tree mspgist indexes of a "
+        f"{typ}, keyed by the spans of its "
+        f"{'components' if 'spanset' in typ else 'elements'}, one per split "
+        f"({', '.join(MEST_VALUE_SPLITS)}). Under each index every operator the "
+        "class holds, with each right argument it declares, answers the rows a "
+        "sequential scan gives, from a plan that probes the index.",
+        width=83, initial_indent="-- ", subsequent_indent="-- ")
+    tables = (f"DROP TABLE IF EXISTS {tbl}_idx;\n"
+              f"CREATE TEMP TABLE {tbl}_idx AS TABLE {tbl};\n"
+              f"ANALYZE {tbl}_idx;\n")
+    text = read_template("mestindextest.sql.tmpl")
+    for k, v in (("{HEADER}", header), ("{TABLES}", tables),
+                 ("{COLUMNS}", ",\n".join(f"  {k}_{s}_idx text, {k}_{s}_probe boolean"
+                                          for k, s in cols)),
+                 ("{ROWS}", "\n".join(f"INSERT INTO test_{typ}_mest(op, no_idx) VALUES "
+                                      f"('{label}', ({qr})::text);"
+                                      for label, qr in rows)),
+                 ("{BLOCKS}", "\n".join(blocks)[:-1]),
+                 ("{COUNTS}", f"SELECT COUNT(*) FROM {tbl}_idx;"),
+                 ("{DIFFER}", " OR\n  ".join(f"no_idx IS DISTINCT FROM {k}_{s}_idx OR "
+                                             f"NOT {k}_{s}_probe" for k, s in cols)),
+                 ("{DROPS}", f"DROP TABLE {tbl}_idx;"), ("{TEMP}", typ)):
+        text = text.replace(k, v)
+    return text
+
+
 def render_mestindextest(test: dict, sub: dict, which: int = 0) -> str | None:
     """The multi-entry index test of the subtype `sub` over the values of the
     dimension `which` of its entry `test` of manifest.d/indextests.yaml,
@@ -1568,6 +1664,102 @@ MEST_OPTIONS = {"equi": "mest_count_options", "seg": "mest_count_options",
                 "tile": "mest_tile_options", "bin": "mest_bin_options"}
 
 
+# The multi-entry classes of the sets and span sets, keyed by the spans of the
+# elements or the components of a value as its splits group them. The overlaps,
+# the contains, the contained by and the equals of a set or a span set read its
+# elements or its components, so some key of a value answering them passes the
+# test of the overlaps (overlaps, contains) or of contained by (contained by,
+# equals) against the span of the query; a position operator and the adjacency
+# read the first or the last of them. The classes hold no distance: the
+# distance to a key is a lower bound, rechecked, which PostgreSQL accepts only
+# from an operator returning a float, and the distance of an integer, a date or
+# a timestamp is none; an ordered scan of mspgist over the keys of a set of
+# floats split into several keys fails with "index returned tuples in wrong
+# order". The classes are those of the GiST and SP-GiST files of
+# MEST_VALUE_FILES, each split of #MEST_VALUE_SPLITS taking the extraction
+# method of the set or the span set (Set_mest_*split, Spanset_mest_*split)
+MEST_VALUE_STRATEGIES = {1, 2, 3, 4, 5, 7, 8, 17, 18, 28, 29, 30, 31}
+MEST_VALUE_FILES = ("mobilitydb/sql/temporal/012_spanset_gist.in.sql",
+                    "mobilitydb/sql/temporal/012_spanset_spgist.in.sql",
+                    "mobilitydb/sql/temporal/013_set_gist.in.sql",
+                    "mobilitydb/sql/temporal/013_set_spgist.in.sql")
+MEST_VALUE_SPLITS = ("equi", "seg", "merge", "adapt")
+
+
+def render_valuemestfile(path: str, declared: set) -> str:
+    """The multi-entry classes of the sets or the span sets of the GiST or
+    SP-GiST file `path`, a class per class of the file and per split of
+    #MEST_VALUE_SPLITS, as #render_mestfile writes those of a box type: the
+    members of #MEST_VALUE_STRATEGIES the class holds, its consistent methods
+    the twins of those of the class (#mest_consistent, #mest_inner_consistent),
+    its compress method that of every multi-entry class and its extraction
+    method that of the set or the span set; `declared` holds the functions the
+    files before declare"""
+    text = (ROOT / path).read_text()
+    stem = "spanset" if "_spanset_" in path else "set"
+    am = "gist" if path.endswith("_gist.in.sql") else "spgist"
+    out, classes = [], []
+    for base, typ, kind in re.findall(
+            r"(CREATE OPERATOR CLASS (\w+?)_(rtree|quadtree|kdtree)_ops\n.*?;\n)",
+            text, re.S):
+        funcs = {int(n): f for n, f in
+                 re.findall(r"^  FUNCTION +(\d+) +(.*?)[,;]?$", base, re.M)}
+        members = _mest_members(base, held=MEST_VALUE_STRATEGIES)
+        storage = re.search(r"^  STORAGE (\w+),", base, re.M)
+        for split in MEST_VALUE_SPLITS:
+            options = MEST_OPTIONS[split] + "(internal)"
+            extract = f"{stem}_mest_{split}split(internal, internal, internal)"
+            default = "DEFAULT " if split == "equi" and kind in ("rtree", "quadtree") \
+                else ""
+            if am == "gist":
+                fl = [f"  FUNCTION  1 {mest_consistent(funcs[1])}",
+                      f"  FUNCTION  2 {funcs[2]}",
+                      "  FUNCTION  3 mest_gist_compress(internal)",
+                      f"  FUNCTION  5 {funcs[5]}",
+                      f"  FUNCTION  6 {funcs[6]}",
+                      f"  FUNCTION  7 {funcs[7]}"]
+                if 8 in funcs:
+                    fl.append(f"  FUNCTION  8 {funcs[8]}")
+                fl += [f"  FUNCTION 10 {options}", f"  FUNCTION 13 {extract}"]
+                head = (f"CREATE OPERATOR CLASS {typ}_m{kind}_{split}split_ops\n"
+                        f"  {default}FOR TYPE {typ} USING mgist AS\n"
+                        f"  STORAGE {storage.group(1)},\n")
+            else:
+                inner = funcs[4].replace(f"_{kind}_inner_consistent(",
+                                         f"_m{kind}_inner_consistent(", 1)
+                fl = [f"  FUNCTION  1 {funcs[1]}",
+                      f"  FUNCTION  2 {funcs[2]}",
+                      f"  FUNCTION  3 {funcs[3]}",
+                      f"  FUNCTION  4 {inner}",
+                      f"  FUNCTION  5 {mest_consistent(funcs[5])}",
+                      "  FUNCTION  6 mest_spgist_compress(internal)",
+                      f"  FUNCTION  7 {options}",
+                      f"  FUNCTION  8 {extract}"]
+                head = (f"CREATE OPERATOR CLASS {typ}_m{kind}_{split}split_ops\n"
+                        f"  {default}FOR TYPE {typ} USING mspgist AS\n")
+            classes.append(head + "\n".join(members) + "\n  -- functions\n"
+                           + ",\n".join(fl) + ";\n")
+    for split in MEST_VALUE_SPLITS:
+        if (stem, split) in declared:
+            continue
+        declared.add((stem, split))
+        cstem = stem.capitalize()
+        out.append(f"CREATE FUNCTION {stem}_mest_{split}split"
+                   "(internal, internal, internal)\n  RETURNS internal\n"
+                   f"  AS 'MODULE_PATHNAME', '{cstem}_mest_{split}split'\n"
+                   "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
+    for twin, args, orig in mest_twins_of("\n".join(classes)):
+        if ("consistent", twin, args) in declared:
+            continue
+        declared.add(("consistent", twin, args))
+        rettype = "void" if twin.endswith("_inner_consistent") else "boolean"
+        out.append(f"CREATE FUNCTION {twin}({args})\n  RETURNS {rettype}\n"
+                   f"  AS 'MODULE_PATHNAME', "
+                   f"'{mest_twin_symbol(sql_c_symbol(orig))}'\n"
+                   "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n")
+    return "\n".join(out + classes)
+
+
 def mest_path(path: str) -> str:
     """The file of the extension mobilitydb_mest cloning the GiST or SP-GiST
     file `path` of the extension: `mobilitydb/sql/<fam>/nnn_<x>_gist.in.sql`
@@ -1650,12 +1842,13 @@ def _tempopclass_text(temp: str, kind: str) -> str:
     return render_family_tempopclass(kind, sub)
 
 
-def _mest_members(base: str, whole: bool = False) -> list:
+def _mest_members(base: str, whole: bool = False, held: set = None) -> list:
     """The members of the class `base` a multi-entry class holds, the
     strategies of #MEST_STRATEGIES, each under the comment it has there, and
     those of #MEST_WHOLE_STRATEGIES where the class keys the box of the whole
-    value beside the boxes of its pieces (`whole`)"""
-    held = MEST_STRATEGIES | (MEST_WHOLE_STRATEGIES if whole else set())
+    value beside the boxes of its pieces (`whole`), or the strategies `held`"""
+    if held is None:
+        held = MEST_STRATEGIES | (MEST_WHOLE_STRATEGIES if whole else set())
     body = base.split("\n  -- functions\n")[0].split("\n")
     out, comment = [], None
     for line in body:
@@ -6868,6 +7061,13 @@ def main() -> int:
                             break
                     if len(g) != len(c):
                         print(f"     line count gen={len(g)} cur={len(c)}")
+        # The multi-entry tests of the sets and span sets
+        for typ, base, f in valuemest_test_files():
+            p = ROOT / f
+            same = p.exists() and p.read_text() == render_valuemesttest(typ, base)
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen mest valuetest {typ} "
+                  f"-> {f}")
         # The index tests, each the test #render_indextest writes for its type
         bytemp = {sub["temp"]: sub for sub in mf["subtypes"]}
         for test, which, f in [(t, i, f) for t in mf.get("indextests", [])
@@ -7395,6 +7595,14 @@ def main() -> int:
                 mp = ROOT / mest_indextest_file(f)
                 mp.write_text(text)
                 print(f"wrote {mp.relative_to(ROOT)}")
+    # The multi-entry tests of the sets and span sets
+    for typ, base, f in valuemest_test_files():
+        p = ROOT / f
+        if args.check:
+            print(f"would write {f}")
+            continue
+        p.write_text(render_valuemesttest(typ, base))
+        print(f"wrote {f}")
 
     for fam in mf.get("tempspatialrel_families", []):
         p = ROOT / fam["file"]
@@ -7484,6 +7692,11 @@ def main() -> int:
     # class taking it, as #render_mestfile states; a file holding no class is
     # left out
     declared = set()
+    # The multi-entry classes of the sets and span sets, whose files load
+    # first and so declare the twins of the span the later files take
+    for path in MEST_VALUE_FILES:
+        mestfiles.setdefault(mest_path(path), []).append(
+            render_valuemestfile(path, declared))
     for bt in mf.get("boxtypes", []):
         oc = bt.get("opclasses") or {}
         if not oc.get("mestsplits"):

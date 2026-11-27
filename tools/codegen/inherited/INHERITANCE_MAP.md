@@ -350,6 +350,17 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   reads the same span as contained by (`mest_pieces_scankeys`), as the inner
   consistent twins of the SP-GiST classes of a span do
   (`mest_inner_consistent`).
+  The multi-entry classes of the sets and span sets come from their GiST and
+  SP-GiST classes (`MEST_VALUE_FILES`, `render_valuemestfile`), into
+  `mobilitydb/mest/temporal/012_spanset_m*.in.sql` and `013_set_m*.in.sql`,
+  which load first and so declare the twins of the span the later files take:
+  a class per class and per split (`MEST_VALUE_SPLITS`), keyed by the spans of
+  the elements or the components of a value (`Set_mest_*split`,
+  `Spanset_mest_*split`), holding the members of `MEST_VALUE_STRATEGIES` its
+  class holds, which leave out the distance; the twins of the span answer the
+  contains as the overlaps and the equals
+  as contained by (`mest_pieces_strategy`). `render_valuemesttest` writes their
+  tests, `mobilitydb/test/mest/sql/01[23]_<type>_mest_tbl.sql`.
   `templates/mestindextest.sql.tmpl` writes the multi-entry test of each index
   test, `mobilitydb/test/mest/sql/<nnn>_<temp>_mest[3d]_tbl.sql`, one column
   per tree and split; an index test states per dimension the tile its

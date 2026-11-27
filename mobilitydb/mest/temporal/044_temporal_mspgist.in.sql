@@ -37,21 +37,6 @@
 
 /******************************************************************************/
 
-CREATE FUNCTION span_mquadtree_inner_consistent(internal, internal)
-  RETURNS void
-  AS 'MODULE_PATHNAME', 'Span_mquadtree_inner_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION span_mspgist_leaf_consistent(internal, internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Span_mspgist_leaf_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION span_mkdtree_inner_consistent(internal, internal)
-  RETURNS void
-  AS 'MODULE_PATHNAME', 'Span_mkdtree_inner_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE OPERATOR CLASS tbool_mquadtree_equisplit_ops
   DEFAULT FOR TYPE tbool USING mspgist AS
   -- same

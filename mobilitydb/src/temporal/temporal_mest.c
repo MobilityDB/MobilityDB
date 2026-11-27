@@ -58,6 +58,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <pgtypes.h>
+#include "temporal/set.h"
+#include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_tile.h"
 #include "temporal/type_util.h"
@@ -192,14 +194,33 @@ mest_key_answers(int16 flags, StrategyNumber strategy)
 }
 
 /**
+ * @brief Return the strategy a key of a piece of a value answers in place of
+ * a strategy of a multi-entry index whose keys are spans
+ * @details A span carries no flags, so a class whose keys are spans keys the
+ * pieces of a value alone, the components of a span set, the elements of a
+ * set or the pieces of a temporal value. The span of a value is the same as a
+ * query, or a value equals it, only when every piece lies within the query, so
+ * a key of a piece answers them as contained by; a value contains a query
+ * only when some piece meets it, so a key of a piece answers the contains as
+ * the overlaps. Every other strategy is its own
+ * @param[in] strategy Strategy number of the operator
+ */
+StrategyNumber
+mest_pieces_strategy(StrategyNumber strategy)
+{
+  if (strategy == RTSameStrategyNumber || strategy == RTEqualStrategyNumber)
+    return RTContainedByStrategyNumber;
+  if (strategy == RTContainsStrategyNumber)
+    return RTOverlapStrategyNumber;
+  return strategy;
+}
+
+/**
  * @brief Return the scan keys a key of a piece of a value answers in place of
  * the scan keys of a multi-entry index whose keys are spans
- * @details A span carries no flags, so a class whose keys are spans keys the
- * pieces of a value alone. The span of a value is the same as a query only
- * when the span of every piece lies within the query, so a key of a piece
- * answers the same span as contained by. The result is the array of the scan
- * keys itself when no key is of the same span, else a copy allocated with
- * palloc
+ * @details The strategy of each key is the one #mest_pieces_strategy reads.
+ * The result is the array of the scan keys itself when every key keeps its
+ * strategy, else a copy allocated with palloc
  * @param[in] keys Scan keys
  * @param[in] nkeys Number of scan keys
  */
@@ -210,15 +231,14 @@ mest_pieces_scankeys(ScanKey keys, int nkeys)
     return keys;
   int i;
   for (i = 0; i < nkeys; i++)
-    if (keys[i].sk_strategy == RTSameStrategyNumber)
+    if (mest_pieces_strategy(keys[i].sk_strategy) != keys[i].sk_strategy)
       break;
   if (i == nkeys)
     return keys;
   ScanKey result = palloc(sizeof(ScanKeyData) * nkeys);
   memcpy(result, keys, sizeof(ScanKeyData) * nkeys);
   for (i = 0; i < nkeys; i++)
-    if (result[i].sk_strategy == RTSameStrategyNumber)
-      result[i].sk_strategy = RTContainedByStrategyNumber;
+    result[i].sk_strategy = mest_pieces_strategy(result[i].sk_strategy);
   return result;
 }
 
@@ -327,6 +347,146 @@ Datum
 Mest_spgist_compress(PG_FUNCTION_ARGS)
 {
   PG_RETURN_DATUM(PG_GETARG_DATUM(0));
+}
+
+/*****************************************************************************
+ * Extract methods of the sets and span sets
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Set_mest_equisplit);
+/**
+ * @brief Multi-entry extract method of a set keyed by the spans of an element
+ * or of several
+ * @details The keys of a value are a number of spans of its consecutive
+ * elements, the number being the option of the class (#mest_count) and the
+ * split that of #set_split_n_spans
+ */
+Datum
+Set_mest_equisplit(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = set_split_n_spans(s, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1(Set_mest_segsplit);
+/**
+ * @brief Multi-entry extract method of a set keyed by the spans of an element
+ * or of several
+ * @details The keys of a value are the spans of its consecutive elements a
+ * number at a time, the number being the option of the class (#mest_count) and
+ * the split that of #set_split_each_n_spans
+ */
+Datum
+Set_mest_segsplit(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = set_split_each_n_spans(s, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1(Set_mest_mergesplit);
+/**
+ * @brief Multi-entry extract method of a set keyed by the spans of an element
+ * or of several
+ * @details The keys of a value are a number of spans merging the spans of its
+ * elements least apart, the number being the option of the class (#mest_count)
+ * and the split that of #set_merge_n_spans
+ */
+Datum
+Set_mest_mergesplit(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = set_merge_n_spans(s, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1(Set_mest_adaptsplit);
+/**
+ * @brief Multi-entry extract method of a set keyed by the spans of an element
+ * or of several
+ * @details The keys of a value are the spans merging the spans of its elements
+ * a number at a time, least apart, the number being the option of the class
+ * (#mest_count) and the split that of #set_merge_each_n_spans
+ */
+Datum
+Set_mest_adaptsplit(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = set_merge_each_n_spans(s, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1(Spanset_mest_equisplit);
+/**
+ * @brief Multi-entry extract method of a span set keyed by the spans of a
+ * component or of several
+ * @details The keys of a value are a number of spans of its consecutive
+ * components, the number being the option of the class (#mest_count) and the
+ * split that of #spanset_split_n_spans
+ */
+Datum
+Spanset_mest_equisplit(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = spanset_split_n_spans(ss, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1(Spanset_mest_segsplit);
+/**
+ * @brief Multi-entry extract method of a span set keyed by the spans of a
+ * component or of several
+ * @details The keys of a value are the spans of its consecutive components a
+ * number at a time, the number being the option of the class (#mest_count) and
+ * the split that of #spanset_split_each_n_spans
+ */
+Datum
+Spanset_mest_segsplit(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = spanset_split_each_n_spans(ss, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1(Spanset_mest_mergesplit);
+/**
+ * @brief Multi-entry extract method of a span set keyed by the spans of a
+ * component or of several
+ * @details The keys of a value are a number of spans merging the spans of its
+ * components least apart, the number being the option of the class
+ * (#mest_count) and the split that of #spanset_merge_n_spans
+ */
+Datum
+Spanset_mest_mergesplit(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = spanset_merge_n_spans(ss, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
+}
+
+PG_FUNCTION_INFO_V1(Spanset_mest_adaptsplit);
+/**
+ * @brief Multi-entry extract method of a span set keyed by the spans of a
+ * component or of several
+ * @details The keys of a value are the spans merging the spans of its
+ * components a number at a time, least apart, the number being the option of
+ * the class (#mest_count) and the split that of #spanset_merge_each_n_spans
+ */
+Datum
+Spanset_mest_adaptsplit(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
+  Span *spans = spanset_merge_each_n_spans(ss, mest_count(fcinfo), nkeys);
+  PG_RETURN_POINTER(mest_keys(spans, sizeof(Span), *nkeys));
 }
 
 /*****************************************************************************
@@ -506,9 +666,9 @@ PG_FUNCTION_INFO_V1(Span_mgist_consistent);
 Datum
 Span_mgist_consistent(PG_FUNCTION_ARGS)
 {
-  /* A piece of a value of the same span as the query lies within it */
-  if ((StrategyNumber) PG_GETARG_UINT16(2) == RTSameStrategyNumber)
-    fcinfo->args[2].value = UInt16GetDatum(RTContainedByStrategyNumber);
+  /* A key of a piece answers the strategy of #mest_pieces_strategy */
+  fcinfo->args[2].value = UInt16GetDatum(
+    mest_pieces_strategy((StrategyNumber) PG_GETARG_UINT16(2)));
   Datum result = Span_gist_consistent(fcinfo);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   *recheck = true;
@@ -521,8 +681,8 @@ PG_FUNCTION_INFO_V1(Span_mkdtree_inner_consistent);
  * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
  * the spans of the pieces of a value, as
  * #Span_kdtree_inner_consistent answers it
- * @details A piece of a value of the same span as the query lies within it,
- * so the nodes are chosen for the same span as for contained by
+ * @details The nodes are chosen for the strategies a key of a piece answers
+ * (#mest_pieces_strategy)
  */
 Datum
 Span_mkdtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -543,8 +703,8 @@ PG_FUNCTION_INFO_V1(Span_mquadtree_inner_consistent);
  * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
  * the spans of the pieces of a value, as
  * #Span_quadtree_inner_consistent answers it
- * @details A piece of a value of the same span as the query lies within it,
- * so the nodes are chosen for the same span as for contained by
+ * @details The nodes are chosen for the strategies a key of a piece answers
+ * (#mest_pieces_strategy)
  */
 Datum
 Span_mquadtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -572,7 +732,7 @@ Datum
 Span_mspgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
-  /* A piece of a value of the same span as the query lies within it */
+  /* A key of a piece answers the strategies of #mest_pieces_strategy */
   ScanKey keys = in->scankeys;
   in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
   Datum result = Span_spgist_leaf_consistent(fcinfo);
