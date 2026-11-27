@@ -738,6 +738,7 @@ extern bool tpoint_direction(const Temporal *temp, double *result);
 extern Temporal *tpoint_get_x(const Temporal *temp);
 extern Temporal *tpoint_get_y(const Temporal *temp);
 extern Temporal *tpoint_get_z(const Temporal *temp);
+extern double *tpoint_coords(const Temporal *temp, double **ycoords, double **zcoords, TimestampTz **times, int *count);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp, bool spheroid);
 extern Temporal *tpoint_speed(const Temporal *temp, bool spheroid);

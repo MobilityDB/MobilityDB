@@ -211,6 +211,60 @@ tpoint_get_z(const Temporal *temp)
   return tpoint_get_coord(temp, 2);
 }
 
+/**
+ * @ingroup meos_geo_accessor
+ * @brief Return the coordinates and the timestamps of the distinct instants
+ * of a temporal point as parallel arrays
+ * @details The arrays are those #tpointseq_make_coords takes, so a sequence
+ * is made again from the arrays of its instants. The instants of a sequence
+ * set follow one another across its sequences, an instant ending one sequence
+ * and starting the next being read once.
+ * @param[in] temp Temporal point
+ * @param[out] ycoords Array of the y coordinates
+ * @param[out] zcoords Array of the z coordinates, NULL for a point without Z
+ * @param[out] times Array of the timestamps
+ * @param[out] count Number of instants
+ * @return Array of the x coordinates
+ * @errval NULL
+ */
+double *
+tpoint_coords(const Temporal *temp, double **ycoords, double **zcoords,
+  TimestampTz **times, int *count)
+{
+  /* The out parameters are defined even when a later check fails */
+  VALIDATE_NOT_NULL(ycoords, NULL); VALIDATE_NOT_NULL(zcoords, NULL);
+  VALIDATE_NOT_NULL(times, NULL); VALIDATE_NOT_NULL(count, NULL);
+  *ycoords = *zcoords = NULL;
+  *times = NULL;
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINT(temp, NULL);
+
+  int ninsts;
+  const TInstant **instants = temporal_insts_p(temp, &ninsts);
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  double *xs = palloc(sizeof(double) * ninsts);
+  double *ys = palloc(sizeof(double) * ninsts);
+  double *zs = hasz ? palloc(sizeof(double) * ninsts) : NULL;
+  TimestampTz *ts = palloc(sizeof(TimestampTz) * ninsts);
+  for (int i = 0; i < ninsts; i++)
+  {
+    POINT4D p;
+    datum_point4d(tinstant_value_p(instants[i]), &p);
+    xs[i] = p.x;
+    ys[i] = p.y;
+    if (hasz)
+      zs[i] = p.z;
+    ts[i] = instants[i]->t;
+  }
+  pfree(instants);
+  *ycoords = ys;
+  *zcoords = zs;
+  *times = ts;
+  *count = ninsts;
+  return xs;
+}
+
 /*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision
  *****************************************************************************/
