@@ -2460,6 +2460,8 @@ tdwithin_tgeogpoint_geogpoint(const Temporal *temp1, const Temporal *temp2,
   spheroid_init_from_srid(tspatial_srid(temp1), &sp.s);
   if (! spheroid)
     sp.s.a = sp.s.b = sp.s.radius;
+  if (sp.s.a == sp.s.b)
+    sp.s.f = sp.s.e_sq = 0.0;
   sp.sphere = (sp.s.a == sp.s.b);
   int nseqs1 = (temp1->subtype == TSEQUENCE) ? 1 :
     ((const TSequenceSet *) temp1)->count;
@@ -3155,6 +3157,8 @@ tdwithin_tgeogpoint_geog(const Temporal *temp, const GSERIALIZED *gs,
   spheroid_init_from_srid(tspatial_srid(temp), &sg.sph);
   if (! spheroid)
     sg.sph.a = sg.sph.b = sg.sph.radius;
+  if (sg.sph.a == sg.sph.b)
+    sg.sph.f = sg.sph.e_sq = 0.0;
   sg.geom = lwgeom_from_gserialized(gs);
   int npoints = (int) lwgeom_count_vertices(sg.geom);
   sg.vert = palloc(sizeof(POINT3D) * npoints);

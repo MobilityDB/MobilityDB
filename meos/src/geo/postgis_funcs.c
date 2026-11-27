@@ -8633,6 +8633,8 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
   /* Set to sphere if requested */
   if (! use_spheroid)
     s.a = s.b = s.radius;
+  if (s.a == s.b)
+    s.f = s.e_sq = 0.0;
 
   switch (lwgeom_get_type(lwgeom))
   {
@@ -8777,6 +8779,8 @@ geog_area(const GSERIALIZED *gs, bool use_spheroid)
   /* User requests spherical calculation, turn our spheroid into a sphere */
   if (! use_spheroid )
     s.a = s.b = s.radius;
+  if (s.a == s.b)
+    s.f = s.e_sq = 0.0;
 
   /* Calculate the area */
   if ( use_spheroid )
@@ -8840,6 +8844,8 @@ geog_perimeter(const GSERIALIZED *gs, bool use_spheroid)
   /* User requests spherical calculation, turn our spheroid into a sphere */
   if (! use_spheroid )
     s.a = s.b = s.radius;
+  if (s.a == s.b)
+    s.f = s.e_sq = 0.0;
 
   /* Calculate the length */
   length = lwgeom_length_spheroid(lwgeom, &s);
@@ -8888,6 +8894,8 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
   /* User requests spherical calculation, turn our spheroid into a sphere */
   if (!  use_spheroid )
     s.a = s.b = s.radius;
+  if (s.a == s.b)
+    s.f = s.e_sq = 0.0;
 
   /* Calculate the length */
   double length = lwgeom_length_spheroid(geom, &s);
@@ -9070,6 +9078,8 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
   /* Set to sphere if requested */
   if (! use_spheroid)
     s.a = s.b = s.radius;
+  if (s.a == s.b)
+    s.f = s.e_sq = 0.0;
 
   /* The geodetic distance reads an LWGEOM and never an edge, so it borrows the
    * READING a relationship has already taken of these geometries. The spheroid
@@ -9176,6 +9186,8 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* Set to sphere if requested */
   if (!  use_spheroid )
     s.a = s.b = s.radius;
+  if (s.a == s.b)
+    s.f = s.e_sq = 0.0;
 
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);

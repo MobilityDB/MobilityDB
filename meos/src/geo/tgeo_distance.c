@@ -4003,6 +4003,8 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
     spheroid_init_from_srid(gserialized_get_srid(gs), &earth.s);
     if (! spheroid)
       earth.s.a = earth.s.b = earth.s.radius;
+    if (earth.s.a == earth.s.b)
+      earth.s.f = earth.s.e_sq = 0.0;
     earth.tree = lwgeom_calculate_circ_tree(geo);
     sp = &earth;
   }
@@ -4761,6 +4763,8 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* Set to sphere if requested */
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
+  if (s.a == s.b)
+    s.f = s.e_sq = 0.0;
 
   LWGEOM *geo1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geo2 = lwgeom_from_gserialized(gs2);
