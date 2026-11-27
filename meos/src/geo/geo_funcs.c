@@ -6085,39 +6085,27 @@ motion_point_inside_segms(const double *c0, const double *c1, int64 D,
   int64 n, const Edge *const *edges, int nedges)
 {
   DyadicWideArena arena, *ar = &arena;
-  dyadic_wide_arena_init(ar);
-  const DyadicWide *wD, *wn, *t;
-  DyadicWide *P[2];
-  wD = dyadic_wide_of_int64(ar, D);
-  wn = dyadic_wide_of_int64(ar, n);
-  for (int i = 0; i < 2; i++)
-  {
-    const DyadicWide *c, *dc;
-    c = dyadic_wide_zero(ar);
-    c = dyadic_wide_add_double(ar, c, c0[i], 1);
-    dc = dyadic_wide_zero(ar);
-    dc = dyadic_wide_add_double(ar, dc, c1[i], 1);
-    dc = dyadic_wide_add_double(ar, dc, c0[i], -1);
-    P[i] = dyadic_wide_mul(ar, c, wD);
-    t = dyadic_wide_mul(ar, dc, wn);
-    P[i] = dyadic_wide_add(ar, P[i], t);
-  }
-  const DyadicWide *negPy = dyadic_wide_neg(ar, P[1]);
-  /* The values of each edge are released at the next */
-  DyadicWideMark m = dyadic_wide_arena_mark(ar);
-  /* A filter: the height `P_y` in doubles, `c0_y D + n (c1_y - c0_y)`,
-   * within 2^-50 of the magnitudes it combines, so an edge both of whose
-   * ends stand beyond that, on one side of it, crosses no ray, and only
-   * the edges the doubles leave are read exactly */
+  /* The exact centre, built at the first edge the doubles leave */
+  bool exact = false;
+  const DyadicWide *wD = NULL, *negPy = NULL;
+  DyadicWide *P[2] = {NULL, NULL};
+  DyadicWideMark m = {0, 0};
+  /* A filter: the centre `P` in doubles, `c0 D + n (c1 - c0)`, within 2^-50
+   * of the magnitudes it combines. An edge both of whose ends stand beyond
+   * that on one side of the height `P_y`, or both to the left of `P_x`,
+   * crosses no ray; one both of whose ends stand to the right of `P_x`, one
+   * on either side of `P_y`, crosses it. Only the edges the doubles leave
+   * are read exactly */
   double dD = (double) D, dn = (double) n;
   double Pyd = c0[1] * dD + dn * (c1[1] - c0[1]);
   double Pymag = fabs(c0[1]) * dD + dn * (fabs(c1[1]) + fabs(c0[1]));
-  bool filter = isfinite(Pyd) && isfinite(Pymag) && D <= DWITHIN_GRID_EXACT_N
-    && n <= DWITHIN_GRID_EXACT_N;
+  double Pxd = c0[0] * dD + dn * (c1[0] - c0[0]);
+  double Pxmag = fabs(c0[0]) * dD + dn * (fabs(c1[0]) + fabs(c0[0]));
+  bool filter = isfinite(Pyd) && isfinite(Pymag) && isfinite(Pxd) &&
+    isfinite(Pxmag) && D <= DWITHIN_GRID_EXACT_N && n <= DWITHIN_GRID_EXACT_N;
   bool inside = false;
   for (int k = 0; k < nedges; k++)
   {
-    dyadic_wide_arena_release(ar, m);
     const Edge *e = edges[k];
     if (e->etype != EDGE_POLYSEG)
       continue;
@@ -6128,7 +6116,44 @@ motion_point_inside_segms(const double *c0, const double *c1, int64 D,
       double eb = 0x1p-46 * (fabs(e->y2) * dD + Pymag);
       if ((ya > ea && yb > eb) || (ya < - ea && yb < - eb))
         continue;
+      double xa = e->x1 * dD - Pxd, xb = e->x2 * dD - Pxd;
+      double fa = 0x1p-46 * (fabs(e->x1) * dD + Pxmag);
+      double fb = 0x1p-46 * (fabs(e->x2) * dD + Pxmag);
+      if (xa < - fa && xb < - fb)
+        continue;
+      if (xa > fa && xb > fb && (ya > ea || ya < - ea) &&
+          (yb > eb || yb < - eb))
+      {
+        /* The ends on either side of `P_y`, the edge goes up or down */
+        if ((ya < 0) != (yb < 0))
+          inside = ! inside;
+        continue;
+      }
     }
+    if (! exact)
+    {
+      dyadic_wide_arena_init(ar);
+      wD = dyadic_wide_of_int64(ar, D);
+      const DyadicWide *wn = dyadic_wide_of_int64(ar, n), *t;
+      for (int i = 0; i < 2; i++)
+      {
+        const DyadicWide *c, *dc;
+        c = dyadic_wide_zero(ar);
+        c = dyadic_wide_add_double(ar, c, c0[i], 1);
+        dc = dyadic_wide_zero(ar);
+        dc = dyadic_wide_add_double(ar, dc, c1[i], 1);
+        dc = dyadic_wide_add_double(ar, dc, c0[i], -1);
+        P[i] = dyadic_wide_mul(ar, c, wD);
+        t = dyadic_wide_mul(ar, dc, wn);
+        P[i] = dyadic_wide_add(ar, P[i], t);
+      }
+      negPy = dyadic_wide_neg(ar, P[1]);
+      /* The values of each edge are released at the next */
+      m = dyadic_wide_arena_mark(ar);
+      exact = true;
+    }
+    else
+      dyadic_wide_arena_release(ar, m);
     /* The signs of D a_y - P_y and D b_y - P_y */
     const DyadicWide *ay, *by, *ax, *ux, *uy, *qx, *qy, *p, *s;
     DyadicWide *q;
@@ -6168,8 +6193,38 @@ motion_point_inside_segms(const double *c0, const double *c1, int64 D,
     if ((up && s->sign > 0) || (down && s->sign < 0))
       inside = ! inside;
   }
-  dyadic_wide_arena_free(ar);
+  if (exact)
+    dyadic_wide_arena_free(ar);
   return inside;
+}
+
+/**
+ * @brief Return true where the doubles prove a point nearer than @p R to the
+ * segment from (x1, y1) to (x2, y2), false where they leave it
+ * @details Each difference of two coordinates is rounded once, so it lies
+ * within 2^-53 of the exact one relatively, and each product or sum of them
+ * within 2^-50 of the magnitudes it combines, which the margins of 2^-44 on
+ * the squares cover. The point is nearer than @p R to an end, or to the line
+ * where its projection lies strictly inside the segment
+ */
+static bool
+point_segm_within_approx(const double *c, double R, double x1, double y1,
+  double x2, double y2)
+{
+  double R2 = R * R * (1.0 - 0x1p-44);
+  if (! isfinite(R2))
+    return false;
+  double ax = x1 - c[0], ay = y1 - c[1], bx = x2 - c[0], by = y2 - c[1];
+  if (ax * ax + ay * ay < R2 || bx * bx + by * by < R2)
+    return true;
+  double ux = x2 - x1, uy = y2 - y1;
+  double uu = ux * ux + uy * uy;
+  double dot = - (ax * ux + ay * uy);
+  double edot = 0x1p-48 * (fabs(ax * ux) + fabs(ay * uy) + uu);
+  if (! (dot > edot && dot + edot < uu))
+    return false;
+  double cr = fabs(ax * uy - ay * ux) + 0x1p-48 * (fabs(ax * uy) + fabs(ay * ux));
+  return isfinite(cr) && cr * cr < R2 * uu * (1.0 - 0x1p-44);
 }
 
 /* Order the periods by their start */
@@ -6178,6 +6233,63 @@ period_cmp(const void *a, const void *b)
 {
   const int64 *x = (const int64 *) a, *y = (const int64 *) b;
   return (x[0] > y[0]) - (x[0] < y[0]);
+}
+
+/**
+ * @brief Describe the edges of a geometry for #motion_edges_dwithin_periods
+ * @param[out] me Description
+ * @param[in] edges,nedges Edges of the geometry (#geom_extract_edges), which
+ * the description points to
+ */
+void
+motion_edges_init(MotionEdges *me, const Edge *const *edges, int nedges)
+{
+  me->edges = edges;
+  me->nedges = nedges;
+  me->arc = me->region = false;
+  /* The box of the ends of the region edges, the ones the ray casts read */
+  me->rx0 = me->ry0 = DBL_MAX;
+  me->rx1 = me->ry1 = - DBL_MAX;
+  for (int k = 0; k < nedges; k++)
+  {
+    const Edge *e = edges[k];
+    if (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC)
+      me->arc = true;
+    else if (e->etype == EDGE_POLYSEG)
+    {
+      me->region = true;
+      me->rx0 = Min(me->rx0, Min(e->x1, e->x2));
+      me->rx1 = Max(me->rx1, Max(e->x1, e->x2));
+      me->ry0 = Min(me->ry0, Min(e->y1, e->y2));
+      me->ry1 = Max(me->ry1, Max(e->y1, e->y2));
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Write in @p box the box holding every edge a period of a disc moving
+ * linearly over a segment can come from: the swept box of the centre grown
+ * by the reach, padded by the rounding of its doubles, so it only admits
+ * @param[in] c0,c1 Centre of the disc at the start and at the end
+ * @param[in] r0,r1 Radius of the disc at the start and at the end
+ * @param[in] d Distance
+ * @param[out] box The box, as xmin, xmax, ymin and ymax
+ */
+void
+motion_edges_reach_box(const double *c0, const double *c1, double r0,
+  double r1, double d, double *box)
+{
+  double reach = d + Max(r0, r1);
+  double bx0 = Min(c0[0], c1[0]), bx1 = Max(c0[0], c1[0]);
+  double by0 = Min(c0[1], c1[1]), by1 = Max(c0[1], c1[1]);
+  double mag = Max(Max(fabs(bx0), fabs(bx1)), Max(fabs(by0), fabs(by1)));
+  double pad = reach + 0x1p-50 * (mag + reach);
+  box[0] = bx0 - pad;
+  box[1] = bx1 + pad;
+  box[2] = by0 - pad;
+  box[3] = by1 + pad;
+  return;
 }
 
 /**
@@ -6197,10 +6309,14 @@ period_cmp(const void *a, const void *b)
  * #point_motion_dwithin_period_exact dates them.
  * @param[in] c0,c1 Centre of the disc at the start and at the end
  * @param[in] r0,r1 Radius of the disc at the start and at the end
- * @param[in] edges,nedges Edges of the geometry (#geom_extract_edges)
+ * @param[in] me Edges of the geometry (#motion_edges_init)
+ * @param[in] cand,ncand Candidate edges of the segment, holding every edge of
+ * @p me whose box meets the box of #motion_edges_reach_box, or NULL to read
+ * all the edges
  * @param[in] d Distance
  * @param[in] D Duration of the segment in microseconds
- * @param[out] lo,hi Bounds of the periods, room for @p nedges + 1 each
+ * @param[out] lo,hi Bounds of the periods, room for the number of candidates
+ * plus one each
  * @return The number of periods, or -1 where an edge is an arc, which this
  * engine does not answer
  * @pre The radii and the distance are finite and not negative, `D > 0`, and
@@ -6208,31 +6324,45 @@ period_cmp(const void *a, const void *b)
  */
 int
 motion_edges_dwithin_periods(const double *c0, const double *c1, double r0,
-  double r1, const Edge *const *edges, int nedges, double d, int64 D,
-  int64 *lo, int64 *hi)
+  double r1, const MotionEdges *me, const Edge *const *cand, int ncand,
+  double d, int64 D, int64 *lo, int64 *hi)
 {
-  bool region = false;
-  for (int k = 0; k < nedges; k++)
+  if (me->arc)
+    return -1;
+  if (! cand)
   {
-    if (edges[k]->etype == EDGE_LINEARC || edges[k]->etype == EDGE_POLYARC)
-      return -1;
-    region |= (edges[k]->etype == EDGE_POLYSEG);
+    cand = me->edges;
+    ncand = me->nedges;
   }
-  /* The swept box grown by the reach admits every edge a period can come
-   * from; padded by the rounding of its doubles, it only admits */
-  double reach = d + Max(r0, r1);
-  double bx0 = Min(c0[0], c1[0]), bx1 = Max(c0[0], c1[0]);
-  double by0 = Min(c0[1], c1[1]), by1 = Max(c0[1], c1[1]);
-  double mag = Max(Max(fabs(bx0), fabs(bx1)), Max(fabs(by0), fabs(by1)));
-  double pad = reach + 0x1p-50 * (mag + reach);
-  int64 *per = palloc(sizeof(int64) * 2 * (nedges + 1));
+  double box[4];
+  motion_edges_reach_box(c0, c1, r0, r1, d, box);
+  /* The centre stays in the swept box, so where that box lies apart from the
+   * box of the region edges, the centre is outside the area they bound
+   * throughout and no gap is read */
+  bool region = me->region &&
+    ! (Max(c0[0], c1[0]) < me->rx0 || Min(c0[0], c1[0]) > me->rx1 ||
+       Max(c0[1], c1[1]) < me->ry0 || Min(c0[1], c1[1]) > me->ry1);
+  const Edge *const *edges = me->edges;
+  int nedges = me->nedges;
+  int64 *per = palloc(sizeof(int64) * 2 * (ncand + 1));
   int np = 0;
-  for (int k = 0; k < nedges; k++)
+  for (int k = 0; k < ncand; k++)
   {
-    const Edge *e = edges[k];
-    if (e->xmax < bx0 - pad || e->xmin > bx1 + pad ||
-        e->ymax < by0 - pad || e->ymin > by1 + pad)
+    const Edge *e = cand[k];
+    if (e->xmax < box[0] || e->xmin > box[1] || e->ymax < box[2] ||
+        e->ymin > box[3])
       continue;
+    /* The distance of the centre to the edge less the radius is convex in
+     * the fraction of the segment, so a disc within of the edge at both ends
+     * is within of it throughout, and the segment is one period */
+    if (point_segm_within_approx(c0, r0 + d, e->x1, e->y1, e->x2, e->y2) &&
+        point_segm_within_approx(c1, r1 + d, e->x1, e->y1, e->x2, e->y2))
+    {
+      pfree(per);
+      lo[0] = 0;
+      hi[0] = D;
+      return 1;
+    }
     const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
     int64 n1, n2;
     if (point_motion_segm_dwithin_period_exact(c0, c1, r0, r1, a, b, d, D,

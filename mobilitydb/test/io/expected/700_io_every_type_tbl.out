@@ -21299,9 +21299,9 @@ SELECT asEWKT(round(applyPose(pose(ST_Point(10,5), pi()/2),
 (1 row)
 
 SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
-             asewkt             
---------------------------------
- Pose(POINT Z (1 0 0),0,0,0,-1)
+            asewkt             
+-------------------------------
+ Pose(POINT Z (1 0 0),0,0,0,1)
 (1 row)
 
 SELECT asEWKT(round(applyPose(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'),

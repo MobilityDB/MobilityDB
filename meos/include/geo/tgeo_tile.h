@@ -111,6 +111,10 @@ extern STBox *tspatial_space_time_boxes(const Temporal *temp, double xsize,
   double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix,
   bool border_inc, TileRestrictFn restrfn, int *count);
+extern STBox *tgeo_space_time_boxes_intl(const Temporal *temp, double xsize,
+  double ysize, double zsize, const Interval *duration,
+  const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix,
+  bool border_inc, int *count);
 
 extern STboxGridState *tgeo_space_time_tile_init(const Temporal *temp,
   double xsize, double ysize, double zsize, const Interval *duration,

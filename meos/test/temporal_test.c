@@ -508,16 +508,16 @@ int main(void)
   printf("tbox_round(%s, 6): %s\n", tbox1_out, char_result);
   free(tbox_result); free(char_result);
 
-  /* TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth); */
-  tbox_result = tfloatbox_shift_scale(tbox1, float8_in1, float8_in2, true, true);
+  /* TBox *tfloatbox_shift_scale_value(const TBox *box, double shift, double width); */
+  tbox_result = tfloatbox_shift_scale_value(tbox1, float8_in1, float8_in2);
   char_result = tbox_out(tbox_result, 6, &size_out);
-  printf("tfloatbox_shift_scale(%s, %lf, %lf, true, true): %s\n", tbox1_out, float8_in1, float8_in2, char_result);
+  printf("tfloatbox_shift_scale_value(%s, %lf, %lf): %s\n", tbox1_out, float8_in1, float8_in2, char_result);
   free(tbox_result); free(char_result);
 
-  /* TBox *tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift, bool haswidth); */
-  tbox_result = tintbox_shift_scale(tintbox1, int32_in1, int32_in2, true, true);
+  /* TBox *tintbox_shift_scale_value(const TBox *box, int shift, int width); */
+  tbox_result = tintbox_shift_scale_value(tintbox1, int32_in1, int32_in2);
   char_result = tbox_out(tbox_result, 6, &size_out);
-  printf("tintbox_shift_scale(%s, %d, %d, true, true): %s\n", tintbox1_out, int32_in1, int32_in2, char_result);
+  printf("tintbox_shift_scale_value(%s, %d, %d): %s\n", tintbox1_out, int32_in1, int32_in2, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_shift_scale_time(const TBox *box, const Interval *shift, const Interval *duration); */

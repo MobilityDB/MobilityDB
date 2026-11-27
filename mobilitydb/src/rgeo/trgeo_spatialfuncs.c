@@ -75,6 +75,25 @@ Trgeometry_traversed_area(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Trgeometry_space_time_volume(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_space_time_volume);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the space-time volume of a temporal rigid geometry, the
+ * integral of the area of its body over its time
+ * @sqlfn spaceTimeVolume()
+ */
+Datum
+Trgeometry_space_time_volume(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = trgeometry_space_time_volume(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
 /*****************************************************************************
  * Restriction functions
  *****************************************************************************/

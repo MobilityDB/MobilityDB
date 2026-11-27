@@ -102,6 +102,11 @@ CREATE FUNCTION traversedArea(trgeometry, boolean DEFAULT FALSE)
   AS 'MODULE_PATHNAME', 'Trgeometry_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION spaceTimeVolume(trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_space_time_volume'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 
 CREATE FUNCTION centroid(trgeometry)
   RETURNS tgeompoint

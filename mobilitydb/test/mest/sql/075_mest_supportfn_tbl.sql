@@ -1,0 +1,126 @@
+-------------------------------------------------------------------------------
+--
+-- This MobilityDB code is provided under The PostgreSQL License.
+-- Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+-- contributors
+--
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2026, PostGIS contributors
+--
+-- Permission to use, copy, modify, and distribute this software and its
+-- documentation for any purpose, without fee, and without a written
+-- agreement is hereby granted, provided that the above copyright notice and
+-- this paragraph and the following two paragraphs appear in all copies.
+--
+-- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+-- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+-- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+-- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+-- OF SUCH DAMAGE.
+--
+-- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+-- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+-- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+-- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+-- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+--
+-------------------------------------------------------------------------------
+-- The predicates a support function rewrites, under the multi-entry indexes.
+-- An ever or always comparison or relationship is answered by the ever
+-- overlaps of a piece key, a portable position or containment predicate by its
+-- own operator, both from a plan that probes the index and with the rows a
+-- sequential scan gives. A disjoint relationship, which has no support
+-- function, and the portable overlaps, whose operator a piece key cannot
+-- answer, keep the scan.
+-------------------------------------------------------------------------------
+
+CREATE FUNCTION pg_temp.test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+
+CREATE FUNCTION pg_temp.test_count(query text)
+RETURNS bigint LANGUAGE plpgsql AS $$
+DECLARE
+  result bigint;
+BEGIN
+  EXECUTE query INTO result;
+  RETURN result;
+END;
+$$;
+
+DROP TABLE IF EXISTS test_mest_supportfn;
+CREATE TEMP TABLE test_mest_supportfn(k int, query text, no_idx bigint,
+  mgist_idx bigint, mgist_probe boolean,
+  mspgist_idx bigint, mspgist_probe boolean);
+
+INSERT INTO test_mest_supportfn(k, query) VALUES
+(1, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE eEqual(temp, geometry ''Point(50 50)'')'),
+(2, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE aEqual(temp, geometry ''Point(50 50)'')'),
+(3, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE eIntersects(temp, geometry ''Linestring(0 0,50 50)'')'),
+(4, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE eIntersects(geometry ''Linestring(0 0,50 50)'', temp)'),
+(5, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE aIntersects(temp, geometry ''Polygon((0 0,0 50,50 50,50 0,0 0))'')'),
+(6, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE eContains(geometry ''Polygon((0 0,0 50,50 50,50 0,0 0))'', temp)'),
+(7, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE aContains(geometry ''Polygon((0 0,0 50,50 50,50 0,0 0))'', temp)'),
+(8, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE eTouches(temp, geometry ''Polygon((0 0,0 50,50 50,50 0,0 0))'')'),
+(9, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE eDwithin(temp, geometry ''Linestring(0 0,50 50)'', 5)'),
+(10, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE aDwithin(temp, geometry ''Point(50 50)'', 30)'),
+(11, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE eDisjoint(temp, geometry ''Point(50 50)'')'),
+(12, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE stboxLeft(temp, stbox ''STBOX X((20,20),(30,30))'')'),
+(13, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE stboxBefore(temp, tstzspan ''[2001-03-01, 2001-04-01]'')'),
+(14, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE stboxContained(temp, stbox ''STBOX XT(((0,0),(60,60)),[2001-01-01, 2001-12-31])'')'),
+(15, 'SELECT COUNT(*) FROM tbl_tgeompoint_big WHERE stboxOverlaps(temp, stbox ''STBOX X((20,20),(30,30))'')'),
+(21, 'SELECT COUNT(*) FROM tbl_tfloat_big WHERE eEqual(temp, 50.0)'),
+(22, 'SELECT COUNT(*) FROM tbl_tfloat_big WHERE aEqual(temp, 50.0)'),
+(23, 'SELECT COUNT(*) FROM tbl_tfloat_big WHERE tboxLeft(temp, tbox ''TBOXFLOAT X([40, 50])'')'),
+(24, 'SELECT COUNT(*) FROM tbl_tfloat_big WHERE tboxBefore(temp, tstzspan ''[2001-03-01, 2001-04-01]'')'),
+(25, 'SELECT COUNT(*) FROM tbl_tfloat_big WHERE tboxContained(temp, tbox ''TBOXFLOAT XT([0, 60],[2001-01-01, 2001-12-31])'')'),
+(26, 'SELECT COUNT(*) FROM tbl_tfloat_big WHERE tboxOverlaps(temp, tbox ''TBOXFLOAT X([40, 50])'')');
+
+UPDATE test_mest_supportfn SET no_idx = pg_temp.test_count(query);
+
+-------------------------------------------------------------------------------
+
+CREATE INDEX tbl_tgeompoint_big_mgist_idx ON tbl_tgeompoint_big
+  USING mgist(temp tgeompoint_mrtree_equisplit_ops);
+CREATE INDEX tbl_tfloat_big_mgist_idx ON tbl_tfloat_big
+  USING mgist(temp tfloat_mrtree_equisplit_ops);
+SET enable_seqscan = off;
+UPDATE test_mest_supportfn SET mgist_idx = pg_temp.test_count(query),
+  mgist_probe = pg_temp.test_probes_index(query);
+RESET enable_seqscan;
+DROP INDEX tbl_tgeompoint_big_mgist_idx;
+DROP INDEX tbl_tfloat_big_mgist_idx;
+
+CREATE INDEX tbl_tgeompoint_big_mspgist_idx ON tbl_tgeompoint_big
+  USING mspgist(temp tgeompoint_mquadtree_segsplit_ops);
+CREATE INDEX tbl_tfloat_big_mspgist_idx ON tbl_tfloat_big
+  USING mspgist(temp tfloat_mkdtree_segsplit_ops);
+SET enable_seqscan = off;
+UPDATE test_mest_supportfn SET mspgist_idx = pg_temp.test_count(query),
+  mspgist_probe = pg_temp.test_probes_index(query);
+RESET enable_seqscan;
+DROP INDEX tbl_tgeompoint_big_mspgist_idx;
+DROP INDEX tbl_tfloat_big_mspgist_idx;
+
+-------------------------------------------------------------------------------
+
+SELECT k, no_idx, mgist_idx = no_idx AS mgist_same, mgist_probe,
+  mspgist_idx = no_idx AS mspgist_same, mspgist_probe
+FROM test_mest_supportfn ORDER BY k;
+
+DROP TABLE test_mest_supportfn;
+DROP FUNCTION pg_temp.test_probes_index(text);
+DROP FUNCTION pg_temp.test_count(text);
+
+-------------------------------------------------------------------------------

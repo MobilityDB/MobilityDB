@@ -37,7 +37,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ macos-15 ]
-        psql: [ 17, 18 ]
+        # The versions of PostgreSQL the postgis bottle of Homebrew is built
+        # for; pgversion.yml tests every supported version on Linux
+        psql: [ 18 ]
 
     steps:
       - name: Checkout repository

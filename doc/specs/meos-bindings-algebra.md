@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.6.0 |
+| Version | v0.7.0 |
 | Scope | The values a binding of MEOS holds, the functions it calls on them, and the casts that connect them to the types of its host language |
-| Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `timestamp_to_unix_us`, `date_to_unix_days`, `interval_to_parts` and their inverses), `pgtypes/pg_time.h` (`time_to_parts`, `timetz_to_parts` and their inverses), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
+| Reference | `meos/include/meos.h` (`timestamptz_to_unix_us`, `timestamptz_to_unix_ms`, `timestamp_to_unix_us`, `date_to_unix_days`, `interval_to_parts` and their inverses), `pgtypes/pg_time.h` (`time_to_parts`, `timetz_to_parts` and their inverses), `meos/src/temporal/span.c`, `meos/test/unix_epoch_test.c`; the MEOS-API catalog (`typeEncodings`, `bindingScope`) |
 
 ## 1. Scope and intent
 
@@ -116,11 +116,35 @@ side cannot state:
 also the count of a valid `timestamptz`, so a binding reads the error from
 `meos_errno`, never from the count.
 
-A host timestamp counting units coarser than a microsecond scales the count
-and states the direction it drops the finer units in: MobilityNebula carries a
-`timestamptz` as NebulaStream's milliseconds from the Unix epoch, and
-JavaScript as a `Date`, the microseconds below a millisecond dropped toward
-the past in both. A host whose number does not hold every 64-bit integer
+A host timestamp counting milliseconds casts through `timestamptz_to_unix_ms`
+and `unix_ms_to_timestamptz`: MobilityNebula carries a `timestamptz` as
+NebulaStream's milliseconds from the Unix epoch, and JavaScript as a `Date`.
+`timestamptz_to_unix_ms` drops the microseconds below a millisecond toward the
+past, and the count it answers gives back that timestamptz:
+
+| `timestamptz` | `timestamptz_to_unix_ms` | `unix_ms_to_timestamptz` of it |
+|---|---|---|
+| `1970-01-01 00:00:00+00` | `0` | `1970-01-01 00:00:00+00` |
+| `1969-12-31 23:59:59.999999+00` | `-1` | `1969-12-31 23:59:59.999+00` |
+| `2025-03-01 08:00:00.123456+00` | `1740816000123` | `2025-03-01 08:00:00.123+00` |
+| `4714-11-24 00:00:00+00 BC` | `-210866803200000` | `4714-11-24 00:00:00+00 BC` |
+| `294276-12-31 23:59:59.999999+00` | `9224318015999999` | `294276-12-31 23:59:59.999+00` |
+
+Every `timestamptz` has a count of milliseconds, the last ones of the range
+included, whose count of microseconds exceeds a 64-bit integer. A count outside
+the range raises `MEOS_ERR_DATETIME_OUT_OF_RANGE`, `INT64_MAX` included, so a
+host whose count is wider than the 64-bit integer (NebulaStream's unsigned
+milliseconds) passes every count above `INT64_MAX` as `INT64_MAX` and MEOS
+refuses it:
+
+| Call | Result |
+|---|---|
+| `timestamptz_to_unix_ms` of `infinity` or `-infinity` | `MEOS_ERR_DATETIME_OUT_OF_RANGE` |
+| `unix_ms_to_timestamptz(-210866803200001)` | `MEOS_ERR_DATETIME_OUT_OF_RANGE` |
+| `unix_ms_to_timestamptz(9224318016000000)` | `MEOS_ERR_DATETIME_OUT_OF_RANGE` |
+| `unix_ms_to_timestamptz(INT64_MAX)` | `MEOS_ERR_DATETIME_OUT_OF_RANGE` |
+
+A host whose number does not hold every 64-bit integer
 exactly (JavaScript's `number`, exact up to 2^53) carries the count, and every
 other integer of 64 bits, as its integer of 64 bits (JavaScript's `bigint`).
 

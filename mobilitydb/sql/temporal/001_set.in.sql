@@ -453,6 +453,10 @@ CREATE FUNCTION dateset(tstzset)
   RETURNS dateset
   AS 'MODULE_PATHNAME', 'Tstzset_to_dateset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION origins(dateset, zone text)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Dateset_origins'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (dateset AS tstzset) WITH FUNCTION tstzset(dateset);
 CREATE CAST (tstzset AS dateset) WITH FUNCTION dateset(tstzset);

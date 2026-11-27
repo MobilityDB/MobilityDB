@@ -1,0 +1,158 @@
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry GiST consistent method of the classes keyed by the boxes
+ * of the pieces of a value, as #{SYM} answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator: a predicate of the box of a piece is not that of the value
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+/* TIER-BEGIN */
+  /* The key answers by its tier (#mest_key_answers) */
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (! mest_key_answers(((const {KEYTYPE} *)
+      DatumGetPointer(entry->key))->flags,
+      (StrategyNumber) PG_GETARG_UINT16(2)))
+    PG_RETURN_BOOL(false);
+/* TIER-END */
+/* PIECES-BEGIN */
+  /* A key answers by the scan, ordered or not, and by the structure of the
+   * keys under it (#mest_span_key_answers); a key of a piece answers the
+   * strategy of #mest_pieces_strategy */
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  bool ordered = PG_NARGS() > 5 && PG_GETARG_BOOL(5);
+  if (! mest_span_key_answers(DatumGetSpanP(entry->key)->flags, ordered))
+    PG_RETURN_BOOL(false);
+  if (! ordered)
+    fcinfo->args[2].value = UInt16GetDatum(
+      mest_pieces_strategy((StrategyNumber) PG_GETARG_UINT16(2)));
+/* PIECES-END */
+  Datum result = {SYM}(fcinfo);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  *recheck = true;
+  return result;
+}
+/* GIST-DISTANCE */
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry GiST distance method of the classes keyed by the spans of
+ * the pieces and of the extent of a value, as #{SYM} answers it
+ * @details The distance of a value is that of its extent, which the key of a
+ * piece overstates, so a key over pieces alone lies at the maximum distance, as
+ * #{SYM} places a key it cannot measure, and the value is reported at the
+ * distance of the key of its extent, the smallest of its keys
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  int16 flags = DatumGetSpanP(entry->key)->flags;
+  if (! MEOS_FLAGS_GET_WHOLE(flags) && ! MEOS_FLAGS_GET_PARTS(flags))
+  {
+    bool *recheck = (bool *) PG_GETARG_POINTER(4);
+    *recheck = false;
+    PG_RETURN_FLOAT8(DBL_MAX);
+  }
+  return {SYM}(fcinfo);
+}
+/* SPGIST */
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry SP-GiST leaf consistent method of the classes keyed by
+ * the boxes of the pieces of a value, as #{SYM} answers it
+ * @details A key covers a part of a value, so every leaf is rechecked by the
+ * operator, and its distance by the distance of the value: the distance to a
+ * piece bounds that of the value from below
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+/* TIER-BEGIN */
+  /* The key answers by its tier (#mest_key_answers) */
+  int16 flags = ((const {KEYTYPE} *) DatumGetPointer(in->leafDatum))->flags;
+  for (int i = 0; i < in->nkeys; i++)
+    if (! mest_key_answers(flags, in->scankeys[i].sk_strategy))
+      PG_RETURN_BOOL(false);
+  Datum result = {SYM}(fcinfo);
+/* TIER-END */
+/* PIECES-BEGIN */
+  /* A leaf answers by the scan, ordered or not (#mest_span_key_answers); a
+   * key of a piece answers the strategies of #mest_pieces_strategy, and the
+   * key of the extent the distance of the value, exactly */
+  bool ordered = in->norderbys > 0;
+  if (! mest_span_key_answers(DatumGetSpanP(in->leafDatum)->flags, ordered))
+    PG_RETURN_BOOL(false);
+  ScanKey keys = in->scankeys;
+  if (! ordered)
+    in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  Datum result = {SYM}(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  out->recheck = true;
+  return result;
+/* PIECES-END */
+/* TIER-BEGIN */
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  out->recheck = true;
+  if (out->distances)
+    out->recheckDistances = true;
+  return result;
+/* TIER-END */
+}
+/* SPGIST-INNER */
+extern PGDLLEXPORT Datum {SYM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TWIN});
+/**
+ * @brief Multi-entry SP-GiST inner consistent method of the classes keyed by
+ * the spans of the pieces of a value, as
+ * #{SYM} answers it
+ * @details The nodes are chosen for the strategies a key of a piece answers
+ * (#mest_pieces_strategy), or, in an ordered scan, which the key of the extent
+ * of a value answers (#mest_span_key_answers), for the strategies themselves
+ */
+Datum
+{TWIN}(PG_FUNCTION_ARGS)
+{
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  /* A tuple over the keys of the extents and of the pieces sends the search
+   * to the node of the structure the scan reads, where its tree starts
+   * without a traversal value; a tuple of the other structure to none
+   * (#mest_span_key_answers) */
+  const Span *centroid = DatumGetSpanP(in->prefixDatum);
+  bool ordered = in->norderbys > 0;
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags) ||
+      ! mest_span_key_answers(centroid->flags, ordered))
+  {
+    spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
+    out->nNodes = 0;
+    out->nodeNumbers = palloc(sizeof(int));
+    out->levelAdds = palloc0(sizeof(int));
+    out->traversalValues = palloc0(sizeof(void *));
+    if (ordered)
+      out->distances = palloc(sizeof(double *));
+    if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+    {
+      out->nodeNumbers[0] =
+        (MEOS_FLAGS_GET_WHOLE(centroid->flags) == ordered) ? 0 : 1;
+      if (ordered)
+        out->distances[0] = palloc0(sizeof(double) * in->norderbys);
+      out->nNodes = 1;
+    }
+    PG_RETURN_VOID();
+  }
+  ScanKey keys = in->scankeys;
+  if (! ordered)
+    in->scankeys = mest_pieces_scankeys(keys, in->nkeys);
+  {SYM}(fcinfo);
+  if (in->scankeys != keys)
+    pfree(in->scankeys);
+  in->scankeys = keys;
+  PG_RETURN_VOID();
+}

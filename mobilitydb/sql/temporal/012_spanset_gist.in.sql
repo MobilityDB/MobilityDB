@@ -262,6 +262,7 @@ CREATE OPERATOR CLASS datespanset_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(datespan, datespan, internal),
+  FUNCTION  8  span_gist_distance(internal, datespan, smallint, oid, internal),
   FUNCTION 11  span_gist_sortsupport(internal);
 
 /******************************************************************************/
@@ -312,4 +313,5 @@ CREATE OPERATOR CLASS tstzspanset_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION  8  span_gist_distance(internal, tstzspan, smallint, oid, internal),
   FUNCTION 11  span_gist_sortsupport(internal);

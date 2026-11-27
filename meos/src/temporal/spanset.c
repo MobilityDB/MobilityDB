@@ -1695,84 +1695,198 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return an integer span shifted and/or scaled by two values
+ * @brief Return an integer span set shifted by a value
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @csqlfn #Numspanset_shift()
+ */
+SpanSet *
+intspanset_shift(const SpanSet *ss, int shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPANSET(ss, NULL);
+  return numspanset_shift_scale(ss, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer span set scaled to a width
+ * @param[in] ss Span set
+ * @param[in] width Width of the result
+ * @csqlfn #Numspanset_scale()
+ */
+SpanSet *
+intspanset_scale(const SpanSet *ss, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPANSET(ss, NULL);
+  return numspanset_shift_scale(ss, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer span set shifted by a value and scaled to a width
  * @param[in] ss Span set
  * @param[in] shift Value for shifting the span set
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ * @csqlfn #Numspanset_shift_scale()
  */
 SpanSet *
-intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
-  bool haswidth)
+intspanset_shift_scale(const SpanSet *ss, int shift, int width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPANSET(ss, NULL);
   return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a big integer span shifted and/or scaled by two values
+ * @brief Return a big integer span set shifted by a value
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @csqlfn #Numspanset_shift()
+ */
+SpanSet *
+bigintspanset_shift(const SpanSet *ss, int64 shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPANSET(ss, NULL);
+  return numspanset_shift_scale(ss, Int64GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer span set scaled to a width
+ * @param[in] ss Span set
+ * @param[in] width Width of the result
+ * @csqlfn #Numspanset_scale()
+ */
+SpanSet *
+bigintspanset_scale(const SpanSet *ss, int64 width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPANSET(ss, NULL);
+  return numspanset_shift_scale(ss, 0, Int64GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer span set shifted by a value and scaled to a
+ * width
  * @param[in] ss Span set
  * @param[in] shift Value for shifting the span set
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ * @csqlfn #Numspanset_shift_scale()
  */
 SpanSet *
-bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
-  bool hasshift, bool haswidth)
+bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPANSET(ss, NULL);
   return numspanset_shift_scale(ss, Int64GetDatum(shift), Int64GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a float span shifted and/or scaled by two values
+ * @brief Return a float span set shifted by a value
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @csqlfn #Numspanset_shift()
+ */
+SpanSet *
+floatspanset_shift(const SpanSet *ss, double shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPANSET(ss, NULL);
+  if (! ensure_finite(shift))
+    return NULL;
+  return numspanset_shift_scale(ss, Float8GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span set scaled to a width
+ * @param[in] ss Span set
+ * @param[in] width Width of the result
+ * @csqlfn #Numspanset_scale()
+ */
+SpanSet *
+floatspanset_scale(const SpanSet *ss, double width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPANSET(ss, NULL);
+  if (! ensure_finite(width))
+    return NULL;
+  return numspanset_shift_scale(ss, 0, Float8GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span set shifted by a value and scaled to a width
  * @param[in] ss Span set
  * @param[in] shift Value for shifting the span set
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ * @csqlfn #Numspanset_shift_scale()
  */
 SpanSet *
-floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
-  bool hasshift, bool haswidth)
+floatspanset_shift_scale(const SpanSet *ss, double shift, double width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
   if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   return numspanset_shift_scale(ss, Float8GetDatum(shift),
-    Float8GetDatum(width), hasshift, haswidth);
+    Float8GetDatum(width), true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a date span shifted and/or scaled by two values
+ * @brief Return a date span set shifted by a number of days
  * @param[in] ss Span set
- * @param[in] shift Value for shifting the span set
- * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ * @param[in] shift Number of days for shifting the span set
+ * @csqlfn #Numspanset_shift()
  */
 SpanSet *
-datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
-  bool haswidth)
+datespanset_shift(const SpanSet *ss, int shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPANSET(ss, NULL);
+  return numspanset_shift_scale(ss, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a date span set scaled to a width in days
+ * @param[in] ss Span set
+ * @param[in] width Width of the result in days
+ * @csqlfn #Numspanset_scale()
+ */
+SpanSet *
+datespanset_scale(const SpanSet *ss, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPANSET(ss, NULL);
+  return numspanset_shift_scale(ss, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a date span set shifted by a number of days and scaled to a
+ * width in days
+ * @param[in] ss Span set
+ * @param[in] shift Number of days for shifting the span set
+ * @param[in] width Width of the result in days
+ * @csqlfn #Numspanset_shift_scale()
+ */
+SpanSet *
+datespanset_shift_scale(const SpanSet *ss, int shift, int width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPANSET(ss, NULL);
   return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /*****************************************************************************

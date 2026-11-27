@@ -3210,6 +3210,7 @@ pg_DecodeSpecial(int field, const char *lowtoken, int *val)
  * with ISO sign convention: positive is east of Greenwich).
  * For the other two cases, *tz receives the timezone struct representing
  * the zone name or the abbreviation's underlying zone.
+ * An unknown zone raises an error and returns -1.
  */
 int
 pg_DecodeTimezoneName(const char *tzname, int *offset, pg_tz **tz)
@@ -3229,10 +3230,12 @@ pg_DecodeTimezoneName(const char *tzname, int *offset, pg_tz **tz)
   int type;
   DateTimeErrorExtra extra;
   int dterr = pg_DecodeTimezoneAbbrev(0, lowzone, &type, offset, tz, &extra);
-  if (dterr)
-    pg_DateTimeParseError(dterr, &extra, NULL, NULL, NULL);
-
   pfree(lowzone);
+  if (dterr)
+  {
+    pg_DateTimeParseError(dterr, &extra, NULL, NULL, NULL);
+    return -1;
+  }
   if (type == TZ || type == DTZ)
   {
     /* fixed-offset abbreviation, return the offset */
@@ -3269,7 +3272,10 @@ pg_DecodeTimezoneNameToTz(const char *tzname)
 {
   pg_tz *result;
   int offset;
-  if (pg_DecodeTimezoneName(tzname, &offset, &result) == TZNAME_FIXED_OFFSET)
+  int type = pg_DecodeTimezoneName(tzname, &offset, &result);
+  if (type < 0)
+    return NULL;
+  if (type == TZNAME_FIXED_OFFSET)
   {
     /* fixed-offset abbreviation, get a pg_tz descriptor for that */
     result = pg_tzset_offset(-offset);  /* flip to POSIX sign convention */

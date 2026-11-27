@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.4.0 |
+| Version | v2.1.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`65cbbff`](https://github.com/MobilityDB/MobilityAPI/tree/65cbbff): `main.go` (`routeTable`, `conformsTo`, `landing`), `coverage.go`, `edr.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`68b2b62`](https://github.com/MobilityDB/MobilityAPI/tree/68b2b62): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`geographic`, `lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `stream_websocket.go`, `stream_kafka.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -51,15 +51,14 @@ is also listed under `http://` (section 3.1).
 | standard | class | identifier |
 |---|---|---|
 | OGC API – Moving Features – Part 1: Core (OGC 22-003r3) | common, mf-collection, movingfeatures | `http://www.opengis.net/spec/ogcapi-movingfeatures-1/1.0/conf/<class>` |
-| OGC API – Moving Features – Part 4: Stream Extension (draft) | cquery | `http://www.opengis.net/spec/ogcapi-movingfeatures-4/1.0/conf/cquery` |
 | OGC API – Common – Part 1: Core (OGC 19-072) | core, landing-page | `http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/<class>` |
 | OGC API – Common – Part 2: Geospatial Data (OGC 20-024) | collections | `https://` and `http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections` |
 | OGC API – Coverages – Part 1: Core (OGC 19-087, 1.0.0rc4 draft) | core, subsetting-spatial, subsetting-temporal, field-selection, geotiff, coveragejson, netcdf | `https://` and `http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/<class>` |
-| OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
+| OGC API – Environmental Data Retrieval 1.1 (OGC 19-086r6) | core, collections, queries, covjson | `http://www.opengis.net/spec/ogcapi-edr-1/1.1/conf/<class>` |
 
-The service serves 55 operations. The API definition at `GET /api` marks each
-with the class it is a requirement of (`x-conformance-class`), 43 of them, or
-as an extension (`x-mobilityapi-extension`), 12 of them (section 9). The suite
+The service serves 57 operations. The API definition at `GET /api` marks each
+with the class it is a requirement of (`x-conformance-class`), 38 of them, or
+as an extension (`x-mobilityapi-extension`), 19 of them (section 9). The suite
 fails if a route is served and not described, described and not served, or
 marked with a class the conformance declaration does not list.
 
@@ -121,6 +120,7 @@ for the geometry's interpolation, and 404 for a geometry that does not exist.
 | `form` admits any three characters | units written as register URIs, which only the URI branch matches |
 | interpolation spelled with two vocabularies | both read through one mapping (section 4.2) |
 | the instants of a temporal geometry unconstrained | RFC 3339 instants |
+| a `bbox` over a collection of geographies, and one whose minLon exceeds its maxLon | the region between two meridians and two parallels, which `eOverlaps` decides exactly against a geodetic box, a moving point along its geodesics; a box crossing the antimeridian read as the two boxes either side of it, as OGC API – Features reads it; a minLat above the maxLat refused with 400 |
 | 10 of the 16 published examples fail the schema they are attached to, 13 under JSON Schema's default reading of `format` | the count measured in the suite |
 
 The candidate resolutions of these points, as text a working group can adopt,
@@ -130,10 +130,15 @@ Applied to the schema, every document MobilityAPI writes is valid under both
 readings of `format`, and 5 of the 16 published examples fail, the five whose
 example is wrong.
 
-## 5. Moving Features Part 4
+## 5. Continuous queries
 
-The Continuous Query class is implemented after the draft MobilityAPI reads,
-keyed by its requirement numbers.
+The continuous queries follow the Stream proposal for OGC API – Moving Features,
+titled "Part 4: Stream Extension". OGC holds no draft of a Stream part, so the
+service claims no conformance class for them: every route of a continuous query
+is a MobilityAPI extension (section 9), and the conformance declaration lists no
+class of a Moving Features Part 4. The requirements of the proposal's Continuous
+Query, keyed by the numbers it gives them, are met as follows, each by code and a
+test `CONFORMANCE.md` names.
 
 | requirement | answer |
 |---|---|
@@ -146,7 +151,8 @@ keyed by its requirement numbers.
 The aggregations of a temporal property are `COUNT`, `SUM`, `AVG`, `MIN`,
 `MAX` over `TReal` and `TInt`; `COUNT`, `COUNT_DISTINCT` over `TText`; `COUNT`,
 `ANY`, `ALL`, `COUNT_TRUE`, `COUNT_FALSE` over `TBoolean`, each computed by
-MEOS. Results are delivered over Server-Sent Events. A query's status is
+MEOS. Results are delivered over Server-Sent Events, and, as MobilityAPI
+extensions, over a WebSocket and to a Kafka topic (section 9). A query's status is
 `running`, `stopped` or `failed`; a query enters `running` when it is
 submitted.
 
@@ -240,9 +246,55 @@ writes, as `/req/collections/src-md-success` C requires:
 
 An `observedProperty` carries a `label` and no `id`: `/req/edr/rc-parameters` F
 requires the two, the schema `observedPropertyCollection.yaml` requires the
-`label` alone, and the schema is followed. The class `collections` is not
-declared: it binds every collection of `/collections`, and a collection of
-moving features answers no EDR query.
+`label` alone, and the schema is followed.
+
+Over a collection of moving features the service answers four queries, each by
+`GET`, with the moving features the query's geometry meets, computed by
+MobilityDB:
+
+| query | geometry read | a feature is answered when |
+|---|---|---|
+| `area` | `POLYGON` | its temporal geometry ever intersects the polygon (`eIntersects`) |
+| `cube` | `bbox` in CRS84 and `z` | it ever intersects the rectangle of the bbox; `z` is required and read, and not applied, as the features are tested in two dimensions |
+| `trajectory` | `LINESTRING`, without an M ordinate | it ever intersects the line |
+| `radius` | `POINT`, `within` and `within-units` in `m` or `km` | it ever comes within the distance of the point, on the spheroid (`eDwithin` over the moving point read as a `tgeogpoint`) |
+
+The geometry is read in CRS84 and carried into the collection's system, or read
+as a geography over a collection of geographies (`tgeogpoint`, `tgeography`),
+which MobilityDB does not relate to a planar geometry; the bbox of a `cube` over
+such a collection is the region between two meridians and two parallels, read
+as `/items` reads its `bbox` (section 4.4). A
+`datetime`, an instant or an interval, restricts each feature to it before the
+test; an open end of an interval is the bound of the collection's time extent on
+that side. The answer is a FeatureCollection of whole features, paged as
+`/items` pages it, in MF-JSON (`application/json`), or, with `f=GeoJSON`, in
+GeoJSON (`application/geo+json`), each feature the path it traverses in WGS 84.
+`radius` is answered over a collection of moving points, `tgeompoint` or
+`tgeogpoint`, the types a distance in metres on the spheroid is defined for;
+`parameter-name` is refused, as the collection states no parameter.
+
+The description of a collection of moving features carries, beside what Moving
+Features states of it, a `type` on every link, one `data` link per query it
+answers, `data_queries`, `output_formats` (`MF-JSON`, `GeoJSON`), `keywords`,
+`distanceunits`, and `parameter_names`, empty: its answers are features, whose
+temporal properties are resources of their own. `/collections` lists it with
+the description `/collections/{collectionId}` writes.
+
+The functions over a type are read from the MEOS catalog, its compositions
+among them: `eIntersects(tnpoint, geometry)` is the relationship of the temporal
+point a `tnpoint` casts to, and a collection of `tnpoint`, `tpcpatch`,
+`tpcpoint`, `tpose` or `tquadbin` answers `area`, `cube` and `trajectory` by
+it. The box test on the index applies where the type's box is an `stbox`; a
+point cloud's `tpcbox` is tested exactly alone.
+
+The classes `collections` and `queries` of EDR 1.1 are declared. A collection
+of `th3index` or `ts2cell` answers `area` and `trajectory`, its region read as
+a geography, the argument of `eIntersects(th3index, geography)` and
+`eIntersects(ts2cell, geography)`: the region a query reads is the static type
+the catalog states for the type's `eIntersects`, a geography where it is the
+only one. `cube` and the `bbox` of `/items` are refused with 400 over such a
+collection: a longitude and latitude box needs `eOverlaps`, which MobilityDB
+states over no cell.
 
 CoverageJSON is written in the spelling the client's `Accept` names:
 `application/prs.coverage+json`, the spelling EDR 1.1 as published writes
@@ -261,8 +313,45 @@ same document. The class `covjson` of EDR 1.1 is declared.
 | `PUT /collections/{collectionId}/items/{mFeatureId}` | a moving feature replaced |
 | `GET /collections/{collectionId}/export` | the collection as NDJSON, or GeoParquet with a bbox and time sidecar |
 | `POST /collections/{collectionId}/bulk` | a batch of observations appended |
+| `POST`, `GET`, `DELETE .../tproperties/{tPropertyName}/queries[/{queryId}]`, `GET .../queries/{queryId}/stream` | continuous queries over a temporal property (section 5), streamed as Server-Sent Events |
 | `POST .../tproperties/{tPropertyName}/ingest` | records pushed to a live continuous query |
 | `POST`, `GET`, `DELETE .../tgsequence/queries[/{queryId}]`, `GET .../queries/{queryId}/stream` | continuous queries over a temporal geometry, streamed as Server-Sent Events |
+| `GET .../tproperties/{tPropertyName}/queries/{queryId}/ws`, `GET .../tgsequence/queries/{queryId}/ws` | the results of a continuous query over a WebSocket |
+
+The results of a continuous query, over a temporal property or a temporal
+geometry, are delivered over a WebSocket beside Server-Sent Events: each result
+is one text message, the JSON object an SSE event carries, and the connection
+closes with a normal closure when the query stops; the `cquery` link carries the
+channel as an `alternate` link under `ws://` or `wss://`. A query registered with
+a `topic` publishes its results to that Kafka topic of the brokers
+`MFAPI_KAFKA_BROKERS` names, one record per result keyed by the query's id, its
+value the same JSON object; a topic name Kafka does not accept, and a topic
+without brokers, are refused with 400. `api/streaming-asyncapi.yaml` states the
+three channels.
+
+A continuous query over a temporal geometry given an `aggregation` and a
+`window` answers one aggregate per window of the feature's temporal geometry,
+following Table 7 of the Stream proposal. The windows are those of section 5,
+and each aggregate is computed by MEOS on the value restricted to its window:
+
+| aggregation | collection | answer |
+|---|---|---|
+| `COUNT` | every type | the instants of the window |
+| `LENGTH` | a moving point (`tgeompoint`, `tgeogpoint`) | the distance travelled, on the spheroid for a point in longitude and latitude |
+| `LENGTH` | lines or polygons (`tgeometry`, `trgeometry`, `tcbuffer`) | the length the feature covers during the window, the union of its values or the region its motion sweeps, each overlap counted once |
+| `AREA` | lines or polygons | the area the feature covers during the window, each overlap counted once |
+| `VOLUME` | lines or polygons (`tgeometry`, `tgeography`, `trgeometry`, `tcbuffer`) | the space-time volume of the window, the integral of the feature's area over the window's time, in the square units of the collection times seconds |
+| `TO_TRAJ` | a moving point | the path of the window, in GeoJSON (WGS 84) |
+| `INTERSECT` | a moving point, lines or polygons | whether the window ever meets the query's `region`, WKT in CRS84, on the spheroid for a collection of geographies |
+
+`LENGTH` and `AREA` over a collection in longitude and latitude, `tgeography`
+among them, are refused with 400: MEOS unites the values on the plane alone.
+`VOLUME` is computed with no union, values at two instants never meeting, so a
+collection of geographies is measured on the spheroid; it is refused with 400
+over a moving point, which has no area, over a geometry in longitude and
+latitude, whose area MEOS measures on the plane alone, and over a value with Z.
+Aggregations run on MEOS in the service; the Flink and Kafka Streams engines
+serve no windowed aggregation.
 
 An extension changes no answer a declared class defines.
 
@@ -272,7 +361,8 @@ An extension changes no answer a declared class defines.
 MobilityDB functions its handler applies, read from the service's source. The
 suite holds the file to the code, and holds every function to a type the
 operation serves: a Coverages or EDR operation the raster types, a
-collection-level operation both, every other operation the temporal types, each
+collection-level operation and the EDR queries `area`, `cube`, `trajectory` and
+`radius` both, every other operation the temporal types, each
 also the box and span types.
 
 ## 11. Versioning and stability
@@ -283,14 +373,6 @@ at its major number when an answer stated here changes.
 
 ## 12. Out of scope
 
-- The classes `collections` and `queries` of EDR 1.1: the service answers six
-  of the eight optional queries of `queries` and its instances, and
-  `collections` binds every collection of `/collections`, a collection of
-  moving features among them.
-- The operations of Part 4 over a temporal geometry (`LENGTH`, `AREA`,
-  `TO_TRAJ` and the rest of its Table 7), and its Kafka and WebSocket channels.
-- A newer Part 4 draft, describing a Continuous Query resource with `id`,
-  `pubtime`, `target`, `filter` and `queryResult`.
 - The LAS and LAZ encodings of the Coverages draft, which encode point clouds,
   not the coverage of a raster collection.
 
@@ -316,7 +398,8 @@ queries over Server-Sent Events.
 
 The authoritative statement is the service's source and its suite at the
 commit named in the header: the conformance declaration (`conformsTo`), the
-route table (`routeTable`), the Part 4 requirements (`CONFORMANCE.md`) and the
+route table (`routeTable`), the requirements of the Stream proposal
+(`CONFORMANCE.md`) and the
 surface (`api/surface.json`). A correction to this document is a change to
 MobilityAPI's behaviour or to the suite that measures it, stated here with its
 version raised.

@@ -1,0 +1,1121 @@
+-------------------------------------------------------------------------------
+-- The control of the multi-entry tests for a tbool: the class of the segment split
+-- of the R-tree and its control, the same class whose consistent method is that of
+-- the single-entry class, which reads a key as the whole value. The rows printed
+-- are those where an index differs from the sequential scan: none of the class,
+-- and some of the control, which the comparison of every multi-entry test notices.
+-------------------------------------------------------------------------------
+CREATE FUNCTION pg_temp.test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+DROP TABLE IF EXISTS tbl_tbool_idx;
+NOTICE:  table "tbl_tbool_idx" does not exist, skipping
+CREATE TEMP TABLE tbl_tbool_idx AS TABLE tbl_tbool;
+ANALYZE tbl_tbool_idx;
+CREATE OPERATOR CLASS tbool_mrtree_control_ops
+  FOR TYPE tbool USING mgist AS
+  STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
+  -- contained by
+  OPERATOR  8    <@ (tbool, tstzspan),
+  OPERATOR  8    <@ (tbool, tbool),
+  -- overlaps or before
+  OPERATOR  28    &<# (tbool, tstzspan),
+  OPERATOR  28    &<# (tbool, tbool),
+  -- strictly before
+  OPERATOR  29    <<# (tbool, tstzspan),
+  OPERATOR  29    <<# (tbool, tbool),
+  -- strictly after
+  OPERATOR  30    #>> (tbool, tstzspan),
+  OPERATOR  30    #>> (tbool, tbool),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbool, tstzspan),
+  OPERATOR  31    #&> (tbool, tbool),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tbool, tstzspan),
+  -- always overlaps
+  OPERATOR  37    %&& (tbool, tstzspan),
+  -- functions
+  FUNCTION  1 tbool_gist_consistent(internal, tbool, smallint, oid, internal),
+  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  3 mest_gist_compress(internal),
+  FUNCTION  5 span_gist_penalty(internal, internal, internal),
+  FUNCTION  6 span_gist_picksplit(internal, internal),
+  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION 10 mest_count_options(internal),
+  FUNCTION 13 temporal_mest_segsplit(internal, internal, internal);
+DROP TABLE IF EXISTS test_tbool_mest;
+NOTICE:  table "test_tbool_mest" does not exist, skipping
+CREATE TEMP TABLE test_tbool_mest(op text, no_idx text,
+  rtree_seg_idx text, rtree_seg_probe boolean,
+  control_idx text, control_probe boolean);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('~= tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp ~= t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<@ tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('&<# tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp &<# t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('<<# tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <<# t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#>> tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #>> t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('#&> tbool', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #&> t2.temp)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('?&& tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ?&& t2.t)::text);
+INSERT INTO test_tbool_mest(op, no_idx) VALUES ('%&& tstzspan', (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp %&& t2.t)::text);
+-------------------------------------------------------------------------------
+CREATE INDEX tbl_tbool_idx_rtree_seg ON tbl_tbool_idx
+  USING mgist(temp tbool_mrtree_segsplit_ops);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ?&& t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ?&& t2.t')
+WHERE op = '?&& tstzspan';
+UPDATE test_tbool_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp %&& t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp %&& t2.t')
+WHERE op = '%&& tstzspan';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_tbool_idx_rtree_seg;
+-------------------------------------------------------------------------------
+CREATE INDEX tbl_tbool_idx_control ON tbl_tbool_idx
+  USING mgist(temp tbool_mrtree_control_ops);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp ~= t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tbool';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <@ t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tbool';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp &<# t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tbool';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <<# t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tbool';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #>> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tbool';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #&> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tbool t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tbool';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ?&& t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp ?&& t2.t')
+WHERE op = '?&& tstzspan';
+UPDATE test_tbool_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp %&& t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tbool_idx t1, tbl_tstzspan t2 WHERE t1.temp %&& t2.t')
+WHERE op = '%&& tstzspan';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_tbool_idx_control;
+-------------------------------------------------------------------------------
+SELECT COUNT(*) FROM tbl_tbool_idx;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM test_tbool_mest;
+ count 
+-------
+    14
+(1 row)
+
+SELECT op, no_idx FROM test_tbool_mest ORDER BY op;
+      op      | no_idx 
+--------------+--------
+ #&> tbool    | 4664
+ #&> tstzspan | 4647
+ #>> tbool    | 4545
+ #>> tstzspan | 4647
+ %&& tstzspan | 0
+ &<# tbool    | 4664
+ &<# tstzspan | 4857
+ <<# tbool    | 4545
+ <<# tstzspan | 4857
+ <@ tbool     | 113
+ <@ tstzspan  | 0
+ ?&& tstzspan | 0
+ ~= tbool     | 112
+ ~= tstzspan  | 0
+(14 rows)
+
+SELECT * FROM test_tbool_mest
+WHERE no_idx IS DISTINCT FROM rtree_seg_idx OR NOT rtree_seg_probe OR
+  no_idx IS DISTINCT FROM control_idx OR NOT control_probe
+ORDER BY op;
+    op     | no_idx | rtree_seg_idx | rtree_seg_probe | control_idx | control_probe 
+-----------+--------+---------------+-----------------+-------------+---------------
+ #&> tbool | 4664   | 4664          | t               | 4668        | t
+ #>> tbool | 4545   | 4545          | t               | 4550        | t
+ &<# tbool | 4664   | 4664          | t               | 4668        | t
+ <<# tbool | 4545   | 4545          | t               | 4550        | t
+ ~= tbool  | 112    | 112           | t               | 38          | t
+(5 rows)
+
+DROP TABLE test_tbool_mest;
+DROP TABLE tbl_tbool_idx;
+DROP OPERATOR FAMILY tbool_mrtree_control_ops USING mgist;
+DROP FUNCTION pg_temp.test_probes_index(text);
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The control of the multi-entry tests for a tgeompoint: the class of the segment
+-- split of the R-tree and its control, the same class whose consistent method is
+-- that of the single-entry class, which reads a key as the whole value. The rows
+-- printed are those where an index differs from the sequential scan: none of the
+-- class, and some of the control, which the comparison of every multi-entry test
+-- notices.
+-------------------------------------------------------------------------------
+CREATE FUNCTION pg_temp.test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+DROP TABLE IF EXISTS tbl_tgeompoint_idx;
+NOTICE:  table "tbl_tgeompoint_idx" does not exist, skipping
+CREATE TEMP TABLE tbl_tgeompoint_idx AS TABLE tbl_tgeompoint;
+ANALYZE tbl_tgeompoint_idx;
+CREATE OPERATOR CLASS tgeompoint_mrtree_control_ops
+  FOR TYPE tgeompoint USING mgist AS
+  STORAGE stbox,
+  -- strictly left
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
+  -- overlaps or left
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps
+  OPERATOR  3    && (tgeompoint, tstzspan),
+  OPERATOR  3    && (tgeompoint, stbox),
+  OPERATOR  3    && (tgeompoint, tgeompoint),
+  -- overlaps or right
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
+  -- strictly right
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
+  -- same
+  OPERATOR  6    ~= (tgeompoint, tstzspan),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
+  -- contains
+  OPERATOR  7    @> (tgeompoint, tstzspan),
+  OPERATOR  7    @> (tgeompoint, stbox),
+  OPERATOR  7    @> (tgeompoint, tgeompoint),
+  -- contained by
+  OPERATOR  8    <@ (tgeompoint, tstzspan),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
+  -- overlaps or below
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
+  -- strictly below
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
+  -- strictly above
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
+  -- overlaps or above
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
+  -- adjacent
+  OPERATOR  17    -|- (tgeompoint, tstzspan),
+  OPERATOR  17    -|- (tgeompoint, stbox),
+  OPERATOR  17    -|- (tgeompoint, tgeompoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, tstzspan),
+  OPERATOR  28    &<# (tgeompoint, stbox),
+  OPERATOR  28    &<# (tgeompoint, tgeompoint),
+  -- strictly before
+  OPERATOR  29    <<# (tgeompoint, tstzspan),
+  OPERATOR  29    <<# (tgeompoint, stbox),
+  OPERATOR  29    <<# (tgeompoint, tgeompoint),
+  -- strictly after
+  OPERATOR  30    #>> (tgeompoint, tstzspan),
+  OPERATOR  30    #>> (tgeompoint, stbox),
+  OPERATOR  30    #>> (tgeompoint, tgeompoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, tstzspan),
+  OPERATOR  31    #&> (tgeompoint, stbox),
+  OPERATOR  31    #&> (tgeompoint, tgeompoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tgeompoint, stbox),
+  OPERATOR  32    &</ (tgeompoint, tgeompoint),
+  -- strictly front
+  OPERATOR  33    <</ (tgeompoint, stbox),
+  OPERATOR  33    <</ (tgeompoint, tgeompoint),
+  -- strictly back
+  OPERATOR  34    />> (tgeompoint, stbox),
+  OPERATOR  34    />> (tgeompoint, tgeompoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tgeompoint, stbox),
+  OPERATOR  35    /&> (tgeompoint, tgeompoint),
+  -- ever overlaps
+  OPERATOR  36    ?&& (tgeompoint, stbox),
+  -- always overlaps
+  OPERATOR  37    %&& (tgeompoint, stbox),
+  -- functions
+  FUNCTION  1 tgeompoint_gist_consistent(internal, tgeompoint, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 mest_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal),
+  FUNCTION 10 mest_count_options(internal),
+  FUNCTION 13 tgeo_mest_segsplit(internal, internal, internal);
+DROP TABLE IF EXISTS test_tgeompoint_mest;
+NOTICE:  table "test_tgeompoint_mest" does not exist, skipping
+CREATE TEMP TABLE test_tgeompoint_mest(op text, no_idx text,
+  rtree_seg_idx text, rtree_seg_probe boolean,
+  control_idx text, control_probe boolean);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<< stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp << t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<< tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&< stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &< t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&< tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&& tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp && t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&& stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&& tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp && t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&> stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &> t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&> tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('>> stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp >> t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('>> tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('~= stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('~= tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('@> tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp @> t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('@> stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('@> tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp @> t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<@ stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <@ t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<@ tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&<| stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<| t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&<| tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<<| stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<| t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<<| tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('|>> stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |>> t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('|>> tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('|&> stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |&> t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('|&> tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp -|- t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('-|- stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('-|- tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp -|- t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&<# stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<# t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('&<# tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<<# stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<# t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('<<# tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('#>> stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #>> t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('#>> tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('#&> stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #&> t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('#&> tgeompoint', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('?&& stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ?&& t2.b)::text);
+INSERT INTO test_tgeompoint_mest(op, no_idx) VALUES ('%&& stbox', (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp %&& t2.b)::text);
+-------------------------------------------------------------------------------
+CREATE INDEX tbl_tgeompoint_idx_rtree_seg ON tbl_tgeompoint_idx
+  USING mgist(temp tgeompoint_mrtree_segsplit_ops);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp << t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &< t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp && t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp && t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp >> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp @> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<| t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<| t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |>> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |&> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<# t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<# t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #>> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #&> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tgeompoint';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ?&& t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tgeompoint_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp %&& t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_tgeompoint_idx_rtree_seg;
+-------------------------------------------------------------------------------
+CREATE INDEX tbl_tgeompoint_idx_control ON tbl_tgeompoint_idx
+  USING mgist(temp tgeompoint_mrtree_control_ops);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp << t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &< t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp && t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp && t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp && t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &> t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp >> t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ~= t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp @> t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp @> t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp @> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <@ t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <@ t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<| t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<| t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |>> t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |&> t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp -|- t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp -|- t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp -|- t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<# t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<# t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #>> t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tstzspan t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #&> t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tgeompoint';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ?&& t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp ?&& t2.b')
+WHERE op = '?&& stbox';
+UPDATE test_tgeompoint_mest SET control_idx = (SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp %&& t2.b)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_tgeompoint_idx t1, tbl_stbox t2 WHERE t1.temp %&& t2.b')
+WHERE op = '%&& stbox';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_tgeompoint_idx_control;
+-------------------------------------------------------------------------------
+SELECT COUNT(*) FROM tbl_tgeompoint_idx;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM test_tgeompoint_mest;
+ count 
+-------
+    45
+(1 row)
+
+SELECT op, no_idx FROM test_tgeompoint_mest ORDER BY op;
+       op       | no_idx 
+----------------+--------
+ #&> stbox      | 5208
+ #&> tgeompoint | 5067
+ #&> tstzspan   | 5082
+ #>> stbox      | 5208
+ #>> tgeompoint | 4924
+ #>> tstzspan   | 5082
+ %&& stbox      | 0
+ && stbox       | 0
+ && tgeompoint  | 148
+ && tstzspan    | 2
+ &< stbox       | 2956
+ &< tgeompoint  | 5070
+ &<# stbox      | 4792
+ &<# tgeompoint | 5067
+ &<# tstzspan   | 4816
+ &<| stbox      | 2402
+ &<| tgeompoint | 5070
+ &> stbox       | 2204
+ &> tgeompoint  | 5070
+ -|- stbox      | 0
+ -|- tgeompoint | 45
+ -|- tstzspan   | 0
+ << stbox       | 2410
+ << tgeompoint  | 1084
+ <<# stbox      | 4792
+ <<# tgeompoint | 4924
+ <<# tstzspan   | 4816
+ <<| stbox      | 1881
+ <<| tgeompoint | 1138
+ <@ stbox       | 0
+ <@ tgeompoint  | 119
+ <@ tstzspan    | 0
+ >> stbox       | 1689
+ >> tgeompoint  | 1084
+ ?&& stbox      | 0
+ @> stbox       | 0
+ @> tgeompoint  | 119
+ @> tstzspan    | 2
+ |&> stbox      | 3401
+ |&> tgeompoint | 5070
+ |>> stbox      | 2928
+ |>> tgeompoint | 1138
+ ~= stbox       | 0
+ ~= tgeompoint  | 118
+ ~= tstzspan    | 0
+(45 rows)
+
+SELECT * FROM test_tgeompoint_mest
+WHERE no_idx IS DISTINCT FROM rtree_seg_idx OR NOT rtree_seg_probe OR
+  no_idx IS DISTINCT FROM control_idx OR NOT control_probe
+ORDER BY op;
+       op       | no_idx | rtree_seg_idx | rtree_seg_probe | control_idx | control_probe 
+----------------+--------+---------------+-----------------+-------------+---------------
+ &< stbox       | 2956   | 2956          | t               | 7193        | t
+ &< tgeompoint  | 5070   | 5070          | t               | 8328        | t
+ &<| stbox      | 2402   | 2402          | t               | 5742        | t
+ &<| tgeompoint | 5070   | 5070          | t               | 8507        | t
+ &> stbox       | 2204   | 2204          | t               | 6483        | t
+ &> tgeompoint  | 5070   | 5070          | t               | 8512        | t
+ -|- tgeompoint | 45     | 45            | t               | 80          | t
+ -|- tstzspan   | 0      | 0             | t               | 2           | t
+ << stbox       | 2410   | 2410          | t               | 6564        | t
+ << tgeompoint  | 1084   | 1084          | t               | 3213        | t
+ <<| stbox      | 1881   | 1881          | t               | 5252        | t
+ <<| tgeompoint | 1138   | 1138          | t               | 3469        | t
+ >> stbox       | 1689   | 1689          | t               | 5924        | t
+ >> tgeompoint  | 1084   | 1084          | t               | 3561        | t
+ |&> stbox      | 3401   | 3401          | t               | 7435        | t
+ |&> tgeompoint | 5070   | 5070          | t               | 8481        | t
+ |>> stbox      | 2928   | 2928          | t               | 6947        | t
+ |>> tgeompoint | 1138   | 1138          | t               | 3733        | t
+(18 rows)
+
+DROP TABLE test_tgeompoint_mest;
+DROP TABLE tbl_tgeompoint_idx;
+DROP OPERATOR FAMILY tgeompoint_mrtree_control_ops USING mgist;
+DROP FUNCTION pg_temp.test_probes_index(text);
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- The control of the multi-entry tests for a intspanset: the class of the segment
+-- split of the R-tree and its control, the same class whose consistent method is
+-- that of the single-entry class, which reads a key as the whole value. The rows
+-- printed are those where an index differs from the sequential scan: none of the
+-- class, and some of the control, which the comparison of every multi-entry test
+-- notices.
+-------------------------------------------------------------------------------
+CREATE FUNCTION pg_temp.test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+DROP TABLE IF EXISTS tbl_intspanset_idx;
+NOTICE:  table "tbl_intspanset_idx" does not exist, skipping
+CREATE TEMP TABLE tbl_intspanset_idx AS TABLE tbl_intspanset;
+ANALYZE tbl_intspanset_idx;
+CREATE OPERATOR CLASS intspanset_mrtree_control_ops
+  FOR TYPE intspanset USING mgist AS
+  STORAGE intspan,
+  -- strictly left
+  OPERATOR  1     << (intspanset, integer),
+  OPERATOR  1     << (intspanset, intspan),
+  OPERATOR  1     << (intspanset, intspanset),
+  -- overlaps or left
+  OPERATOR  2     &< (intspanset, integer),
+  OPERATOR  2     &< (intspanset, intspan),
+  OPERATOR  2     &< (intspanset, intspanset),
+  -- overlaps
+  OPERATOR  3     && (intspanset, intspan),
+  OPERATOR  3     && (intspanset, intspanset),
+  -- overlaps or right
+  OPERATOR  4     &> (intspanset, integer),
+  OPERATOR  4     &> (intspanset, intspan),
+  OPERATOR  4     &> (intspanset, intspanset),
+  -- strictly right
+  OPERATOR  5     >> (intspanset, integer),
+  OPERATOR  5     >> (intspanset, intspan),
+  OPERATOR  5     >> (intspanset, intspanset),
+  -- contains
+  OPERATOR  7     @> (intspanset, integer),
+  OPERATOR  7     @> (intspanset, intspan),
+  OPERATOR  7     @> (intspanset, intspanset),
+  -- contained by
+  OPERATOR  8     <@ (intspanset, intspan),
+  OPERATOR  8     <@ (intspanset, intspanset),
+  -- adjacent
+  OPERATOR  17    -|- (intspanset, integer),
+  OPERATOR  17    -|- (intspanset, intspan),
+  OPERATOR  17    -|- (intspanset, intspanset),
+  -- equals
+  OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.integer_ops,
+  -- functions
+  FUNCTION  1 span_gist_consistent(internal, intspanset, smallint, oid, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
+  FUNCTION  3 mest_gist_compress(internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(intspan, intspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, intspan, smallint, oid, internal),
+  FUNCTION 10 mest_count_options(internal),
+  FUNCTION 13 spanset_mest_segsplit(internal, internal, internal);
+DROP TABLE IF EXISTS test_intspanset_mest;
+NOTICE:  table "test_intspanset_mest" does not exist, skipping
+CREATE TEMP TABLE test_intspanset_mest(op text, no_idx text,
+  rtree_seg_idx text, rtree_seg_probe boolean,
+  control_idx text, control_probe boolean);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('<< integer', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i << t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('<< intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i << t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('<< intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i << t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&< integer', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &< t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&< intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &< t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&< intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &< t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&& intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i && t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&& intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i && t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&> integer', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&> intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('&> intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('>> integer', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i >> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('>> intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i >> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('>> intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i >> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('@> integer', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i @> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('@> intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i @> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('@> intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i @> t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('<@ intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i <@ t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('<@ intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i <@ t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('-|- integer', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i -|- t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('-|- intspan', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i -|- t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('-|- intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i -|- t2.i)::text);
+INSERT INTO test_intspanset_mest(op, no_idx) VALUES ('= intspanset', (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i = t2.i)::text);
+-------------------------------------------------------------------------------
+CREATE INDEX tbl_intspanset_idx_rtree_seg ON tbl_intspanset_idx
+  USING mgist(i intspanset_mrtree_segsplit_ops);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i << t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i << t2.i')
+WHERE op = '<< integer';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i << t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i << t2.i')
+WHERE op = '<< intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i << t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i << t2.i')
+WHERE op = '<< intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &< t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &< t2.i')
+WHERE op = '&< integer';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &< t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &< t2.i')
+WHERE op = '&< intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &< t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &< t2.i')
+WHERE op = '&< intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i && t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i && t2.i')
+WHERE op = '&& intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i && t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i && t2.i')
+WHERE op = '&& intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &> t2.i')
+WHERE op = '&> integer';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &> t2.i')
+WHERE op = '&> intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &> t2.i')
+WHERE op = '&> intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i >> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i >> t2.i')
+WHERE op = '>> integer';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i >> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i >> t2.i')
+WHERE op = '>> intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i >> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i >> t2.i')
+WHERE op = '>> intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i @> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i @> t2.i')
+WHERE op = '@> integer';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i @> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i @> t2.i')
+WHERE op = '@> intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i @> t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i @> t2.i')
+WHERE op = '@> intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i <@ t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i <@ t2.i')
+WHERE op = '<@ intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i <@ t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i <@ t2.i')
+WHERE op = '<@ intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i -|- t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i -|- t2.i')
+WHERE op = '-|- integer';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i -|- t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i -|- t2.i')
+WHERE op = '-|- intspan';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i -|- t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i -|- t2.i')
+WHERE op = '-|- intspanset';
+UPDATE test_intspanset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i = t2.i)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i = t2.i')
+WHERE op = '= intspanset';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_intspanset_idx_rtree_seg;
+-------------------------------------------------------------------------------
+CREATE INDEX tbl_intspanset_idx_control ON tbl_intspanset_idx
+  USING mgist(i intspanset_mrtree_control_ops);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i << t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i << t2.i')
+WHERE op = '<< integer';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i << t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i << t2.i')
+WHERE op = '<< intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i << t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i << t2.i')
+WHERE op = '<< intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &< t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &< t2.i')
+WHERE op = '&< integer';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &< t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &< t2.i')
+WHERE op = '&< intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &< t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &< t2.i')
+WHERE op = '&< intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i && t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i && t2.i')
+WHERE op = '&& intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i && t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i && t2.i')
+WHERE op = '&& intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i &> t2.i')
+WHERE op = '&> integer';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i &> t2.i')
+WHERE op = '&> intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i &> t2.i')
+WHERE op = '&> intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i >> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i >> t2.i')
+WHERE op = '>> integer';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i >> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i >> t2.i')
+WHERE op = '>> intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i >> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i >> t2.i')
+WHERE op = '>> intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i @> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i @> t2.i')
+WHERE op = '@> integer';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i @> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i @> t2.i')
+WHERE op = '@> intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i @> t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i @> t2.i')
+WHERE op = '@> intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i <@ t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i <@ t2.i')
+WHERE op = '<@ intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i <@ t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i <@ t2.i')
+WHERE op = '<@ intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i -|- t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_int t2 WHERE t1.i -|- t2.i')
+WHERE op = '-|- integer';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i -|- t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspan t2 WHERE t1.i -|- t2.i')
+WHERE op = '-|- intspan';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i -|- t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i -|- t2.i')
+WHERE op = '-|- intspanset';
+UPDATE test_intspanset_mest SET control_idx = (SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i = t2.i)::text,
+  control_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intspanset_idx t1, tbl_intspanset t2 WHERE t1.i = t2.i')
+WHERE op = '= intspanset';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_intspanset_idx_control;
+-------------------------------------------------------------------------------
+SELECT COUNT(*) FROM tbl_intspanset_idx;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM test_intspanset_mest;
+ count 
+-------
+    23
+(1 row)
+
+SELECT op, no_idx FROM test_intspanset_mest ORDER BY op;
+       op       | no_idx 
+----------------+--------
+ && intspan     | 4816
+ && intspanset  | 9569
+ &< integer     | 329
+ &< intspan     | 1123
+ &< intspanset  | 5347
+ &> integer     | 1915
+ &> intspan     | 1858
+ &> intspanset  | 5080
+ -|- integer    | 146
+ -|- intspan    | 164
+ -|- intspanset | 0
+ << integer     | 275
+ << intspan     | 533
+ << intspanset  | 0
+ <@ intspan     | 0
+ <@ intspanset  | 99
+ = intspanset   | 99
+ >> integer     | 1817
+ >> intspan     | 1397
+ >> intspanset  | 0
+ @> integer     | 2165
+ @> intspan     | 459
+ @> intspanset  | 99
+(23 rows)
+
+SELECT * FROM test_intspanset_mest
+WHERE no_idx IS DISTINCT FROM rtree_seg_idx OR NOT rtree_seg_probe OR
+  no_idx IS DISTINCT FROM control_idx OR NOT control_probe
+ORDER BY op;
+      op       | no_idx | rtree_seg_idx | rtree_seg_probe | control_idx | control_probe 
+---------------+--------+---------------+-----------------+-------------+---------------
+ &< integer    | 329    | 329           | t               | 7822        | t
+ &< intspan    | 1123   | 1123          | t               | 8246        | t
+ &< intspanset | 5347   | 5347          | t               | 9801        | t
+ &> integer    | 1915   | 1915          | t               | 9407        | t
+ &> intspan    | 1858   | 1858          | t               | 9027        | t
+ &> intspanset | 5080   | 5080          | t               | 9801        | t
+ << integer    | 275    | 275           | t               | 7726        | t
+ << intspan    | 533    | 533           | t               | 7775        | t
+ << intspanset | 0      | 0             | t               | 4357        | t
+ >> integer    | 1817   | 1817          | t               | 9352        | t
+ >> intspan    | 1397   | 1397          | t               | 8394        | t
+ >> intspanset | 0      | 0             | t               | 2651        | t
+(12 rows)
+
+DROP TABLE test_intspanset_mest;
+DROP TABLE tbl_intspanset_idx;
+DROP OPERATOR FAMILY intspanset_mrtree_control_ops USING mgist;
+DROP FUNCTION pg_temp.test_probes_index(text);
+-------------------------------------------------------------------------------

@@ -119,6 +119,7 @@ extern Set *trgeometry_points(const Temporal *temp);
 extern Temporal *trgeometry_yaw(const Temporal *temp);
 extern Temporal *trgeometry_pitch(const Temporal *temp);
 extern Temporal *trgeometry_roll(const Temporal *temp);
+extern double trgeometry_space_time_volume(const Temporal *temp);
 extern GSERIALIZED *trgeometry_start_value(const Temporal *temp);
 extern Pose *trgeometry_value(const Temporal *temp);
 extern Pose **trgeometry_values(const Temporal *temp, int *count);

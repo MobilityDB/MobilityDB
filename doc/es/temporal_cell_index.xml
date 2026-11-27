@@ -590,7 +590,7 @@ SELECT (tbigint '42@2001-01-01')::tquadbin;
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {th3index,tquadbin,ts2cell}::{tgeogpoint,tgeompoint}
 </programlisting>
-				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+				<para>Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 				<para>La conversión de una celda QUADBIN responde un punto del plano Web-Mercator sobre el que se define la cuadrícula, mientras que la conversión de una celda S2 responde uno geodésico; cada cuadrícula declara la única conversión que exige su propia definición. H3 declara ambas, de modo que es la única cuadrícula en la que quien llama elige entre la representación geodésica y la plana en SRID 4326.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeogpoint, 6);
@@ -1649,7 +1649,7 @@ stbox {?&amp;&amp;, %&amp;&amp;} th3index → boolean
 ts2cell {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} ts2cell → boolean
 </programlisting>
-				<para>Si el valor está en una caja espaciotemporal en algún instante, o en todo instante en que está definido, como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; una celda está en una caja cuando su tesela, su celda H3 o su celda S2, con los puntos del borde que le pertenecen, comparte un punto con la caja, como la restringe <xref linkend="tcell_atStbox"/>.</para>
+				<para>Si el valor está en una caja espaciotemporal en algún instante, o en todo instante en que está definido, como lo establecen <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> y <varname>%&amp;&amp;</varname></link> para las geometrías temporales; una celda está en una caja cuando su tesela, su celda H3 o su celda S2, con los puntos del borde que le pertenecen, comparte un punto con la caja, como la restringe <link linkend="tcell_atStbox"><varname>atStbox</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '[4817ffffffffffff@2001-01-01, 4813ffffffffffff@2001-01-02]' ?&amp;&amp;
   stbox 'SRID=4326;STBOX X((10,10),(20,20))';

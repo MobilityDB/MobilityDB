@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v0.2.0 |
-| Scope | The boxes MEOS gives a value for an index: one box per piece of the value, a split of its pieces into a number of boxes, and a merge of its piece boxes into a number of boxes or into those a query of the extents of a query box reads least, for the sets, the span sets, the temporal types and the lines of the geometry types; and the box of a temporal rigid geometry |
-| Reference | `tools/codegen/inherited/templates/boxsplit.c.tmpl` (the splits and merges of the temporal types), `meos/src/geo/tgeo_boxops.c` (the temporal points and geometries, the lines of a geometry), `meos/src/rgeo/trgeo_boxops.c` (the box of a temporal rigid geometry), `meos/src/temporal/temporal_boxops.c` (`bbox_merge_n` and `bbox_merge_query`, the merges), `meos/src/temporal/span_index.c`, `meos/src/temporal/tbox_index.c`, `meos/src/geo/stbox_index.c` (the size of a box and its size for a query box) |
+| Version | v0.5.0 |
+| Scope | The boxes MEOS gives a value for an index: one box per piece of the value, a split of its pieces into a number of boxes, and a merge of its piece boxes into a number of boxes or into those a query of the extents of a query box reads least, for the sets, the span sets, the temporal types and the lines of the geometry types; the box of a temporal rigid geometry; and the indexes of a value, single-entry and multi-entry, keyed by those boxes |
+| Reference | `tools/codegen/inherited/templates/boxsplit.c.tmpl` (the splits and merges of the temporal types), `meos/src/geo/tgeo_boxops.c` (the temporal points and geometries, the lines of a geometry), `meos/src/rgeo/trgeo_boxops.c` (the box of a temporal rigid geometry), `meos/src/temporal/temporal_boxops.c` (`bbox_merge_n` and `bbox_merge_query`, the merges), `meos/src/temporal/span_index.c`, `meos/src/temporal/tbox_index.c`, `meos/src/geo/stbox_index.c` (the size of a box and its size for a query box), `tools/codegen/inherited/manifest.d/meststrategies.yaml` and `mobilitydb/src/temporal/temporal_mest.c` (the tier of every operator of a multi-entry class), `meos/src/temporal/meos_catalog.c` (`type_bboxtype`, the box type of every type), `meos/src/temporal/temporal_boxops.c` (`bbox_same_structure`, the structure of a box), `mobilitydb/src/temporal/temporal_supportfn.c` (the function calls served as their operators) |
 
 ## 1. Scope and intent
 
@@ -27,7 +27,7 @@ piece boxes into a given number of boxes. This document states what each
 answers. It is prescriptive: MEOS, MobilityDB and every binding generated
 from MEOS answer by it.
 
-Each section states what master guarantees, and section 10 lists what the
+Each section states what master guarantees, and section 12 lists what the
 rule does not yet cover.
 
 ## 2. Notation
@@ -229,7 +229,115 @@ along the merges is kept rather than the first merge that raises it, since
 the sum can rise and then fall below its first value as the boxes become
 one.
 
-## 10. Versioning and stability
+## 10. The indexes of a value
+
+**Rule 10.1 (every type is indexed as its box).** Every value of a type has
+one box of the box type the catalog states for the type (`type_bboxtype`), and
+every index of the type keys a value by that box, answers an operator by the
+test of the box operator, and rechecks the values it keeps with the operator
+itself. A type therefore has every index of its box type, generated from that
+box type: the trees, the operators each tree answers and the ordering by
+distance. The GiST and SP-GiST operator classes of MobilityDB and the
+in-memory R-tree and SP-tree of MEOS store the same key.
+
+| Box type | Types indexed through it |
+|---|---|
+| `intspan`, `bigintspan`, `floatspan`, `datespan` | the span itself, and the set and the span set of its base type |
+| `tstzspan` | `tstzset`, `tstzspan`, `tstzspanset`, and the temporal values without a value box: `tbool`, `ttext`, `tjsonb`, `tdouble2`, `tdouble3`, `tdouble4` |
+| `tbox` | `tbox`, `tint`, `tbigint`, `tfloat` |
+| `stbox` | `stbox`, the spatial sets (`geomset`, `geogset`, `cbufferset`, `npointset`, `poseset`, `posechainset`, `h3indexset`, `quadbinset`, `s2cellset`) and the spatiotemporal values (`tgeompoint`, `tgeogpoint`, `tgeometry`, `tgeography`, `tcbuffer`, `tnpoint`, `tpose`, `tposechain`, `trgeometry`, `th3index`, `tquadbin`, `ts2cell`) |
+| `tpcbox` | `tpcbox`, `tpcpoint`, `tpcpatch` |
+
+**Rule 10.2 (the trees and the classes).** A box type gives an R-tree under
+GiST and a quad-tree and a k-d tree under SP-GiST. A single-entry class keys a
+value by its one box; the R-tree and the quad-tree are the default classes of
+their access methods. A multi-entry class keys a value by several boxes, one
+per piece as a split or a merge of section 5 or 6 gives them, under the R-tree
+of `mgist` and the quad-tree and k-d tree of `mspgist`, the access methods of
+the extension mest; the classes live in the extension `mobilitydb_mest`. They
+are named `<type>_m<tree>_<split>split_ops`, the class of the split `equi`
+being the default under `mgist` and under `mspgist`'s quad-tree, and an option
+of the class states the number its split or merge takes.
+
+| Split | The boxes of a value | Box types |
+|---|---|---|
+| `equi` | `splitN<Box>(value, n)` | every one |
+| `seg` | `splitEachN<Box>(value, n)` | every one |
+| `merge` | `mergeN<Box>(value, n)` | `stbox`, `tpcbox`, and the spans of the sets and span sets |
+| `adapt` | `mergeEachN<Box>(value, n)` | `stbox`, `tpcbox`, and the spans of the sets and span sets |
+| `linear` | `mergeQuery<Box>(value, query)` | `stbox` |
+| `tile` | the tiles of a value and time grid, or of a space and time grid, the value meets | `tbox`, `stbox` but for `tgeography` |
+| `bin` | the bins of a time grid the value meets | `tstzspan` |
+
+**Rule 10.3 (an index answers as the scan).** An index answers as its operator
+applied to every stored value: the same rows, or the error the operator
+raises. An index never raises on its own account; the error is the operator's,
+raised on a stored value the query reads. The boxes of one column may carry
+different structures, which no single tree can partition, and every tree keeps
+the boxes of each structure in a subtree of its own (`bbox_same_structure`,
+`MEOS_FLAG_PARTS`):
+
+| Box | Its structure |
+|---|---|
+| a span | its span type |
+| `tbox` | the presence of X and of T, and the span type of X |
+| `stbox` | the presence of X, Z and T, the geodetic flag, and the SRID where X is present |
+| `tpcbox` | the structure of the `stbox` it begins with |
+
+Where an operator raises for the structure of a subtree and the query, the
+subtree is read without pruning and its values go to the recheck, where the
+operator raises on the first that the query reads.
+
+**Rule 10.4 (a multi-entry class serves an operator).** A multi-entry class
+serves an operator if and only if, whenever the operator holds on a value,
+some key of the value passes the test the class reads for it against the
+query, every value it finds being rechecked by the operator itself. The test
+is the one of the tier of the operator:
+
+| Tier | Test on a key | Operators |
+|---|---|---|
+| the pieces | the operator itself | the position operators, contained by, the nearest approach distance (a lower bound), the ever and always overlaps |
+| the whole value | the operator itself, on the key of the box of the whole value | overlaps, contains, adjacent and the same box of a value whose box carries flags (a tbox, an stbox, a tpcbox); the distance of a set or a span set |
+| the pieces, read as another operator | contained by for the same box and equals; overlaps for contains | the same box of a value keyed by spans; the contains and equals of a set or a span set |
+
+**Rule 10.5 (the key of the whole value).** A multi-entry class of a value
+whose box carries flags keys the box of the whole value beside the boxes of
+its pieces, marked as a structure of its own (`MEOS_FLAG_WHOLE`), so that an
+index keeps the two kinds of key in separate subtrees: an operator of the
+whole value reads the key of the whole value alone, and an operator of the
+pieces the keys of the pieces alone.
+
+**Rule 10.6 (the sets and span sets).** A set is keyed by the spans of its
+elements and a span set by the spans of its components, as their splits and
+merges group them. Their overlaps, contains, contained by and equals read the
+elements or the components, which some key of a piece witnesses. Their
+distance is that of their bounding span, the extent of the value, which a key
+of a piece overstates: `tstzset '{2001-01-01, 2001-01-03}' <-> tstzset
+'{2001-01-02, 2001-01-04}'` is `@ 0`, while every element of the one lies a day
+from every element of the other. A set and a span set are therefore also keyed by
+their extent, marked `MEOS_FLAG_WHOLE`, in subtrees apart from the keys of the
+pieces as Rule 10.5 keeps them. An ordered scan reads the key of the extent
+alone, which answers every operator as the key of the single-entry class does
+and the distance exactly; a scan that is not ordered reads the keys of the
+pieces alone. The access method tells the consistent method of a class
+whether the scan is ordered (a sixth argument under `mgist`, the number of the
+ORDER BY clauses under `mspgist`).
+
+| Type | Keys | Classes |
+|---|---|---|
+| a temporal value whose box carries flags | the boxes of its pieces and the box of the whole value | every operator of its single-entry class |
+| a temporal value keyed by spans (`tbool`, `ttext`, `tjsonb`) | the spans of its pieces | every operator of its single-entry class but the overlaps, the contains and the adjacency |
+| a set, a span set | the spans of its elements or its components and its extent | every operator of its single-entry class |
+
+**Rule 10.7 (a function call is served as its operator).** A predicate
+written as a function, such as the ever and always comparisons and
+relationships and the portable position and containment predicates, is
+rewritten by its planner support function into the operator whose index test
+it implies, under every single-entry and multi-entry class alike
+(`temporal_supportfn.c`), so an index serves the function call as it serves
+the operator; the function itself then rechecks every row.
+
+## 11. Versioning and stability
 
 The minor number rises with each part of the rule master gains, the patch
 number with corrections of wording.
@@ -239,30 +347,29 @@ number with corrections of wording.
 | v0.1.0 | The boxes of the pieces of a value, its splits by count and its merges by size, the box of a temporal rigid geometry, and the arguments |
 | v0.1.1 | Every function of the document, the sets and the span sets included, sets its count to 0 first |
 | v0.2.0 | The merge into the boxes a query of the extents of a query box reads least |
+| v0.3.0 | The indexes keyed by the boxes of a value: the rule by which a multi-entry class serves an operator, the key of the whole value, the sets and span sets |
+| v0.4.0 | The distance of the sets and span sets in their multi-entry classes, from the key of their extent |
+| v0.5.0 | Every type indexed as its box, the trees and classes a box type gives and their splits, an index answering as the scan with the structures of a box kept apart, and a function call served as its operator |
 
-## 11. Out of scope
+## 12. Out of scope
 
-Future: the rule extends to these, each added here with its version:
+Not specified: which split, and which number of boxes, a workload reads
+least; section 9 states why the splits and merges are what they are.
 
-- the index operator classes keyed by the boxes of this document.
-
-Not specified: the boxes of a value read by the GiST and SP-GiST operator
-classes keyed by its bounding box, which hold one box per value.
-
-## 12. References
+## 13. References
 
 - [Finite values](meos-finite-values.md), whose doubles every bound of a
   box is.
 - [Empty geometries](meos-empty-geometries.md), the boxes of an empty
   geometry.
 
-## 13. Consumers
+## 14. Consumers
 
 Every binding generated from the MEOS catalog inherits the rule without code
 of its own: the boxes of a value are answered by MEOS and reach the binding
 unchanged.
 
-## 14. References to the implementation
+## 15. References to the implementation
 
 The source files of the reference line are authoritative. A disagreement
 between this document and the code is a defect of one of them, reported as an

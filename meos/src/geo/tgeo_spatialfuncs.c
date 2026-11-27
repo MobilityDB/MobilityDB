@@ -2547,6 +2547,93 @@ tgeo_traversed_area(const Temporal *temp, bool unary_union)
 }
 
 /**
+ * @brief Return the space-time volume of a temporal geo sequence that is not
+ * a point, as #tgeo_space_time_volume() defines it
+ * @param[in] seq Temporal geo sequence
+ * @param[in] spheroid True when measuring a geography on the spheroid, false
+ * on the sphere, as #geo_area reads it
+ */
+static double
+tgeoseq_space_time_volume(const TSequence *seq, bool spheroid)
+{
+  /* A sequence of instants holds no value over an interval */
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+    return 0.0;
+  double result = 0.0;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    double area = geo_area(DatumGetGserializedP(tinstant_value_p(inst1)),
+      spheroid);
+    if (area == DBL_MAX)
+      return DBL_MAX;
+    result += area * (double) (inst2->t - inst1->t);
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_accessor
+ * @brief Return the space-time volume of a temporal geo that is not a point,
+ * the integral of its area over its time
+ * @details A temporal geo holds each of its values for the whole of the
+ * interval up to its next instant, so its body in space and time is the prism
+ * of each value over that interval, and its volume is the sum of the area of
+ * each value times the length of its interval. Values at two times never
+ * meet in space and time, so no union is computed and a geography is
+ * measured on the spheroid as exactly as its area is. The time is read in
+ * microseconds, as #tnumber_integral() reads it, so the volume is in the
+ * square units of the value, square metres for a geography, times
+ * microseconds. A temporal geo of instants holds no value over an interval
+ * and has no volume. A temporal point has no area, and a value with Z has a
+ * body of four dimensions; both are refused
+ * @param[in] temp Temporal geo
+ * @param[in] spheroid True when measuring a geography on the spheroid, false
+ * on the sphere, as #geo_area reads it
+ * @errval DBL_MAX
+ * @csqlfn #Tgeo_space_time_volume()
+ */
+double
+tgeo_space_time_volume(const Temporal *temp, bool spheroid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, DBL_MAX);
+  if (tpoint_type(temp->temptype))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a temporal geometry or geography");
+    return DBL_MAX;
+  }
+  if (! ensure_nonlinear_interp(temp->flags) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
+    return DBL_MAX;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return 0.0;
+    case TSEQUENCE:
+      return tgeoseq_space_time_volume((TSequence *) temp, spheroid);
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (TSequenceSet *) temp;
+      double result = 0.0;
+      for (int i = 0; i < ss->count; i++)
+      {
+        double vol = tgeoseq_space_time_volume(TSEQUENCESET_SEQ_N(ss, i),
+          spheroid);
+        if (vol == DBL_MAX)
+          return DBL_MAX;
+        result += vol;
+      }
+      return result;
+    }
+  }
+}
+
+/**
  * @ingroup meos_geo_accessor
  * @brief Return the centroid of a temporal geo as a temporal point
  * @param[in] temp Temporal geo

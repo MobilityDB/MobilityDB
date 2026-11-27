@@ -30,7 +30,8 @@
 /**
  * @file
  * @brief A program that tests the conversion of a timestamptz and of a
- * timestamp to and from the microseconds from the Unix epoch, of a date to and
+ * timestamp to and from the microseconds from the Unix epoch, of a timestamptz
+ * to and from the milliseconds from it, of a date to and
  * from the days from it, of an interval to and from its months, days and
  * microseconds, and of a time with time zone to and from its microseconds from
  * midnight and its offset east of UTC
@@ -105,6 +106,26 @@ check_count_ts(const char *text, int64 expected)
   {
     printf("  expected %lld and the same timestamp back\n",
       (long long) expected);
+    failures++;
+  }
+  meos_errno_reset();
+}
+
+/* Verify the milliseconds from the Unix epoch of a timestamptz and its round
+ * trip, as #check_count does for its microseconds, the round trip giving back
+ * the timestamptz back_text names, the microseconds below a millisecond
+ * dropped toward the past */
+static void
+check_count_ms(const char *text, int64 expected, const char *back_text)
+{
+  TimestampTz t = timestamptz_in(text, -1);
+  int64 ms = timestamptz_to_unix_ms(t);
+  TimestampTz back = unix_ms_to_timestamptz(ms);
+  printf("ms %s: %lld\n", text, (long long) ms);
+  if (ms != expected || back != timestamptz_in(back_text, -1) ||
+      meos_errno() != 0)
+  {
+    printf("  expected %lld and %s back\n", (long long) expected, back_text);
     failures++;
   }
   meos_errno_reset();
@@ -233,6 +254,60 @@ int main(void)
   check_error("timestamp_to_unix_us(infinity)", DT);
   unix_us_to_timestamp(INT64_MIN);
   check_error("unix_us_to_timestamp(INT64_MIN)", DT);
+
+  /* A timestamptz counts its milliseconds from the Unix epoch, the
+   * microseconds below a millisecond dropped toward the past */
+  check_count_ms("2001-01-01 00:00:00+00", 978307200000,
+    "2001-01-01 00:00:00+00");
+  check_count_ms("1970-01-01 00:00:00+00", 0, "1970-01-01 00:00:00+00");
+  check_count_ms("1969-12-31 23:59:59.999999+00", -1,
+    "1969-12-31 23:59:59.999+00");
+  check_count_ms("2025-03-01 08:00:00.123456+00", 1740816000123,
+    "2025-03-01 08:00:00.123+00");
+  check_count_ms("2025-03-01 09:00:00.123456+01", 1740816000123,
+    "2025-03-01 08:00:00.123+00");
+  /* Every timestamptz of the range has a count, the last ones included,
+   * whose microseconds exceed a 64-bit integer */
+  check_count_ms("4714-11-24 00:00:00+00 BC", -210866803200000,
+    "4714-11-24 00:00:00+00 BC");
+  check_count_ms("294276-12-31 23:59:59.999999+00", 9224318015999999,
+    "294276-12-31 23:59:59.999+00");
+  timestamptz_to_unix_ms(timestamptz_in("infinity", -1));
+  check_error("timestamptz_to_unix_ms(infinity)", DT);
+  timestamptz_to_unix_ms(timestamptz_in("-infinity", -1));
+  check_error("timestamptz_to_unix_ms(-infinity)", DT);
+  /* A count outside the range is refused, the largest count included,
+   * whose microseconds exceed a 64-bit integer */
+  unix_ms_to_timestamptz(-210866803200001);
+  check_error("unix_ms_to_timestamptz(-210866803200001)", DT);
+  unix_ms_to_timestamptz(9224318016000000);
+  check_error("unix_ms_to_timestamptz(9224318016000000)", DT);
+  unix_ms_to_timestamptz(INT64_MAX);
+  check_error("unix_ms_to_timestamptz(INT64_MAX)", DT);
+  unix_ms_to_timestamptz(INT64_MIN);
+  check_error("unix_ms_to_timestamptz(INT64_MIN)", DT);
+  /* Where the microseconds of a count are a 64-bit integer, the count
+   * converts as its microseconds do, and a timestamptz counts the
+   * microseconds of its count of microseconds divided toward the past */
+  int sweep = 0;
+  for (int64 ms = -210866803200000; ms < 9223372036854775;
+       ms += 4716618234571)
+  {
+    TimestampTz t = unix_ms_to_timestamptz(ms);
+    TimestampTz t_us = unix_us_to_timestamptz(ms * 1000);
+    int64 us = timestamptz_to_unix_us(t + 999);
+    int64 floored = us / 1000 - (us % 1000 < 0 ? 1 : 0);
+    if (t != t_us || timestamptz_to_unix_ms(t + 999) != floored ||
+        meos_errno() != 0)
+    {
+      printf("  ms %lld: the milliseconds and the microseconds disagree\n",
+        (long long) ms);
+      failures++;
+    }
+    meos_errno_reset();
+    sweep++;
+  }
+  printf("ms sweep: %d count(s)\n", sweep);
 
   /* A date counts its days from the Unix epoch */
   check_days("2001-01-01", 11323);

@@ -153,6 +153,15 @@ CREATE FUNCTION traversedArea(tgeography, boolean DEFAULT FALSE)
   AS 'MODULE_PATHNAME', 'Tgeo_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION spaceTimeVolume(tgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tgeo_space_time_volume'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceTimeVolume(tgeography, spheroid boolean DEFAULT true)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tgeo_space_time_volume'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION centroid(tgeometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_centroid'

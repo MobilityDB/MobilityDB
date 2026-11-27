@@ -966,7 +966,7 @@ SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcpoint::{tgeompoint,tgeogpoint}
 </programlisting>
-					<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+					<para>Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 					<para>Toda dimensión no espacial se proyecta y las marcas temporales se preservan. El resultado lleva el SRID que indica el esquema, y es tridimensional cuando el esquema indica una dimensión Z. No se proporciona la conversión inversa, ya que reconstruir un <varname>pcpoint</varname> necesita un esquema destino que el valor temporal por sí solo no lleva.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
@@ -1755,7 +1755,7 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz
 tpcpoint {?&amp;&amp;, %&amp;&amp;} tpcbox → boolean
 tpcbox {?&amp;&amp;, %&amp;&amp;} tpcpoint → boolean
 </programlisting>
-					<para>Si el valor está en un cuadro de nube de puntos en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales, su restricción al cuadro por <varname>atTpcbox</varname> no vacía o su restricción al complemento por <varname>minusTpcbox</varname> vacía. Un cuadro de otro esquema o sistema de referencia provoca un error, como lo hacen los operadores de las cajas.</para>
+					<para>Si el valor está en un cuadro de nube de puntos en algún instante, o en todo instante en que está definido, tal como lo establecen <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> y <varname>%&amp;&amp;</varname></link> para las geometrías temporales, su restricción al cuadro por <varname>atTpcbox</varname> no vacía o su restricción al complemento por <varname>minusTpcbox</varname> vacía. Un cuadro de otro esquema o sistema de referencia provoca un error, como lo hacen los operadores de las cajas.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpointSeq(ARRAY[
   tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz),

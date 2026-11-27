@@ -610,6 +610,31 @@ tgeoseqset_stboxes(const TSequenceSet *ss, int *count)
 }
 
 /**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal geo, its arguments valid
+ * @details The internal twin of #tgeo_stboxes, which an index calls
+ * @param[in] temp Temporal geo
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+tgeo_stboxes_intl(const Temporal *temp, int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tgeoinst_stboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tgeoseq_stboxes((TSequence *) temp, count);
+    default: /* TSEQUENCESET */
+      return tgeoseqset_stboxes((TSequenceSet *) temp, count);
+  }
+}
+
+/**
  * @ingroup meos_geo_bbox_split
  * @brief Return an array of spatiotemporal boxes from the instants or segments
  * of a temporal geo
@@ -628,18 +653,7 @@ tgeo_stboxes(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL);
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tgeoinst_stboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tgeoseq_stboxes((TSequence *) temp, count);
-    default: /* TSEQUENCESET */
-      return tgeoseqset_stboxes((TSequenceSet *) temp, count);
-  }
+  return tgeo_stboxes_intl(temp, count);
 }
 
 /*****************************************************************************/
@@ -787,10 +801,11 @@ tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
   assert(box_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
-  STBox *result = palloc(sizeof(STBox) * nboxes);
   if (ss->totalcount <= box_count)
     return tgeoseqset_stboxes(ss, count);
+
+  /* At most box_count boxes, the segments being more */
+  STBox *result = palloc(sizeof(STBox) * box_count);
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */
@@ -846,6 +861,34 @@ tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
 }
 
 /**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of N spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal geo, its arguments valid
+ * @details The internal twin of #tgeo_split_n_stboxes, which an index calls
+ * @param[in] temp Temporal geo
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+STBox *
+tgeo_split_n_stboxes_intl(const Temporal *temp, int box_count, int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(box_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tgeoinst_stboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tgeoseq_split_n_stboxes((TSequence *) temp, box_count, count);
+    default: /* TSEQUENCESET */
+      return tgeoseqset_split_n_stboxes((TSequenceSet *) temp, box_count,
+        count);
+  }
+}
+
+/**
  * @ingroup meos_geo_bbox_split
  * @brief Return an array of N spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal geo
@@ -867,19 +910,7 @@ tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tgeoinst_stboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tgeoseq_split_n_stboxes((TSequence *) temp, box_count, count);
-    default: /* TSEQUENCESET */
-      return tgeoseqset_split_n_stboxes((TSequenceSet *) temp, box_count,
-        count);
-  }
+  return tgeo_split_n_stboxes_intl(temp, box_count, count);
 }
 
 /*****************************************************************************
@@ -1015,6 +1046,38 @@ tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elem_count,
 }
 
 /**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal geo, its arguments valid
+ * @details The internal twin of #tgeo_split_each_n_stboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+tgeo_split_each_n_stboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(elem_count > 0);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tgeoinst_stboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tgeoseq_split_each_n_stboxes((TSequence *) temp, elem_count,
+        count);
+    default: /* TSEQUENCESET */
+      return tgeoseqset_split_each_n_stboxes((TSequenceSet *) temp,
+        elem_count, count);
+  }
+}
+
+/**
  * @ingroup meos_geo_bbox_split
  * @brief Return an array of spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal geo
@@ -1037,25 +1100,36 @@ tgeo_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count)
   VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return tgeoinst_stboxes((TInstant *) temp);
-    case TSEQUENCE:
-      return tgeoseq_split_each_n_stboxes((TSequence *) temp, elem_count,
-        count);
-    default: /* TSEQUENCESET */
-      return tgeoseqset_split_each_n_stboxes((TSequenceSet *) temp,
-        elem_count, count);
-  }
+  return tgeo_split_each_n_stboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_n_stboxes and merge_each_n_stboxes functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of N spatiotemporal boxes obtained by merging the
+ * boxes of
+ * the consecutive instants or segments of a temporal geo, each time the
+ * consecutive pair whose union adds the least size to theirs, its arguments
+ * valid
+ * @details The internal twin of #tgeo_merge_n_stboxes, which an index calls
+ * @param[in] temp Temporal value
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+tgeo_merge_n_stboxes_intl(const Temporal *temp, int box_count, int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(box_count > 0);
+  STBox *result = tgeo_stboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_n(T_STBOX, result, *count, box_count, &stbox_adjust,
+      &stbox_size);
+  return result;
+}
 
 /**
  * @ingroup meos_geo_bbox_split
@@ -1080,11 +1154,33 @@ tgeo_merge_n_stboxes(const Temporal *temp, int box_count, int *count)
   VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
+  return tgeo_merge_n_stboxes_intl(temp, box_count, count);
+}
 
-  STBox *result = tgeo_stboxes(temp, count);
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging the boxes
+ * of the
+ * consecutive instants or segments of a temporal geo, each time the consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them, its arguments valid
+ * @details The internal twin of #tgeo_merge_each_n_stboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+tgeo_merge_each_n_stboxes_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert(tspatial_type(temp->temptype));
+  assert(elem_count > 0);
+  STBox *result = tgeo_stboxes_intl(temp, count);
   if (result)
-    *count = bbox_merge_n(T_STBOX, result, *count, box_count, &stbox_adjust,
-      &stbox_size);
+    *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
+      &stbox_adjust, &stbox_size);
   return result;
 }
 
@@ -1114,17 +1210,38 @@ tgeo_merge_each_n_stboxes(const Temporal *temp, int elem_count, int *count)
   VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  STBox *result = tgeo_stboxes(temp, count);
-  if (result)
-    *count = bbox_merge_each_n(T_STBOX, result, *count, elem_count,
-      &stbox_adjust, &stbox_size);
-  return result;
+  return tgeo_merge_each_n_stboxes_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_query_stboxes function
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_geo_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * temporal geo into those a query of the extents of a query box
+ * is expected to read least, its arguments valid
+ * @details The internal twin of #tgeo_merge_query_stboxes, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ */
+STBox *
+tgeo_merge_query_stboxes_intl(const Temporal *temp, const STBox *query,
+  int *count)
+{
+  assert(temp); assert(query); assert(count);
+  assert(tspatial_type(temp->temptype));
+  assert(ensure_valid_tspatial_stbox(temp, query));
+  STBox *result = tgeo_stboxes_intl(temp, count);
+  if (result)
+    *count = bbox_merge_query(T_STBOX, result, *count, query, &stbox_adjust,
+      &stbox_query_size);
+  return result;
+}
 
 /**
  * @ingroup meos_geo_bbox_split
@@ -1152,12 +1269,7 @@ tgeo_merge_query_stboxes(const Temporal *temp, const STBox *query,
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
   if (! ensure_valid_tspatial_stbox(temp, query))
     return NULL;
-
-  STBox *result = tgeo_stboxes(temp, count);
-  if (result)
-    *count = bbox_merge_query(T_STBOX, result, *count, query, &stbox_adjust,
-      &stbox_query_size);
-  return result;
+  return tgeo_merge_query_stboxes_intl(temp, query, count);
 }
 /* GENERATED-BOXSPLIT-END tgeo */
 

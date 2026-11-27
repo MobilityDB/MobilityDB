@@ -87,5 +87,11 @@ extern TPCBox *tpointcloudseq_split_n_tpcboxes(const TSequence *seq, int box_cou
 extern TPCBox *tpointcloudseqset_split_n_tpcboxes(const TSequenceSet *ss, int box_count, int *count);
 extern TPCBox *tpointcloudseq_split_each_n_tpcboxes(const TSequence *seq, int elem_count, int *count);
 extern TPCBox *tpointcloudseqset_split_each_n_tpcboxes(const TSequenceSet *ss, int elem_count, int *count);
+extern TPCBox *tpointcloud_tpcboxes_intl(const Temporal *temp, int *count);
+extern TPCBox *tpointcloud_split_n_tpcboxes_intl(const Temporal *temp, int box_count, int *count);
+extern TPCBox *tpointcloud_split_each_n_tpcboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern TPCBox *tpointcloud_merge_n_tpcboxes_intl(const Temporal *temp, int box_count, int *count);
+extern TPCBox *tpointcloud_merge_each_n_tpcboxes_intl(const Temporal *temp, int elem_count, int *count);
+extern TPCBox *tpointcloud_merge_query_tpcboxes_intl(const Temporal *temp, const TPCBox *query, int *count);
 
 #endif /* __TPC_BOXOPS_H__ */

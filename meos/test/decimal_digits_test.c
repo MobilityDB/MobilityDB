@@ -47,8 +47,10 @@
  * negative precision GeoPose reads as its lossless form; that the text,
  * EWKT, GeoJSON and MF-JSON outputs and the rounding functions report a
  * negative count with MEOS_ERR_INVALID_ARG_VALUE, as do the internal outputs of a
- * temporal value, an array of them, a set, a span and a span set, which the
- * PostgreSQL wrappers of every type call with the count a user writes; and
+ * temporal value, a set, a span and a span set, which the PostgreSQL wrappers
+ * of every type call with the count a user writes, and the public writers of
+ * an array of temporal, spatiotemporal or spatial values, which also refuse a
+ * count of zero and a null array; and
  * that an MF-JSON precision above the default writes the default number of
  * decimal digits.
  *
@@ -79,6 +81,18 @@
 #define PCPATCH_HEX \
   "01010000000000000002000000640000006400000064000000C8000000C8000000" \
   "C8000000"
+
+/* An array writer refused its arguments with the error expected: the inline
+ * check this program writes after each call, as after #temparr_out, folded
+ * into one routine since the array writers are many */
+static void
+check_array_refused(const char *call, char **strarr, int errcode)
+{
+  printf("%s: %s, errno %d\n", call, strarr ? "a value" : "NULL",
+    meos_errno());
+  assert(strarr == NULL && meos_errno() == errcode);
+  meos_errno_reset();
+}
 
 /* Main program */
 int main(void)
@@ -282,6 +296,60 @@ int main(void)
     strarr ? "a value" : "NULL", meos_errno());
   assert(strarr == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
+  check_array_refused("temparr_out(temparr, 0, 15)",
+    temparr_out((const Temporal **) temparr, 0, 15), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("temparr_out(NULL, 1, 15)",
+    temparr_out(NULL, 1, 15), MEOS_ERR_INVALID_ARG);
+
+  /* The array writers of the spatial types report a negative count as the
+   * writer of their element does */
+  Temporal *tsp = tgeompoint_in("Point(1.25 2.75)@2001-01-01");
+  GSERIALIZED *geo = geom_in("Point(1.25 2.75)", -1);
+  Cbuffer *cbuf = cbuffer_in("Cbuffer(Point(1 1),0.5)");
+  Pose *ps = pose_in("Pose(Point(1.25 2.75),0.5)");
+  PoseChain *pchain = posechain_in("PoseChain(Pose(Point(0 0), 0.5))");
+  assert(tsp && geo && cbuf && ps && pchain);
+  const Temporal *tsparr[1] = {tsp};
+  const GSERIALIZED *geoarr[1] = {geo};
+  const Cbuffer *cbarr[1] = {cbuf};
+  const Npoint *nparr[1] = {np};
+  const Pose *posearr[1] = {ps};
+  const PoseChain *pchainarr[1] = {pchain};
+  check_array_refused("tspatialarr_as_text(arr, 1, -1)",
+    tspatialarr_as_text(tsparr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("tspatialarr_as_ewkt(arr, 1, -1)",
+    tspatialarr_as_ewkt(tsparr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("geoarr_as_text(arr, 1, -1)",
+    geoarr_as_text(geoarr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("geoarr_as_ewkt(arr, 1, -1)",
+    geoarr_as_ewkt(geoarr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("cbufferarr_as_text(arr, 1, -1)",
+    cbufferarr_as_text(cbarr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("cbufferarr_as_ewkt(arr, 1, -1)",
+    cbufferarr_as_ewkt(cbarr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("npointarr_as_text(arr, 1, -1)",
+    npointarr_as_text(nparr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("npointarr_as_ewkt(arr, 1, -1)",
+    npointarr_as_ewkt(nparr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("posearr_as_text(arr, 1, -1)",
+    posearr_as_text(posearr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("posearr_as_ewkt(arr, 1, -1)",
+    posearr_as_ewkt(posearr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("posechainarr_as_text(arr, 1, -1)",
+    posechainarr_as_text(pchainarr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("posechainarr_as_ewkt(arr, 1, -1)",
+    posechainarr_as_ewkt(pchainarr, 1, -1), MEOS_ERR_INVALID_ARG_VALUE);
+  /* A count of zero and a null array are refused as well */
+  check_array_refused("tspatialarr_as_text(arr, 0, 15)",
+    tspatialarr_as_text(tsparr, 0, 15), MEOS_ERR_INVALID_ARG_VALUE);
+  check_array_refused("geoarr_as_ewkt(NULL, 1, 15)",
+    geoarr_as_ewkt(NULL, 1, 15), MEOS_ERR_INVALID_ARG);
+  /* An array within its arguments is written element by element */
+  strarr = tspatialarr_as_text(tsparr, 1, 15);
+  assert(strarr && strarr[0] && meos_errno() == 0);
+  printf("tspatialarr_as_text(arr, 1, 15): %s\n", strarr[0]);
+  free(strarr[0]); free(strarr);
+  free(tsp); free(geo); free(cbuf); free(ps); free(pchain);
   str = set_out(fset, -1, &size_out);
   printf("set_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());

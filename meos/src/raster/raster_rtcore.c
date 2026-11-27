@@ -69,6 +69,7 @@
 #include <pg_int.h>
 #include <utils/float.h>
 #include <utils/datetime.h>
+#include "common/hashfn.h"
 #include <stringbuffer.h>
 #include "geo/geo_funcs.h"
 #include "raster/raquet.h"
@@ -909,6 +910,82 @@ raster_mem_size(const Raster *rast)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, INT_MAX);
   return (int) VARSIZE(rast);
+}
+
+/*****************************************************************************
+ * Comparison functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two rasters are equal
+ * @details Two rasters are equal when their serialized forms are the same
+ * bytes, the serialization writing every byte of a raster, its padding
+ * included, from the raster alone. The operator `=` of PostGIS states this
+ * equality over the hashes of those bytes; it is stated here exactly. A raster
+ * has no order: PostGIS states none, so where #raquet_eq reads #raquet_cmp,
+ * this reads the bytes
+ * @param[in] rast1,rast2 Rasters
+ * @errval false
+ * @see #raquet_eq
+ */
+bool
+raster_eq(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, false); VALIDATE_NOT_NULL(rast2, false);
+  size_t size = VARSIZE(rast1);
+  return size == VARSIZE(rast2) && memcmp(rast1, rast2, size) == 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two rasters are different
+ * @param[in] rast1,rast2 Rasters
+ * @errval false
+ * @see #raquet_ne
+ */
+bool
+raster_ne(const Raster *rast1, const Raster *rast2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast1, false); VALIDATE_NOT_NULL(rast2, false);
+  return ! raster_eq(rast1, rast2);
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return the 32-bit hash of a raster
+ * @details The hash is that of the bytes of the serialized raster after its
+ * length, the hash `raster_hash` of PostGIS answers for the same raster
+ * @param[in] rast Raster
+ * @errval UINT32_MAX
+ * @see #raquet_hash
+ */
+uint32
+raster_hash(const Raster *rast)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, UINT32_MAX);
+  return hash_any((const unsigned char *) VARDATA(rast),
+    (int) (VARSIZE(rast) - VARHDRSZ));
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return the 64-bit hash of a raster using a seed
+ * @param[in] rast Raster
+ * @param[in] seed Seed
+ * @errval UINT64_MAX
+ * @see #raquet_hash_extended
+ */
+uint64
+raster_hash_extended(const Raster *rast, uint64 seed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, UINT64_MAX);
+  return hash_any_extended((const unsigned char *) VARDATA(rast),
+    (int) (VARSIZE(rast) - VARHDRSZ), seed);
 }
 
 /**
@@ -2926,7 +3003,9 @@ bandstats_scale(double maxabs)
 /**
  * @brief Read every pixel of a band as rt_band_get_summary_stats reads all of
  * them, each value divided by 2^scale
- * @details The same pixels in the same order, the same one-pass sum, mean and
+ * @details A pixel holding a NaN or an infinity carries no value and is left
+ * out, as a nodata pixel is (doc/specs/meos-finite-values.md). The other
+ * pixels are read in the same order, with the same one-pass sum, mean and
  * sum of squared deviations, and the same cases of an empty band and of a band
  * whose every pixel is nodata, so that the statistics are those the raster
  * core takes, divided by a power of two, which is exact. The running count,
@@ -2958,7 +3037,8 @@ band_stats_scaled(rt_band band, bool exclude_nodata, int scale, uint64_t *cK,
     exclude_nodata = false;
   if (rt_band_get_isnodata_flag(band))
   {
-    if (! exclude_nodata)
+    /* A nodata value that is a NaN or an infinity carries no value */
+    if (! exclude_nodata && isfinite(nodata))
     {
       *count = (uint32_t) width * height;
       *min = *max = nodata;
@@ -2974,8 +3054,10 @@ band_stats_scaled(rt_band band, bool exclude_nodata, int scale, uint64_t *cK,
     {
       double value;
       int isnodata = 0;
+      /* A pixel holding a NaN or an infinity carries no value, as a nodata
+       * pixel does */
       if (rt_band_get_pixel(band, x, y, &value, &isnodata) != ES_NONE ||
-          (exclude_nodata && isnodata))
+          (exclude_nodata && isnodata) || ! isfinite(value))
         continue;
       double v = ldexp(value, -scale);
       k++;
@@ -3049,8 +3131,9 @@ rasterstatsstate_rescale(RasterStatsState *state, int scale)
  * @param[in] band Number of the band, starting at 1
  * @param[in] exclude_nodata True to leave the pixels the band states as nodata
  * out of the statistics, false to count them as the values they hold
- * @return The statistics, which the caller releases with @p free(), or NULL
- * where the band states no pixel to count, in which case no error is stated
+ * @return The statistics, which the caller releases with @p free(); where the
+ * band states no pixel to count, statistics counting none, whose other fields
+ * the accessors answer as absent
  * @errval NULL
  * @csqlfn #Raster_summary_stats()
  */
@@ -3107,31 +3190,52 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
    * and pfree() on them raises "pfree called with invalid pointer" */
 
   /* A band whose every pixel is nodata states no value to summarize, which is
-   * an answer rather than an error; the statistics of no pixels have no mean */
+   * an answer rather than an error: statistics counting no pixel, whose other
+   * fields the accessors answer as absent, as PostgreSQL answers (0,,,,,) */
+  BandStats *result = palloc0(sizeof(BandStats));
   if (stats->count < 1)
   {
     raster_destroy(raster);
     rtdealloc(stats);
-    return NULL;
+    return result;
   }
 
-  BandStats *result = palloc0(sizeof(BandStats));
   result->count = stats->count;
   result->sum = stats->sum;
   result->mean = stats->mean;
   result->stddev = stats->stddev;
   result->min = stats->min;
   result->max = stats->max;
-  /* Finite pixels whose sum or squared deviations leave the doubles are read
-   * again divided by a power of two, and the statistics multiplied back: a
-   * finite answer is answered, and a sum beyond DBL_MAX is an overflow */
+  /* The raster core reads a pixel holding a NaN or an infinity as a value, so
+   * its statistics are not finite where a band holds one; such a pixel carries
+   * no value, and the band is read again without it. Finite pixels whose sum
+   * or squared deviations leave the doubles are read divided by a power of
+   * two, and the statistics multiplied back: a finite answer is answered, and
+   * a sum beyond DBL_MAX is an overflow */
   if (! isfinite(stats->sum) || ! isfinite(stats->stddev))
   {
-    int scale = bandstats_scale(fmax(fabs(stats->min), fabs(stats->max)));
     uint32_t count;
     double sum, q, min, max;
-    band_stats_scaled(rtband, exclude_nodata, scale, NULL, NULL, NULL, &count,
+    band_stats_scaled(rtband, exclude_nodata, 0, NULL, NULL, NULL, &count,
       &sum, &q, &min, &max);
+    /* A band none of whose pixels carries a value counts no pixel */
+    if (count < 1)
+    {
+      memset(result, 0, sizeof(BandStats));
+      raster_destroy(raster);
+      rtdealloc(stats);
+      return result;
+    }
+    int scale = 0;
+    if (! isfinite(sum) || ! isfinite(q))
+    {
+      scale = bandstats_scale(fmax(fabs(min), fabs(max)));
+      band_stats_scaled(rtband, exclude_nodata, scale, NULL, NULL, NULL,
+        &count, &sum, &q, &min, &max);
+    }
+    result->count = count;
+    result->min = min;
+    result->max = max;
     result->sum = ldexp(sum, scale);
     result->mean = ldexp(sum / count, scale);
     result->stddev = ldexp(sqrt(q / count), scale);
@@ -6395,39 +6499,66 @@ raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
       "Could not summarize band %d of the raster", nband);
     return NULL;
   }
+  /* The raster core answers a band flagged as entirely nodata, read with its
+   * nodata counted, without reading its pixels, and so leaves the running
+   * count, mean and sum of squared deviations where they were: the statistics
+   * of the band join them as #raster_summary_stats_combinefn joins those of
+   * two states */
+  if (state->scale == 0 && stats->count > 0 && count == state->count)
+  {
+    double n1 = (double) state->count, n2 = (double) stats->count;
+    double n = n1 + n2;
+    double delta = stats->mean - mean;
+    mean += delta * n2 / n;
+    q += stats->stddev * stats->stddev * n2 + delta * delta * n1 * n2 / n;
+    count = state->count + stats->count;
+  }
   double sum = stats->sum;
-  /* Finite pixels whose sum or squared deviations would leave the doubles are
-   * read divided by a power of two, the state brought to it first */
+  uint32_t bcount = stats->count;
+  double bmin = stats->min, bmax = stats->max;
+  /* The raster core reads a pixel holding a NaN or an infinity as a value, so
+   * its statistics are not finite where a band holds one; such a pixel carries
+   * no value, and the band is read again without it. Finite pixels whose sum
+   * or squared deviations would leave the doubles are read divided by a power
+   * of two, the state brought to it first */
   if (stats->count > 0 && (state->scale > 0 || ! isfinite(sum) ||
       ! isfinite(mean) || ! isfinite(q) || ! isfinite(state->sum + sum)))
   {
-    double maxabs = fmax(fabs(stats->min), fabs(stats->max));
-    if (state->count > 0)
-      maxabs = fmax(maxabs, fmax(fabs(state->min), fabs(state->max)));
-    rasterstatsstate_rescale(state, bandstats_scale(maxabs));
+    double bsum, bq;
+    band_stats_scaled(rtband, state->exclude_nodata, 0, NULL, NULL, NULL,
+      &bcount, &bsum, &bq, &bmin, &bmax);
     count = state->count;
     mean = state->mean;
     q = state->q;
-    uint32_t n;
-    double bq, bmin, bmax;
-    band_stats_scaled(rtband, state->exclude_nodata, state->scale, &count,
-      &mean, &q, &n, &sum, &bq, &bmin, &bmax);
+    sum = 0.0;
+    if (bcount > 0)
+    {
+      double maxabs = fmax(fabs(bmin), fabs(bmax));
+      if (state->count > 0)
+        maxabs = fmax(maxabs, fmax(fabs(state->min), fabs(state->max)));
+      rasterstatsstate_rescale(state, bandstats_scale(maxabs));
+      count = state->count;
+      mean = state->mean;
+      q = state->q;
+      band_stats_scaled(rtband, state->exclude_nodata, state->scale, &count,
+        &mean, &q, &bcount, &sum, &bq, &bmin, &bmax);
+    }
   }
   raster_destroy(raster);
   /* The values of a band with no pixel to count leave the state as it is */
-  if (stats->count > 0)
+  if (bcount > 0)
   {
     if (state->count < 1)
     {
-      state->min = stats->min;
-      state->max = stats->max;
+      state->min = bmin;
+      state->max = bmax;
     }
     else
     {
-      if (stats->min < state->min)
-        state->min = stats->min;
-      if (stats->max > state->max)
-        state->max = stats->max;
+      if (bmin < state->min)
+        state->min = bmin;
+      if (bmax > state->max)
+        state->max = bmax;
     }
     state->sum += sum;
     state->count = (uint64) count;
@@ -6514,8 +6645,9 @@ raster_summary_stats_combinefn(RasterStatsState *state1,
  * `RASTER_summaryStats_finalfn` takes them when every pixel is read. The
  * state is freed, as #raster_same_alignment_finalfn frees its own
  * @param[in] state Aggregate state @nullable
- * @return The statistics, or NULL where the state is NULL, an aggregate over
- * no raster, or counts no pixel, in which case no error is stated
+ * @return The statistics, which count no pixel where none of the rasters
+ * carries a value, or NULL where the state is NULL, an aggregate over no
+ * raster, in which case no error is stated
  * @errval NULL
  * @csqlfn #Raster_summary_stats_finalfn()
  */
@@ -6531,6 +6663,7 @@ raster_summary_stats_finalfn(RasterStatsState *state)
       "The statistics count more pixels than their count can state");
     return NULL;
   }
+  /* Rasters none of whose pixels carries a value count no pixel */
   BandStats *result = NULL;
   if (state->count > 0)
   {
@@ -6551,6 +6684,8 @@ raster_summary_stats_finalfn(RasterStatsState *state)
     result->min = state->min;
     result->max = state->max;
   }
+  else
+    result = palloc0(sizeof(BandStats));
   pfree(state);
   return result;
 }
