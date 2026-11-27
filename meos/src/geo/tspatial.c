@@ -562,7 +562,7 @@ spatialarr_as_ewkt(const Datum *spatialarr, MeosType elemtype, int count,
 /**
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
  * of an array of spatiotemporal values, each written by #tspatial_as_text or
- * #tspatial_as_ewkt as #spatialarr_wkt_out writes them
+ * #tspatial_as_ewkt
  * @param[in] temparr Array of spatiotemporal values
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits
