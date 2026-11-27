@@ -759,14 +759,18 @@ CREATE OPERATOR CLASS intspanset_mrtree_control_ops
   OPERATOR  17    -|- (intspanset, intspanset),
   -- equals
   OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 span_gist_consistent(internal, intspanset, smallint, oid, internal),
-  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  2 span_mgist_union(internal, internal),
   FUNCTION  3 mest_gist_compress(internal),
-  FUNCTION  5 span_gist_penalty(internal, internal, internal),
-  FUNCTION  6 span_gist_picksplit(internal, internal),
-  FUNCTION  7 span_gist_same(intspan, intspan, internal),
-  FUNCTION  8 span_gist_distance(internal, intspan, smallint, oid, internal),
+  FUNCTION  5 span_mgist_penalty(internal, internal, internal),
+  FUNCTION  6 span_mgist_picksplit(internal, internal),
+  FUNCTION  7 span_mgist_same(intspan, intspan, internal),
+  FUNCTION  8 span_mgist_distance(internal, intspan, smallint, oid, internal),
   FUNCTION 10 mest_count_options(internal),
   FUNCTION 13 spanset_mest_segsplit(internal, internal, internal);
 

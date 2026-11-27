@@ -23,9 +23,10 @@ mest_key_answers(int16 flags, StrategyNumber strategy)
 /**
  * @brief Return the strategy a key of a piece of a value answers in place of
  * a strategy of a multi-entry index whose keys are spans
- * @details A span carries no flags, so a class whose keys are spans keys the
- * pieces of a value alone, the components of a span set, the elements of a
- * set or the pieces of a temporal value. The span of a value is the same as a
+ * @details A class whose keys are spans keys the pieces of a value, the
+ * components of a span set, the elements of a set or the pieces of a temporal
+ * value, a set or a span set also by its extent, which a scan that is not
+ * ordered leaves out (#mest_span_key_answers). The span of a value is the same as a
  * query, or a value equals it, only when every piece lies within the query, so
  * a key of a piece answers them as contained by; a value contains a query
  * only when some piece meets it, so a key of a piece answers the contains as

@@ -60,10 +60,13 @@ CREATE OPERATOR CLASS intset_mquadtree_equisplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -93,10 +96,13 @@ CREATE OPERATOR CLASS intset_mquadtree_segsplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -126,10 +132,13 @@ CREATE OPERATOR CLASS intset_mquadtree_mergesplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -159,10 +168,13 @@ CREATE OPERATOR CLASS intset_mquadtree_adaptsplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -192,10 +204,13 @@ CREATE OPERATOR CLASS bigintset_mquadtree_equisplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -225,10 +240,13 @@ CREATE OPERATOR CLASS bigintset_mquadtree_segsplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -258,10 +276,13 @@ CREATE OPERATOR CLASS bigintset_mquadtree_mergesplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -291,10 +312,13 @@ CREATE OPERATOR CLASS bigintset_mquadtree_adaptsplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -324,10 +348,13 @@ CREATE OPERATOR CLASS floatset_mquadtree_equisplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -357,10 +384,13 @@ CREATE OPERATOR CLASS floatset_mquadtree_segsplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -390,10 +420,13 @@ CREATE OPERATOR CLASS floatset_mquadtree_mergesplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -423,10 +456,13 @@ CREATE OPERATOR CLASS floatset_mquadtree_adaptsplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -444,6 +480,9 @@ CREATE OPERATOR CLASS dateset_mquadtree_equisplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -458,8 +497,8 @@ CREATE OPERATOR CLASS dateset_mquadtree_equisplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -477,6 +516,9 @@ CREATE OPERATOR CLASS dateset_mquadtree_segsplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -491,8 +533,8 @@ CREATE OPERATOR CLASS dateset_mquadtree_segsplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -510,6 +552,9 @@ CREATE OPERATOR CLASS dateset_mquadtree_mergesplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -524,8 +569,8 @@ CREATE OPERATOR CLASS dateset_mquadtree_mergesplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -543,6 +588,9 @@ CREATE OPERATOR CLASS dateset_mquadtree_adaptsplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -557,8 +605,8 @@ CREATE OPERATOR CLASS dateset_mquadtree_adaptsplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -576,6 +624,9 @@ CREATE OPERATOR CLASS tstzset_mquadtree_equisplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -590,8 +641,8 @@ CREATE OPERATOR CLASS tstzset_mquadtree_equisplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -609,6 +660,9 @@ CREATE OPERATOR CLASS tstzset_mquadtree_segsplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -623,8 +677,8 @@ CREATE OPERATOR CLASS tstzset_mquadtree_segsplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -642,6 +696,9 @@ CREATE OPERATOR CLASS tstzset_mquadtree_mergesplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -656,8 +713,8 @@ CREATE OPERATOR CLASS tstzset_mquadtree_mergesplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -675,6 +732,9 @@ CREATE OPERATOR CLASS tstzset_mquadtree_adaptsplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -689,8 +749,8 @@ CREATE OPERATOR CLASS tstzset_mquadtree_adaptsplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_quadtree_choose(internal, internal),
-  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  2 span_mquadtree_choose(internal, internal),
+  FUNCTION  3 span_mquadtree_picksplit(internal, internal),
   FUNCTION  4 span_mquadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -720,10 +780,13 @@ CREATE OPERATOR CLASS intset_mkdtree_equisplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -753,10 +816,13 @@ CREATE OPERATOR CLASS intset_mkdtree_segsplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -786,10 +852,13 @@ CREATE OPERATOR CLASS intset_mkdtree_mergesplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -819,10 +888,13 @@ CREATE OPERATOR CLASS intset_mkdtree_adaptsplit_ops
   OPERATOR  8     <@ (intset, intset),
   -- equals
   OPERATOR  18    = (intset, intset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intset, integer) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (intset, intset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -852,10 +924,13 @@ CREATE OPERATOR CLASS bigintset_mkdtree_equisplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -885,10 +960,13 @@ CREATE OPERATOR CLASS bigintset_mkdtree_segsplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -918,10 +996,13 @@ CREATE OPERATOR CLASS bigintset_mkdtree_mergesplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -951,10 +1032,13 @@ CREATE OPERATOR CLASS bigintset_mkdtree_adaptsplit_ops
   OPERATOR  8     <@ (bigintset, bigintset),
   -- equals
   OPERATOR  18    = (bigintset, bigintset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,
   -- functions
   FUNCTION  1 intset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -984,10 +1068,13 @@ CREATE OPERATOR CLASS floatset_mkdtree_equisplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1017,10 +1104,13 @@ CREATE OPERATOR CLASS floatset_mkdtree_segsplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1050,10 +1140,13 @@ CREATE OPERATOR CLASS floatset_mkdtree_mergesplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1083,10 +1176,13 @@ CREATE OPERATOR CLASS floatset_mkdtree_adaptsplit_ops
   OPERATOR  8     <@ (floatset, floatset),
   -- equals
   OPERATOR  18    = (floatset, floatset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatset, floatset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1 floatset_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1104,6 +1200,9 @@ CREATE OPERATOR CLASS dateset_mkdtree_equisplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -1118,8 +1217,8 @@ CREATE OPERATOR CLASS dateset_mkdtree_equisplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1137,6 +1236,9 @@ CREATE OPERATOR CLASS dateset_mkdtree_segsplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -1151,8 +1253,8 @@ CREATE OPERATOR CLASS dateset_mkdtree_segsplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1170,6 +1272,9 @@ CREATE OPERATOR CLASS dateset_mkdtree_mergesplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -1184,8 +1289,8 @@ CREATE OPERATOR CLASS dateset_mkdtree_mergesplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1203,6 +1308,9 @@ CREATE OPERATOR CLASS dateset_mkdtree_adaptsplit_ops
   OPERATOR  8    <@ (dateset, dateset),
   -- equals
   OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.integer_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.integer_ops,
   -- overlaps or before
   OPERATOR  28    &<# (dateset, date),
   OPERATOR  28    &<# (dateset, dateset),
@@ -1217,8 +1325,8 @@ CREATE OPERATOR CLASS dateset_mkdtree_adaptsplit_ops
   OPERATOR  31    #&> (dateset, dateset),
   -- functions
   FUNCTION  1 datespan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1236,6 +1344,9 @@ CREATE OPERATOR CLASS tstzset_mkdtree_equisplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -1250,8 +1361,8 @@ CREATE OPERATOR CLASS tstzset_mkdtree_equisplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1269,6 +1380,9 @@ CREATE OPERATOR CLASS tstzset_mkdtree_segsplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -1283,8 +1397,8 @@ CREATE OPERATOR CLASS tstzset_mkdtree_segsplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1302,6 +1416,9 @@ CREATE OPERATOR CLASS tstzset_mkdtree_mergesplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -1316,8 +1433,8 @@ CREATE OPERATOR CLASS tstzset_mkdtree_mergesplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),
@@ -1335,6 +1452,9 @@ CREATE OPERATOR CLASS tstzset_mkdtree_adaptsplit_ops
   OPERATOR  8    <@ (tstzset, tstzset),
   -- equals
   OPERATOR  18    = (tstzset, tstzset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (tstzset, timestamptz) FOR ORDER BY pg_catalog.interval_ops,
+  OPERATOR  25    <-> (tstzset, tstzset) FOR ORDER BY pg_catalog.interval_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tstzset, timestamptz),
   OPERATOR  28    &<# (tstzset, tstzset),
@@ -1349,8 +1469,8 @@ CREATE OPERATOR CLASS tstzset_mkdtree_adaptsplit_ops
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
   FUNCTION  1 tstzspan_spgist_config(internal, internal),
-  FUNCTION  2 span_kdtree_choose(internal, internal),
-  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  2 span_mkdtree_choose(internal, internal),
+  FUNCTION  3 span_mkdtree_picksplit(internal, internal),
   FUNCTION  4 span_mkdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_mspgist_leaf_consistent(internal, internal),
   FUNCTION  6 mest_spgist_compress(internal),

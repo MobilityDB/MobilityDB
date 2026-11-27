@@ -15,7 +15,8 @@
 #   spans    the strategy a key of a piece answers it as, in a class of a
 #            temporal type keyed by spans (tbool, ttext, tjsonb): `self`, or
 #            the number of another strategy; absent, the class does not hold it
-#   values   the same, in a class of a set or a span set
+#   values   the same, in a class of a set or a span set, or `whole`, the
+#            key of the bounding span of the value (MEOS_FLAG_WHOLE)
 #
 # generate.py derives MEST_STRATEGIES, MEST_WHOLE_STRATEGIES and
 # MEST_VALUE_STRATEGIES from it, and renders mest_key_answers and
@@ -52,9 +53,11 @@ meststrategies:
   - {num: 8,  boxes: pieces, spans: self, values: self, desc: contained by}
   # the equals of a set or a span set: every element or component within it
   - {num: 18, values: 8, desc: equals}
-  # the distance to a piece bounds that of the value from below; a class of a
-  # set or a span set holds none (generate.py, MEST_VALUE_STRATEGIES)
-  - {num: 25, boxes: pieces, spans: self, desc: nearest approach distance}
+  # the distance to a piece bounds that of a temporal value from below; the
+  # distance of a set or a span set is that of its bounding span, which a key
+  # of an element or a component overstates, so a class of a set or a span set
+  # answers it from the key of its bounding span, `whole`
+  - {num: 25, boxes: pieces, spans: self, values: whole, desc: nearest approach distance}
   # the ever and always overlaps of a temporal value hold on some piece
   - {num: 36, boxes: pieces, spans: self, desc: ever overlaps}
   - {num: 37, boxes: pieces, spans: self, desc: always overlaps}

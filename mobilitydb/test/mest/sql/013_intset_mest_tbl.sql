@@ -52,6 +52,9 @@ INSERT INTO test_intset_mest(op, no_idx) VALUES ('@> integer', (SELECT COUNT(*) 
 INSERT INTO test_intset_mest(op, no_idx) VALUES ('@> intset', (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i @> t2.i)::text);
 INSERT INTO test_intset_mest(op, no_idx) VALUES ('<@ intset', (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i <@ t2.i)::text);
 INSERT INTO test_intset_mest(op, no_idx) VALUES ('= intset', (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text);
+INSERT INTO test_intset_mest(op, no_idx) VALUES ('<-> integer', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text);
+INSERT INTO test_intset_mest(op, no_idx) VALUES ('<-> intset', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text);
+INSERT INTO test_intset_mest(op, no_idx) VALUES ('<< <-> intset', (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text);
 
 -------------------------------------------------------------------------------
 
@@ -100,6 +103,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET rtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -153,6 +165,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET rtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -206,6 +227,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET rtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -259,6 +289,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET rtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -312,6 +351,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET quadtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -365,6 +413,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET quadtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -418,6 +475,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET quadtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -471,6 +537,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET quadtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -524,6 +599,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET kdtree_equi_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -577,6 +661,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET kdtree_seg_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -630,6 +723,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET kdtree_merge_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
@@ -683,6 +785,15 @@ WHERE op = '<@ intset';
 UPDATE test_intset_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_intset_idx t1, tbl_intset t2 WHERE t1.i = t2.i')
 WHERE op = '= intset';
+UPDATE test_intset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_int WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> integer';
+UPDATE test_intset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<-> intset';
+UPDATE test_intset_mest SET kdtree_adapt_idx = (SELECT string_agg(s.d, ';' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, ',' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT string_agg(s.d, '';'' ORDER BY t2.k) FROM (SELECT * FROM tbl_intset WHERE i IS NOT NULL ORDER BY k LIMIT 5) t2, LATERAL (SELECT string_agg((t1.i <-> t2.i)::text, '','' ORDER BY t1.i <-> t2.i) AS d FROM (SELECT t1.i FROM tbl_intset_idx t1 WHERE t1.i << t2.i ORDER BY t1.i <-> t2.i LIMIT 3) t1) s')
+WHERE op = '<< <-> intset';
 RESET enable_seqscan;
 RESET enable_hashjoin;
 RESET enable_mergejoin;
