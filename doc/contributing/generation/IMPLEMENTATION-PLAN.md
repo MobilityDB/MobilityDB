@@ -352,6 +352,10 @@ from each repository's last CI run on its default branch, the catalog of Mobilit
 | X4 | Every method of the object model is named after the canonical SQL name of its function, as chapter 18 of the manual (`doc/portable_sql.xml`) states it: `atGeometry`, `douglasPeuckerSimplify`, `stbox`, `timeSpan`, not the names derived from the C name (`atGeom`, `simplifyDp`, `toStbox`, `toTstzspan`). Several functions of one class under one SQL name carry the value-type suffix of MEOS-API #255 (`valueTimeTilesFloat`), the same in every language. A binding only re-cases the name in its language's convention: `atGeometry` in Java and JavaScript, `at_geometry` in Python, `AtGeometry` in .NET and Go (the owner, 2026-11-23: one name in the object model, "as you recommend go") | the catalog of master `844cef8be5`: of the 1995 methods with a SQL name, 1025 are named otherwise |
 | X4.1 | Each public MEOS function backs one SQL function, so that it carries one SQL name: the shift and the scale of the number and date sets, spans, span sets and boxes are split as those of the timestamptz types and the temporal numbers are (`intspan_shift`, `intspan_scale`, `intspan_shift_scale`; `tintbox_shift_value` …), 15 functions becoming 45, the owner approving the names on 2026-11-23 | done: MobilityDB #3931, merged as `014ed83590`; a probe of 1433 cases answers identically with the former functions and the new ones. MEOS-API #287 moves the box scope `meta/type-scope.json` declares from the three former box functions to the nine new ones, without which they carry no SQL signature and MobilityDuck #576 registers no `shiftScaleValue` over `tbox` |
 | X4.2 | MEOS-API derives each method's name from its function's `sqlfn`, the #255 suffix resolving the 41 names several functions share in a class, a function with no SQL name keeping the name derived from its C name; an aggregate taking its `altSqlName`, else its `sqlName` (`mergeAgg` beside the function `merge`), as every generator reads aggregates already, while a function's `altSqlName` (`round` as `floatRound`) serves only the engines owning the bare name and leaves the method its canonical name; JMEOS, PyMEOS, MEOS.NET, MEOS.js and GoMEOS regenerate, PyMEOS keeping a renamed method's former name as a deprecated alias for one release | after X4.1 |
+| X5 | A release of the ecosystem is a tag of MobilityDB, and every binding builds, tests and publishes its release from that tag: the tag is the one statement of the MobilityDB commit a release binds, no binding naming the commit itself. Every mechanism a binding uses reads a tag as it reads a branch: the action `provision-meos` of MEOS-API (`mobilitydb-ref`, "SHA or branch"), `tools/refresh-binding.sh` of MEOS-API (`--mdb-ref`, or `MDB_REF` in the binding's `tools/refresh.conf`) and `git clone --branch` in a Dockerfile. A release ships only when every binding's release passes on the tag (the owner, 2026-11-27: "go with the tag North Star"; all fourteen bindings, the tag on `5093da48f5`) | decided; the name of the tag is the owner's |
+| X6 | Every binding refreshes through `tools/refresh-binding.sh` of MEOS-API, its own last leg in `tools/refresh.conf`, as MobilitySpark, MobilityFlink, MobilityKafka, PyMEOS-CFFI, GoMEOS, MEOS.NET, MEOS.js and MobilityDuck do; JMEOS, PyMEOS, MobilityAPI-Python, MobilityAPI, meos-rs and MobilityNebula carry no `tools/refresh.conf` | measured on the default branches, 2026-11-27 |
+| X7 | Every binding provisions MEOS in its CI through the action `provision-meos` of MEOS-API, as thirteen of the fourteen do; meos-rs does not | measured on the default branches, 2026-11-27 |
+| X8 | Every binding has a release job: a `workflow_dispatch` taking `mobilitydb-ref`, the tag of X5, running the steps of its job on master over that ref and publishing its artifact (PyPI, npm, Maven, NuGet, crates.io, the Go module); the job on master keeps tracking master, so a drift still shows (X1, X2). MEOS.js 2.0.0 is the first release so made: its WebAssembly module clones MobilityDB with `--branch <tag>`, and MEOS.js #69, its release, is a draft until every binding passes on the tag | no binding has one |
 
 ## Finishing the campaign
 
@@ -365,6 +369,8 @@ to D9.17 of Part I. The rows fall into three tiers of very different size, taken
 - X1: the daily refresh that opens a pull request on drift, as MobilityDuck, MobilityNebula and
   PyMEOS-CFFI run it, copied to the other bindings.
 - X2: drift checks that fail instead of reporting.
+- X5 to X8: a release of every binding from one tag of MobilityDB, through `provision-meos` and
+  `refresh-binding.sh` alone, each binding with a release job.
 - X3: `tools/count_loc.sh` of `MobilityDB/.github` with each pull request of this plan.
 - SP1, CF4, GO4, JM4 and NET3: documentation and dead code.
 
@@ -416,4 +422,6 @@ JMEOS, PyMEOS, so the method matures before the binding most users call.
   coverage ledger classifies every public function by it.
 - Parts III to VI: no object-layer class, enum or error class of a binding is written by hand, and
   every function a binding leaves out has a reason its generator states.
-- Part VII: every binding refreshes from MobilityDB master on a schedule and fails on drift.
+- Part VII: every binding refreshes from MobilityDB master on a schedule and fails on drift, and
+  releases from a tag of MobilityDB through `provision-meos` and `refresh-binding.sh`, a release of
+  the ecosystem shipping only when every binding passes on its tag.
