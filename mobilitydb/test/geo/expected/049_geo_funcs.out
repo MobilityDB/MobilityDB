@@ -1267,14 +1267,35 @@ SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
 
 -- On the sphere the area is the one the great circles bound, R^2 times the sum
 -- of the angles less (n - 2) pi, 12364031798 square meters for this square
--- on the sphere of radius 6371008.7714 m; ST_Area over a geography on the
--- sphere answers an approximation of it, 0.67 percent smaller here
+-- and 872084782500 for the one between 40 and 50 degrees north, on the sphere
+-- of radius R = (2a + b) / 3 = 6371008.7714 m. ST_Area over a geography on the
+-- sphere keeps the flattening of WGS 84 while setting both of its radii to R,
+-- so it answers the area on WGS 84 scaled to R: (R / a)^2 times its area on
+-- the spheroid, 0.67 percent below the sphere at the equator and 0.004
+-- percent at 45 degrees north
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric),
   round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', false)::numeric);
     round    |    round    
 -------------+-------------
  12364031799 | 12281281067
 (1 row)
+
+SELECT round(area(geography 'Polygon((0 40,10 40,10 50,0 50,0 40))', false)::numeric),
+  round(ST_Area(geography 'Polygon((0 40,10 40,10 50,0 50,0 40))', false)::numeric);
+    round     |    round     
+--------------+--------------
+ 872084782500 | 872049123140
+(1 row)
+
+SELECT round((ST_Area(g, false) / (ST_Area(g, true) *
+  ((2 * 6378137.0 + 6378137.0 * (1 - 1 / 298.257223563)) / 3 / 6378137.0) ^ 2))::numeric, 6)
+FROM (VALUES (geography 'Polygon((0 0,1 0,1 1,0 1,0 0))'),
+  (geography 'Polygon((0 40,10 40,10 50,0 50,0 40))')) t(g);
+  round   
+----------
+ 1.000000
+ 1.000000
+(2 rows)
 
 SELECT round(perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric, 3),
   round(ST_Perimeter(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric, 3);
