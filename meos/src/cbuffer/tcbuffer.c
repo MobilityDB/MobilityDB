@@ -922,6 +922,76 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
 }
 
 /**
+ * @brief Return a coordinate of the difference of a temporal circular buffer
+ * segment and a circular buffer that changes sign strictly over the period of
+ * the segment, where the segment takes the buffer strictly inside it, -1
+ * otherwise, and set in the output arrays the coordinates of the ends and of
+ * the buffer
+ * @details A segment interpolates its centre and its radius linearly, so it
+ * moves the point (x, y, radius) along a segment of the space of three
+ * dimensions, and it takes the value where that segment passes through the
+ * point of the value, decided exactly on the doubles of the ends as a
+ * temporal point with Z meets a point standing still (#pointsegm_meet_coord).
+ * Nothing is constructed
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value to locate
+ * @param[out] s,e,v Coordinates of the ends and of the value
+ */
+static int
+tcbuffersegm_meet_coord(Datum start, Datum end, Datum value, double *s,
+  double *e, double *v)
+{
+  const Cbuffer *cb1 = DatumGetCbufferP(start);
+  const Cbuffer *cb2 = DatumGetCbufferP(end);
+  const Cbuffer *cb = DatumGetCbufferP(value);
+  s[0] = cb1->x; s[1] = cb1->y; s[2] = cb1->radius;
+  e[0] = cb2->x; e[1] = cb2->y; e[2] = cb2->radius;
+  v[0] = cb->x; v[1] = cb->y; v[2] = cb->radius;
+  return pointsegm_meet_coord(s, e, v, v, 3);
+}
+
+/**
+ * @brief Return true if a temporal circular buffer segment takes a circular
+ * buffer strictly inside its period (#tcbuffersegm_meet_coord)
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value to locate
+ */
+bool
+tcbuffersegm_meet(Datum start, Datum end, Datum value)
+{
+  double s[3], e[3], v[3];
+  return tcbuffersegm_meet_coord(start, end, value, s, e, v) >= 0;
+}
+
+/**
+ * @brief Return true if a temporal circular buffer segment takes a circular
+ * buffer strictly inside its period, dated in the output argument by the
+ * microsecond nearest to that instant
+ * @details The point twin is #tgeompointsegm_crossing: the meeting is decided
+ * exactly (#tcbuffersegm_meet_coord), and every coordinate of the difference
+ * that changes sign crosses zero at its time parameter, so the crossing of
+ * the two segments of one such coordinate dates it (#tnumbersegm_crossing)
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value to locate
+ * @param[in] lower,upper Timestamps defining the segment
+ * @param[out] t Microsecond nearest to the instant, a tie going to the even
+ * timestamp
+ * @return False where the segment does not take the value inside the period
+ * or where the microsecond nearest to the instant is a bound
+ */
+bool
+tcbuffersegm_crossing(Datum start, Datum end, Datum value, TimestampTz lower,
+  TimestampTz upper, TimestampTz *t)
+{
+  assert(lower < upper); assert(t);
+  double s[3], e[3], v[3];
+  int k = tcbuffersegm_meet_coord(start, end, value, s, e, v);
+  if (k < 0)
+    return false;
+  return tnumbersegm_crossing(s[k], e[k], v[k], v[k], lower, upper, t);
+}
+
+/**
  * @brief Return 1 if two temporal circular buffer segments may be equal at
  * the output timestamp, return 0 otherwise
  * @details Two circular buffers are equal where their centres and their radii

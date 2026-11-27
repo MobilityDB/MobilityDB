@@ -301,6 +301,19 @@ SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001
 SELECT cbuffer 'Cbuffer(Point(1 0), 1)' ?= tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]';
 SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]' #= cbuffer 'Cbuffer(Point(1 0), 1)';
 
+/* A circular buffer whose centre and radius both move takes a circular buffer
+ * inside a segment only where the point of its centre and radius passes
+ * through the one of the buffer: a buffer on that line, and the same buffer
+ * with its radius, then its centre, moved by 1e-9 */
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(2 1), 2)';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(2 1), 2.000000001)';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(2 1.000000001), 2)';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' %= cbuffer 'Cbuffer(Point(2 1), 2.000000001)';
+SELECT asText(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' #= cbuffer 'Cbuffer(Point(2 1), 2)');
+SELECT asText(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' #= cbuffer 'Cbuffer(Point(2 1), 2.000000001)');
+SELECT asText(atValue(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]', cbuffer 'Cbuffer(Point(2 1), 2)'));
+SELECT asText(atValue(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]', cbuffer 'Cbuffer(Point(2 1), 2.000000001)'));
+
 /* Two moving circular buffers are equal where their centres and their radii
  * are both equal: radii crossing about one centre, centres crossing with one
  * radius, both crossing at one instant, and both crossing at two instants */

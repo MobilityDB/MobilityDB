@@ -1144,6 +1144,58 @@ SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+/* A circular buffer whose centre and radius both move takes a circular buffer
+ * inside a segment only where the point of its centre and radius passes
+ * through the one of the buffer: a buffer on that line, and the same buffer
+ * with its radius, then its centre, moved by 1e-9 */
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(2 1), 2)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(2 1), 2.000000001)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(2 1.000000001), 2)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' %= cbuffer 'Cbuffer(Point(2 1), 2.000000001)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT asText(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' #= cbuffer 'Cbuffer(Point(2 1), 2)');
+                                                                astext                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST], (f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]' #= cbuffer 'Cbuffer(Point(2 1), 2.000000001)');
+                               astext                               
+--------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atValue(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]', cbuffer 'Cbuffer(Point(2 1), 2)'));
+                         astext                         
+--------------------------------------------------------
+ {[Cbuffer(POINT(2 1),2)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atValue(tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 2), 3)@2001-01-03]', cbuffer 'Cbuffer(Point(2 1), 2.000000001)'));
+ astext 
+--------
+ 
+(1 row)
+
 /* Two moving circular buffers are equal where their centres and their radii
  * are both equal: radii crossing about one centre, centres crossing with one
  * radius, both crossing at one instant, and both crossing at two instants */
