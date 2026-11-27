@@ -188,7 +188,10 @@ status and the end of the stream; subscribe after the stop and check the end.
 *MobilityAPI.* `streamRegistry`, `contQuery.stop` and `status` (`stream.go`).
 Measured by `TestRegistrySubmitBroadcastStop` and `TestSubscribeAfterStop`
 (`stream_test.go`). The cycle over HTTP is read for a geometry query by
-`TestLiveGeometryWindowAggregates`; a property query's has no test of its own.
+`TestLiveGeometryWindowAggregates`, and for a property query by
+`TestLivePropertyQueryHTTPCycleAndEvents` (`stream_http_meos_test.go`, MobilityAPI
+commit `eaff1a0`): registered with 201 and a running `cquery` link, listed, read,
+stopped with 204, then 404 and the end of its stream.
 
 ### Requirement 10 — the Server-Sent Events channel
 
@@ -198,9 +201,11 @@ its `cquery` link, one event per result, its data the result as a JSON object.
 *Abstract test.* Read the stream of a query fed known records; check one event
 per result.
 
-*MobilityAPI.* `streamQuery` (`stream.go`). `TestRegistrySubmitBroadcastStop`
-measures the fan-out that feeds the channel; the events over HTTP have no test of
-their own.
+*MobilityAPI.* `streamQuery` (`stream.go`). Measured by
+`TestLivePropertyQueryHTTPCycleAndEvents`, which reads the doubled speeds of a
+feature, 22.5, 25, 27.5 and 28, as events whose data is each a JSON result, and
+`TestRegistrySubmitBroadcastStop`, which measures the fan-out that feeds the
+channel.
 
 ### Requirement 11 — further channels
 
