@@ -366,6 +366,10 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   contains as the overlaps and the equals
   as contained by (`mest_pieces_strategy`). `render_valuemesttest` writes their
   tests, `mobilitydb/test/mest/sql/01[23]_<type>_mest_tbl.sql`.
+  `render_tpcmesttest` writes the multi-entry test of the temporal point
+  clouds, `mobilitydb/test/mest/sql/439_tpc_mest_tbl.sql`: every class of
+  `tpcpoint` and `tpcpatch` (`MEST_TPC_FILES`) answering the members of the
+  class of the segment split of the R-tree with a right argument of a fixture.
   `render_mestcontroltest` writes the control of these tests,
   `mobilitydb/test/mest/sql/000_mest_control_tbl.sql`: for one type of each kind
   of key (`MEST_CONTROL_TYPES`: tbool, tgeompoint, intspanset), the class of its

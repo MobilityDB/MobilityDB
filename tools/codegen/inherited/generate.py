@@ -819,6 +819,88 @@ def render_mestcontroltest() -> str:
     return "\n".join(parts)
 
 
+# The multi-entry test of the temporal point clouds, every class of the GiST
+# and SP-GiST files of the point clouds, its rows those of the class of the
+# segment split of the R-tree with a right argument of a fixture
+MEST_TPC_TYPES = ("tpcpoint", "tpcpatch")
+MEST_TPC_FILES = ("mobilitydb/mest/pointcloud/439_tpc_mgist.in.sql",
+                  "mobilitydb/mest/pointcloud/440_tpc_mspgist.in.sql")
+MEST_TPC_TEST = "mobilitydb/test/mest/sql/439_tpc_mest_tbl.sql"
+_TPC_FIXTURES = {"tpcpoint": ("tpcpoint", "temp"), "tpcpatch": ("tpcpatch", "temp"),
+                 "tpcbox": ("tpcbox", "b"), "tstzspan": ("tstzspan", "t")}
+
+
+def render_tpcmesttest() -> str:
+    """The multi-entry test of the temporal point clouds,
+    templates/mestindextest.sql.tmpl filled once per type of #MEST_TPC_TYPES as
+    #render_mestindextest fills it: every member of the class of the segment
+    split of the R-tree with a right argument of #_TPC_FIXTURES, the distance
+    left out, answered by the scan and under the index of every class of
+    #MEST_TPC_FILES, a column each"""
+    q = "'"
+    texts = [(ROOT / f).read_text() for f in MEST_TPC_FILES]
+    parts = []
+    for typ in MEST_TPC_TYPES:
+        seg = re.search(rf"CREATE OPERATOR CLASS {typ}_mrtree_segsplit_ops\n.*?;\n",
+                        texts[0], re.S).group(0)
+        rows = []
+        for st, op, right in re.findall(
+                rf"^  OPERATOR +(\d+) +(\S+) \({typ}, (\w+)\),?$", seg, re.M):
+            if right not in _TPC_FIXTURES:
+                continue
+            rtbl, rcol = _TPC_FIXTURES[right]
+            rows.append((f"{op} {right}",
+                         f"SELECT COUNT(*) FROM tbl_{typ}_idx t1, tbl_{rtbl} t2 "
+                         f"WHERE t1.temp {op} t2.{rcol}"))
+        cols = []
+        for text, am in zip(texts, ("mgist", "mspgist")):
+            for kind, split in re.findall(
+                    rf"CREATE OPERATOR CLASS {typ}_m(rtree|quadtree|kdtree)_(\w+?)split_ops",
+                    text):
+                cols.append((f"{kind}_{split}", f"{typ}_m{kind}_{split}split_ops", am))
+        blocks = []
+        for c, opclass, am in cols:
+            b = ["-" * 79, "",
+                 f"CREATE INDEX tbl_{typ}_idx_{c} ON tbl_{typ}_idx",
+                 f"  USING {am}(temp {opclass});",
+                 "SET enable_seqscan = off;", "SET enable_hashjoin = off;",
+                 "SET enable_mergejoin = off;", "SET enable_sort = off;"]
+            for label, query in rows:
+                b += [f"UPDATE test_{typ}_mest SET {c}_idx = ({query})::text,",
+                      f"  {c}_probe = pg_temp.test_probes_index("
+                      f"'{query.replace(q, q * 2)}')",
+                      f"WHERE op = '{label}';"]
+            b += ["RESET enable_seqscan;", "RESET enable_hashjoin;",
+                  "RESET enable_mergejoin;", "RESET enable_sort;",
+                  f"DROP INDEX tbl_{typ}_idx_{c};", ""]
+            blocks.append("\n".join(b))
+        header = textwrap.fill(
+            f"The multi-entry R-tree mgist, quad-tree and k-d tree mspgist indexes "
+            f"of a {typ}, keyed by the boxes of its pieces and of the whole value, "
+            "one per split. Under each index every operator the class holds, with "
+            "each right argument of a fixture, answers the rows a sequential scan "
+            "gives, from a plan that probes the index.",
+            width=83, initial_indent="-- ", subsequent_indent="-- ")
+        tables = (f"DROP TABLE IF EXISTS tbl_{typ}_idx;\n"
+                  f"CREATE TEMP TABLE tbl_{typ}_idx AS TABLE tbl_{typ};\n"
+                  f"ANALYZE tbl_{typ}_idx;\n")
+        part = read_template("mestindextest.sql.tmpl")
+        for k, v in (("{HEADER}", header), ("{TABLES}", tables),
+                     ("{COLUMNS}", ",\n".join(f"  {c}_idx text, {c}_probe boolean"
+                                              for c, _, _ in cols)),
+                     ("{ROWS}", "\n".join(f"INSERT INTO test_{typ}_mest(op, no_idx) "
+                                          f"VALUES ('{label}', ({qr})::text);"
+                                          for label, qr in rows)),
+                     ("{BLOCKS}", "\n".join(blocks)[:-1]),
+                     ("{COUNTS}", f"SELECT COUNT(*) FROM tbl_{typ}_idx;"),
+                     ("{DIFFER}", " OR\n  ".join(f"no_idx IS DISTINCT FROM {c}_idx OR "
+                                                 f"NOT {c}_probe" for c, _, _ in cols)),
+                     ("{DROPS}", f"DROP TABLE tbl_{typ}_idx;"), ("{TEMP}", typ)):
+            part = part.replace(k, v)
+        parts.append(part)
+    return "\n".join(parts)
+
+
 def valuemest_test_files() -> list:
     """The multi-entry tests of the sets and span sets, as (type, the GiST class
     of the type, the test file)"""
@@ -7212,6 +7294,11 @@ def main() -> int:
                             break
                     if len(g) != len(c):
                         print(f"     line count gen={len(g)} cur={len(c)}")
+        # The multi-entry test of the temporal point clouds
+        p = ROOT / MEST_TPC_TEST
+        same = p.exists() and p.read_text() == render_tpcmesttest()
+        ok = ok and same
+        print(f"[{'OK ' if same else 'DIFF'}] self-regen mest tpc -> {MEST_TPC_TEST}")
         # The control of the multi-entry tests
         p = ROOT / MEST_CONTROL_TEST
         same = p.exists() and p.read_text() == render_mestcontroltest()
@@ -8407,6 +8494,12 @@ def main() -> int:
     else:
         (ROOT / MEST_CONTROL_TEST).write_text(render_mestcontroltest())
         print(f"wrote {MEST_CONTROL_TEST}")
+    # The multi-entry test of the temporal point clouds (#render_tpcmesttest)
+    if args.check:
+        print(f"would write {MEST_TPC_TEST}")
+    else:
+        (ROOT / MEST_TPC_TEST).write_text(render_tpcmesttest())
+        print(f"wrote {MEST_TPC_TEST}")
     # The tiers of the multi-entry classes (#render_mesttiers)
     target = "mobilitydb/src/temporal/temporal_mest.c"
     if args.check:
