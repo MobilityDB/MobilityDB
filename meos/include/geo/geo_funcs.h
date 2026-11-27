@@ -224,6 +224,19 @@ typedef struct
 } Edge;
 
 /**
+ * @brief The edges of a geometry as #motion_edges_dwithin_periods reads them,
+ * described once for every segment of a motion (#motion_edges_init)
+ */
+typedef struct
+{
+  const Edge *const *edges;     /**< Edges of the geometry */
+  int nedges;                   /**< Number of edges */
+  bool arc;                     /**< An edge is an arc */
+  bool region;                  /**< An edge bounds an area */
+  double rx0, rx1, ry0, ry1;    /**< Box of the ends of the region edges */
+} MotionEdges;
+
+/**
  * @brief Enumeration defining the intersection types 
  */
 typedef enum
@@ -424,9 +437,13 @@ extern int point_motion_dwithin_period_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
   int64 *n1, int64 *n2);
+extern void motion_edges_init(MotionEdges *me, const Edge *const *edges,
+  int nedges);
+extern void motion_edges_reach_box(const double *c0, const double *c1,
+  double r0, double r1, double d, double *box);
 extern int motion_edges_dwithin_periods(const double *c0, const double *c1,
-  double r0, double r1, const Edge *const *edges, int nedges, double d,
-  int64 D, int64 *lo, int64 *hi);
+  double r0, double r1, const MotionEdges *me, const Edge *const *cand,
+  int ncand, double d, int64 D, int64 *lo, int64 *hi);
 extern int point_motion_segm_dwithin_period_exact(const double *c0,
   const double *c1, double r0, double r1, const double *a, const double *b,
   double d, int64 D, int64 *n1, int64 *n2);
@@ -551,6 +568,8 @@ extern void area_sum_ring(AreaSum *acc, const double *c, uint32_t npoints,
 extern bool area_sum_nearest(const AreaSum *acc, double *result);
 extern bool geom_area_exact(const LWGEOM *geom, double *result);
 extern int mec_radius_cmp(POINT2D *pts, int count, double radius);
+extern int mec_radius_cmp_support(POINT2D *pts, int count, double radius,
+  POINT2D *support, int *nsupport);
 
 /* How a meeting of two edges arises, the data that place it exactly */
 typedef enum
@@ -623,6 +642,8 @@ extern int tower_circles_cmp(const Edge *p, const Edge *q, bool radius);
 extern int walk_turn_sign(const double *const in[3], int inarc,
   const double *const out[3], int outarc, int *dot);
 extern int tower_circles_right_cmp(const Edge *p, const Edge *q);
+extern int tower_arc_within_disc(const ExactArc *arc, const POINT2D *support,
+  int nsupport, double radius);
 extern int meets_x_cmp(const MeetPoint *a, const MeetPoint *b);
 extern bool tangent_point_box(const TangentPoint *tp, double x, double y,
   double box[4]);

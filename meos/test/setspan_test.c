@@ -1289,10 +1289,10 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
    *****************************************************************************/
   printf("****************************************************************\n");
 
-  /* Set *bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift, bool haswidth); */
-  bset_result = bigintset_shift_scale(bset1, int64_in1, int64_in2, true, true);
+  /* Set *bigintset_shift_scale(const Set *s, int64 shift, int64 width); */
+  bset_result = bigintset_shift_scale(bset1, int64_in1, int64_in2);
   char_result = set_out(bset_result, 0, &size_out);
-  printf("bigintset_shift_scale(%s, %" PRId64 ", %" PRId64 ", true, true): %s\n", bset1_out, int64_in1, int64_in2, char_result);
+  printf("bigintset_shift_scale(%s, %" PRId64 ", %" PRId64 "): %s\n", bset1_out, int64_in1, int64_in2, char_result);
   free(bset_result); free(char_result);
 
   /* Span *bigintspan_expand(const Span *s, int64 value); */
@@ -1301,34 +1301,34 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("bigintspan_expand(%s): %s\n", bspan1_out, char_result);
   free(bspan_result); free(char_result);
 
-  /* Span *bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift, bool haswidth); */
-  bspan_result = bigintspan_shift_scale(bspan1, int64_in1, int64_in2, true, true);
+  /* Span *bigintspan_shift_scale(const Span *s, int64 shift, int64 width); */
+  bspan_result = bigintspan_shift_scale(bspan1, int64_in1, int64_in2);
   char_result = span_out(bspan_result, 0, &size_out);
-  printf("bigintspan_shift_scale(%s, %" PRId64 ", %" PRId64 ", true, true): %s\n", bspan1_out, int64_in1, int64_in2, char_result);
+  printf("bigintspan_shift_scale(%s, %" PRId64 ", %" PRId64 "): %s\n", bspan1_out, int64_in1, int64_in2, char_result);
   free(bspan_result); free(char_result);
 
-  /* SpanSet *bigintspanset_shift_scale(spanset1, int64 shift, int64 width, bool hasshift, bool haswidth); */
-  bspanset_result = bigintspanset_shift_scale(bspanset1, int64_in1, int64_in2, true, true);
+  /* SpanSet *bigintspanset_shift_scale(spanset1, int64 shift, int64 width); */
+  bspanset_result = bigintspanset_shift_scale(bspanset1, int64_in1, int64_in2);
   char_result = spanset_out(bspanset_result, 0, &size_out);
-  printf("bigintspanset_shift_scale(%s, %" PRId64 ", %" PRId64 ", true, true): %s\n", bspanset1_out, int64_in1, int64_in2, char_result);
+  printf("bigintspanset_shift_scale(%s, %" PRId64 ", %" PRId64 "): %s\n", bspanset1_out, int64_in1, int64_in2, char_result);
   free(bspanset_result); free(char_result);
 
-  /* Set *dateset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth); */
-  dset_result = dateset_shift_scale(dset1, date1, date2, true, true);
+  /* Set *dateset_shift_scale(const Set *s, int shift, int width); */
+  dset_result = dateset_shift_scale(dset1, date1, date2);
   char_result = set_out(dset_result, 0, &size_out);
-  printf("dateset_shift_scale(%s, %s, %s, true, true): %s\n", dset1_out, date1_out, date2_out, char_result);
+  printf("dateset_shift_scale(%s, %s, %s): %s\n", dset1_out, date1_out, date2_out, char_result);
   free(dset_result); free(char_result);
 
-  /* Span *datespan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth); */
-  dspan_result = datespan_shift_scale(dspan1, date1, date2, true, true);
+  /* Span *datespan_shift_scale(const Span *s, int shift, int width); */
+  dspan_result = datespan_shift_scale(dspan1, date1, date2);
   char_result = span_out(dspan_result, 0, &size_out);
-  printf("datespan_shift_scale(%s, %s, %s, true, trues): %s\n", dspan1_out, date1_out, date2_out, char_result);
+  printf("datespan_shift_scale(%s, %s, %s): %s\n", dspan1_out, date1_out, date2_out, char_result);
   free(dspan_result); free(char_result);
 
-  /* SpanSet *datespanset_shift_scale(spanset1, int shift, int width, bool hasshift, bool haswidth); */
-  dspanset_result = datespanset_shift_scale(dspanset1, int32_in1, int32_in2, true, true);
+  /* SpanSet *datespanset_shift_scale(spanset1, int shift, int width); */
+  dspanset_result = datespanset_shift_scale(dspanset1, int32_in1, int32_in2);
   char_result = spanset_out(dspanset_result, 0, &size_out);
-  printf("datespanset_shift_scale(%s, %d, %d, true, true): %s\n", dspanset1_out, int32_in1, int32_in2, char_result);
+  printf("datespanset_shift_scale(%s, %d, %d): %s\n", dspanset1_out, int32_in1, int32_in2, char_result);
   free(dspanset_result); free(char_result);
 
   /* Set *floatset_ceil(const Set *s); */
@@ -1355,8 +1355,8 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("floatset_radians(%s): %s\n", fset1_out, char_result);
   free(fset_result); free(char_result);
 
-  /* Set *floatset_shift_scale(const Set *s, double shift, double width, bool hasshift, bool haswidth); */
-  fset_result = floatset_shift_scale(fset1, float8_in1, float8_in2, true, true);
+  /* Set *floatset_shift_scale(const Set *s, double shift, double width); */
+  fset_result = floatset_shift_scale(fset1, float8_in1, float8_in2);
   char_result = set_out(fset_result, 6, &size_out);
   printf("floatset_shift_scale(%s): %s\n", fset1_out, char_result);
   free(fset_result); free(char_result);
@@ -1391,8 +1391,8 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("floatspan_round(%s): %s\n", fspan1_out, char_result);
   free(fspan_result); free(char_result);
 
-  /* Span *floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift, bool haswidth); */
-  fspan_result = floatspan_shift_scale(fspan1, float8_in1, float8_in2, true, true);
+  /* Span *floatspan_shift_scale(const Span *s, double shift, double width); */
+  fspan_result = floatspan_shift_scale(fspan1, float8_in1, float8_in2);
   char_result = span_out(fspan_result, 6, &size_out);
   printf("floatspan_shift_scale(%s, %lf, %lf): %s\n", fspan1_out, float8_in1, float8_in2, char_result);
   free(fspan_result); free(char_result);
@@ -1427,14 +1427,14 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("floatspanset_round(%s): %s\n", fspanset1_out, char_result);
   free(fspanset_result); free(char_result);
 
-  /* SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width, bool hasshift, bool haswidth); */
-  fspanset_result = floatspanset_shift_scale(fspanset1, float8_in1, float8_in2, true, true);
+  /* SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width); */
+  fspanset_result = floatspanset_shift_scale(fspanset1, float8_in1, float8_in2);
   char_result = spanset_out(fspanset_result, 6, &size_out);
   printf("floatspanset_shift_scale(%s, %lf, %lf): %s\n", fspanset1_out, float8_in1, float8_in2, char_result);
   free(fspanset_result); free(char_result);
 
-  /* Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth); */
-  iset_result = intset_shift_scale(iset1, int32_in1, int32_in2, true, true);
+  /* Set *intset_shift_scale(const Set *s, int shift, int width); */
+  iset_result = intset_shift_scale(iset1, int32_in1, int32_in2);
   char_result = set_out(iset_result, 0, &size_out);
   printf("intset_shift_scale(%s, %d, %d): %s\n", iset1_out, int32_in1, int32_in2, char_result);
   free(iset_result); free(char_result);
@@ -1445,14 +1445,14 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("intspan_expand(%s, %d): %s\n", ispan1_out, int32_in1, char_result);
   free(ispan_result); free(char_result);
 
-  /* Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth); */
-  ispan_result = intspan_shift_scale(ispan1, int32_in1, int32_in2, true, true);
+  /* Span *intspan_shift_scale(const Span *s, int shift, int width); */
+  ispan_result = intspan_shift_scale(ispan1, int32_in1, int32_in2);
   char_result = span_out(ispan_result, 0, &size_out);
   printf("intspan_shift_scale(%s, %d, %ds): %s\n", fspan1_out, int32_in1, int32_in2, char_result);
   free(ispan_result); free(char_result);
 
-  /* SpanSet *intspanset_shift_scale(spanset1, int shift, int width, bool hasshift, bool haswidth); */
-  ispanset_result = intspanset_shift_scale(ispanset1, int32_in1, int32_in2, true, true);
+  /* SpanSet *intspanset_shift_scale(spanset1, int shift, int width); */
+  ispanset_result = intspanset_shift_scale(ispanset1, int32_in1, int32_in2);
   char_result = spanset_out(ispanset_result, 0, &size_out);
   printf("intspanset_shift_scale(%s, %d, %d): %s\n", ispanset1_out, int32_in1, int32_in2, char_result);
   free(ispanset_result); free(char_result);

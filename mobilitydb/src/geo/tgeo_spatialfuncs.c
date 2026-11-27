@@ -101,6 +101,28 @@ Tgeo_traversed_area(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tgeo_space_time_volume(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_space_time_volume);
+/**
+ * @ingroup mobilitydb_geo_accessor
+ * @brief Return the space-time volume of a temporal geo, the integral of its
+ * area over its time
+ * @sqlfn spaceTimeVolume()
+ */
+Datum
+Tgeo_space_time_volume(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  bool spheroid = true;
+  if (PG_NARGS() > 1)
+    spheroid = PG_GETARG_BOOL(1);
+  double result = tgeo_space_time_volume(temp, spheroid);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
 PGDLLEXPORT Datum Tgeo_centroid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_centroid);
 /**

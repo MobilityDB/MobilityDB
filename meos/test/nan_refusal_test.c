@@ -327,7 +327,7 @@ static int
 shift_scale_double(double shift, double width)
 {
   Span *s = floatspan_in("[1, 3]");
-  int r = result(floatspan_shift_scale(s, shift, width, true, true));
+  int r = result(floatspan_shift_scale(s, shift, width));
   free(s);
   return r;
 }
@@ -348,7 +348,7 @@ static int
 box_shift_scale_double(double d)
 {
   TBox *box = tbox_in("TBOXFLOAT XT([1, 3],[2001-01-01, 2001-01-02])");
-  int r = result(tfloatbox_shift_scale(box, d, d, true, true));
+  int r = result(tfloatbox_shift_scale_value(box, d, d));
   free(box);
   return r;
 }

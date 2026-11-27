@@ -28,6 +28,16 @@ SELECT ST_Covers(traversedArea(
 SELECT ST_AsText(round(traversedArea(
   trgeometry 'Interp=Step;Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]', TRUE), 6));
 
+-- spaceTimeVolume: a rigid body keeps its area, so the volume is the area of
+-- the unit square times the time it holds, read here in days, the turn
+-- changing nothing of it.
+SELECT spaceTimeVolume(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),1)@2026-01-02]') / (24 * 3600 * 1e6);
+SELECT spaceTimeVolume(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));{[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02], [Pose(Point(5 0),0)@2026-01-03, Pose(Point(6 0),0)@2026-01-04]}') / (24 * 3600 * 1e6);
+SELECT spaceTimeVolume(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));Pose(Point(0 0),0)@2026-01-01');
+
 -- centroid: trajectory of the polygon centroid under rigid-body motion.
 SELECT asText(round(centroid(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));

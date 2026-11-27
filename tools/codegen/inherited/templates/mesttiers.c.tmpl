@@ -1,0 +1,41 @@
+
+/**
+ * @brief Return true if a key of a multi-entry index may answer a strategy
+ * @details The key of the box of a whole value (#mest_keys_whole) answers the
+ * strategies whose tier is that of the whole value, the operators reading the
+ * interior or a face of the box of the value, which no piece witnesses, and
+ * the same box, which it answers exactly. The keys of the pieces answer every
+ * other operator, each holding on the box of a value iff on the box of one of
+ * its pieces or of every one. A key over the keys of several structures
+ * stands for both and answers any
+ * @param[in] flags Flags of the key
+ * @param[in] strategy Strategy number of the operator
+ */
+bool
+mest_key_answers(int16 flags, StrategyNumber strategy)
+{
+  if (MEOS_FLAGS_GET_PARTS(flags))
+    return true;
+  bool whole = ({WHOLE});
+  return MEOS_FLAGS_GET_WHOLE(flags) == whole;
+}
+
+/**
+ * @brief Return the strategy a key of a piece of a value answers in place of
+ * a strategy of a multi-entry index whose keys are spans
+ * @details A class whose keys are spans keys the pieces of a value, the
+ * components of a span set, the elements of a set or the pieces of a temporal
+ * value, a set or a span set also by its extent, which a scan that is not
+ * ordered leaves out (#mest_span_key_answers). The span of a value is the same as a
+ * query, or a value equals it, only when every piece lies within the query, so
+ * a key of a piece answers them as contained by; a value contains a query
+ * only when some piece meets it, so a key of a piece answers the contains as
+ * the overlaps. Every other strategy is its own
+ * @param[in] strategy Strategy number of the operator
+ */
+StrategyNumber
+mest_pieces_strategy(StrategyNumber strategy)
+{
+{PIECES}  return strategy;
+}
+

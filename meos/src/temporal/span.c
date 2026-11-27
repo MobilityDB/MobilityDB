@@ -2169,6 +2169,72 @@ unix_us_to_timestamptz(int64 us)
 
 /**
  * @ingroup meos_base_timestamp
+ * @brief Return the milliseconds from the Unix epoch of a timestamptz
+ * @details A binding whose host counts its timestamps in milliseconds
+ * converts a timestamptz to them through this function and back through
+ * #unix_ms_to_timestamptz. The microseconds below a millisecond are dropped
+ * toward the past, so the instant a microsecond before the Unix epoch has the
+ * count -1. Every timestamptz of the range has a count, including those whose
+ * count of microseconds #timestamptz_to_unix_us cannot state.
+ * @param[in] t Timestamp
+ * @errval INT64_MAX
+ * @see #timestamptz_to_unix_us
+ */
+int64
+timestamptz_to_unix_ms(TimestampTz t)
+{
+  /* Ensure the validity of the arguments: an infinite timestamp is outside
+   * the range of timestamps and has no count */
+  if (! IS_VALID_TIMESTAMP(t))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return INT64_MAX;
+  }
+  /* The milliseconds from the PostgreSQL epoch, rounded toward the past */
+  int64 ms = t / 1000;
+  if (t % 1000 < 0)
+    ms--;
+  /* A timestamp of the range is far enough from the bounds of a 64-bit
+   * integer counted in milliseconds that adding the offset of the epochs
+   * cannot overflow */
+  return ms + DELTA_UNIX_POSTGRES_EPOCH * INT64CONST(1000);
+}
+
+/**
+ * @ingroup meos_base_timestamp
+ * @brief Return the timestamptz of a count of milliseconds from the Unix epoch
+ * @details A count whose timestamptz is outside the range of timestamps is
+ * refused, including one whose microseconds exceed a 64-bit integer, so a
+ * binding passes its host's count unchanged and reads the refusal from
+ * #meos_errno
+ * @param[in] ms Milliseconds from the Unix epoch
+ * @errval DT_NOEND
+ * @see #timestamptz_to_unix_ms
+ */
+TimestampTz
+unix_ms_to_timestamptz(int64 ms)
+{
+  int64 pgms;
+  TimestampTz result;
+  /* Ensure the validity of the arguments: the count is moved to the
+   * PostgreSQL epoch before it is scaled, so that a timestamp of the range
+   * whose microseconds from the Unix epoch exceed a 64-bit integer is
+   * reached, and a count whose scaling overflows is outside the range */
+  if (unlikely(pg_sub_s64_overflow(ms,
+        DELTA_UNIX_POSTGRES_EPOCH * INT64CONST(1000), &pgms)) ||
+      unlikely(pg_mul_s64_overflow(pgms, 1000, &result)) ||
+      ! IS_VALID_TIMESTAMP(result))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return DT_NOEND;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_timestamp
  * @brief Return the microseconds from the Unix epoch of a timestamp
  * @details A binding converts a timestamp to the timestamp of its host
  * through this function and back through #unix_us_to_timestamp, as
@@ -2489,84 +2555,197 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return an integer span shifted and/or scaled by the values
+ * @brief Return an integer span shifted by a value
+ * @param[in] s Span
+ * @param[in] shift Value for shifting the bounds
+ * @csqlfn #Numspan_shift()
+ */
+Span *
+intspan_shift(const Span *s, int shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return numspan_shift_scale(s, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer span scaled to a width
+ * @param[in] s Span
+ * @param[in] width Width of the result
+ * @csqlfn #Numspan_scale()
+ */
+Span *
+intspan_scale(const Span *s, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return numspan_shift_scale(s, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer span shifted by a value and scaled to a width
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
+ * @csqlfn #Numspan_shift_scale()
  */
 Span *
-intspan_shift_scale(const Span *s, int shift, int width, bool hasshift,
-  bool haswidth)
+intspan_shift_scale(const Span *s, int shift, int width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPAN(s, NULL);
   return numspan_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a big integer span shifted and/or scaled by the values
+ * @brief Return a big integer span shifted by a value
+ * @param[in] s Span
+ * @param[in] shift Value for shifting the bounds
+ * @csqlfn #Numspan_shift()
+ */
+Span *
+bigintspan_shift(const Span *s, int64 shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  return numspan_shift_scale(s, Int64GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer span scaled to a width
+ * @param[in] s Span
+ * @param[in] width Width of the result
+ * @csqlfn #Numspan_scale()
+ */
+Span *
+bigintspan_scale(const Span *s, int64 width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  return numspan_shift_scale(s, 0, Int64GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer span shifted by a value and scaled to a width
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
+ * @csqlfn #Numspan_shift_scale()
  */
 Span *
-bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift,
-  bool haswidth)
+bigintspan_shift_scale(const Span *s, int64 shift, int64 width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPAN(s, NULL);
   return numspan_shift_scale(s, Int64GetDatum(shift), Int64GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a float span shifted and/or scaled by the values
+ * @brief Return a float span shifted by a value
+ * @param[in] s Span
+ * @param[in] shift Value for shifting the bounds
+ * @csqlfn #Numspan_shift()
+ */
+Span *
+floatspan_shift(const Span *s, double shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_finite(shift))
+    return NULL;
+  return numspan_shift_scale(s, Float8GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span scaled to a width
+ * @param[in] s Span
+ * @param[in] width Width of the result
+ * @csqlfn #Numspan_scale()
+ */
+Span *
+floatspan_scale(const Span *s, double width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_finite(width))
+    return NULL;
+  return numspan_shift_scale(s, 0, Float8GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span shifted by a value and scaled to a width
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
+ * @csqlfn #Numspan_shift_scale()
  */
 Span *
-floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
-  bool haswidth)
+floatspan_shift_scale(const Span *s, double shift, double width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
   if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   return numspan_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a date span shifted and/or scaled by the values
+ * @brief Return a date span shifted by a number of days
  * @param[in] s Span
- * @param[in] shift Value for shifting the bounds
- * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
+ * @param[in] shift Number of days for shifting the bounds
+ * @csqlfn #Numspan_shift()
  */
 Span *
-datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,
-  bool haswidth)
+datespan_shift(const Span *s, int shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return numspan_shift_scale(s, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a date span scaled to a width in days
+ * @param[in] s Span
+ * @param[in] width Width of the result in days
+ * @csqlfn #Numspan_scale()
+ */
+Span *
+datespan_scale(const Span *s, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return numspan_shift_scale(s, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a date span shifted by a number of days and scaled to a width
+ * in days
+ * @param[in] s Span
+ * @param[in] shift Number of days for shifting the bounds
+ * @param[in] width Width of the result in days
+ * @csqlfn #Numspan_shift_scale()
+ */
+Span *
+datespan_shift_scale(const Span *s, int shift, int width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
   return numspan_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /*****************************************************************************

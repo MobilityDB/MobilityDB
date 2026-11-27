@@ -160,8 +160,37 @@ Spatialarr_as_text_common(FunctionCallInfo fcinfo, bool extended)
 
   Datum *datumarr = datumarr_extract(array, &count);
   MeosType basetype = oid_meostype(array->elemtype);
-  char **strarr = spatialarr_wkt_out(datumarr, basetype, count, 
-    dbl_dig_for_wkt, extended);
+  /* Each array is written by the public writer of its element type */
+  int dd = dbl_dig_for_wkt;
+  char **strarr = NULL;
+  if (temporal_type(basetype))
+    strarr = extended ? tspatialarr_as_ewkt((const Temporal **) datumarr, count, dd) :
+      tspatialarr_as_text((const Temporal **) datumarr, count, dd);
+  else if (geo_basetype(basetype))
+    strarr = extended ? geoarr_as_ewkt((const GSERIALIZED **) datumarr, count, dd) :
+      geoarr_as_text((const GSERIALIZED **) datumarr, count, dd);
+#if CBUFFER
+  else if (basetype == T_CBUFFER)
+    strarr = extended ? cbufferarr_as_ewkt((const Cbuffer **) datumarr, count, dd) :
+      cbufferarr_as_text((const Cbuffer **) datumarr, count, dd);
+#endif
+#if NPOINT
+  else if (basetype == T_NPOINT)
+    strarr = extended ? npointarr_as_ewkt((const Npoint **) datumarr, count, dd) :
+      npointarr_as_text((const Npoint **) datumarr, count, dd);
+#endif
+#if POSE
+  else if (basetype == T_POSE)
+    strarr = extended ? posearr_as_ewkt((const Pose **) datumarr, count, dd) :
+      posearr_as_text((const Pose **) datumarr, count, dd);
+  else if (basetype == T_POSECHAIN)
+    strarr = extended ?
+      posechainarr_as_ewkt((const PoseChain **) datumarr, count, dd) :
+      posechainarr_as_text((const PoseChain **) datumarr, count, dd);
+#endif
+  else
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown type for the text of an array: %s", meostype_name(basetype));
   /* We cannot use pfree_array */
   pfree(datumarr);
   ArrayType *result = strarr_to_textarray(strarr, count);

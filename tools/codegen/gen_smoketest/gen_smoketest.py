@@ -511,6 +511,21 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
                 f"      for (int _i = 0; _i < n_out; _i++) if (r[_i]) free(r[_i]);\n"
                 f"      free(r);\n"
                 f"    }}{outp_post} }}\n")
+    # A (T **) return whose length is the count of an input array: a
+    # `const X **` argument followed by its `int` element count, the shape of
+    # the array writers and rounders (temparr_out, cbufferarr_round,
+    # tspatialarr_as_text), which answer one element per input element.
+    if ret.count("*") == 2:
+        n_arr = next((call_args[i + 1] for i, (t, _n, c) in enumerate(args)
+                      if c and t.count("*") == 2 and i + 1 < len(args)
+                      and cleanup_type(args[i + 1][0]) == "int"), None)
+        if n_arr is not None:
+            return (f"  {{ {outp_pre}{ret} r = {call};\n"
+                    f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
+                    f"    if (r) {{\n"
+                    f"      for (int _i = 0; _i < {n_arr}; _i++) if (r[_i]) free(r[_i]);\n"
+                    f"      free(r);\n"
+                    f"    }}{outp_post} }}\n")
     # A (T **) return without an int* count is the *set_values accessor shape:
     # an array of set_num_values(s) owned copies. Use the set argument's
     # cardinality to free the elements as well as the array.

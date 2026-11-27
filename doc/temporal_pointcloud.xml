@@ -966,7 +966,7 @@ SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcpoint::{tgeompoint,tgeogpoint}
 </programlisting>
-					<para>The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
+					<para>The conversions follow the rule of <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 					<para>Every non-spatial dimension is projected away and the timestamps are preserved. The result carries the SRID the schema states, and is three-dimensional when the schema states a Z dimension. The reverse conversion is not provided, since rebuilding a <varname>pcpoint</varname> needs a target schema that the temporal value alone does not carry.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
@@ -1755,7 +1755,7 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz
 tpcpoint {?&amp;&amp;, %&amp;&amp;} tpcbox → boolean
 tpcbox {?&amp;&amp;, %&amp;&amp;} tpcpoint → boolean
 </programlisting>
-					<para>Whether the value lies in a point cloud box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries, its restriction to the box by <varname>atTpcbox</varname> being not empty or its restriction to the complement by <varname>minusTpcbox</varname> empty. A box of another schema or reference system raises an error, as the operators of the boxes do.</para>
+					<para>Whether the value lies in a point cloud box at some instant, or at every instant at which it is defined, as <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> and <varname>%&amp;&amp;</varname></link> state it for the temporal geometries, its restriction to the box by <varname>atTpcbox</varname> being not empty or its restriction to the complement by <varname>minusTpcbox</varname> empty. A box of another schema or reference system raises an error, as the operators of the boxes do.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpointSeq(ARRAY[
   tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01 00:00'::timestamptz),

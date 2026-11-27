@@ -109,6 +109,31 @@ static int
 }
 
 /**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} from the instants or segments
+ * of a {NOUN}, its arguments valid
+ * @details The internal twin of #{PFX}_{BOXES}, which an index calls
+ * @param[in] temp {NOUNCAP}
+ * @param[out] count Number of values of the output array
+ */
+{CTYPE} *
+{PFX}_{BOXES}_intl(const Temporal *temp, int *count)
+{
+  assert(temp); assert(count); assert({TYPEP}(temp->temptype));
+{CTXINIT}  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
+    case TSEQUENCE:
+      return {SEQ}_{BOXES}((TSequence *) temp, count{CTXPASS});
+    default: /* TSEQUENCESET */
+      return {SEQSET}_{BOXES}((TSequenceSet *) temp, count{CTXPASS});
+  }
+}
+
+/**
  * @ingroup {GROUP}
  * @brief Return an array of {NOUNBOXES} from the instants or segments
  * of a {NOUN}
@@ -127,18 +152,7 @@ static int
   *count = 0;
   /* Ensure the validity of the arguments */
   {VALIDATE}(temp, NULL);
-
-{CTXINIT}  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
-    case TSEQUENCE:
-      return {SEQ}_{BOXES}((TSequence *) temp, count{CTXPASS});
-    default: /* TSEQUENCESET */
-      return {SEQSET}_{BOXES}((TSequenceSet *) temp, count{CTXPASS});
-  }
+  return {PFX}_{BOXES}_intl(temp, count);
 }
 
 /*****************************************************************************/
@@ -285,10 +299,11 @@ static int
   assert({NCOUNT} > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= {NCOUNT}) ? ss->totalcount : {NCOUNT};
-  {CTYPE} *result = palloc(sizeof({CTYPE}) * nboxes);
   if (ss->totalcount <= {NCOUNT})
     return {SEQSET}_{BOXES}(ss, count{CTXPASS});
+
+  /* At most {NCOUNT} boxes, the segments being more */
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * {NCOUNT});
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */
@@ -344,6 +359,34 @@ static int
 }
 
 /**
+ * @ingroup {IGROUP}
+ * @brief Return an array of N {NOUNBOXES} obtained by merging
+ * consecutive instants or segments of a {NOUN}, its arguments valid
+ * @details The internal twin of #{PFX}_split_n_{BOXES}, which an index calls
+ * @param[in] temp {NOUNCAP}
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] count Number of elements in the output array
+ */
+{CTYPE} *
+{PFX}_split_n_{BOXES}_intl(const Temporal *temp, int {NCOUNT}, int *count)
+{
+  assert(temp); assert(count); assert({TYPEP}(temp->temptype));
+  assert({NCOUNT} > 0);
+{CTXINIT}  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
+    case TSEQUENCE:
+      return {SEQ}_split_n_{BOXES}((TSequence *) temp, {NCOUNT}, count{CTXPASS});
+    default: /* TSEQUENCESET */
+      return {SEQSET}_split_n_{BOXES}((TSequenceSet *) temp, {NCOUNT},
+        count{CTXPASS});
+  }
+}
+
+/**
  * @ingroup {GROUP}
  * @brief Return an array of N {NOUNBOXES} obtained by merging
  * consecutive instants or segments of a {NOUN}
@@ -365,19 +408,7 @@ static int
   {VALIDATE}(temp, NULL);
   if (! ensure_positive({NCOUNT}))
     return NULL;
-
-{CTXINIT}  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
-    case TSEQUENCE:
-      return {SEQ}_split_n_{BOXES}((TSequence *) temp, {NCOUNT}, count{CTXPASS});
-    default: /* TSEQUENCESET */
-      return {SEQSET}_split_n_{BOXES}((TSequenceSet *) temp, {NCOUNT},
-        count{CTXPASS});
-  }
+  return {PFX}_split_n_{BOXES}_intl(temp, {NCOUNT}, count);
 }
 
 /*****************************************************************************
@@ -513,6 +544,38 @@ static int
 }
 
 /**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * consecutive instants or segments of a {NOUN}, its arguments valid
+ * @details The internal twin of #{PFX}_split_each_n_{BOXES}, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ */
+{CTYPE} *
+{PFX}_split_each_n_{BOXES}_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert({TYPEP}(temp->temptype));
+  assert(elem_count > 0);
+{CTXINIT}  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
+    case TSEQUENCE:
+      return {SEQ}_split_each_n_{BOXES}((TSequence *) temp, elem_count,
+        count{CTXPASS});
+    default: /* TSEQUENCESET */
+      return {SEQSET}_split_each_n_{BOXES}((TSequenceSet *) temp,
+        elem_count, count{CTXPASS});
+  }
+}
+
+/**
  * @ingroup {GROUP}
  * @brief Return an array of {NOUNBOXES} obtained by merging
  * consecutive instants or segments of a {NOUN}
@@ -535,25 +598,35 @@ static int
   {VALIDATE}(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-{CTXINIT}  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      *count = 1;
-      return {INST}_{BOXES}((TInstant *) temp{CTXPASS});
-    case TSEQUENCE:
-      return {SEQ}_split_each_n_{BOXES}((TSequence *) temp, elem_count,
-        count{CTXPASS});
-    default: /* TSEQUENCESET */
-      return {SEQSET}_split_each_n_{BOXES}((TSequenceSet *) temp,
-        elem_count, count{CTXPASS});
-  }
+  return {PFX}_split_each_n_{BOXES}_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_n_{BOXES} and merge_each_n_{BOXES} functions
  *****************************************************************************/
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of N {NOUNBOXES} obtained by merging the boxes of
+ * the consecutive instants or segments of a {NOUN}, each time the
+ * consecutive pair whose union adds the least size to theirs, its arguments
+ * valid
+ * @details The internal twin of #{PFX}_merge_n_{BOXES}, which an index calls
+ * @param[in] temp Temporal value
+ * @param[in] {NCOUNT} Number of boxes
+ * @param[out] count Number of values of the output array
+ */
+{CTYPE} *
+{PFX}_merge_n_{BOXES}_intl(const Temporal *temp, int {NCOUNT}, int *count)
+{
+  assert(temp); assert(count); assert({TYPEP}(temp->temptype));
+  assert({NCOUNT} > 0);
+  {CTYPE} *result = {PFX}_{BOXES}_intl(temp, count);
+  if (result)
+    *count = bbox_merge_n({MBOXTYPE}, result, *count, {NCOUNT}, &{MADJUST},
+      &{MSIZE});
+  return result;
+}
 
 /**
  * @ingroup {GROUP}
@@ -577,11 +650,32 @@ static int
   {VALIDATE}(temp, NULL);
   if (! ensure_positive({NCOUNT}))
     return NULL;
+  return {PFX}_merge_n_{BOXES}_intl(temp, {NCOUNT}, count);
+}
 
-  {CTYPE} *result = {PFX}_{BOXES}(temp, count);
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging the boxes of the
+ * consecutive instants or segments of a {NOUN}, each time the consecutive
+ * pair whose union adds the least size to theirs, until a box holds on
+ * average a number of them, its arguments valid
+ * @details The internal twin of #{PFX}_merge_each_n_{BOXES}, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] elem_count Number of input instants or segments merged into an
+ * output box on average
+ * @param[out] count Number of values of the output array
+ */
+{CTYPE} *
+{PFX}_merge_each_n_{BOXES}_intl(const Temporal *temp, int elem_count,
+  int *count)
+{
+  assert(temp); assert(count); assert({TYPEP}(temp->temptype));
+  assert(elem_count > 0);
+  {CTYPE} *result = {PFX}_{BOXES}_intl(temp, count);
   if (result)
-    *count = bbox_merge_n({MBOXTYPE}, result, *count, {NCOUNT}, &{MADJUST},
-      &{MSIZE});
+    *count = bbox_merge_each_n({MBOXTYPE}, result, *count, elem_count,
+      &{MADJUST}, &{MSIZE});
   return result;
 }
 
@@ -610,17 +704,38 @@ static int
   {VALIDATE}(temp, NULL);
   if (! ensure_positive(elem_count))
     return NULL;
-
-  {CTYPE} *result = {PFX}_{BOXES}(temp, count);
-  if (result)
-    *count = bbox_merge_each_n({MBOXTYPE}, result, *count, elem_count,
-      &{MADJUST}, &{MSIZE});
-  return result;
+  return {PFX}_merge_each_n_{BOXES}_intl(temp, elem_count, count);
 }
 
 /*****************************************************************************
  * merge_query_{BOXES} function
  *****************************************************************************/
+
+/**
+ * @ingroup {IGROUP}
+ * @brief Return an array of {NOUNBOXES} obtained by merging
+ * the boxes of the consecutive instants or segments of a
+ * {NOUN} into those a query of the extents of a query box
+ * is expected to read least, its arguments valid
+ * @details The internal twin of #{PFX}_merge_query_{BOXES}, which an index
+ * calls
+ * @param[in] temp Temporal value
+ * @param[in] query Query box
+ * @param[out] count Number of values of the output array
+ */
+{CTYPE} *
+{PFX}_merge_query_{BOXES}_intl(const Temporal *temp, const {CTYPE} *query,
+  int *count)
+{
+  assert(temp); assert(query); assert(count);
+  assert({TYPEP}(temp->temptype));
+  assert({QVALID}(temp, query));
+  {CTYPE} *result = {PFX}_{BOXES}_intl(temp, count);
+  if (result)
+    *count = bbox_merge_query({MBOXTYPE}, result, *count, query, &{MADJUST},
+      &{MQSIZE});
+  return result;
+}
 
 /**
  * @ingroup {GROUP}
@@ -648,10 +763,5 @@ static int
   {VALIDATE}(temp, NULL); VALIDATE_NOT_NULL(query, NULL);
   if (! {QVALID}(temp, query))
     return NULL;
-
-  {CTYPE} *result = {PFX}_{BOXES}(temp, count);
-  if (result)
-    *count = bbox_merge_query({MBOXTYPE}, result, *count, query, &{MADJUST},
-      &{MQSIZE});
-  return result;
+  return {PFX}_merge_query_{BOXES}_intl(temp, query, count);
 }

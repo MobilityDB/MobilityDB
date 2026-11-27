@@ -167,7 +167,7 @@ SELECT asText(cbuffer(ST_Point(1,1), 0.3));
 {geometry,cbuffer}::{cbuffer,geometry}
 cbuffer::geography
 </programlisting>
-				<para>As a geography, which has no curves, the circle is read as a polygon of 32 segments per quadrant, and it is not a circle on the surface of the earth. The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
+				<para>As a geography, which has no curves, the circle is read as a polygon of 32 segments per quadrant, and it is not a circle on the surface of the earth. The conversions follow the rule of <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(cbuffer(ST_Point(1,1), 1)::geometry);
 -- CURVEPOLYGON(CIRCULARSTRING(0 1,2 1,0 1))
@@ -663,7 +663,7 @@ SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tcbuffer::{tgeompoint,tgeogpoint}
 </programlisting>
-				<para>The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
+				<para>The conversions follow the rule of <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
   Cbuffer(Point(1 1), 0.3)@2001-01-02)')::tgeompoint);
@@ -1037,6 +1037,23 @@ SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
 				<para>The argument is false unless it is given, and the function then answers the pieces the buffer sweeps, each a disc or the region a disc sweeps between two consecutive instants, gathered into one geometry. With <varname>unary_union = true</varname> they are dissolved into the region they cover, computed exactly: every meeting of the circles and of the segments joining them is decided on the input coordinates, no arc is replaced by segments, and only the vertices of the result are rounded, each once. The result keeps its arcs, as a <varname>CURVEPOLYGON</varname> or a <varname>MULTISURFACE</varname>. Where the buffer keeps a zero radius, the line or the point it draws that no disc covers is returned beside the surfaces in a <varname>GEOMETRYCOLLECTION</varname>. Where the computation cannot decide a meeting or an order of the boundaries, the function raises an error rather than answer an approximation.</para>
 			</listitem>
 
+			<listitem xml:id="tcbuffer_spaceTimeVolume">
+				<indexterm significance="normal"><primary><varname>spaceTimeVolume</varname></primary></indexterm>
+				<para>Return the space-time volume of the temporal circular buffer, the integral of the area of its disc over the time</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+spaceTimeVolume(tcbuffer) → float
+</programlisting>
+				<para>The radius of a segment in linear interpolation varies linearly between its instants, and the volume of the segment is computed exactly in closed form; the motion of the center changes no area. The time is read in microseconds, as <link linkend="tnumber_integral"><varname>integral</varname></link> reads it, so the result is in the square units of the buffer times microseconds. A buffer of instants has a volume of zero.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round((spaceTimeVolume(tcbuffer '[Cbuffer(Point(1 1),1)@2001-01-01,
+  Cbuffer(Point(5 5),2)@2001-01-02]') / (24 * 3600 * 1e6 * pi()))::numeric, 6);
+-- 2.333333
+SELECT round((spaceTimeVolume(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1),1)@2001-01-01,
+  Cbuffer(Point(5 5),2)@2001-01-02]') / (24 * 3600 * 1e6 * pi()))::numeric, 6);
+-- 1.000000
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcbuffer_centroid">
 				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
 				<para>Return the temporal geometric point given by the centers of a temporal circular buffer</para>
@@ -1378,7 +1395,7 @@ tcbuffer {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
 tcbuffer {?&amp;&amp;, %&amp;&amp;} tcbuffer → boolean
 </programlisting>
-				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <xref linkend="ttype_ever_always_overlaps"/> states it for the temporal geometries; a circular buffer lies in a box when it intersects it, as the restriction of a temporal circular buffer to a box reads it. Two values overlap where the boxes of their circular buffers overlap at a time they share, that is, where the larger of the distances of their centres along x and y is at most the sum of their radii; the boxes are compared between the instants of the values too, where two moving buffers may overlap for a moment only, and two values that share no time answer NULL.</para>
+				<para>Whether the value lies in a spatiotemporal box at some instant, or at every instant at which it is defined, as <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> and <varname>%&amp;&amp;</varname></link> state it for the temporal geometries; a circular buffer lies in a box when it intersects it, as the restriction of a temporal circular buffer to a box reads it. Two values overlap where the boxes of their circular buffers overlap at a time they share, that is, where the larger of the distances of their centres along x and y is at most the sum of their radii; the boxes are compared between the instants of the values too, where two moving buffers may overlap for a moment only, and two values that share no time answer NULL.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01 00:00,
   Cbuffer(Point(10 10), 1)@2001-01-01 10:00]' ?&amp;&amp;

@@ -317,6 +317,81 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   through the row's `QVALID` call and hands the boxes to `bbox_merge_query`
   with the size of a box for that query, the row's `MQSIZE`; a point cloud
   box merges through those of the spatiotemporal box it begins with.
+  Each public splitter and merge has its internal twin `<bare>_intl`, defined
+  directly above it, which an index calls: it asserts what the public one
+  tests.
+  The multi-entry operator classes of the extension `mobilitydb_mest` (the
+  access methods `mgist` and `mspgist` of the extension mest) are generated
+  for every partner of a box type stating `mestsplits` in `boxtypes.yaml` and
+  every subtype stating its own: one class per tree (R-tree, quad-tree, k-d
+  tree) and per split, written into `mobilitydb/mest/<family>/`, the file
+  cloning the GiST or SP-GiST file of the type (`render_mestopclass`,
+  `render_mestfile`, `templates/mestfile.sql.tmpl`, the functions every class
+  takes in `templates/mestcommon.sql.tmpl`). A class keys a value by the boxes
+  of its pieces, and holds the members of the GiST or SP-GiST class of its
+  type that a value answers when every key answers it (`MEST_STRATEGIES`: the
+  position operators, contained by, the same box, the nearest approach
+  distance, the ever and always overlaps). A class whose box carries flags
+  (`MEST_WHOLE_BOXES`: a tbox, an stbox, a tpcbox) also keys the box of the
+  whole value, flagged as a structure of its own (`mest_keys_whole`), and
+  holds the members that key answers (`MEST_WHOLE_STRATEGIES`: overlaps,
+  contains, adjacent, and the same box, which it answers exactly); a class of
+  a temporal value keyed by spans keys the pieces alone, which answer the same
+  box as contained by. The extraction methods of
+  the splits come from `templates/boxmest.c.tmpl` into the
+  `GENERATED-BOXMEST-BEGIN/END` regions of the `mestfile` a row of
+  `boxsplit.yaml` names, the `{KEYS}` slot naming `mest_keys` or
+  `mest_keys_whole` by the box, and the consistent methods, twins of those of
+  the type rechecking every leaf, from `templates/mestconsistent.c.tmpl` into
+  the `GENERATED-MESTCONSISTENT` region of the multi-entry file of the family
+  defining each original; the twin of a box carrying flags keeps the
+  template's `TIER` block, where a key answers only the strategies of its own
+  tier (`mest_key_answers`), and the twin of a span its `PIECES` block, which
+  reads the same span as contained by (`mest_pieces_scankeys`), as the inner
+  consistent twins of the SP-GiST classes of a span do
+  (`mest_inner_consistent`). The tier of every strategy is stated once in
+  `manifest.d/meststrategies.yaml`, from which the generator derives
+  `MEST_STRATEGIES`, `MEST_WHOLE_STRATEGIES` and `MEST_VALUE_STRATEGIES` and
+  renders `mest_key_answers` and `mest_pieces_strategy`
+  (`templates/mesttiers.c.tmpl`, the `GENERATED-MESTTIERS` region of
+  `temporal_mest.c`).
+  The multi-entry classes of the sets and span sets come from their GiST and
+  SP-GiST classes (`MEST_VALUE_FILES`, `render_valuemestfile`), into
+  `mobilitydb/mest/temporal/012_spanset_m*.in.sql` and `013_set_m*.in.sql`,
+  which load first and so declare the twins of the span the later files take:
+  a class per class and per split (`MEST_VALUE_SPLITS`), keyed by the spans of
+  the elements or the components of a value and by its extent, flagged
+  `MEOS_FLAG_WHOLE` (`Set_mest_*split`, `Spanset_mest_*split`,
+  `mest_span_keys_whole`), holding the members of `MEST_VALUE_STRATEGIES` its
+  class holds, the distance included, which the manifest states as answered by
+  the extent (`values: whole`). An ordered scan reads the key of the extent
+  alone and a scan that is not ordered the keys of the pieces alone
+  (`mest_span_key_answers`), whose twins answer the contains as the overlaps
+  and the equals as contained by (`mest_pieces_strategy`); the distance twin
+  (`mest_distance`, the `GIST-DISTANCE` chunk of the template) places a key of
+  the pieces at the maximum distance, and the union, penalty, picksplit and
+  same methods of mgist and the choose and picksplit methods of mspgist are
+  twins of the span methods keeping the keys of the extents and of the pieces
+  in subtrees of their own (`mest_structure`, `Span_mgist_union` and its
+  siblings in `temporal_mest.c`). `render_valuemesttest` writes their tests,
+  `mobilitydb/test/mest/sql/01[23]_<type>_mest_tbl.sql`, the distance rows
+  reading the nearest values with and without a qual.
+  `render_tpcmesttest` writes the multi-entry test of the temporal point
+  clouds, `mobilitydb/test/mest/sql/439_tpc_mest_tbl.sql`: every class of
+  `tpcpoint` and `tpcpatch` (`MEST_TPC_FILES`) answering the members of the
+  class of the segment split of the R-tree with a right argument of a fixture.
+  `render_mestcontroltest` writes the control of these tests,
+  `mobilitydb/test/mest/sql/000_mest_control_tbl.sql`: for one type of each kind
+  of key (`MEST_CONTROL_TYPES`: tbool, tgeompoint, intspanset), the class of its
+  segment split and a control class, the same class whose consistent method is
+  that of the single-entry class, which reads a key as the whole value; with the
+  template and the comparison of every multi-entry test, the class answers as
+  the scan and the control does not, so the comparison is shown to notice a
+  class answering wrongly.
+  `templates/mestindextest.sql.tmpl` writes the multi-entry test of each index
+  test, `mobilitydb/test/mest/sql/<nnn>_<temp>_mest[3d]_tbl.sql`, one column
+  per tree and split; an index test states per dimension the tile its
+  fixtures take (`mesttiles`).
   The index operator classes of a box type are the regions between its
   `GENERATED-BOXOPCLASS-BEGIN/END` markers, one per class of its `opclasses:`
   stanza in `boxtypes.yaml` (`templates/boxopclass.sql.tmpl`): every strategy of
@@ -367,6 +442,10 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | boxgist (C) | `boxgist.c.tmpl` | **GENERATED** (the GiST support functions of `tbox`, `stbox` and `tpcbox`, one set per box type) |
 | boxspgist (C) | `boxspgist.c.tmpl` | **GENERATED** (the SP-GiST support functions of `tbox` and `stbox`, one set per box type; `tpcbox` is indexed by those of `stbox`) |
 | boxsplit (C) | `boxsplit.c.tmpl` | **GENERATED** (the box splitters of `temporal`, `tnumber`, `tgeo`, `trgeometry` and `tpointcloud` and their merge twins, one set per row) |
+| boxmest (C) | `boxmest.c.tmpl` | **GENERATED** (the multi-entry extraction methods of each split of a box splitter row, in its `mestfile`) |
+| mestconsistent (C) | `mestconsistent.c.tmpl` | **GENERATED** (the consistent twins of the multi-entry classes, rechecking every leaf, in the multi-entry file of each family) |
+| mest classes | `mestfile.sql.tmpl` + `mestcommon.sql.tmpl` | **GENERATED** (the multi-entry classes of the extension `mobilitydb_mest`, one per tree and split) |
+| mest tests | `mestindextest.sql.tmpl` | **GENERATED** (one multi-entry test per index test and dimension, a column per tree and split) |
 | gist / spgist | `gist/spgist.sql.tmpl` | **GENERATED** (index infra) — the two templates write the family's operator classes through the `{TEMPOPCLASS_RTREE}`, `{TEMPOPCLASS_QUADTREE}` and `{TEMPOPCLASS_KDTREE}` tokens, which `render_tempopclass` fills from `boxstrategies.yaml` with every strategy whose axis the family's `boxmembers:` lists, the Z-axis strategies 32-35 included when it lists `z`, and with its `distwith:` types on the nearest approach distance. `gist.sql.tmpl` also declares the family's own consistent support function, `{TEMP}_gist_consistent`, and, under the flag `knn` that `render` reads from the axes of the class (a `dist` axis in `boxmembers:`), its distance support function `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share; it carries `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the two templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
@@ -545,7 +624,7 @@ tgeometry (`172_trgeo_tempspatialrels`).
 | Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **14 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, posechain, quadbin, rgeo, s2cell, tpcpatch, tpcpoint, tpoint). The pose entry also names `tpose(tgeompoint, tfloat)` in an `fns:` block, the one constructor of the axis a template does not shape |
 | Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **9 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo, s2cell) — `--gaps`: `conversion_families` 16/20, missing tposechain, tgeography, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
-| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **14 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample. ⛔ `tsample` and `tprecision` are NOT the same surface and the manifest is the record of which family carries which: **`tsample` 10** (temporal, cbuffer, h3, json, npoint, pose, posechain, quadbin, tpcpatch, tpcpoint) against **`tprecision` 7** (temporal, cbuffer, h3, pose, posechain, quadbin, rgeo). `tsample` SELECTS the value holding at a bin boundary, so it applies to every temporal type; `tprecision` SYNTHESIZES one value per bin as a time-weighted average, so it applies only where the value type carries such an average — `ensure_has_twavg_temptype()` in `meos/src/temporal/temporal_analytics.c` is the kernel's own list. A family in the first set and not the second is either a gap to close or an exception to argue; the per-type table sits under §4b |
+| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **14 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample, and the occurrences of a recurring value occurrence/occurrenceOrigins/occurrences, whose return types other than the temporal type sit in `_XFORM_RET` (11 families list them after shiftScaleTime; geo, tpoint and npoint, whose shifts are hand-owned sections outside the manifest's anchors, declare them by hand beside their shiftScaleTime). ⛔ `tsample` and `tprecision` are NOT the same surface and the manifest is the record of which family carries which: **`tsample` 10** (temporal, cbuffer, h3, json, npoint, pose, posechain, quadbin, tpcpatch, tpcpoint) against **`tprecision` 7** (temporal, cbuffer, h3, pose, posechain, quadbin, rgeo). `tsample` SELECTS the value holding at a bin boundary, so it applies to every temporal type; `tprecision` SYNTHESIZES one value per bin as a time-weighted average, so it applies only where the value type carries such an average — `ensure_has_twavg_temptype()` in `meos/src/temporal/temporal_analytics.c` is the kernel's own list. A family in the first set and not the second is either a gap to close or an exception to argue; the per-type table sits under §4b |
 | Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **14 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **14 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox`, whose `tempsql` stanzas write the SQL of `tbool`, `tint`, `tbigint`, `tfloat` and `ttext` through `tempbox.sql.tmpl` |

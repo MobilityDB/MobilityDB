@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------------------
+# The tier of every strategy of the multi-entry classes (the rule of
+# doc/contributing/indexes/IMPLEMENTATION-PLAN.md, Part III): which key of a
+# value answers the operator of a strategy, and by which test. A multi-entry
+# class serves an operator iff, whenever the operator holds on a value, some
+# key of the value passes that test against the query; the recheck removes the
+# false positives. One entry per strategy a multi-entry class holds:
+#
+#   num      the strategy number (manifest.d/boxstrategies.yaml, and 18 for the
+#            equals of a set or a span set)
+#   boxes    the key answering it in a class of a temporal type whose box
+#            carries flags (a tbox, an stbox, a tpcbox): `pieces`, the keys of
+#            the boxes of its pieces, or `whole`, the key of the box of the
+#            whole value (MEOS_FLAG_WHOLE); absent, the class does not hold it
+#   spans    the strategy a key of a piece answers it as, in a class of a
+#            temporal type keyed by spans (tbool, ttext, tjsonb): `self`, or
+#            the number of another strategy; absent, the class does not hold it
+#   values   the same, in a class of a set or a span set, or `whole`, the
+#            key of the bounding span of the value (MEOS_FLAG_WHOLE)
+#
+# generate.py derives MEST_STRATEGIES, MEST_WHOLE_STRATEGIES and
+# MEST_VALUE_STRATEGIES from it, and renders mest_key_answers and
+# mest_pieces_strategy (mobilitydb/src/temporal/temporal_mest.c) from the
+# `whole` entries and the numbers of `spans` and `values`.
+# ---------------------------------------------------------------------------
+meststrategies:
+  # the position operators read a face of the box, which a piece reaches
+  - {num: 1,  boxes: pieces, spans: self, values: self, desc: strictly left}
+  - {num: 2,  boxes: pieces, spans: self, values: self, desc: overlaps or left}
+  - {num: 4,  boxes: pieces, spans: self, values: self, desc: overlaps or right}
+  - {num: 5,  boxes: pieces, spans: self, values: self, desc: strictly right}
+  - {num: 9,  boxes: pieces, spans: self, values: self, desc: overlaps or below}
+  - {num: 10, boxes: pieces, spans: self, values: self, desc: strictly below}
+  - {num: 11, boxes: pieces, spans: self, values: self, desc: strictly above}
+  - {num: 12, boxes: pieces, spans: self, values: self, desc: overlaps or above}
+  - {num: 28, boxes: pieces, spans: self, values: self, desc: overlaps or before}
+  - {num: 29, boxes: pieces, spans: self, values: self, desc: strictly before}
+  - {num: 30, boxes: pieces, spans: self, values: self, desc: strictly after}
+  - {num: 31, boxes: pieces, spans: self, values: self, desc: overlaps or after}
+  - {num: 32, boxes: pieces, spans: self, values: self, desc: overlaps or front}
+  - {num: 33, boxes: pieces, spans: self, values: self, desc: strictly front}
+  - {num: 34, boxes: pieces, spans: self, values: self, desc: strictly back}
+  - {num: 35, boxes: pieces, spans: self, values: self, desc: overlaps or back}
+  # the overlaps, the contains and the adjacency of a temporal value read the
+  # interior or a face of its box, which no piece witnesses; those of a set or
+  # a span set read its elements or its components
+  - {num: 3,  boxes: whole,  values: self, desc: overlaps}
+  - {num: 7,  boxes: whole,  values: 3,    desc: contains}
+  - {num: 17, boxes: whole,  values: self, desc: adjacent}
+  # the same box holds on a value only when every piece lies within the query
+  - {num: 6,  boxes: whole,  spans: 8,     desc: same}
+  # every piece of a value contained by the query is contained by it
+  - {num: 8,  boxes: pieces, spans: self, values: self, desc: contained by}
+  # the equals of a set or a span set: every element or component within it
+  - {num: 18, values: 8, desc: equals}
+  # the distance to a piece bounds that of a temporal value from below; the
+  # distance of a set or a span set is that of its bounding span, which a key
+  # of an element or a component overstates, so a class of a set or a span set
+  # answers it from the key of its bounding span, `whole`
+  - {num: 25, boxes: pieces, spans: self, values: whole, desc: nearest approach distance}
+  # the ever and always overlaps of a temporal value hold on some piece
+  - {num: 36, boxes: pieces, spans: self, desc: ever overlaps}
+  - {num: 37, boxes: pieces, spans: self, desc: always overlaps}

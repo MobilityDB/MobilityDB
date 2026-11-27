@@ -268,7 +268,7 @@ SELECT nsegment(76, 0.3, 0.5);
 geometry::{npoint,nsegment}
 npoint(geometry,float) → npoint
 </programlisting>
-				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+				<para>Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(npoint(76, 0.33)::geometry, 6);
 -- POINT(27.842471 43.855103)
@@ -578,7 +578,7 @@ SELECT tnpointSeqSetGaps(ARRAY[tnpoint 'NPoint(1,0.1)@2001-01-01',
 {tnpoint,tgeompoint}::{tgeompoint,tnpoint}
 tnpoint::tgeogpoint
 </programlisting>
-				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
+				<para>Las conversiones siguen la regla de <link linkend="geo_geog_convert"><varname>geomset::geogset</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tnpoint '[NPoint(1, 0.2)@2001-01-01,
   NPoint(1, 0.3)@2001-01-02)')::tgeompoint);
@@ -1182,7 +1182,7 @@ tnpoint {?&amp;&amp;, %&amp;&amp;} stbox → boolean
 stbox {?&amp;&amp;, %&amp;&amp;} tnpoint → boolean
 tnpoint {?&amp;&amp;, %&amp;&amp;} tnpoint → boolean
 </programlisting>
-				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establece <xref linkend="ttype_ever_always_overlaps"/> para las geometrías temporales; un punto de red está en un cuadro cuando su posición geométrica lo está. Dos valores se superponen donde están en un mismo lugar del mapa en un instante que comparten: en una misma ruta en una misma fracción, o donde sus rutas se cruzan o se encuentran, que es la igualdad espacial de sus posiciones, tal como <varname>ST_Equals</varname> compara dos geometrías, donde <varname>?=</varname> compara la ruta y la fracción. La posición en una fracción de una ruta es un punto calculado en dobles, por lo que dos posiciones son un mismo lugar cuando están dentro del redondeo de sus coordenadas, y un punto de red proyectado sobre un cruce está en un mismo lugar que el punto de la otra ruta proyectado sobre él.</para>
+				<para>Si el valor está en un cuadro espaciotemporal en algún instante, o en todo instante en que está definido, tal como lo establecen <link linkend="ttype_ever_always_overlaps"><varname>?&amp;&amp;</varname> y <varname>%&amp;&amp;</varname></link> para las geometrías temporales; un punto de red está en un cuadro cuando su posición geométrica lo está. Dos valores se superponen donde están en un mismo lugar del mapa en un instante que comparten: en una misma ruta en una misma fracción, o donde sus rutas se cruzan o se encuentran, que es la igualdad espacial de sus posiciones, tal como <varname>ST_Equals</varname> compara dos geometrías, donde <varname>?=</varname> compara la ruta y la fracción. La posición en una fracción de una ruta es un punto calculado en dobles, por lo que dos posiciones son un mismo lugar cuando están dentro del redondeo de sus coordenadas, y un punto de red proyectado sobre un cruce está en un mismo lugar que el punto de la otra ruta proyectado sobre él.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]' ?&amp;&amp;
   stbox(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.6)@2001-01-03]');

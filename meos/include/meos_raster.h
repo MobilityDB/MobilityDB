@@ -400,6 +400,13 @@ extern STBox *raquet_to_stbox(const Raquet *rq);
 
 extern STBox *raster_to_stbox(const Raster *rast);
 
+/* Comparison functions for PostGIS rasters, which have an equality and no order */
+
+extern bool raster_eq(const Raster *rast1, const Raster *rast2);
+extern bool raster_ne(const Raster *rast1, const Raster *rast2);
+extern uint32 raster_hash(const Raster *rast);
+extern uint64 raster_hash_extended(const Raster *rast, uint64 seed);
+
 /* Comparison functions for Raquet tiles */
 
 extern int raquet_cmp(const Raquet *rq1, const Raquet *rq2);

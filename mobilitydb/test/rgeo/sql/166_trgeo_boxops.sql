@@ -36,4 +36,13 @@ FROM t;
 -- is the box of the square at its two ends
 SELECT stbox(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]');
 
+-- The box of the first and of the last slice of a sequence with exclusive
+-- bounds leaves its bounds out, as the box of the sequence does, so every
+-- box of a split lies in the box of the value
+WITH t(temp) AS (SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));(Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.6)@2001-01-02, Pose(Point(3 3),0.7)@2001-01-03)')
+SELECT splitNStboxes(temp, 2), splitEachNStboxes(temp, 1) FROM t;
+WITH t(temp) AS (SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));(Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.6)@2001-01-02, Pose(Point(3 3),0.7)@2001-01-03)')
+SELECT bool_and(b <@ temp::stbox)
+FROM t, unnest(splitNStboxes(temp, 2) || splitEachNStboxes(temp, 1)) b;
+
 -------------------------------------------------------------------------------

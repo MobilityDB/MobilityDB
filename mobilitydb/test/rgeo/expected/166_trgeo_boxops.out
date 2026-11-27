@@ -116,4 +116,22 @@ SELECT stbox(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2
  STBOX XT(((0,0),(11,1)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
 (1 row)
 
+-- The box of the first and of the last slice of a sequence with exclusive
+-- bounds leaves its bounds out, as the box of the sequence does, so every
+-- box of a split lies in the box of the value
+WITH t(temp) AS (SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));(Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.6)@2001-01-02, Pose(Point(3 3),0.7)@2001-01-03)')
+SELECT splitNStboxes(temp, 2), splitEachNStboxes(temp, 1) FROM t;
+                                      splitnstboxes                                       |                                    spliteachnstboxes                                     
+------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------
+ {"STBOX XT(((0,0),(4,4)),(Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))"} | {"STBOX XT(((0,0),(4,4)),(Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))"}
+(1 row)
+
+WITH t(temp) AS (SELECT trgeometry 'Polygon((0 0,1 0,0 1,0 0));(Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(2 2),0.6)@2001-01-02, Pose(Point(3 3),0.7)@2001-01-03)')
+SELECT bool_and(b <@ temp::stbox)
+FROM t, unnest(splitNStboxes(temp, 2) || splitEachNStboxes(temp, 1)) b;
+ bool_and 
+----------
+ t
+(1 row)
+
 -------------------------------------------------------------------------------

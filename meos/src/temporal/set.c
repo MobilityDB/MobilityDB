@@ -885,6 +885,59 @@ dateset_to_tstzset(const Set *s)
 
 /**
  * @ingroup meos_setspan_conversion
+ * @brief Return the origins of the days of a date set in a time zone
+ * @details The origin of a day is the instant at which the clock of the time
+ * zone reads noon on that day, minus twelve hours, as the General Transit Feed
+ * Specification measures the times of a service day. It is the local midnight
+ * of every day except those of a change of the offset of the time zone, such
+ * as a daylight-saving change, where it lies twelve hours before the local
+ * noon as on every other day. A temporal value describing a service day from
+ * the origin of one day is therefore moved to another day by the difference
+ * of the two origins.
+ * @param[in] s Set
+ * @param[in] zone Time zone, a full name such as `Europe/Zurich`, an
+ * abbreviation, or an offset, read as PostgreSQL reads the zone of
+ * `AT TIME ZONE`
+ * @errval NULL
+ * @note Built as #dateset_to_tstzset, the local noon of each date read in the
+ * time zone by #timestamp_zone
+ * @csqlfn #Dateset_origins()
+ */
+Set *
+dateset_origins(const Set *s, const text *zone)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESET(s, NULL); VALIDATE_NOT_NULL(zone, NULL);
+
+  int last_errno = meos_errno_reset();
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+  {
+    /* The dates of a set are finite */
+    Timestamp noon = date_to_timestamp(DatumGetDateADT(SET_VAL_N(s, i))) +
+      USECS_PER_DAY / 2;
+    /* A day beyond the timestamps, or a time zone that is not known, raises
+     * an error */
+    if (meos_errno())
+      break;
+    TimestampTz origin = pg_timestamp_zone(noon, zone);
+    if (meos_errno() || TIMESTAMP_NOT_FINITE(origin))
+      break;
+    values[i] = TimestampTzGetDatum(origin - USECS_PER_DAY / 2);
+  }
+  if (meos_errno())
+  {
+    pfree(values);
+    return NULL;
+  }
+  meos_errno_restore(last_errno);
+  /* The origins of distinct days are distinct and keep the order of the
+   * days */
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDER_NO);
+}
+
+/**
+ * @ingroup meos_setspan_conversion
  * @brief Convert a timestamptz set into a date set
  * @param[in] s Set
  * @csqlfn #Tstzset_to_dateset()
@@ -1954,83 +2007,197 @@ textcat_textset_text(const Set *s, const text *txt)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return an integer set shifted and/or scaled by two values
+ * @brief Return an integer set shifted by a value
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @csqlfn #Numset_shift()
+ */
+Set *
+intset_shift(const Set *s, int shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSET(s, NULL);
+  return numset_shift_scale(s, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer set scaled to a width
+ * @param[in] s Set
+ * @param[in] width Width of the result
+ * @csqlfn #Numset_scale()
+ */
+Set *
+intset_scale(const Set *s, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSET(s, NULL);
+  return numset_shift_scale(s, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer set shifted by a value and scaled to a width
  * @param[in] s Set
  * @param[in] shift Value for shifting the elements
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
+ * @csqlfn #Numset_shift_scale()
  */
 Set *
-intset_shift_scale(const Set *s, int shift, int width, bool hasshift,
-  bool haswidth)
+intset_shift_scale(const Set *s, int shift, int width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSET(s, NULL);
   return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a big integer set shifted and/or scaled by two values
+ * @brief Return a big integer set shifted by a value
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @csqlfn #Numset_shift()
+ */
+Set *
+bigintset_shift(const Set *s, int64 shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSET(s, NULL);
+  return numset_shift_scale(s, Int64GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer set scaled to a width
+ * @param[in] s Set
+ * @param[in] width Width of the result
+ * @csqlfn #Numset_scale()
+ */
+Set *
+bigintset_scale(const Set *s, int64 width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSET(s, NULL);
+  return numset_shift_scale(s, 0, Int64GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer set shifted by a value and scaled to a width
  * @param[in] s Set
  * @param[in] shift Value for shifting the elements
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
+ * @csqlfn #Numset_shift_scale()
  */
 Set *
-bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift,
-  bool haswidth)
+bigintset_shift_scale(const Set *s, int64 shift, int64 width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSET(s, NULL);
   return numset_shift_scale(s, Int64GetDatum(shift), Int64GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a float set shifted and/or scaled by two values
+ * @brief Return a float set shifted by a value
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @csqlfn #Numset_shift()
+ */
+Set *
+floatset_shift(const Set *s, double shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSET(s, NULL);
+  if (! ensure_finite(shift))
+    return NULL;
+  return numset_shift_scale(s, Float8GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float set scaled to a width
+ * @param[in] s Set
+ * @param[in] width Width of the result
+ * @csqlfn #Numset_scale()
+ */
+Set *
+floatset_scale(const Set *s, double width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSET(s, NULL);
+  if (! ensure_finite(width))
+    return NULL;
+  return numset_shift_scale(s, 0, Float8GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float set shifted by a value and scaled to a width
  * @param[in] s Set
  * @param[in] shift Value for shifting the elements
  * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
+ * @csqlfn #Numset_shift_scale()
  */
 Set *
-floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
-  bool haswidth)
+floatset_shift_scale(const Set *s, double shift, double width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
   if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
+
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a date set shifted and/or scaled by two values
+ * @brief Return a date set shifted by a number of days
  * @param[in] s Set
- * @param[in] shift Value for shifting the elements
- * @param[in] width Width of the result
- * @param[in] hasshift True when the shift argument is given
- * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
+ * @param[in] shift Number of days for shifting the elements
+ * @csqlfn #Numset_shift()
  */
 Set *
-dateset_shift_scale(const Set *s, int shift, int width, bool hasshift,
-  bool haswidth)
+dateset_shift(const Set *s, int shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESET(s, NULL);
+  return numset_shift_scale(s, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a date set scaled to a width in days
+ * @param[in] s Set
+ * @param[in] width Width of the result in days
+ * @csqlfn #Numset_scale()
+ */
+Set *
+dateset_scale(const Set *s, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESET(s, NULL);
+  return numset_shift_scale(s, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a date set shifted by a number of days and scaled to a width
+ * in days
+ * @param[in] s Set
+ * @param[in] shift Number of days for shifting the elements
+ * @param[in] width Width of the result in days
+ * @csqlfn #Numset_shift_scale()
+ */
+Set *
+dateset_shift_scale(const Set *s, int shift, int width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESET(s, NULL);
   return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
+    true, true);
 }
 
 /*****************************************************************************
