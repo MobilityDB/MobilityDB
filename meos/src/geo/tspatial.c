@@ -559,6 +559,124 @@ spatialarr_as_ewkt(const Datum *spatialarr, MeosType elemtype, int count,
 }
 #endif /* MEOS */
 
+/**
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of spatiotemporal values, each written by #tspatial_as_text or
+ * #tspatial_as_ewkt
+ * @param[in] temparr Array of spatiotemporal values
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[in] extended True when the output is in EWKT
+ */
+static char **
+tspatialarr_wkt_out(const Temporal **temparr, int count, int maxdd,
+  bool extended)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temparr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  char **result = palloc(sizeof(char *) * count);
+  size_t size_out;
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? tspatial_as_ewkt(temparr[i], maxdd, &size_out) :
+      tspatial_as_text(temparr[i], maxdd, &size_out);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_inout
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * spatiotemporal values
+ * @param[in] temparr Array of spatiotemporal values
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_text()
+ */
+char **
+tspatialarr_as_text(const Temporal **temparr, int count, int maxdd)
+{
+  return tspatialarr_wkt_out(temparr, count, maxdd, false);
+}
+
+/**
+ * @ingroup meos_geo_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of an
+ * array of spatiotemporal values
+ * @param[in] temparr Array of spatiotemporal values
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_ewkt()
+ */
+char **
+tspatialarr_as_ewkt(const Temporal **temparr, int count, int maxdd)
+{
+  return tspatialarr_wkt_out(temparr, count, maxdd, true);
+}
+
+/**
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of geometries/geographies, each written by #spatialbase_as_text
+ * or #spatialbase_as_ewkt as a spatial base value: its WKT, which
+ * #geo_as_text writes, prefixed in EWKT with its SRID when it states one
+ * @param[in] geoarr Array of geometries/geographies
+ * @param[in] count Number of elements in the input array
+ * @param[in] precision Maximum number of decimal digits
+ * @param[in] extended True when the output is in EWKT
+ */
+static char **
+geoarr_wkt_out(const GSERIALIZED **geoarr, int count, int precision,
+  bool extended)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geoarr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(precision))
+    return NULL;
+
+  char **result = palloc(sizeof(char *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    MeosType type = FLAGS_GET_GEODETIC(geoarr[i]->gflags) ?
+      T_GEOGRAPHY : T_GEOMETRY;
+    Datum value = PointerGetDatum(geoarr[i]);
+    result[i] = extended ?
+      spatialbase_as_ewkt(value, type, precision, NULL) :
+      spatialbase_as_text(value, type, precision);
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * geometries/geographies
+ * @param[in] geoarr Array of geometries/geographies
+ * @param[in] count Number of elements in the input array
+ * @param[in] precision Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_text()
+ */
+char **
+geoarr_as_text(const GSERIALIZED **geoarr, int count, int precision)
+{
+  return geoarr_wkt_out(geoarr, count, precision, false);
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of an
+ * array of geometries/geographies
+ * @param[in] geoarr Array of geometries/geographies
+ * @param[in] count Number of elements in the input array
+ * @param[in] precision Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_ewkt()
+ */
+char **
+geoarr_as_ewkt(const GSERIALIZED **geoarr, int count, int precision)
+{
+  return geoarr_wkt_out(geoarr, count, precision, true);
+}
+
 /*****************************************************************************
  * Box functions
  *****************************************************************************/

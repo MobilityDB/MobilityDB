@@ -345,6 +345,8 @@ extern GBOX *gbox_make(bool hasz, bool hasm, bool geodetic, double xmin,
 extern GBOX *gbox_in(const char *str);
 extern char *gbox_out(const GBOX *box, int maxdd, size_t *size_out);
 extern uint8_t *geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size);
+extern char **geoarr_as_ewkt(const GSERIALIZED **geoarr, int count, int precision);
+extern char **geoarr_as_text(const GSERIALIZED **geoarr, int count, int precision);
 extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision, size_t *size_out);
 extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs, size_t *size_out);
 extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian, size_t *size_out);
@@ -678,6 +680,8 @@ extern uint8_t *tspatial_as_ewkb(const Temporal *temp, uint8_t variant, size_t *
 extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd, size_t *size_out);
 extern char *tspatial_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *tspatial_as_text(const Temporal *temp, int maxdd, size_t *size_out);
+extern char **tspatialarr_as_ewkt(const Temporal **temparr, int count, int maxdd);
+extern char **tspatialarr_as_text(const Temporal **temparr, int count, int maxdd);
 
 /* Constructor functions */
 

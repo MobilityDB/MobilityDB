@@ -121,6 +121,8 @@ extern char *cbuffer_as_ewkt(const Cbuffer *cb, int maxdd, size_t *size_out);
 extern char *cbuffer_as_hexewkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern char *cbuffer_as_hexwkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern char *cbuffer_as_text(const Cbuffer *cb, int maxdd, size_t *size_out);
+extern char **cbufferarr_as_ewkt(const Cbuffer **cbarr, int count, int maxdd);
+extern char **cbufferarr_as_text(const Cbuffer **cbarr, int count, int maxdd);
 extern uint8_t *cbuffer_as_wkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern Cbuffer *cbuffer_from_hexwkb(const char *hexwkb);
 extern Cbuffer *cbuffer_from_wkb(const uint8_t *wkb, size_t size);

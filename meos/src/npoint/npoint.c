@@ -585,6 +585,60 @@ npoint_as_ewkt(const Npoint *np, int maxdd, size_t *size_out)
 }
 
 /**
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of network points, each written by #npoint_as_text or #npoint_as_ewkt
+ * @param[in] nparr Array of network points
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[in] extended True when the output is in EWKT
+ */
+static char **
+npointarr_wkt_out(const Npoint **nparr, int count, int maxdd, bool extended)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(nparr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  char **result = palloc(sizeof(char *) * count);
+  size_t size_out;
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? npoint_as_ewkt(nparr[i], maxdd, &size_out) :
+      npoint_as_text(nparr[i], maxdd, &size_out);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * network points
+ * @param[in] nparr Array of network points
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_text()
+ */
+char **
+npointarr_as_text(const Npoint **nparr, int count, int maxdd)
+{
+  return npointarr_wkt_out(nparr, count, maxdd, false);
+}
+
+/**
+ * @ingroup meos_npoint_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of an
+ * array of network points
+ * @param[in] nparr Array of network points
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Spatialarr_as_ewkt()
+ */
+char **
+npointarr_as_ewkt(const Npoint **nparr, int count, int maxdd)
+{
+  return npointarr_wkt_out(nparr, count, maxdd, true);
+}
+
+/**
  * @ingroup meos_npoint_base_inout
  * @brief Return the Well-Known Text (WKT) representation of a network segment
  * @param[in] ns Network segment
