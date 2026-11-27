@@ -729,6 +729,11 @@ distfun_sign_after(const DistFun *f, double level, double t, double ftol)
  *   functions that cancel.
  * - If |f'(m)| > (h/2) * max|f''| over the cell, @p f is monotonic in the
  *   cell.  Since @p f does not change sign, the cell has no root.
+ * - If |f(m)| + (h/2) * |f'(m)| + (h/2)^2 / 2 * max|f''| <= @p ftol, the
+ *   bound of the Taylor test read the other way, |f| is within @p ftol in the
+ *   whole cell, whose ends are then roots of one group.  At a root of
+ *   multiplicity three, as the one of 5t - 5 sin(t) at 0, f and f' round to
+ *   zero in doubles near the root, so that no test above closes a cell there.
  * - Otherwise, it splits the cell in two.
  *
  * A value at a cell boundary that is within @p ftol of the level is also a
@@ -878,15 +883,31 @@ distfun_roots(const DistFun *f, double level, double lo, double hi,
      * f' over the cell is loose where f is the difference of two large
      * functions that cancel, as the difference of the distances to two
      * parts, and then the first test needs cells too narrow for the budget */
-    if (fabs(distfun_eval(&g, m)) > half * fabs(distfun_eval(&dg, m)) +
-        0.5 * half * half * distfun_absmax(&d2g, a, b))
+    double fm = fabs(distfun_eval(&g, m));
+    double d2max = distfun_absmax(&d2g, a, b);
+    double taylor = half * fabs(distfun_eval(&dg, m)) +
+      0.5 * half * half * d2max;
+    if (fm > taylor)
       continue;
     /* The same test for f' proves that f is monotonic in the cell.  Near a
      * root, f is small and the first test fails, but f' is not small.
      * Without this test, the cells next to a root split until the budget is
      * spent. */
-    if (fabs(distfun_eval(&dg, m)) > half * distfun_absmax(&d2g, a, b))
+    if (fabs(distfun_eval(&dg, m)) > half * d2max)
       continue;
+    /* The bound of the Taylor test the other way: |f(x)| <= |f(m)| + |f'(m)|
+     * half + half^2 / 2 max |f''| <= ftol in the whole cell, which is then
+     * within the tolerance, a group of roots of which its ends are the first
+     * and the last.  At a root of multiplicity three, f and f' round to zero
+     * near the root, the tests above close no cell there, and the cells split
+     * until the budget is spent. */
+    if (fm + taylor <= ftol)
+    {
+      if (! root_add(&g, ftol, buf, &nroots, cap, a, xacc) ||
+          ! root_add(&g, ftol, buf, &nroots, cap, b, xacc))
+        return DISTFUN_OVERFLOW;
+      continue;
+    }
 
     if (nstack + 2 > DISTFUN_STACKMAX)
       return DISTFUN_BUDGET;
