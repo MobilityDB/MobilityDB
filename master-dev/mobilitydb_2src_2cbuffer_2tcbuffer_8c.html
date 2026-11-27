@@ -83,7 +83,8 @@ $(function() {
 
 <p>Basic functions for temporal network points.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;float.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;utils/array.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
@@ -164,6 +165,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga751d90383a0b6f05dcdbfbacb582c9af"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__cbuffer__transf_ga751d90383a0b6f05dcdbfbacb582c9af.html#ga751d90383a0b6f05dcdbfbacb582c9af">Tcbuffer_rotate_z</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga751d90383a0b6f05dcdbfbacb582c9af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal circular buffer rotated counter-clockwise about the z axis @sqlfn rotateZ(), rotate() @altsqlfn cbufferRotateZ(), cbufferRotate()  <a href="group__mobilitydb__cbuffer__transf_ga751d90383a0b6f05dcdbfbacb582c9af.html#ga751d90383a0b6f05dcdbfbacb582c9af">More...</a><br /></td></tr>
 <tr class="separator:ga751d90383a0b6f05dcdbfbacb582c9af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga61d35b57f53e0540375df24550862450"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__cbuffer__accessor_ga61d35b57f53e0540375df24550862450.html#ga61d35b57f53e0540375df24550862450">Tcbuffer_space_time_volume</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga61d35b57f53e0540375df24550862450"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the space-time volume of a temporal circular buffer, the integral of the area of its disc over its time @sqlfn spaceTimeVolume()  <a href="group__mobilitydb__cbuffer__accessor_ga61d35b57f53e0540375df24550862450.html#ga61d35b57f53e0540375df24550862450">More...</a><br /></td></tr>
+<tr class="separator:ga61d35b57f53e0540375df24550862450"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa717912b129feded9b6bec45e8ceff7c"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__cbuffer__conversion_gaa717912b129feded9b6bec45e8ceff7c.html#gaa717912b129feded9b6bec45e8ceff7c">Tcbuffer_to_tfloat</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gaa717912b129feded9b6bec45e8ceff7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a temporal circular buffer into a temporal float @sqlfn tfloat()  <a href="group__mobilitydb__cbuffer__conversion_gaa717912b129feded9b6bec45e8ceff7c.html#gaa717912b129feded9b6bec45e8ceff7c">More...</a><br /></td></tr>
 <tr class="separator:gaa717912b129feded9b6bec45e8ceff7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
