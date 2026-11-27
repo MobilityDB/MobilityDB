@@ -663,11 +663,13 @@ extern int64 timestamp_to_unix_us(Timestamp ts);
 extern Set *timestamptz_to_set(TimestampTz t);
 extern Span *timestamptz_to_span(TimestampTz t);
 extern SpanSet *timestamptz_to_spanset(TimestampTz t);
+extern int64 timestamptz_to_unix_ms(TimestampTz t);
 extern int64 timestamptz_to_unix_us(TimestampTz t);
 extern Set *tstzset_to_dateset(const Set *s);
 extern Span *tstzspan_to_datespan(const Span *s);
 extern SpanSet *tstzspanset_to_datespanset(const SpanSet *ss);
 extern DateADT unix_days_to_date(int32 days);
+extern TimestampTz unix_ms_to_timestamptz(int64 ms);
 extern Timestamp unix_us_to_timestamp(int64 us);
 extern TimestampTz unix_us_to_timestamptz(int64 us);
 

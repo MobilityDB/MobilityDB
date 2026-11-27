@@ -60,6 +60,9 @@ CREATE FUNCTION tbool_mgist_consistent(internal, tbool, smallint, oid, internal)
 CREATE OPERATOR CLASS tbool_mrtree_equisplit_ops
   DEFAULT FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -92,6 +95,9 @@ CREATE OPERATOR CLASS tbool_mrtree_equisplit_ops
 CREATE OPERATOR CLASS tbool_mrtree_segsplit_ops
   FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -124,6 +130,9 @@ CREATE OPERATOR CLASS tbool_mrtree_segsplit_ops
 CREATE OPERATOR CLASS tbool_mrtree_binsplit_ops
   FOR TYPE tbool USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (tbool, tstzspan),
+  OPERATOR  6    ~= (tbool, tbool),
   -- contained by
   OPERATOR  8    <@ (tbool, tstzspan),
   OPERATOR  8    <@ (tbool, tbool),
@@ -161,6 +170,9 @@ CREATE FUNCTION ttext_mgist_consistent(internal, ttext, smallint, oid, internal)
 CREATE OPERATOR CLASS ttext_mrtree_equisplit_ops
   DEFAULT FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -193,6 +205,9 @@ CREATE OPERATOR CLASS ttext_mrtree_equisplit_ops
 CREATE OPERATOR CLASS ttext_mrtree_segsplit_ops
   FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -225,6 +240,9 @@ CREATE OPERATOR CLASS ttext_mrtree_segsplit_ops
 CREATE OPERATOR CLASS ttext_mrtree_binsplit_ops
   FOR TYPE ttext USING mgist AS
   STORAGE tstzspan,
+  -- same
+  OPERATOR  6    ~= (ttext, tstzspan),
+  OPERATOR  6    ~= (ttext, ttext),
   -- contained by
   OPERATOR  8    <@ (ttext, tstzspan),
   OPERATOR  8    <@ (ttext, ttext),
@@ -285,6 +303,11 @@ CREATE OPERATOR CLASS tint_mrtree_equisplit_ops
   OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
+  -- overlaps
+  OPERATOR  3    && (tint, tstzspan),
+  OPERATOR  3    && (tint, intspan),
+  OPERATOR  3    && (tint, tbox),
+  OPERATOR  3    && (tint, tint),
   -- overlaps or right
   OPERATOR  4    &> (tint, intspan),
   OPERATOR  4    &> (tint, tbox),
@@ -293,11 +316,26 @@ CREATE OPERATOR CLASS tint_mrtree_equisplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
+  -- contains
+  OPERATOR  7    @> (tint, tstzspan),
+  OPERATOR  7    @> (tint, intspan),
+  OPERATOR  7    @> (tint, tbox),
+  OPERATOR  7    @> (tint, tint),
   -- contained by
   OPERATOR  8    <@ (tint, tstzspan),
   OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tbox),
   OPERATOR  8    <@ (tint, tint),
+  -- adjacent
+  OPERATOR  17    -|- (tint, tstzspan),
+  OPERATOR  17    -|- (tint, intspan),
+  OPERATOR  17    -|- (tint, tbox),
+  OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
   OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -344,6 +382,11 @@ CREATE OPERATOR CLASS tint_mrtree_segsplit_ops
   OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
+  -- overlaps
+  OPERATOR  3    && (tint, tstzspan),
+  OPERATOR  3    && (tint, intspan),
+  OPERATOR  3    && (tint, tbox),
+  OPERATOR  3    && (tint, tint),
   -- overlaps or right
   OPERATOR  4    &> (tint, intspan),
   OPERATOR  4    &> (tint, tbox),
@@ -352,11 +395,26 @@ CREATE OPERATOR CLASS tint_mrtree_segsplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
+  -- contains
+  OPERATOR  7    @> (tint, tstzspan),
+  OPERATOR  7    @> (tint, intspan),
+  OPERATOR  7    @> (tint, tbox),
+  OPERATOR  7    @> (tint, tint),
   -- contained by
   OPERATOR  8    <@ (tint, tstzspan),
   OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tbox),
   OPERATOR  8    <@ (tint, tint),
+  -- adjacent
+  OPERATOR  17    -|- (tint, tstzspan),
+  OPERATOR  17    -|- (tint, intspan),
+  OPERATOR  17    -|- (tint, tbox),
+  OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
   OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -403,6 +461,11 @@ CREATE OPERATOR CLASS tint_mrtree_tilesplit_ops
   OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
+  -- overlaps
+  OPERATOR  3    && (tint, tstzspan),
+  OPERATOR  3    && (tint, intspan),
+  OPERATOR  3    && (tint, tbox),
+  OPERATOR  3    && (tint, tint),
   -- overlaps or right
   OPERATOR  4    &> (tint, intspan),
   OPERATOR  4    &> (tint, tbox),
@@ -411,11 +474,26 @@ CREATE OPERATOR CLASS tint_mrtree_tilesplit_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
+  -- same
+  OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
+  OPERATOR  6    ~= (tint, tbox),
+  OPERATOR  6    ~= (tint, tint),
+  -- contains
+  OPERATOR  7    @> (tint, tstzspan),
+  OPERATOR  7    @> (tint, intspan),
+  OPERATOR  7    @> (tint, tbox),
+  OPERATOR  7    @> (tint, tint),
   -- contained by
   OPERATOR  8    <@ (tint, tstzspan),
   OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tbox),
   OPERATOR  8    <@ (tint, tint),
+  -- adjacent
+  OPERATOR  17    -|- (tint, tstzspan),
+  OPERATOR  17    -|- (tint, intspan),
+  OPERATOR  17    -|- (tint, tbox),
+  OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
   OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -467,6 +545,11 @@ CREATE OPERATOR CLASS tbigint_mrtree_equisplit_ops
   OPERATOR  2    &< (tbigint, bigintspan),
   OPERATOR  2    &< (tbigint, tbox),
   OPERATOR  2    &< (tbigint, tbigint),
+  -- overlaps
+  OPERATOR  3    && (tbigint, tstzspan),
+  OPERATOR  3    && (tbigint, bigintspan),
+  OPERATOR  3    && (tbigint, tbox),
+  OPERATOR  3    && (tbigint, tbigint),
   -- overlaps or right
   OPERATOR  4    &> (tbigint, bigintspan),
   OPERATOR  4    &> (tbigint, tbox),
@@ -475,11 +558,26 @@ CREATE OPERATOR CLASS tbigint_mrtree_equisplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
+  -- contains
+  OPERATOR  7    @> (tbigint, tstzspan),
+  OPERATOR  7    @> (tbigint, bigintspan),
+  OPERATOR  7    @> (tbigint, tbox),
+  OPERATOR  7    @> (tbigint, tbigint),
   -- contained by
   OPERATOR  8    <@ (tbigint, tstzspan),
   OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tbox),
   OPERATOR  8    <@ (tbigint, tbigint),
+  -- adjacent
+  OPERATOR  17    -|- (tbigint, tstzspan),
+  OPERATOR  17    -|- (tbigint, bigintspan),
+  OPERATOR  17    -|- (tbigint, tbox),
+  OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
   OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -526,6 +624,11 @@ CREATE OPERATOR CLASS tbigint_mrtree_segsplit_ops
   OPERATOR  2    &< (tbigint, bigintspan),
   OPERATOR  2    &< (tbigint, tbox),
   OPERATOR  2    &< (tbigint, tbigint),
+  -- overlaps
+  OPERATOR  3    && (tbigint, tstzspan),
+  OPERATOR  3    && (tbigint, bigintspan),
+  OPERATOR  3    && (tbigint, tbox),
+  OPERATOR  3    && (tbigint, tbigint),
   -- overlaps or right
   OPERATOR  4    &> (tbigint, bigintspan),
   OPERATOR  4    &> (tbigint, tbox),
@@ -534,11 +637,26 @@ CREATE OPERATOR CLASS tbigint_mrtree_segsplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
+  -- contains
+  OPERATOR  7    @> (tbigint, tstzspan),
+  OPERATOR  7    @> (tbigint, bigintspan),
+  OPERATOR  7    @> (tbigint, tbox),
+  OPERATOR  7    @> (tbigint, tbigint),
   -- contained by
   OPERATOR  8    <@ (tbigint, tstzspan),
   OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tbox),
   OPERATOR  8    <@ (tbigint, tbigint),
+  -- adjacent
+  OPERATOR  17    -|- (tbigint, tstzspan),
+  OPERATOR  17    -|- (tbigint, bigintspan),
+  OPERATOR  17    -|- (tbigint, tbox),
+  OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
   OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -585,6 +703,11 @@ CREATE OPERATOR CLASS tbigint_mrtree_tilesplit_ops
   OPERATOR  2    &< (tbigint, bigintspan),
   OPERATOR  2    &< (tbigint, tbox),
   OPERATOR  2    &< (tbigint, tbigint),
+  -- overlaps
+  OPERATOR  3    && (tbigint, tstzspan),
+  OPERATOR  3    && (tbigint, bigintspan),
+  OPERATOR  3    && (tbigint, tbox),
+  OPERATOR  3    && (tbigint, tbigint),
   -- overlaps or right
   OPERATOR  4    &> (tbigint, bigintspan),
   OPERATOR  4    &> (tbigint, tbox),
@@ -593,11 +716,26 @@ CREATE OPERATOR CLASS tbigint_mrtree_tilesplit_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
+  -- same
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
+  -- contains
+  OPERATOR  7    @> (tbigint, tstzspan),
+  OPERATOR  7    @> (tbigint, bigintspan),
+  OPERATOR  7    @> (tbigint, tbox),
+  OPERATOR  7    @> (tbigint, tbigint),
   -- contained by
   OPERATOR  8    <@ (tbigint, tstzspan),
   OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tbox),
   OPERATOR  8    <@ (tbigint, tbigint),
+  -- adjacent
+  OPERATOR  17    -|- (tbigint, tstzspan),
+  OPERATOR  17    -|- (tbigint, bigintspan),
+  OPERATOR  17    -|- (tbigint, tbox),
+  OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
   OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -649,6 +787,11 @@ CREATE OPERATOR CLASS tfloat_mrtree_equisplit_ops
   OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tfloat),
+  -- overlaps
+  OPERATOR  3    && (tfloat, tstzspan),
+  OPERATOR  3    && (tfloat, floatspan),
+  OPERATOR  3    && (tfloat, tbox),
+  OPERATOR  3    && (tfloat, tfloat),
   -- overlaps or right
   OPERATOR  4    &> (tfloat, floatspan),
   OPERATOR  4    &> (tfloat, tbox),
@@ -657,11 +800,26 @@ CREATE OPERATOR CLASS tfloat_mrtree_equisplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
+  -- contains
+  OPERATOR  7    @> (tfloat, tstzspan),
+  OPERATOR  7    @> (tfloat, floatspan),
+  OPERATOR  7    @> (tfloat, tbox),
+  OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
   OPERATOR  8    <@ (tfloat, tstzspan),
   OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tbox),
   OPERATOR  8    <@ (tfloat, tfloat),
+  -- adjacent
+  OPERATOR  17    -|- (tfloat, tstzspan),
+  OPERATOR  17    -|- (tfloat, floatspan),
+  OPERATOR  17    -|- (tfloat, tbox),
+  OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
   OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -708,6 +866,11 @@ CREATE OPERATOR CLASS tfloat_mrtree_segsplit_ops
   OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tfloat),
+  -- overlaps
+  OPERATOR  3    && (tfloat, tstzspan),
+  OPERATOR  3    && (tfloat, floatspan),
+  OPERATOR  3    && (tfloat, tbox),
+  OPERATOR  3    && (tfloat, tfloat),
   -- overlaps or right
   OPERATOR  4    &> (tfloat, floatspan),
   OPERATOR  4    &> (tfloat, tbox),
@@ -716,11 +879,26 @@ CREATE OPERATOR CLASS tfloat_mrtree_segsplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
+  -- contains
+  OPERATOR  7    @> (tfloat, tstzspan),
+  OPERATOR  7    @> (tfloat, floatspan),
+  OPERATOR  7    @> (tfloat, tbox),
+  OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
   OPERATOR  8    <@ (tfloat, tstzspan),
   OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tbox),
   OPERATOR  8    <@ (tfloat, tfloat),
+  -- adjacent
+  OPERATOR  17    -|- (tfloat, tstzspan),
+  OPERATOR  17    -|- (tfloat, floatspan),
+  OPERATOR  17    -|- (tfloat, tbox),
+  OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
   OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
@@ -767,6 +945,11 @@ CREATE OPERATOR CLASS tfloat_mrtree_tilesplit_ops
   OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tfloat),
+  -- overlaps
+  OPERATOR  3    && (tfloat, tstzspan),
+  OPERATOR  3    && (tfloat, floatspan),
+  OPERATOR  3    && (tfloat, tbox),
+  OPERATOR  3    && (tfloat, tfloat),
   -- overlaps or right
   OPERATOR  4    &> (tfloat, floatspan),
   OPERATOR  4    &> (tfloat, tbox),
@@ -775,11 +958,26 @@ CREATE OPERATOR CLASS tfloat_mrtree_tilesplit_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
+  -- same
+  OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
+  OPERATOR  6    ~= (tfloat, tbox),
+  OPERATOR  6    ~= (tfloat, tfloat),
+  -- contains
+  OPERATOR  7    @> (tfloat, tstzspan),
+  OPERATOR  7    @> (tfloat, floatspan),
+  OPERATOR  7    @> (tfloat, tbox),
+  OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
   OPERATOR  8    <@ (tfloat, tstzspan),
   OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tbox),
   OPERATOR  8    <@ (tfloat, tfloat),
+  -- adjacent
+  OPERATOR  17    -|- (tfloat, tstzspan),
+  OPERATOR  17    -|- (tfloat, floatspan),
+  OPERATOR  17    -|- (tfloat, tbox),
+  OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
   OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,

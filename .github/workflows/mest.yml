@@ -1,0 +1,138 @@
+name: Multi-entry indexes
+
+# Build the extension mobilitydb_mest over the access methods of mest and run
+# the multi-entry tests (mobilitydb/test/mest): every class against the
+# sequential scan, and their control. The tests build many indexes each, so
+# they run in shards, each within the timeout of the suite
+# (mobilitydb/test/CMakeLists.txt); a shard names its tests by a pattern of
+# MOBILITYDB_TESTS, the setup scripts running in every shard.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+  push:
+    paths:
+      - '.github/workflows/mest.yml'
+      - 'mobilitydb/mest/**'
+      - 'mobilitydb/test/mest/**'
+      - 'mobilitydb/src/**/*_mest.c'
+      - 'mobilitydb/pg_include/pg_temporal/temporal_mest.h'
+      - 'mobilitydb/src/temporal/temporal_supportfn.c'
+      - 'tools/codegen/inherited/**'
+    branches-ignore:
+      - gh-pages
+  pull_request:
+    paths:
+      - '.github/workflows/mest.yml'
+      - 'mobilitydb/mest/**'
+      - 'mobilitydb/test/mest/**'
+      - 'mobilitydb/src/**/*_mest.c'
+      - 'mobilitydb/pg_include/pg_temporal/temporal_mest.h'
+      - 'mobilitydb/src/temporal/temporal_supportfn.c'
+      - 'tools/codegen/inherited/**'
+    branches-ignore:
+      - gh-pages
+
+jobs:
+  mest:
+    name: Multi-entry tests (${{ matrix.shard }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: temporal, sets and control
+            tests: '^(000_mest_control|01[23]_[a-z]+_mest|044_[a-z]+_mest|075_mest_supportfn)'
+          - shard: tgeompoint
+            tests: '^074_tgeompoint_mest'
+          - shard: tgeogpoint, tgeometry, tgeography
+            tests: '^074_tge(ogpoint|ometry|ography)_mest'
+          - shard: families 100 to 199
+            tests: '^1[0-9][0-9]_[a-z0-9]+_mest'
+          - shard: families 200 to 299
+            tests: '^2[0-9][0-9]_[a-z0-9]+_mest'
+          - shard: families 300 to 699
+            tests: '^[3-6][0-9][0-9]_[a-z0-9]+_mest'
+
+    env:
+      PGVER: 18
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Remove existing PostgreSQL installations
+        run: |
+          sudo service postgresql stop || true
+          sudo apt-get --purge remove postgresql* -y || true
+          sudo rm -rf /var/lib/postgresql/ /etc/postgresql/ /var/log/postgresql/ || true
+
+      - uses: ./.github/actions/apt-resilient
+
+      - name: Add PostgreSQL APT repository
+        run: |
+          sudo apt-get install curl ca-certificates gnupg
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL --retry 5 --retry-all-errors --retry-delay 15 \
+            -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt/ \
+            $(lsb_release -cs)-pgdg main ${{ env.PGVER }}" > /etc/apt/sources.list.d/pgdg.list'
+
+      - name: Install dependencies
+        # Those of every family, as pgversion.yml installs them, since the
+        # multi-entry classes are built for every family the build enables
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libproj-dev libgdal-dev libjson-c-dev \
+            postgresql-${{ env.PGVER }} \
+            postgresql-${{ env.PGVER }}-postgis-3 \
+            postgresql-server-dev-${{ env.PGVER }} \
+            postgresql-${{ env.PGVER }}-pointcloud \
+            postgresql-${{ env.PGVER }}-h3 \
+            autoconf automake libtool libxml2-dev zlib1g-dev
+
+      - name: Install the H3 release MobilityDB supports
+        run: |
+          sudo .github/scripts/install-h3.sh /usr/local
+          echo "H3_INCLUDE_DIR=/usr/local/include/h3" >> $GITHUB_ENV
+          echo "H3_LIBRARY=/usr/local/lib/libh3.so" >> $GITHUB_ENV
+
+      - name: Build and install the access methods of mest
+        run: |
+          git clone --depth 1 https://github.com/MobilityDB/mest.git ../mest
+          make -C ../mest PG_CONFIG=/usr/lib/postgresql/${{ env.PGVER }}/bin/pg_config
+          sudo make -C ../mest PG_CONFIG=/usr/lib/postgresql/${{ env.PGVER }}/bin/pg_config install
+
+      - name: Configure
+        run: |
+          export PATH=/usr/lib/postgresql/${{ env.PGVER }}/bin:$PATH
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DALL=ON -DMEST=ON \
+            -DH3_INCLUDE_DIR=${{ env.H3_INCLUDE_DIR }} \
+            -DH3_LIBRARY=${{ env.H3_LIBRARY }} ..
+
+      - name: Build
+        run: |
+          cd build
+          make -j 4
+          sudo make install
+
+      - name: Test
+        run: |
+          export PATH=/usr/lib/postgresql/${{ env.PGVER }}/bin:$PATH
+          cd build
+          MOBILITYDB_TESTS='${{ matrix.tests }}' ctest -R '^regress$' --output-on-failure
+
+      - name: Show the time of every test
+        # The summary of pg_regress, one line per test with its time, from
+        # which the shards are balanced
+        if: always()
+        run: cat build/mobilitydb/test/regress/regression.out || true
+
+      - name: Show the differences
+        if: failure()
+        run: cat build/mobilitydb/test/regress/regression.diffs || true

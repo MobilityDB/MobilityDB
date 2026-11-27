@@ -208,6 +208,18 @@ CREATE INDEX tbl_floatset_rtree_idx ON tbl_floatset USING GIST(f);
 CREATE INDEX tbl_dateset_rtree_idx ON tbl_dateset USING GIST(d);
 CREATE INDEX tbl_tstzset_rtree_idx ON tbl_tstzset USING GIST(t);
 
+-- The nearest sets of dates and of timestamps, read through the GiST index
+SET enable_seqscan = off;
+EXPLAIN (COSTS OFF) SELECT d <-> date '2001-06-01' FROM tbl_dateset
+  ORDER BY d <-> date '2001-06-01' LIMIT 3;
+SELECT d <-> date '2001-06-01' FROM tbl_dateset
+  ORDER BY d <-> date '2001-06-01' LIMIT 3;
+EXPLAIN (COSTS OFF) SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzset
+  ORDER BY t <-> timestamptz '2001-06-01' LIMIT 3;
+SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzset
+  ORDER BY t <-> timestamptz '2001-06-01' LIMIT 3;
+RESET enable_seqscan;
+
 -------------------------------------------------------------------------------
 
 UPDATE test_setops

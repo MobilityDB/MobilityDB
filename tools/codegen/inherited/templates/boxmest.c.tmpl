@@ -13,7 +13,7 @@ Datum
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   {CTYPE} *boxes = {PFX}_split_n_{BOXES}_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+  PG_RETURN_POINTER({KEYS});
 }
 
 PG_FUNCTION_INFO_V1({CSTEM}_mest_segsplit);
@@ -31,7 +31,7 @@ Datum
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   {CTYPE} *boxes = {PFX}_split_each_n_{BOXES}_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+  PG_RETURN_POINTER({KEYS});
 }
 
 PG_FUNCTION_INFO_V1({CSTEM}_mest_mergesplit);
@@ -48,7 +48,7 @@ Datum
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   {CTYPE} *boxes = {PFX}_merge_n_{BOXES}_intl(temp, mest_count(fcinfo), nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+  PG_RETURN_POINTER({KEYS});
 }
 
 PG_FUNCTION_INFO_V1({CSTEM}_mest_adaptsplit);
@@ -67,6 +67,6 @@ Datum
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   {CTYPE} *boxes = {PFX}_merge_each_n_{BOXES}_intl(temp, mest_count(fcinfo),
     nkeys);
-  PG_RETURN_POINTER(mest_keys(boxes, sizeof({CTYPE}), *nkeys));
+  PG_RETURN_POINTER({KEYS});
 }
 

@@ -299,10 +299,11 @@ static int
   assert({NCOUNT} > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= {NCOUNT}) ? ss->totalcount : {NCOUNT};
-  {CTYPE} *result = palloc(sizeof({CTYPE}) * nboxes);
   if (ss->totalcount <= {NCOUNT})
     return {SEQSET}_{BOXES}(ss, count{CTXPASS});
+
+  /* At most {NCOUNT} boxes, the segments being more */
+  {CTYPE} *result = palloc(sizeof({CTYPE}) * {NCOUNT});
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */

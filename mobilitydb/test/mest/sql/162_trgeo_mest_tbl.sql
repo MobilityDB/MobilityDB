@@ -144,12 +144,24 @@ INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('<< trgeometry', (SELECT CO
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&< stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &< t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&< stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp &< t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&< trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&& tstzspan', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&& stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&& stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&& trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&> stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&> stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp &> t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &> t2.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('>> stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp >> t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('>> stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp >> t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('>> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('~= stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('~= stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('~= trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('@> tstzspan', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('@> stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('@> stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('@> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('<@ stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp <@ t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('<@ stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp <@ t2.b)::text);
@@ -166,6 +178,10 @@ INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('|>> trgeometry', (SELECT C
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('|&> stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp |&> t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('|&> stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp |&> t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('|&> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('-|- stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('-|- stbox x', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('-|- trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&<# stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &<# t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('&<# trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &<# t2.temp)::text);
@@ -181,11 +197,19 @@ INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('#&> trgeometry', (SELECT C
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('?&& stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ?&& t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('%&& stbox', (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp %&& t2.b)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox >> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('tstzspan && trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox && trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox << trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('tstzspan ~= trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox ~= trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('tstzspan <@ trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox <@ trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('tstzspan @> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox @> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b @> t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox |>> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b |>> t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox <<| trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('tstzspan -|- trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text);
+INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox -|- trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('tstzspan #>> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('stbox #>> trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b #>> t1.temp)::text);
 INSERT INTO test_trgeometry_mest(op, no_idx) VALUES ('tstzspan <<# trgeometry', (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <<# t1.temp)::text);
@@ -220,6 +244,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -238,6 +274,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -286,6 +346,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -331,9 +403,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -346,6 +436,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -399,6 +495,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -417,6 +525,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -465,6 +597,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -510,9 +654,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -525,6 +687,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -578,6 +746,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -596,6 +776,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -644,6 +848,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -689,9 +905,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -704,6 +938,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -757,6 +997,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -775,6 +1027,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -823,6 +1099,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -868,9 +1156,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -883,6 +1189,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET rtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   rtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -936,6 +1248,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -954,6 +1278,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1002,6 +1350,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1047,9 +1407,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -1062,6 +1440,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -1115,6 +1499,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -1133,6 +1529,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1181,6 +1601,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1226,9 +1658,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -1241,6 +1691,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -1294,6 +1750,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -1312,6 +1780,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1360,6 +1852,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1405,9 +1909,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -1420,6 +1942,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -1473,6 +2001,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -1491,6 +2031,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1539,6 +2103,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1584,9 +2160,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -1599,6 +2193,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET quadtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   quadtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -1652,6 +2252,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -1670,6 +2282,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1718,6 +2354,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1763,9 +2411,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -1778,6 +2444,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_equi_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_equi_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -1831,6 +2503,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -1849,6 +2533,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -1897,6 +2605,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -1942,9 +2662,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -1957,6 +2695,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_seg_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_seg_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -2010,6 +2754,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -2028,6 +2784,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -2076,6 +2856,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -2121,9 +2913,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -2136,6 +2946,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_merge_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_merge_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';
@@ -2189,6 +3005,18 @@ WHERE op = '&< stbox x';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp &< t2.temp')
 WHERE op = '&< trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp &> t2.b')
 WHERE op = '&> stbox';
@@ -2207,6 +3035,30 @@ WHERE op = '>> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp >> t2.temp')
 WHERE op = '>> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp <@ t2.t')
 WHERE op = '<@ tstzspan';
@@ -2255,6 +3107,18 @@ WHERE op = '|&> stbox x';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp |&> t2.temp')
 WHERE op = '|&> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_idx t1, tbl_trgeometry2d_span t2 WHERE t1.temp &<# t2.t')
 WHERE op = '&<# tstzspan';
@@ -2300,9 +3164,27 @@ WHERE op = '%&& stbox';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b >> t1.temp')
 WHERE op = 'stbox >> trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b << t1.temp')
 WHERE op = 'stbox << trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t @> t1.temp')
 WHERE op = 'tstzspan @> trgeometry';
@@ -2315,6 +3197,12 @@ WHERE op = 'stbox |>> trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b <<| t1.temp')
 WHERE op = 'stbox <<| trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- trgeometry';
+UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_box t2, tbl_trgeometry2d_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- trgeometry';
 UPDATE test_trgeometry_mest SET kdtree_adapt_idx = (SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp)::text,
   kdtree_adapt_probe = pg_temp.test_probes_index('SELECT COUNT(*) FROM tbl_trgeometry2d_span t2, tbl_trgeometry2d_idx t1 WHERE t2.t #>> t1.temp')
 WHERE op = 'tstzspan #>> trgeometry';

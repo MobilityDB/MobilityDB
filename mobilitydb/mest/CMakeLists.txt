@@ -38,6 +38,10 @@ configure_file(mobilitydb_mest.in.control ${CMAKE_BINARY_DIR}/mobilitydb_mest.co
 # types
 set(MEST_FILES
   temporal/000_mest.in.sql
+  temporal/012_spanset_mgist.in.sql
+  temporal/012_spanset_mspgist.in.sql
+  temporal/013_set_mgist.in.sql
+  temporal/013_set_mspgist.in.sql
   temporal/043_temporal_mgist.in.sql
   temporal/044_temporal_mspgist.in.sql
   geo/073_tpoint_mgist.in.sql

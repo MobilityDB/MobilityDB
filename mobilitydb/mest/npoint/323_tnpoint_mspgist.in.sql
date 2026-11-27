@@ -45,12 +45,24 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -67,6 +79,10 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -109,12 +125,24 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -131,6 +159,10 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -173,12 +205,24 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -195,6 +239,10 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -237,12 +285,24 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -259,6 +319,10 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -301,12 +365,24 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -323,6 +399,10 @@ CREATE OPERATOR CLASS tnpoint_mquadtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -365,12 +445,24 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -387,6 +479,10 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -429,12 +525,24 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -451,6 +559,10 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -493,12 +605,24 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -515,6 +639,10 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -557,12 +685,24 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -579,6 +719,10 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,
@@ -621,12 +765,24 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
+  -- overlaps
+  OPERATOR  3    && (tnpoint, tstzspan),
+  OPERATOR  3    && (tnpoint, stbox),
+  OPERATOR  3    && (tnpoint, tnpoint),
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
   -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
+  -- same
+  OPERATOR  6    ~= (tnpoint, tstzspan),
+  OPERATOR  6    ~= (tnpoint, stbox),
+  OPERATOR  6    ~= (tnpoint, tnpoint),
+  -- contains
+  OPERATOR  7    @> (tnpoint, tstzspan),
+  OPERATOR  7    @> (tnpoint, stbox),
+  OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, tstzspan),
   OPERATOR  8    <@ (tnpoint, stbox),
@@ -643,6 +799,10 @@ CREATE OPERATOR CLASS tnpoint_mkdtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
+  -- adjacent
+  OPERATOR  17    -|- (tnpoint, tstzspan),
+  OPERATOR  17    -|- (tnpoint, stbox),
+  OPERATOR  17    -|- (tnpoint, tnpoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tnpoint, tnpoint) FOR ORDER BY pg_catalog.float_ops,

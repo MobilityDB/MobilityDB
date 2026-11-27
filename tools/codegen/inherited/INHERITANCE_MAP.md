@@ -330,13 +330,54 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   takes in `templates/mestcommon.sql.tmpl`). A class keys a value by the boxes
   of its pieces, and holds the members of the GiST or SP-GiST class of its
   type that a value answers when every key answers it (`MEST_STRATEGIES`: the
-  position operators, contained by, the nearest approach distance, the ever
-  and always overlaps). The extraction methods of the splits come from
-  `templates/boxmest.c.tmpl` into the `GENERATED-BOXMEST-BEGIN/END` regions of
-  the `mestfile` a row of `boxsplit.yaml` names, and the consistent methods,
-  twins of those of the type rechecking every leaf, from
-  `templates/mestconsistent.c.tmpl` into the `GENERATED-MESTCONSISTENT`
-  region of the multi-entry file of the family defining each original.
+  position operators, contained by, the same box, the nearest approach
+  distance, the ever and always overlaps). A class whose box carries flags
+  (`MEST_WHOLE_BOXES`: a tbox, an stbox, a tpcbox) also keys the box of the
+  whole value, flagged as a structure of its own (`mest_keys_whole`), and
+  holds the members that key answers (`MEST_WHOLE_STRATEGIES`: overlaps,
+  contains, adjacent, and the same box, which it answers exactly); a span
+  carries no flags and keys the pieces alone, which answer the same box as
+  contained by. The extraction methods of
+  the splits come from `templates/boxmest.c.tmpl` into the
+  `GENERATED-BOXMEST-BEGIN/END` regions of the `mestfile` a row of
+  `boxsplit.yaml` names, the `{KEYS}` slot naming `mest_keys` or
+  `mest_keys_whole` by the box, and the consistent methods, twins of those of
+  the type rechecking every leaf, from `templates/mestconsistent.c.tmpl` into
+  the `GENERATED-MESTCONSISTENT` region of the multi-entry file of the family
+  defining each original; the twin of a box carrying flags keeps the
+  template's `TIER` block, where a key answers only the strategies of its own
+  tier (`mest_key_answers`), and the twin of a span its `PIECES` block, which
+  reads the same span as contained by (`mest_pieces_scankeys`), as the inner
+  consistent twins of the SP-GiST classes of a span do
+  (`mest_inner_consistent`). The tier of every strategy is stated once in
+  `manifest.d/meststrategies.yaml`, from which the generator derives
+  `MEST_STRATEGIES`, `MEST_WHOLE_STRATEGIES` and `MEST_VALUE_STRATEGIES` and
+  renders `mest_key_answers` and `mest_pieces_strategy`
+  (`templates/mesttiers.c.tmpl`, the `GENERATED-MESTTIERS` region of
+  `temporal_mest.c`).
+  The multi-entry classes of the sets and span sets come from their GiST and
+  SP-GiST classes (`MEST_VALUE_FILES`, `render_valuemestfile`), into
+  `mobilitydb/mest/temporal/012_spanset_m*.in.sql` and `013_set_m*.in.sql`,
+  which load first and so declare the twins of the span the later files take:
+  a class per class and per split (`MEST_VALUE_SPLITS`), keyed by the spans of
+  the elements or the components of a value (`Set_mest_*split`,
+  `Spanset_mest_*split`), holding the members of `MEST_VALUE_STRATEGIES` its
+  class holds, which leave out the distance; the twins of the span answer the
+  contains as the overlaps and the equals
+  as contained by (`mest_pieces_strategy`). `render_valuemesttest` writes their
+  tests, `mobilitydb/test/mest/sql/01[23]_<type>_mest_tbl.sql`.
+  `render_tpcmesttest` writes the multi-entry test of the temporal point
+  clouds, `mobilitydb/test/mest/sql/439_tpc_mest_tbl.sql`: every class of
+  `tpcpoint` and `tpcpatch` (`MEST_TPC_FILES`) answering the members of the
+  class of the segment split of the R-tree with a right argument of a fixture.
+  `render_mestcontroltest` writes the control of these tests,
+  `mobilitydb/test/mest/sql/000_mest_control_tbl.sql`: for one type of each kind
+  of key (`MEST_CONTROL_TYPES`: tbool, tgeompoint, intspanset), the class of its
+  segment split and a control class, the same class whose consistent method is
+  that of the single-entry class, which reads a key as the whole value; with the
+  template and the comparison of every multi-entry test, the class answers as
+  the scan and the control does not, so the comparison is shown to notice a
+  class answering wrongly.
   `templates/mestindextest.sql.tmpl` writes the multi-entry test of each index
   test, `mobilitydb/test/mest/sql/<nnn>_<temp>_mest[3d]_tbl.sql`, one column
   per tree and split; an index test states per dimension the tile its

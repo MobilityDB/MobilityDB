@@ -3131,8 +3131,9 @@ rasterstatsstate_rescale(RasterStatsState *state, int scale)
  * @param[in] band Number of the band, starting at 1
  * @param[in] exclude_nodata True to leave the pixels the band states as nodata
  * out of the statistics, false to count them as the values they hold
- * @return The statistics, which the caller releases with @p free(), or NULL
- * where the band states no pixel to count, in which case no error is stated
+ * @return The statistics, which the caller releases with @p free(); where the
+ * band states no pixel to count, statistics counting none, whose other fields
+ * the accessors answer as absent
  * @errval NULL
  * @csqlfn #Raster_summary_stats()
  */
@@ -3189,15 +3190,16 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
    * and pfree() on them raises "pfree called with invalid pointer" */
 
   /* A band whose every pixel is nodata states no value to summarize, which is
-   * an answer rather than an error; the statistics of no pixels have no mean */
+   * an answer rather than an error: statistics counting no pixel, whose other
+   * fields the accessors answer as absent, as PostgreSQL answers (0,,,,,) */
+  BandStats *result = palloc0(sizeof(BandStats));
   if (stats->count < 1)
   {
     raster_destroy(raster);
     rtdealloc(stats);
-    return NULL;
+    return result;
   }
 
-  BandStats *result = palloc0(sizeof(BandStats));
   result->count = stats->count;
   result->sum = stats->sum;
   result->mean = stats->mean;
@@ -3216,13 +3218,13 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
     double sum, q, min, max;
     band_stats_scaled(rtband, exclude_nodata, 0, NULL, NULL, NULL, &count,
       &sum, &q, &min, &max);
-    /* A band none of whose pixels carries a value has no statistics */
+    /* A band none of whose pixels carries a value counts no pixel */
     if (count < 1)
     {
-      pfree(result);
+      memset(result, 0, sizeof(BandStats));
       raster_destroy(raster);
       rtdealloc(stats);
-      return NULL;
+      return result;
     }
     int scale = 0;
     if (! isfinite(sum) || ! isfinite(q))
@@ -6497,6 +6499,20 @@ raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
       "Could not summarize band %d of the raster", nband);
     return NULL;
   }
+  /* The raster core answers a band flagged as entirely nodata, read with its
+   * nodata counted, without reading its pixels, and so leaves the running
+   * count, mean and sum of squared deviations where they were: the statistics
+   * of the band join them as #raster_summary_stats_combinefn joins those of
+   * two states */
+  if (state->scale == 0 && stats->count > 0 && count == state->count)
+  {
+    double n1 = (double) state->count, n2 = (double) stats->count;
+    double n = n1 + n2;
+    double delta = stats->mean - mean;
+    mean += delta * n2 / n;
+    q += stats->stddev * stats->stddev * n2 + delta * delta * n1 * n2 / n;
+    count = state->count + stats->count;
+  }
   double sum = stats->sum;
   uint32_t bcount = stats->count;
   double bmin = stats->min, bmax = stats->max;
@@ -6629,8 +6645,9 @@ raster_summary_stats_combinefn(RasterStatsState *state1,
  * `RASTER_summaryStats_finalfn` takes them when every pixel is read. The
  * state is freed, as #raster_same_alignment_finalfn frees its own
  * @param[in] state Aggregate state @nullable
- * @return The statistics, or NULL where the state is NULL, an aggregate over
- * no raster, or counts no pixel, in which case no error is stated
+ * @return The statistics, which count no pixel where none of the rasters
+ * carries a value, or NULL where the state is NULL, an aggregate over no
+ * raster, in which case no error is stated
  * @errval NULL
  * @csqlfn #Raster_summary_stats_finalfn()
  */
@@ -6646,6 +6663,7 @@ raster_summary_stats_finalfn(RasterStatsState *state)
       "The statistics count more pixels than their count can state");
     return NULL;
   }
+  /* Rasters none of whose pixels carries a value count no pixel */
   BandStats *result = NULL;
   if (state->count > 0)
   {
@@ -6666,6 +6684,8 @@ raster_summary_stats_finalfn(RasterStatsState *state)
     result->min = state->min;
     result->max = state->max;
   }
+  else
+    result = palloc0(sizeof(BandStats));
   pfree(state);
   return result;
 }

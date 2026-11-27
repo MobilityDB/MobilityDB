@@ -1060,10 +1060,11 @@ tpointcloudseqset_split_n_tpcboxes(const TSequenceSet *ss, int box_count,
   assert(box_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
-  TPCBox *result = palloc(sizeof(TPCBox) * nboxes);
   if (ss->totalcount <= box_count)
     return tpointcloudseqset_tpcboxes(ss, count);
+
+  /* At most box_count boxes, the segments being more */
+  TPCBox *result = palloc(sizeof(TPCBox) * box_count);
 
   /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */

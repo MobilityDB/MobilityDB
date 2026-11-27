@@ -51,12 +51,24 @@ CREATE OPERATOR CLASS tgeometry_mrtree_equisplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tgeometry, stbox),
   OPERATOR  2    &< (tgeometry, tgeometry),
+  -- overlaps
+  OPERATOR  3    && (tgeometry, tstzspan),
+  OPERATOR  3    && (tgeometry, stbox),
+  OPERATOR  3    && (tgeometry, tgeometry),
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
   -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
+  -- same
+  OPERATOR  6    ~= (tgeometry, tstzspan),
+  OPERATOR  6    ~= (tgeometry, stbox),
+  OPERATOR  6    ~= (tgeometry, tgeometry),
+  -- contains
+  OPERATOR  7    @> (tgeometry, tstzspan),
+  OPERATOR  7    @> (tgeometry, stbox),
+  OPERATOR  7    @> (tgeometry, tgeometry),
   -- contained by
   OPERATOR  8    <@ (tgeometry, tstzspan),
   OPERATOR  8    <@ (tgeometry, stbox),
@@ -73,6 +85,10 @@ CREATE OPERATOR CLASS tgeometry_mrtree_equisplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tgeometry, stbox),
   OPERATOR  12    |&> (tgeometry, tgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (tgeometry, tstzspan),
+  OPERATOR  17    -|- (tgeometry, stbox),
+  OPERATOR  17    -|- (tgeometry, tgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -129,12 +145,24 @@ CREATE OPERATOR CLASS tgeometry_mrtree_segsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tgeometry, stbox),
   OPERATOR  2    &< (tgeometry, tgeometry),
+  -- overlaps
+  OPERATOR  3    && (tgeometry, tstzspan),
+  OPERATOR  3    && (tgeometry, stbox),
+  OPERATOR  3    && (tgeometry, tgeometry),
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
   -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
+  -- same
+  OPERATOR  6    ~= (tgeometry, tstzspan),
+  OPERATOR  6    ~= (tgeometry, stbox),
+  OPERATOR  6    ~= (tgeometry, tgeometry),
+  -- contains
+  OPERATOR  7    @> (tgeometry, tstzspan),
+  OPERATOR  7    @> (tgeometry, stbox),
+  OPERATOR  7    @> (tgeometry, tgeometry),
   -- contained by
   OPERATOR  8    <@ (tgeometry, tstzspan),
   OPERATOR  8    <@ (tgeometry, stbox),
@@ -151,6 +179,10 @@ CREATE OPERATOR CLASS tgeometry_mrtree_segsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tgeometry, stbox),
   OPERATOR  12    |&> (tgeometry, tgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (tgeometry, tstzspan),
+  OPERATOR  17    -|- (tgeometry, stbox),
+  OPERATOR  17    -|- (tgeometry, tgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -207,12 +239,24 @@ CREATE OPERATOR CLASS tgeometry_mrtree_tilesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tgeometry, stbox),
   OPERATOR  2    &< (tgeometry, tgeometry),
+  -- overlaps
+  OPERATOR  3    && (tgeometry, tstzspan),
+  OPERATOR  3    && (tgeometry, stbox),
+  OPERATOR  3    && (tgeometry, tgeometry),
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
   -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
+  -- same
+  OPERATOR  6    ~= (tgeometry, tstzspan),
+  OPERATOR  6    ~= (tgeometry, stbox),
+  OPERATOR  6    ~= (tgeometry, tgeometry),
+  -- contains
+  OPERATOR  7    @> (tgeometry, tstzspan),
+  OPERATOR  7    @> (tgeometry, stbox),
+  OPERATOR  7    @> (tgeometry, tgeometry),
   -- contained by
   OPERATOR  8    <@ (tgeometry, tstzspan),
   OPERATOR  8    <@ (tgeometry, stbox),
@@ -229,6 +273,10 @@ CREATE OPERATOR CLASS tgeometry_mrtree_tilesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tgeometry, stbox),
   OPERATOR  12    |&> (tgeometry, tgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (tgeometry, tstzspan),
+  OPERATOR  17    -|- (tgeometry, stbox),
+  OPERATOR  17    -|- (tgeometry, tgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -285,12 +333,24 @@ CREATE OPERATOR CLASS tgeometry_mrtree_mergesplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tgeometry, stbox),
   OPERATOR  2    &< (tgeometry, tgeometry),
+  -- overlaps
+  OPERATOR  3    && (tgeometry, tstzspan),
+  OPERATOR  3    && (tgeometry, stbox),
+  OPERATOR  3    && (tgeometry, tgeometry),
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
   -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
+  -- same
+  OPERATOR  6    ~= (tgeometry, tstzspan),
+  OPERATOR  6    ~= (tgeometry, stbox),
+  OPERATOR  6    ~= (tgeometry, tgeometry),
+  -- contains
+  OPERATOR  7    @> (tgeometry, tstzspan),
+  OPERATOR  7    @> (tgeometry, stbox),
+  OPERATOR  7    @> (tgeometry, tgeometry),
   -- contained by
   OPERATOR  8    <@ (tgeometry, tstzspan),
   OPERATOR  8    <@ (tgeometry, stbox),
@@ -307,6 +367,10 @@ CREATE OPERATOR CLASS tgeometry_mrtree_mergesplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tgeometry, stbox),
   OPERATOR  12    |&> (tgeometry, tgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (tgeometry, tstzspan),
+  OPERATOR  17    -|- (tgeometry, stbox),
+  OPERATOR  17    -|- (tgeometry, tgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -363,12 +427,24 @@ CREATE OPERATOR CLASS tgeometry_mrtree_linearsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tgeometry, stbox),
   OPERATOR  2    &< (tgeometry, tgeometry),
+  -- overlaps
+  OPERATOR  3    && (tgeometry, tstzspan),
+  OPERATOR  3    && (tgeometry, stbox),
+  OPERATOR  3    && (tgeometry, tgeometry),
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
   -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
+  -- same
+  OPERATOR  6    ~= (tgeometry, tstzspan),
+  OPERATOR  6    ~= (tgeometry, stbox),
+  OPERATOR  6    ~= (tgeometry, tgeometry),
+  -- contains
+  OPERATOR  7    @> (tgeometry, tstzspan),
+  OPERATOR  7    @> (tgeometry, stbox),
+  OPERATOR  7    @> (tgeometry, tgeometry),
   -- contained by
   OPERATOR  8    <@ (tgeometry, tstzspan),
   OPERATOR  8    <@ (tgeometry, stbox),
@@ -385,6 +461,10 @@ CREATE OPERATOR CLASS tgeometry_mrtree_linearsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tgeometry, stbox),
   OPERATOR  12    |&> (tgeometry, tgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (tgeometry, tstzspan),
+  OPERATOR  17    -|- (tgeometry, stbox),
+  OPERATOR  17    -|- (tgeometry, tgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -441,12 +521,24 @@ CREATE OPERATOR CLASS tgeometry_mrtree_adaptsplit_ops
   -- overlaps or left
   OPERATOR  2    &< (tgeometry, stbox),
   OPERATOR  2    &< (tgeometry, tgeometry),
+  -- overlaps
+  OPERATOR  3    && (tgeometry, tstzspan),
+  OPERATOR  3    && (tgeometry, stbox),
+  OPERATOR  3    && (tgeometry, tgeometry),
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
   -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
+  -- same
+  OPERATOR  6    ~= (tgeometry, tstzspan),
+  OPERATOR  6    ~= (tgeometry, stbox),
+  OPERATOR  6    ~= (tgeometry, tgeometry),
+  -- contains
+  OPERATOR  7    @> (tgeometry, tstzspan),
+  OPERATOR  7    @> (tgeometry, stbox),
+  OPERATOR  7    @> (tgeometry, tgeometry),
   -- contained by
   OPERATOR  8    <@ (tgeometry, tstzspan),
   OPERATOR  8    <@ (tgeometry, stbox),
@@ -463,6 +555,10 @@ CREATE OPERATOR CLASS tgeometry_mrtree_adaptsplit_ops
   -- overlaps or above
   OPERATOR  12    |&> (tgeometry, stbox),
   OPERATOR  12    |&> (tgeometry, tgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (tgeometry, tstzspan),
+  OPERATOR  17    -|- (tgeometry, stbox),
+  OPERATOR  17    -|- (tgeometry, tgeometry),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
@@ -518,10 +614,26 @@ CREATE FUNCTION tgeography_mgist_consistent(internal, tgeography, smallint, oid,
 CREATE OPERATOR CLASS tgeography_mrtree_equisplit_ops
   DEFAULT FOR TYPE tgeography USING mgist AS
   STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (tgeography, tstzspan),
+  OPERATOR  3    && (tgeography, stbox),
+  OPERATOR  3    && (tgeography, tgeography),
+  -- same
+  OPERATOR  6    ~= (tgeography, tstzspan),
+  OPERATOR  6    ~= (tgeography, stbox),
+  OPERATOR  6    ~= (tgeography, tgeography),
+  -- contains
+  OPERATOR  7    @> (tgeography, tstzspan),
+  OPERATOR  7    @> (tgeography, stbox),
+  OPERATOR  7    @> (tgeography, tgeography),
   -- contained by
   OPERATOR  8    <@ (tgeography, tstzspan),
   OPERATOR  8    <@ (tgeography, stbox),
   OPERATOR  8    <@ (tgeography, tgeography),
+  -- adjacent
+  OPERATOR  17    -|- (tgeography, tstzspan),
+  OPERATOR  17    -|- (tgeography, stbox),
+  OPERATOR  17    -|- (tgeography, tgeography),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
@@ -560,10 +672,26 @@ CREATE OPERATOR CLASS tgeography_mrtree_equisplit_ops
 CREATE OPERATOR CLASS tgeography_mrtree_segsplit_ops
   FOR TYPE tgeography USING mgist AS
   STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (tgeography, tstzspan),
+  OPERATOR  3    && (tgeography, stbox),
+  OPERATOR  3    && (tgeography, tgeography),
+  -- same
+  OPERATOR  6    ~= (tgeography, tstzspan),
+  OPERATOR  6    ~= (tgeography, stbox),
+  OPERATOR  6    ~= (tgeography, tgeography),
+  -- contains
+  OPERATOR  7    @> (tgeography, tstzspan),
+  OPERATOR  7    @> (tgeography, stbox),
+  OPERATOR  7    @> (tgeography, tgeography),
   -- contained by
   OPERATOR  8    <@ (tgeography, tstzspan),
   OPERATOR  8    <@ (tgeography, stbox),
   OPERATOR  8    <@ (tgeography, tgeography),
+  -- adjacent
+  OPERATOR  17    -|- (tgeography, tstzspan),
+  OPERATOR  17    -|- (tgeography, stbox),
+  OPERATOR  17    -|- (tgeography, tgeography),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
@@ -602,10 +730,26 @@ CREATE OPERATOR CLASS tgeography_mrtree_segsplit_ops
 CREATE OPERATOR CLASS tgeography_mrtree_mergesplit_ops
   FOR TYPE tgeography USING mgist AS
   STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (tgeography, tstzspan),
+  OPERATOR  3    && (tgeography, stbox),
+  OPERATOR  3    && (tgeography, tgeography),
+  -- same
+  OPERATOR  6    ~= (tgeography, tstzspan),
+  OPERATOR  6    ~= (tgeography, stbox),
+  OPERATOR  6    ~= (tgeography, tgeography),
+  -- contains
+  OPERATOR  7    @> (tgeography, tstzspan),
+  OPERATOR  7    @> (tgeography, stbox),
+  OPERATOR  7    @> (tgeography, tgeography),
   -- contained by
   OPERATOR  8    <@ (tgeography, tstzspan),
   OPERATOR  8    <@ (tgeography, stbox),
   OPERATOR  8    <@ (tgeography, tgeography),
+  -- adjacent
+  OPERATOR  17    -|- (tgeography, tstzspan),
+  OPERATOR  17    -|- (tgeography, stbox),
+  OPERATOR  17    -|- (tgeography, tgeography),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
@@ -644,10 +788,26 @@ CREATE OPERATOR CLASS tgeography_mrtree_mergesplit_ops
 CREATE OPERATOR CLASS tgeography_mrtree_linearsplit_ops
   FOR TYPE tgeography USING mgist AS
   STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (tgeography, tstzspan),
+  OPERATOR  3    && (tgeography, stbox),
+  OPERATOR  3    && (tgeography, tgeography),
+  -- same
+  OPERATOR  6    ~= (tgeography, tstzspan),
+  OPERATOR  6    ~= (tgeography, stbox),
+  OPERATOR  6    ~= (tgeography, tgeography),
+  -- contains
+  OPERATOR  7    @> (tgeography, tstzspan),
+  OPERATOR  7    @> (tgeography, stbox),
+  OPERATOR  7    @> (tgeography, tgeography),
   -- contained by
   OPERATOR  8    <@ (tgeography, tstzspan),
   OPERATOR  8    <@ (tgeography, stbox),
   OPERATOR  8    <@ (tgeography, tgeography),
+  -- adjacent
+  OPERATOR  17    -|- (tgeography, tstzspan),
+  OPERATOR  17    -|- (tgeography, stbox),
+  OPERATOR  17    -|- (tgeography, tgeography),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
@@ -686,10 +846,26 @@ CREATE OPERATOR CLASS tgeography_mrtree_linearsplit_ops
 CREATE OPERATOR CLASS tgeography_mrtree_adaptsplit_ops
   FOR TYPE tgeography USING mgist AS
   STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (tgeography, tstzspan),
+  OPERATOR  3    && (tgeography, stbox),
+  OPERATOR  3    && (tgeography, tgeography),
+  -- same
+  OPERATOR  6    ~= (tgeography, tstzspan),
+  OPERATOR  6    ~= (tgeography, stbox),
+  OPERATOR  6    ~= (tgeography, tgeography),
+  -- contains
+  OPERATOR  7    @> (tgeography, tstzspan),
+  OPERATOR  7    @> (tgeography, stbox),
+  OPERATOR  7    @> (tgeography, tgeography),
   -- contained by
   OPERATOR  8    <@ (tgeography, tstzspan),
   OPERATOR  8    <@ (tgeography, stbox),
   OPERATOR  8    <@ (tgeography, tgeography),
+  -- adjacent
+  OPERATOR  17    -|- (tgeography, tstzspan),
+  OPERATOR  17    -|- (tgeography, stbox),
+  OPERATOR  17    -|- (tgeography, tgeography),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
