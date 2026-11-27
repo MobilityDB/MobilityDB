@@ -12,9 +12,9 @@
 
 | | |
 |---|---|
-| Version | v1.7.0 |
+| Version | v1.8.0 |
 | Scope | The OGC API conformance classes MobilityAPI declares, what it answers and refuses under each, the points the standards leave open and the resolution it applies, and the routes it serves beyond them |
-| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`2970dd1`](https://github.com/MobilityDB/MobilityAPI/tree/2970dd1): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
+| Reference | [MobilityAPI](https://github.com/MobilityDB/MobilityAPI) at commit [`53fd81d`](https://github.com/MobilityDB/MobilityAPI/tree/53fd81d): `main.go` (`routeTable`, `conformsTo`, `landing`, `featureCollectionDescription`, `itemFilters`), `feature_type.go` (`lonLatBoxTest`), `coverage.go`, `edr.go`, `edr_features.go`, `stream_engine_meos.go`, `stream_geometry.go` (`geometryAggregations`), `stream_geometry_meos.go`, `CONFORMANCE.md`, `api/surface.json` |
 
 ## 1. Scope and intent
 
@@ -308,6 +308,26 @@ same document. The class `covjson` of EDR 1.1 is declared.
 | `POST .../tproperties/{tPropertyName}/ingest` | records pushed to a live continuous query |
 | `POST`, `GET`, `DELETE .../tgsequence/queries[/{queryId}]`, `GET .../queries/{queryId}/stream` | continuous queries over a temporal geometry, streamed as Server-Sent Events |
 
+A continuous query over a temporal geometry given an `aggregation` and a
+`window` answers one aggregate per window of the feature's temporal geometry,
+following Table 7 of the Stream proposal. The windows are those of section 5,
+and each aggregate is computed by MEOS on the value restricted to its window:
+
+| aggregation | collection | answer |
+|---|---|---|
+| `COUNT` | every type | the instants of the window |
+| `LENGTH` | a moving point (`tgeompoint`, `tgeogpoint`) | the distance travelled, on the spheroid for a point in longitude and latitude |
+| `LENGTH` | lines or polygons (`tgeometry`, `trgeometry`, `tcbuffer`) | the length the feature covers during the window, the union of its values or the region its motion sweeps, each overlap counted once |
+| `AREA` | lines or polygons | the area the feature covers during the window, each overlap counted once |
+| `TO_TRAJ` | a moving point | the path of the window, in GeoJSON (WGS 84) |
+| `INTERSECT` | a moving point, lines or polygons | whether the window ever meets the query's `region`, WKT in CRS84, on the spheroid for a collection of geographies |
+
+`LENGTH` and `AREA` over a collection in longitude and latitude, `tgeography`
+among them, are refused with 400: MEOS unites the values on the plane alone.
+`VOLUME` is refused with 400: MEOS states no function for the space-time volume
+of a moving polygon. Aggregations run on MEOS in the service; the Flink and
+Kafka Streams engines serve no windowed aggregation.
+
 An extension changes no answer a declared class defines.
 
 ## 10. The functions each operation applies
@@ -328,8 +348,8 @@ at its major number when an answer stated here changes.
 
 ## 12. Out of scope
 
-- The operations of Part 4 over a temporal geometry (`LENGTH`, `AREA`,
-  `TO_TRAJ` and the rest of its Table 7), and its Kafka and WebSocket channels.
+- The Kafka and WebSocket result channels of the Stream proposal, and the
+  `VOLUME` of its Table 7.
 - A newer Part 4 draft, describing a Continuous Query resource with `id`,
   `pubtime`, `target`, `filter` and `queryResult`.
 - The LAS and LAZ encodings of the Coverages draft, which encode point clouds,
