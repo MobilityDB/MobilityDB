@@ -558,8 +558,6 @@ extern void meos_finalize(void);
 
 extern char *meos_version(size_t *size_out);
 extern char *meos_full_version(size_t *size_out);
-extern char *mobilitydb_version(size_t *size_out);
-extern char *mobilitydb_full_version(size_t *size_out);
 
 /*============================================================================
  * Functions for set and span types

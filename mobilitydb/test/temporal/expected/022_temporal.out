@@ -13,6 +13,30 @@ SELECT left(mobilitydbFullVersion(), 10) = 'MobilityDB';
  t
 (1 row)
 
+SELECT mobilitydbFullVersion() LIKE '%, MEOS %';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT meosVersion() LIKE 'MEOS %';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT left(meosFullVersion(), 5) = 'MEOS ';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT substr(mobilitydbVersion(), 12) = substr(meosVersion(), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
 -------------------------------------------------------------------------------
 -- Input/output functions
 -------------------------------------------------------------------------------

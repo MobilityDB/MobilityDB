@@ -905,13 +905,14 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * @param[out] size_out Size of the result, the terminating null character
  * included
  * @return A string the caller frees, as the one of #meos_full_version
+ * @csqlfn #Meos_version()
  */
 char *
 meos_version(size_t *size_out)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(size_out, NULL);
-  return cstring_size(pstrdup(MOBILITYDB_VERSION_STRING), size_out);
+  return cstring_size(pstrdup(MEOS_VERSION_STRING), size_out);
 }
 
 /**
@@ -919,6 +920,7 @@ meos_version(size_t *size_out)
  * @brief Return the versions of the MEOS library and its dependencies
  * @param[out] size_out Size of the result, the terminating null character
  * included
+ * @csqlfn #Meos_full_version()
  */
 char *
 meos_full_version(size_t *size_out)
@@ -932,40 +934,10 @@ meos_full_version(size_t *size_out)
   char *result = palloc(MOBDB_VERSION_STR_MAXLEN);
   size_t len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
     "%s, %s, %s, PROJ %s, JSON-C %s",
-    MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
+    MEOS_VERSION_STRING, POSTGRESQL_VERSION_STRING,
     POSTGIS_VERSION_STRING, proj_vers, json_c_vers);
   result[len] = '\0';
   return cstring_size(result, size_out);
-}
-
-/**
- * @ingroup meos_misc
- * @brief Return the version of the MobilityDB extension
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Mobilitydb_version()
- */
-char *
-mobilitydb_version(size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  return meos_version(size_out);
-}
-
-/**
- * @ingroup meos_misc
- * @brief Return the versions of the MobilityDB extension and its dependencies
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Mobilitydb_full_version()
- */
-char *
-mobilitydb_full_version(size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  return meos_full_version(size_out);
 }
 
 /*****************************************************************************

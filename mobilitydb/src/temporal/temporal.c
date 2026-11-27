@@ -329,10 +329,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
 Datum
 Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
-  size_t size_out;
-  char *version = mobilitydb_version(&size_out);
-  text *result = cstring_to_text(version);
-  pfree(version);
+  text *result = cstring_to_text(MOBILITYDB_VERSION_STRING);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -340,14 +337,54 @@ PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED);
 PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
  * @ingroup mobilitydb_misc
- * @brief Return the versions of the MobilityDB extension and its dependencies
+ * @brief Return the versions of the MobilityDB extension and its dependencies,
+ * the MEOS library first
+ * @details The dependencies are those #meos_full_version names
  * @sqlfn mobilitydbFullVersion()
  */
 Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 {
   size_t size_out;
-  char *version = mobilitydb_full_version(&size_out);
+  char *meos = meos_full_version(&size_out);
+  char *version = psprintf("%s, %s", MOBILITYDB_VERSION_STRING, meos);
+  text *result = cstring_to_text(version);
+  pfree(meos);
+  pfree(version);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Meos_version(PG_FUNCTION_ARGS UNUSED);
+PG_FUNCTION_INFO_V1(Meos_version);
+/**
+ * @ingroup mobilitydb_misc
+ * @brief Return the version of the MEOS library
+ * @details As #Mobilitydb_version returns the version of the extension
+ * @sqlfn meosVersion()
+ */
+Datum
+Meos_version(PG_FUNCTION_ARGS UNUSED)
+{
+  size_t size_out;
+  char *version = meos_version(&size_out);
+  text *result = cstring_to_text(version);
+  pfree(version);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Meos_full_version(PG_FUNCTION_ARGS UNUSED);
+PG_FUNCTION_INFO_V1(Meos_full_version);
+/**
+ * @ingroup mobilitydb_misc
+ * @brief Return the versions of the MEOS library and its dependencies
+ * @details As #Mobilitydb_full_version returns those of the extension
+ * @sqlfn meosFullVersion()
+ */
+Datum
+Meos_full_version(PG_FUNCTION_ARGS UNUSED)
+{
+  size_t size_out;
+  char *version = meos_full_version(&size_out);
   text *result = cstring_to_text(version);
   pfree(version);
   PG_RETURN_TEXT_P(result);
