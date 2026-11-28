@@ -4,6 +4,10 @@
 
 SELECT mobilitydbVersion() LIKE 'MobilityDB%';
 SELECT left(mobilitydbFullVersion(), 10) = 'MobilityDB';
+SELECT mobilitydbFullVersion() LIKE '%, MEOS %';
+SELECT meosVersion() LIKE 'MEOS %';
+SELECT left(meosFullVersion(), 5) = 'MEOS ';
+SELECT substr(mobilitydbVersion(), 12) = substr(meosVersion(), 6);
 
 -------------------------------------------------------------------------------
 -- Input/output functions

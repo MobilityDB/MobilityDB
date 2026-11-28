@@ -269,7 +269,7 @@ main(void)
 
   /* Version and style strings */
   CHECK(meos_version(&size));
-  CHECK(mobilitydb_version(&size));
+  CHECK(meos_full_version(&size));
   CHECK(meos_get_datestyle(&size));
   CHECK(meos_get_intervalstyle(&size));
 

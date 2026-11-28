@@ -211,6 +211,9 @@
 #include "temporal/tsequenceset.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+#endif
 
 #if JSON
   /* Forward declarations for the JSON null-result lifting functions */
@@ -3336,13 +3339,26 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
      * dates the meeting, and elsewhere it differs from the value at every
      * instant inside. Away from the meeting the segment differs from the
      * value as its bound value other than the value does, the functions of a
-     * point and a value comparing them for equality */
-    if (seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT)
+     * point and a value comparing them for equality. A circular buffer meets
+     * the value as a point with Z of its centre and radius does
+     * (#tcbuffersegm_meet), its functions with a value comparing them for
+     * equality as well */
+    if (seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT
+#if CBUFFER
+        || seq->temptype == T_TCBUFFER
+#endif /* CBUFFER */
+       )
     {
-      bool meet = (seq->temptype == T_TGEOMPOINT) ?
-        tgeompointsegm_meet(startvalue, endvalue, value, value) :
-        tgeogpointsegm_meet(startvalue, endvalue, value, value, start->t,
-          end->t);
+      bool meet;
+#if CBUFFER
+      if (seq->temptype == T_TCBUFFER)
+        meet = tcbuffersegm_meet(startvalue, endvalue, value);
+      else
+#endif /* CBUFFER */
+        meet = (seq->temptype == T_TGEOMPOINT) ?
+          tgeompointsegm_meet(startvalue, endvalue, value, value) :
+          tgeogpointsegm_meet(startvalue, endvalue, value, value, start->t,
+            end->t);
       Datum other = datum_eq(startvalue, value, basetype) ? endvalue :
         startvalue;
       if ((meet && eafunc_value_decides(value, value, lfinfo, &result)) ||

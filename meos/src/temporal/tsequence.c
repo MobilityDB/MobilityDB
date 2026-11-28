@@ -271,11 +271,6 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, MeosType basetype)
     case T_FLOAT8:
       return floatsegm_locate(DatumGetFloat8(value1), DatumGetFloat8(value2),
         DatumGetFloat8(value));
-#if CBUFFER
-    case T_CBUFFER:
-      return cbuffersegm_locate(DatumGetCbufferP(value1),
-        DatumGetCbufferP(value2), DatumGetCbufferP(value));
-#endif
 #if NPOINT
     case T_NPOINT:
       return npointsegm_locate(DatumGetNpointP(value1),
@@ -3533,6 +3528,17 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
     *t2 = *t1;
     return 1;
   }
+#if CBUFFER
+  /* A circular buffer meets the value as a point with Z of its centre and
+   * radius does */
+  if (temptype == T_TCBUFFER)
+  {
+    if (! tcbuffersegm_crossing(start, end, value, lower, upper, t1))
+      return 0;
+    *t2 = *t1;
+    return 1;
+  }
+#endif /* CBUFFER */
 
   double fraction = datumsegm_locate(start, end, value, basetype);
   if (fraction < 0.0)

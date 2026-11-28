@@ -405,6 +405,10 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(1 1)@2001-01-01, Point(1.05 1.05)@2001
 SELECT ST_AsText((mvt).geom), (mvt).times
 FROM (SELECT asMVTGeom(tgeompoint '{[Point(1 1)@2001-01-01, Point(1.05 1.05)@2001-01-02], [Point(500 500)@2001-01-03, Point(600 600)@2001-01-04]}',
   stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
+-- Sequences with step interpolation in one multipoint
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(500 500)@2001-01-03, Point(600 600)@2001-01-04]}',
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
 -- Points on the border of the tile without buffer
 SELECT ST_AsText((mvt).geom), (mvt).times
 FROM (SELECT asMVTGeom(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(1.02 1.02)@2001-01-02, Point(1.04 1.04)@2001-01-03]',

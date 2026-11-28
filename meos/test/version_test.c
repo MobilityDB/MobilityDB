@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief A program that tests the version functions of the MEOS API
- * @details Each of the four functions answers a string the caller frees, and
- * each string starts with the name of the library. The program frees every
+ * @details Each of the two functions answers a string the caller frees, and
+ * each string starts with the name of the library, MEOS. The program frees every
  * string with the libc allocator, which the default allocator of MEOS is.
  *
  * The program can be build as follows
@@ -51,7 +51,7 @@ static void
 check_version(const char *fn, char *version)
 {
   assert(version);
-  assert(strncmp(version, "MobilityDB", strlen("MobilityDB")) == 0);
+  assert(strncmp(version, "MEOS ", strlen("MEOS ")) == 0);
   printf("%s: %s\n", fn, version);
   free(version);
 }
@@ -71,8 +71,6 @@ int main(void)
   check_version("meos_version", second);
 
   check_version("meos_full_version", meos_full_version(&size_out));
-  check_version("mobilitydb_version", mobilitydb_version(&size_out));
-  check_version("mobilitydb_full_version", mobilitydb_full_version(&size_out));
 
   meos_finalize();
   printf("version_test: OK\n");
